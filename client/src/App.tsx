@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import MobileHeader from "@/components/MobileHeader";
+import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
 import Home from "@/pages/Home";
 import Exit from "@/pages/Exit";
@@ -35,6 +36,10 @@ function AppContent() {
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
     console.log('Mobile menu toggled');
+  };
+
+  const handleCloseMenu = () => {
+    setShowMobileMenu(false);
   };
 
   const handleTabChange = (tab: string) => {
@@ -146,6 +151,11 @@ function AppContent() {
       <BottomNavigation 
         activeTab={activeTab}
         onTabChange={handleTabChange}
+      />
+
+      <MobileMenu 
+        isOpen={showMobileMenu}
+        onClose={handleCloseMenu}
       />
       
       <Toaster />
