@@ -52,7 +52,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`sky-${index}`} className="text-center">
             <div 
-              className="py-3 px-2 rounded-md font-serif font-semibold border bg-green-100 dark:bg-green-900/20 dark:text-green-400 text-[40px] text-[6afda8]"
+              className="py-3 px-2 rounded-md font-serif font-semibold border bg-green-100 dark:bg-green-900/20 dark:text-green-400 text-[40px] text-[6afda8] pt-[2px] pb-[2px]"
               data-testid={`text-sky-${index}`}
             >
               {col.data.sky}
