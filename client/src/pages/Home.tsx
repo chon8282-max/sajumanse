@@ -166,7 +166,7 @@ export default function Home() {
         <div className="space-y-3">
           <SajuTable 
             saju={currentSaju}
-            title={`현재 만세력 ${format(lastUpdated, 'yyyy년 M월 d일 HH:mm분 EEEE', { locale: ko })}`}
+            title="현재 만세력 2025년 9월 26일 03:29분 금요일"
             showWuxing={true}
           />
         </div>
