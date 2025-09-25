@@ -8,15 +8,21 @@ import {
   Star 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 export default function MenuGrid() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleMenuClick = (menuName: string) => {
-    toast({
-      title: menuName,
-      description: `${menuName} 기능이 준비 중입니다.`,
-    });
+    if (menuName === "만세력") {
+      setLocation("/manseryeok");
+    } else {
+      toast({
+        title: menuName,
+        description: `${menuName} 기능이 준비 중입니다.`,
+      });
+    }
   };
 
   const menuItems = [
