@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import SajuTable from "@/components/SajuTable";
 import DatePicker from "@/components/DatePicker";
-import FortuneCard from "@/components/FortuneCard";
+import MenuGrid from "@/components/MenuGrid";
 import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -184,10 +184,6 @@ export default function Home() {
             showWuxing={true}
           />
 
-          <FortuneCard 
-            saju={currentSaju}
-            className="mt-4"
-          />
         </div>
 
         {/* 생년월일 입력 버튼 */}
@@ -237,10 +233,6 @@ export default function Home() {
               showWuxing={true}
             />
             
-            <FortuneCard 
-              saju={customSaju}
-              className="mt-4"
-            />
 
             <Button 
               variant="outline" 
@@ -256,6 +248,9 @@ export default function Home() {
             </Button>
           </div>
         )}
+
+        {/* 메뉴 그리드 */}
+        <MenuGrid />
 
         {/* 하단 여백 (네비게이션 공간) */}
         <div className="h-20" />
