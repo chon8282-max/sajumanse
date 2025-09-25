@@ -1,7 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Users, Calculator, Database } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Users, Calculator, Database, ArrowLeft } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Manseryeok() {
+  const [, setLocation] = useLocation();
+
+  const handleBackToHome = () => {
+    setLocation("/");
+  };
 
   const menuItems = [
     {
@@ -46,6 +53,22 @@ export default function Manseryeok() {
 
   return (
     <div className="min-h-screen bg-background p-4">
+      {/* 헤더 */}
+      <div className="flex items-center gap-4 mb-6">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleBackToHome}
+          data-testid="button-back-home"
+          className="hover-elevate active-elevate-2"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">만세력</h1>
+        </div>
+      </div>
+
       {/* 메뉴 그리드 */}
       <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto">
         {menuItems.map((item) => (
