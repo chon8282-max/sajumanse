@@ -17,7 +17,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 사주팔자 계산 API
   app.post("/api/saju/calculate", async (req, res) => {
     try {
-      const { year, month, day, hour, isLunar } = req.body;
+      const { year, month, day, hour, minute = 0, isLunar } = req.body;
       
       // 입력 검증
       if (!year || !month || !day || hour === undefined) {
@@ -34,7 +34,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parseInt(year), 
         parseInt(month), 
         parseInt(day), 
-        parseInt(hour), 
+        parseInt(hour),
+        parseInt(minute) || 0, // minute 값 사용
         isLunarBool
       );
 
@@ -62,6 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         validatedData.birthMonth,
         validatedData.birthDay,
         validatedData.birthHour,
+        0, // minute 기본값
         validatedData.isLunar === "true"
       );
 
