@@ -51,9 +51,11 @@ export function calculateSaju(
   month: number,
   day: number,
   hour: number,
+  minute: number = 0,
   isLunar: boolean = false
 ): SajuInfo {
   let calcDate: Date;
+  const timeInMinutes = hour * 60 + minute;
   
   // 음력인 경우 양력으로 변환
   if (isLunar) {
@@ -62,7 +64,13 @@ export function calculateSaju(
     month = calcDate.getMonth() + 1;
     day = calcDate.getDate();
   } else {
-    calcDate = new Date(year, month - 1, day);
+    calcDate = new Date(year, month - 1, day, hour, minute);
+  }
+  
+  // 일주 계산을 위한 날짜 조정 (23시 31분부터 다음날)
+  let sajuDate = new Date(calcDate);
+  if (timeInMinutes >= 1411) { // 23시 31분부터 다음날
+    sajuDate = new Date(year, month - 1, day + 1);
   }
   
   // 입춘 기준으로 년도 조정
@@ -90,22 +98,62 @@ export function calculateSaju(
   const monthEarthIndex = (sajuMonth + 1) % 12; // 인월부터 시작
   const monthSkyIndex = (yearSkyIndex * 2 + monthEarthIndex) % 10;
   
-  // 일주 계산 (정확한 갑자일 기준)
+  // 일주 계산 (정확한 갑자일 기준, 23시 30분부터 다음날)
   // 1924년 1월 1일을 갑자일로 설정 (실제로는 검증 필요)
   const baseDate = new Date(1924, 0, 1);
-  const daysDiff = Math.floor((calcDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
+  const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
   const dayIndex = ((daysDiff % 60) + 60) % 60;
   const daySkyIndex = dayIndex % 10;
   const dayEarthIndex = dayIndex % 12;
   
-  // 시주 계산 (자시 23-01시 기준)
+  // 시주 계산 (정확한 시간 구간 기준)
   let hourIndex: number;
-  if (hour === 23) {
-    hourIndex = 0; // 자시
+  
+  if ((timeInMinutes >= 1411) || (timeInMinutes >= 0 && timeInMinutes <= 90)) { // 23:31-01:30 (자시)
+    hourIndex = 0; // 子時
+  } else if (timeInMinutes >= 91 && timeInMinutes <= 210) { // 01:31-03:30 (축시)
+    hourIndex = 1; // 丑時
+  } else if (timeInMinutes >= 211 && timeInMinutes <= 330) { // 03:31-05:30 (인시)
+    hourIndex = 2; // 寅時
+  } else if (timeInMinutes >= 331 && timeInMinutes <= 450) { // 05:31-07:30 (묘시)
+    hourIndex = 3; // 卯時
+  } else if (timeInMinutes >= 451 && timeInMinutes <= 570) { // 07:31-09:30 (진시)
+    hourIndex = 4; // 辰時
+  } else if (timeInMinutes >= 571 && timeInMinutes <= 690) { // 09:31-11:30 (사시)
+    hourIndex = 5; // 巳時
+  } else if (timeInMinutes >= 691 && timeInMinutes <= 810) { // 11:31-13:30 (오시)
+    hourIndex = 6; // 午時
+  } else if (timeInMinutes >= 811 && timeInMinutes <= 930) { // 13:31-15:30 (미시)
+    hourIndex = 7; // 未時
+  } else if (timeInMinutes >= 931 && timeInMinutes <= 1050) { // 15:31-17:30 (신시)
+    hourIndex = 8; // 申時
+  } else if (timeInMinutes >= 1051 && timeInMinutes <= 1170) { // 17:31-19:30 (유시)
+    hourIndex = 9; // 酉時
+  } else if (timeInMinutes >= 1171 && timeInMinutes <= 1290) { // 19:31-21:30 (술시)
+    hourIndex = 10; // 戌時
+  } else if (timeInMinutes >= 1291 && timeInMinutes <= 1410) { // 21:31-23:30 (해시)
+    hourIndex = 11; // 亥時
   } else {
-    hourIndex = Math.floor((hour + 1) / 2) % 12;
+    hourIndex = 0; // 기본값: 자시
   }
-  const hourSkyIndex = (daySkyIndex * 2 + hourIndex) % 10;
+  
+  // 시두법 적용 (일간을 기준으로 시간 천간 계산)
+  const daySkyStem = daySkyIndex; // 일간의 천간 인덱스
+  let hourSkyStartIndex: number;
+  
+  if (daySkyStem === 0 || daySkyStem === 5) { // 甲日 또는 己日
+    hourSkyStartIndex = 0; // 甲子時부터 시작
+  } else if (daySkyStem === 1 || daySkyStem === 6) { // 乙日 또는 庚日
+    hourSkyStartIndex = 2; // 丙子時부터 시작
+  } else if (daySkyStem === 2 || daySkyStem === 7) { // 丙日 또는 辛日
+    hourSkyStartIndex = 4; // 戊子時부터 시작
+  } else if (daySkyStem === 3 || daySkyStem === 8) { // 丁日 또는 壬日
+    hourSkyStartIndex = 6; // 庚子時부터 시작
+  } else { // 戊日 또는 癸日
+    hourSkyStartIndex = 8; // 壬子時부터 시작
+  }
+  
+  const hourSkyIndex = (hourSkyStartIndex + hourIndex) % 10;
   const hourEarthIndex = hourIndex;
   
   const yearSky = CHEONGAN[yearSkyIndex];
@@ -144,7 +192,8 @@ export function getCurrentSaju(): SajuInfo {
     now.getFullYear(),
     now.getMonth() + 1,
     now.getDate(),
-    now.getHours()
+    now.getHours(),
+    now.getMinutes()
   );
 }
 
