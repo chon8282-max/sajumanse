@@ -1,18 +1,28 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import SajuTable from "@/components/SajuTable";
 import DatePicker from "@/components/DatePicker";
 import FortuneCard from "@/components/FortuneCard";
 import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo } from "@shared/schema";
-import { RefreshCw, Sparkles } from "lucide-react";
+import { RefreshCw, Sparkles, Save } from "lucide-react";
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
   const [customSaju, setCustomSaju] = useState<SajuInfo | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [lastInputData, setLastInputData] = useState<{
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    isLunar: boolean;
+  } | null>(null);
 
   // 현재 시각 자동 업데이트 (1분마다)
   useEffect(() => {
@@ -24,11 +34,71 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  const { toast } = useToast();
+
+  // 사주팔자 계산 뮤테이션
+  const calculateMutation = useMutation({
+    mutationFn: async (data: { year: number; month: number; day: number; hour: number; isLunar: boolean }) => {
+      const response = await apiRequest("POST", "/api/saju/calculate", data) as any;
+      if (!response.success) {
+        throw new Error(response.error || "사주 계산에 실패했습니다.");
+      }
+      return response.data;
+    },
+    onSuccess: (data) => {
+      setCustomSaju(data);
+      setShowDatePicker(false);
+      toast({
+        title: "사주팔자 계산 완료",
+        description: "개인 사주팔자가 성공적으로 계산되었습니다."
+      });
+    },
+    onError: (error) => {
+      console.error('Saju calculation error:', error);
+      toast({
+        title: "계산 오류",
+        description: "사주팔자 계산 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // 만세력 저장 뮤테이션
+  const saveMutation = useMutation({
+    mutationFn: async (data: { 
+      birthYear: number; 
+      birthMonth: number; 
+      birthDay: number; 
+      birthHour: number; 
+      isLunar: string;
+      gender: string;
+    }) => {
+      const response = await apiRequest("POST", "/api/manse", data) as any;
+      if (!response.success) {
+        throw new Error(response.error || "저장에 실패했습니다.");
+      }
+      return response.data;
+    },
+    onSuccess: () => {
+      toast({
+        title: "저장 완료",
+        description: "만세력 정보가 성공적으로 저장되었습니다."
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/manse"] });
+    },
+    onError: (error) => {
+      console.error('Save error:', error);
+      toast({
+        title: "저장 오류",
+        description: "만세력 정보 저장 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleDateSelect = (year: number, month: number, day: number, hour: number, isLunar: boolean) => {
-    const newSaju = calculateSaju(year, month, day, hour, isLunar);
-    setCustomSaju(newSaju);
-    setShowDatePicker(false);
-    console.log('Custom saju calculated:', newSaju);
+    setLastInputData({ year, month, day, hour, isLunar });
+    calculateMutation.mutate({ year, month, day, hour, isLunar });
   };
 
   const handleRefresh = () => {
@@ -63,6 +133,27 @@ export default function Home() {
     return Object.entries(count).reduce((a, b) => 
       count[a[0]] > count[b[0]] ? a : b
     )[0] as any;
+  };
+
+  const handleSaveCustomSaju = () => {
+    if (!customSaju || !lastInputData) {
+      toast({
+        title: "저장 오류",
+        description: "저장할 사주 정보가 없습니다.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // 실제 사용자가 입력한 데이터와 계산된 사주팔자를 함께 저장
+    saveMutation.mutate({
+      birthYear: lastInputData.year,
+      birthMonth: lastInputData.month,
+      birthDay: lastInputData.day,
+      birthHour: lastInputData.hour,
+      isLunar: lastInputData.isLunar ? "true" : "false",
+      gender: "기타" // 기본값 (추후 사용자 입력으로 확장 가능)
+    });
   };
 
   return (
@@ -104,7 +195,7 @@ export default function Home() {
           />
 
           <FortuneCard 
-            dominantElement={getDominantElement(currentSaju)}
+            saju={currentSaju}
             className="mt-4"
           />
         </div>
@@ -115,9 +206,15 @@ export default function Home() {
             onClick={handleNewInput}
             className="w-full"
             variant={customSaju ? "secondary" : "default"}
+            disabled={calculateMutation.isPending}
             data-testid="button-new-input"
           >
-            {customSaju ? "다른 생년월일 보기" : "내 생년월일로 사주 보기"}
+            {calculateMutation.isPending 
+              ? "계산중..." 
+              : customSaju 
+                ? "다른 생년월일 보기" 
+                : "내 생년월일로 사주 보기"
+            }
           </Button>
 
           {showDatePicker && (
@@ -130,7 +227,20 @@ export default function Home() {
         {/* 입력한 생년월일의 사주 */}
         {customSaju && (
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold">내 사주팔자</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">내 사주팔자</h3>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSaveCustomSaju}
+                disabled={saveMutation.isPending}
+                data-testid="button-save-custom"
+              >
+                <Save className="w-4 h-4 mr-1" />
+                {saveMutation.isPending ? "저장중..." : "저장"}
+              </Button>
+            </div>
+            
             <SajuTable 
               saju={customSaju}
               title="개인 사주팔자"
@@ -138,7 +248,7 @@ export default function Home() {
             />
             
             <FortuneCard 
-              dominantElement={getDominantElement(customSaju)}
+              saju={customSaju}
               className="mt-4"
             />
 

@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, TrendingUp, Heart, Briefcase } from "lucide-react";
-import { type WuXing } from "@shared/schema";
+import { type WuXing, type SajuInfo } from "@shared/schema";
+import { analyzeWuXingBalance, calculateFortuneScore, generateAdvice } from "@/lib/fortune-analyzer";
 
 interface FortuneInfo {
   category: string;
@@ -13,58 +14,49 @@ interface FortuneInfo {
 }
 
 interface FortuneCardProps {
-  dominantElement: WuXing;
+  saju: SajuInfo;
   className?: string;
 }
 
-export default function FortuneCard({ dominantElement, className = "" }: FortuneCardProps) {
-  // todo: remove mock functionality
-  const getFortuneByElement = (element: WuXing): FortuneInfo[] => {
-    const baseAdvice = {
-      "목": "성장과 발전의 기운이 강합니다.",
-      "화": "열정적이고 활동적인 에너지가 있습니다.", 
-      "토": "안정적이고 신중한 접근이 필요합니다.",
-      "금": "강인하고 결단력 있는 기운입니다.",
-      "수": "유연하고 적응력이 뛰어납니다."
-    };
-
-    return [
-      {
-        category: "종합운",
-        score: Math.floor(Math.random() * 40) + 60, // 60-99
-        description: baseAdvice[element],
-        advice: "오늘은 긍정적인 마음가짐으로 하루를 시작하세요.",
-        icon: <Star className="w-4 h-4" />,
-        color: "bg-primary"
-      },
-      {
-        category: "애정운", 
-        score: Math.floor(Math.random() * 40) + 60,
-        description: "인간관계에서 좋은 기운이 감돕니다.",
-        advice: "소중한 사람들과의 시간을 늘려보세요.",
-        icon: <Heart className="w-4 h-4" />,
-        color: "bg-red-500"
-      },
-      {
-        category: "사업운",
-        score: Math.floor(Math.random() * 40) + 60,
-        description: "새로운 기회가 찾아올 수 있습니다.",
-        advice: "신중한 판단과 계획적인 접근이 중요합니다.",
-        icon: <Briefcase className="w-4 h-4" />,
-        color: "bg-blue-500"
-      },
-      {
-        category: "재물운",
-        score: Math.floor(Math.random() * 40) + 60,
-        description: "안정적인 관리가 필요한 시기입니다.",
-        advice: "무리한 투자보다는 꾸준한 저축을 추천합니다.",
-        icon: <TrendingUp className="w-4 h-4" />,
-        color: "bg-green-500"
-      }
-    ];
-  };
-
-  const fortunes = getFortuneByElement(dominantElement);
+export default function FortuneCard({ saju, className = "" }: FortuneCardProps) {
+  const wuxingBalance = analyzeWuXingBalance(saju);
+  const fortuneScores = calculateFortuneScore(saju);
+  const advice = generateAdvice(saju);
+  
+  const fortunes: FortuneInfo[] = [
+    {
+      category: "종합운",
+      score: fortuneScores.overall,
+      description: wuxingBalance.analysis,
+      advice: advice.today,
+      icon: <Star className="w-4 h-4" />,
+      color: "bg-primary"
+    },
+    {
+      category: "애정운", 
+      score: fortuneScores.love,
+      description: "인간관계에서의 조화와 발전이 기대됩니다.",
+      advice: advice.love,
+      icon: <Heart className="w-4 h-4" />,
+      color: "bg-red-500"
+    },
+    {
+      category: "사업운",
+      score: fortuneScores.career,
+      description: "직업적 성장과 발전의 기회가 있습니다.",
+      advice: advice.career,
+      icon: <Briefcase className="w-4 h-4" />,
+      color: "bg-blue-500"
+    },
+    {
+      category: "재물운",
+      score: fortuneScores.wealth,
+      description: "재정 관리와 투자에 신중함이 필요합니다.",
+      advice: "꾸준한 저축과 계획적인 소비가 중요합니다.",
+      icon: <TrendingUp className="w-4 h-4" />,
+      color: "bg-green-500"
+    }
+  ];
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 dark:text-green-400";
@@ -80,7 +72,7 @@ export default function FortuneCard({ dominantElement, className = "" }: Fortune
             오늘의 운세
           </h3>
           <Badge variant="secondary" className="text-xs">
-            {dominantElement}행 기준
+            {wuxingBalance.dominant}행 기준 ({wuxingBalance.balance})
           </Badge>
         </div>
 
