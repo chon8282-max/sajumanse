@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,12 +11,14 @@ import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
 import Home from "@/pages/Home";
 import Exit from "@/pages/Exit";
+import Manseryeok from "@/pages/Manseryeok";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/manseryeok" component={Manseryeok} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
@@ -28,10 +30,13 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState("home");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { toast } = useToast();
+  const [location] = useLocation();
   
   // 뒤로가기 버튼 두 번 눌러 종료 기능
   const backPressedOnce = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousLocation = useRef<string>("");
+  const justCameFromOtherPage = useRef(false);
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
@@ -46,6 +51,34 @@ function AppContent() {
     setActiveTab(tab);
     console.log(`Navigation changed to: ${tab}`);
   };
+
+  // 위치 변경 시 뒤로가기 카운터 초기화
+  useEffect(() => {
+    // 이전 위치가 홈이 아닌 곳에서 홈으로 온 경우
+    const cameFromOtherPage = previousLocation.current !== "" && 
+                              previousLocation.current !== "/" && 
+                              previousLocation.current !== "/home" &&
+                              (location === "/" || location === "/home");
+    
+    if (cameFromOtherPage) {
+      // 다른 페이지에서 홈으로 온 경우, 뒤로가기 카운터를 초기화하고 
+      // pushState를 건너뛰도록 플래그 설정
+      backPressedOnce.current = false;
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      justCameFromOtherPage.current = true;
+      
+      // 잠깐 후 플래그 초기화
+      setTimeout(() => {
+        justCameFromOtherPage.current = false;
+      }, 100);
+    }
+    
+    // 이전 위치 업데이트
+    previousLocation.current = location;
+  }, [location]);
 
   // 뒤로가기 이벤트 처리
   useEffect(() => {
@@ -83,7 +116,10 @@ function AppContent() {
     };
 
     // 현재 위치를 히스토리에 추가하여 뒤로가기 이벤트를 감지할 수 있게 함
-    history.pushState(null, "", window.location.pathname);
+    // 단, 다른 페이지에서 방금 온 경우에는 건너뛰기
+    if (!justCameFromOtherPage.current) {
+      history.pushState(null, "", window.location.pathname);
+    }
     
     window.addEventListener('popstate', handlePopState);
 
