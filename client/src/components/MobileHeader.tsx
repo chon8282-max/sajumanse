@@ -46,17 +46,8 @@ export default function MobileHeader({
         {/* 중앙: 앱 제목과 날짜 */}
         <div className="flex-1 text-center">
           <h1 className="text-lg font-bold font-serif" data-testid="text-app-title">
-            만세력
+            지천명 만세력
           </h1>
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <Calendar className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground font-mono" data-testid="text-current-date">
-              {format(currentDate, 'yyyy년 M월 d일')}
-            </span>
-            <Badge variant="outline" className="text-xs">
-              {format(currentDate, 'EEEE', { locale: undefined })}
-            </Badge>
-          </div>
         </div>
 
         {/* 우측: 사용자 메뉴와 테마 토글 */}
