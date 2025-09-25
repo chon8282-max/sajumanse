@@ -10,6 +10,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo } from "@shared/schema";
 import { RefreshCw, Sparkles, Save } from "lucide-react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
@@ -24,12 +26,12 @@ export default function Home() {
     isLunar: boolean;
   } | null>(null);
 
-  // 현재 시각 자동 업데이트 (1분마다)
+  // 현재 시각 자동 업데이트 (1초마다 실시간)
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSaju(getCurrentSaju());
       setLastUpdated(new Date());
-    }, 60000); // 1분마다 업데이트
+    }, 1000); // 1초마다 업데이트
 
     return () => clearInterval(interval);
   }, []);
@@ -164,10 +166,7 @@ export default function Home() {
         <div className="space-y-3">
           <SajuTable 
             saju={currentSaju}
-            title={`현재 만세력 (${lastUpdated.toLocaleTimeString('ko-KR', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })})`}
+            title={`현재 만세력 ${format(lastUpdated, 'yyyy년 M월 d일 HH:mm분 EEEE', { locale: ko })}`}
             showWuxing={true}
           />
         </div>

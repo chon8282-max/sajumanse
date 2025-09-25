@@ -45,8 +45,8 @@ export default function MobileHeader({
 
         {/* 중앙: 앱 제목과 날짜 */}
         <div className="flex-1 text-center">
-          <h1 className="text-3xl font-bold font-serif flex items-center justify-center gap-2" data-testid="text-app-title">
-            <img src="/attached_assets/image_1758813815618.png" alt="지천명 로고" className="w-8 h-8" />
+          <h1 className="text-xl font-bold font-serif flex items-center justify-center gap-2" data-testid="text-app-title">
+            <img src="/attached_assets/image_1758814666287.png" alt="지천명 로고" className="w-8 h-8" />
             지천명 만세력
           </h1>
         </div>
