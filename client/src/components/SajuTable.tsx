@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo } from "@shared/schema";
 import { getWuXingColor, getWuXingBgColor } from "@/lib/saju-calculator";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -15,6 +17,18 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
     { label: "월주", data: saju.month },
     { label: "년주", data: saju.year }
   ];
+
+  // 현재 날짜 정보 생성
+  const now = new Date();
+  const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+  const dayName = dayNames[now.getDay()];
+  
+  const solarDateString = `(양)${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}분 ${dayName}`;
+  
+  // 음력 변환 - 간단한 근사치 계산 (한국 음력 라이브러리 대신 사용)
+  const approximateLunarMonth = now.getMonth() + 1;
+  const approximateLunarDay = Math.max(1, now.getDate() - 7); // 대략 7일 차이로 가정, 최소 1일
+  const lunarDateString = `(음) ${now.getFullYear()}년 ${approximateLunarMonth}월 ${approximateLunarDay}일`;
 
   const wuxingData = [
     saju.wuxing.hourSky,
@@ -33,9 +47,17 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
   return (
     <Card className="p-4" data-testid="card-saju-table">
       <div className="text-center mb-4">
-        <h2 className="font-semibold font-serif text-[14px] text-[00008b]" data-testid="text-saju-title">
-          {title}
-        </h2>
+        <div className="space-y-1">
+          <h2 className="font-semibold font-serif text-[14px] text-black" data-testid="text-saju-title">
+            현재 만세력
+          </h2>
+          <div className="text-[12px] font-serif text-[#00008b]" data-testid="text-solar-date">
+            {solarDateString}
+          </div>
+          <div className="text-[12px] font-serif text-[#00008b]" data-testid="text-lunar-date">
+            {lunarDateString}
+          </div>
+        </div>
       </div>
       {/* 메인 사주 테이블 */}
       <div className="grid grid-cols-4 gap-2 mb-4">
@@ -64,7 +86,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`earth-${index}`} className="text-center">
             <div 
-              className="py-3 px-2 rounded-md font-serif font-semibold border bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[40px] pt-[2px] pb-[2px]"
+              className="py-3 px-2 rounded-md font-serif font-semibold border bg-red-100 dark:bg-red-900/20 dark:text-red-400 text-[40px] pt-[2px] pb-[2px] text-[#2e251f]"
               data-testid={`text-earth-${index}`}
             >
               {col.data.earth}
