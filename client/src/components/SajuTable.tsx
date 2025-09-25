@@ -33,7 +33,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
   return (
     <Card className="p-4" data-testid="card-saju-table">
       <div className="text-center mb-4">
-        <h2 className="text-lg font-semibold font-serif" data-testid="text-saju-title">
+        <h2 className="font-semibold font-serif text-[14px] text-[00008b]" data-testid="text-saju-title">
           {title}
         </h2>
       </div>
