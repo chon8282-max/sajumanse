@@ -159,16 +159,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-md space-y-6">
-        {/* 환영 메시지 */}
-        <Card className="p-4 text-center bg-gradient-to-r from-primary/10 to-accent/10">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold font-serif">전통 만세력</h2>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            사주명리학 기반 운세와 만세력 정보를 제공합니다
-          </p>
-        </Card>
 
         {/* 현재 시각의 만세력 */}
         <div className="space-y-3">
