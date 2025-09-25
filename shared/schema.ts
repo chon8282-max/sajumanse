@@ -37,8 +37,8 @@ export type InsertManseRyeok = z.infer<typeof insertManseRyeokSchema>;
 export type ManseRyeok = typeof manseRyeok.$inferSelect;
 
 // 천간지지 상수
-export const CHEONGAN = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"] as const;
-export const JIJI = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"] as const;
+export const CHEONGAN = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"] as const;
+export const JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
 
 // 오행 타입
 export type WuXing = "목" | "화" | "토" | "금" | "수";
