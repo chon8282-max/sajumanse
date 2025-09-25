@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, date } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, date, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -75,3 +75,108 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// 음양력 변환 데이터 테이블
+export const lunarSolarCalendar = pgTable("lunar_solar_calendar", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 양력 날짜
+  solYear: integer("sol_year").notNull(),
+  solMonth: integer("sol_month").notNull(),
+  solDay: integer("sol_day").notNull(),
+  
+  // 음력 날짜  
+  lunYear: integer("lun_year").notNull(),
+  lunMonth: integer("lun_month").notNull(),
+  lunDay: integer("lun_day").notNull(),
+  
+  // 음력 세부 정보
+  lunLeapMonth: text("lun_leap_month"), // 윤달 여부 ("평" | "윤")
+  lunWolban: text("lun_wolban"), // 요일
+  lunSecha: text("lun_secha"), // 세차(간지)
+  lunGanjea: text("lun_ganjea"), // 월 간지
+  lunMonthDayCount: integer("lun_month_day_count"), // 음력 월 일수
+  
+  // 양력 세부 정보
+  solSecha: text("sol_secha"), // 세차
+  solJeongja: text("sol_jeongja"), // 일진
+  
+  // 율리우스 적일
+  julianDay: integer("julian_day"),
+  
+  // 메타데이터
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertLunarSolarCalendarSchema = createInsertSchema(lunarSolarCalendar).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertLunarSolarCalendar = z.infer<typeof insertLunarSolarCalendarSchema>;
+export type LunarSolarCalendar = typeof lunarSolarCalendar.$inferSelect;
+
+// API 응답 타입 정의
+export interface DataGovKrLunarResponse {
+  response: {
+    header: {
+      resultCode: string;
+      resultMsg: string;
+    };
+    body: {
+      items: {
+        item: {
+          lunYear: string;
+          lunMonth: string;
+          lunDay: string;
+          lunLeapMonth: string;
+          lunWolban: string;
+          lunSecha: string;
+          lunGanjea?: string;
+          lunMonthDayCount?: string;
+          solYear: string;
+          solMonth: string;
+          solDay: string;
+          solSecha?: string;
+          solJeongja?: string;
+          julianDay?: string;
+        };
+      };
+      numOfRows: number;
+      pageNo: number;
+      totalCount: number;
+    };
+  };
+}
+
+export interface DataGovKrSolarResponse {
+  response: {
+    header: {
+      resultCode: string;
+      resultMsg: string;
+    };
+    body: {
+      items: {
+        item: {
+          lunYear: string;
+          lunMonth: string;
+          lunDay: string;
+          lunLeapMonth: string;
+          lunWolban: string;
+          lunSecha: string;
+          solYear: string;
+          solMonth: string;
+          solDay: string;
+          solSecha?: string;
+          solJeongja?: string;
+          julianDay?: string;
+        };
+      };
+      numOfRows: number;
+      pageNo: number;
+      totalCount: number;
+    };
+  };
+}
