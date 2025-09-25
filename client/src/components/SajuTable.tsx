@@ -37,7 +37,6 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
           {title}
         </h2>
       </div>
-      
       {/* 메인 사주 테이블 */}
       <div className="grid grid-cols-4 gap-2 mb-4">
         {/* 레이블 행 */}
@@ -53,9 +52,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`sky-${index}`} className="text-center">
             <div 
-              className={`py-3 px-2 rounded-md font-serif text-lg font-semibold border ${
-                showWuxing ? getWuXingBgColor(wuxingData[index]) + ' ' + getWuXingColor(wuxingData[index]) : 'bg-card'
-              }`}
+              className="py-3 px-2 rounded-md font-serif font-semibold border bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 text-[40px]"
               data-testid={`text-sky-${index}`}
             >
               {col.data.sky}
@@ -77,7 +74,6 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
           </div>
         ))}
       </div>
-
       {/* 오행 정보 */}
       {showWuxing && (
         <div className="mt-4 p-3 bg-muted/50 rounded-md">
