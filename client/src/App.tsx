@@ -30,7 +30,7 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState("home");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { toast } = useToast();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // 뒤로가기 버튼 두 번 눌러 종료 기능
   const backPressedOnce = useRef(false);
@@ -48,9 +48,52 @@ function AppContent() {
   };
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
     console.log(`Navigation changed to: ${tab}`);
+    
+    // 탭 클릭 시 해당 페이지로 이동
+    switch (tab) {
+      case 'home':
+        setLocation('/');
+        break;
+      case 'manse':
+        setLocation('/manseryeok');
+        break;
+      case 'fortune':
+        toast({
+          title: "운세 서비스",
+          description: "운세 페이지는 현재 준비 중입니다.",
+          duration: 2000,
+        });
+        break;
+      case 'study':
+        toast({
+          title: "학습 서비스",
+          description: "학습 페이지는 현재 준비 중입니다.",
+          duration: 2000,
+        });
+        break;
+      case 'profile':
+        toast({
+          title: "내정보 서비스",
+          description: "내정보 페이지는 현재 준비 중입니다.",
+          duration: 2000,
+        });
+        break;
+      default:
+        setLocation('/');
+        break;
+    }
   };
+
+  // 현재 location에 따라 activeTab 동기화
+  useEffect(() => {
+    if (location === '/') {
+      setActiveTab('home');
+    } else if (location === '/manseryeok') {
+      setActiveTab('manse');
+    }
+    // 기타 경로는 기본값 유지
+  }, [location]);
 
   // 위치 변경 시 뒤로가기 카운터 초기화
   useEffect(() => {
