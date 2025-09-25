@@ -214,6 +214,16 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+
+  /* 스크롤바 숨기기 */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
 
 /**
