@@ -22,6 +22,22 @@ const MONTH_JIJI = ["寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌
 // 시간별 지지
 const HOUR_JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
+// 12절기 날짜 데이터 (월주 계산용) - 시각 포함
+const TWELVE_SOLAR_TERMS_2024 = [
+  { term: "입춘", month: 0, date: new Date(2024, 1, 4, 16, 27) },   // 인월 시작 (입춘: 2월 4일 16:27)
+  { term: "경칩", month: 1, date: new Date(2024, 2, 5, 10, 23) },   // 묘월 시작 (경칩: 3월 5일 10:23)
+  { term: "청명", month: 2, date: new Date(2024, 3, 4, 15, 2) },    // 진월 시작 (청명: 4월 4일 15:02)
+  { term: "입하", month: 3, date: new Date(2024, 4, 5, 8, 10) },    // 사월 시작 (입하: 5월 5일 08:10)
+  { term: "망종", month: 4, date: new Date(2024, 5, 5, 12, 10) },   // 오월 시작 (망종: 6월 5일 12:10)
+  { term: "소서", month: 5, date: new Date(2024, 6, 6, 22, 20) },   // 미월 시작 (소서: 7월 6일 22:20)
+  { term: "입추", month: 6, date: new Date(2024, 7, 7, 9, 11) },    // 신월 시작 (입추: 8월 7일 09:11)
+  { term: "백로", month: 7, date: new Date(2024, 8, 7, 11, 11) },   // 유월 시작 (백로: 9월 7일 11:11)
+  { term: "한로", month: 8, date: new Date(2024, 9, 8, 3, 56) },    // 술월 시작 (한로: 10월 8일 03:56)
+  { term: "입동", month: 9, date: new Date(2024, 10, 7, 12, 20) },  // 해월 시작 (입동: 11월 7일 12:20)
+  { term: "대설", month: 10, date: new Date(2024, 11, 7, 0, 17) },  // 자월 시작 (대설: 12월 7일 00:17)
+  { term: "소한", month: 11, date: new Date(2025, 0, 5, 23, 49) },  // 축월 시작 (소한: 1월 5일 23:49)
+];
+
 // 24절기 날짜 데이터 (입춘 기준일 - 간단화)
 const SOLAR_TERMS_LICHUN = [
   { year: 2020, date: new Date(2020, 1, 4) }, // 2020년 입춘
@@ -41,6 +57,69 @@ function getLichunDate(year: number): Date {
   
   // 기본값으로 2월 4일 사용 (대부분의 경우)
   return new Date(year, 1, 4);
+}
+
+/**
+ * 12절기 기준으로 사주 월 계산
+ * @param date 계산할 날짜
+ * @returns 사주 월 (0:인월, 1:묘월, ..., 11:축월)
+ */
+function calculateSajuMonth(date: Date): number {
+  const year = date.getFullYear();
+  
+  // 이전 년도, 현재 년도, 다음 년도의 12절기 날짜들을 생성
+  const prevYearTerms = generateSolarTermsForYear(year - 1);
+  const currentYearTerms = generateSolarTermsForYear(year);
+  const nextYearTerms = generateSolarTermsForYear(year + 1);
+  
+  // 모든 절기들을 시간순으로 정렬
+  const allTerms = [...prevYearTerms, ...currentYearTerms, ...nextYearTerms].sort((a, b) => 
+    a.date.getTime() - b.date.getTime()
+  );
+  
+  // 현재 날짜가 어느 절기 구간에 속하는지 확인
+  for (let i = 0; i < allTerms.length - 1; i++) {
+    const currentTerm = allTerms[i];
+    const nextTerm = allTerms[i + 1];
+    
+    // 현재 날짜가 이 절기 구간에 속하는지 확인
+    if (date >= currentTerm.date && date < nextTerm.date) {
+      return currentTerm.month;
+    }
+  }
+  
+  // 기본값 (마지막 절기 이후면 해당 월)
+  return allTerms[allTerms.length - 1].month;
+}
+
+/**
+ * 특정 년도의 12절기 날짜들을 생성
+ * @param year 대상 년도
+ * @returns 해당 년도의 12절기 날짜 배열
+ */
+function generateSolarTermsForYear(year: number): Array<{ term: string; month: number; date: Date }> {
+  const baseYear = 2024;
+  const yearDiff = year - baseYear;
+  
+  return TWELVE_SOLAR_TERMS_2024.map(term => {
+    // 원본 날짜의 월/일/시/분을 유지하면서 해당 년도로 조정
+    const originalDate = term.date;
+    let targetYear = year;
+    
+    // 소한은 다음해 1월이므로 특별 처리
+    if (term.term === "소한") {
+      targetYear = year + 1;
+    }
+    
+    // 연도별 변동 근사치 적용 (4년마다 약 1일 변동)
+    const dayOffset = Math.floor(yearDiff / 4);
+    const adjustedDate = new Date(targetYear, originalDate.getMonth(), originalDate.getDate() + dayOffset, originalDate.getHours(), originalDate.getMinutes());
+    
+    return {
+      ...term,
+      date: adjustedDate
+    };
+  });
 }
 
 /**
@@ -86,16 +165,9 @@ export function calculateSaju(
   const yearSkyIndex = yearIndex % 10;
   const yearEarthIndex = yearIndex % 12;
   
-  // 월주 계산 (절기 기준, 간단화)
-  // 인월(정월)은 입춘~경칩, 묘월(2월)은 경칩~청명...
-  let sajuMonth = month;
-  if (month === 1 && calcDate < lichunDate) {
-    sajuMonth = 12; // 전년 12월로 처리
-  } else if (month === 2 && calcDate < lichunDate) {
-    sajuMonth = 1;
-  }
-  
-  const monthEarthIndex = (sajuMonth + 1) % 12; // 인월부터 시작
+  // 월주 계산 (정확한 12절기 기준)
+  const sajuMonthIndex = calculateSajuMonth(calcDate);
+  const monthEarthIndex = sajuMonthIndex; // 0:인월, 1:묘월, ..., 11:축월
   const monthSkyIndex = (yearSkyIndex * 2 + monthEarthIndex) % 10;
   
   // 일주 계산 (정확한 갑자일 기준, 23시 30분부터 다음날)
