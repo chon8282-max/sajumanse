@@ -10,24 +10,24 @@ interface SajuTableProps {
 
 export default function SajuTable({ saju, title = "사주팔자", showWuxing = true }: SajuTableProps) {
   const columns = [
-    { label: "년주", data: saju.year },
-    { label: "월주", data: saju.month },
+    { label: "시주", data: saju.hour },
     { label: "일주", data: saju.day },
-    { label: "시주", data: saju.hour }
+    { label: "월주", data: saju.month },
+    { label: "년주", data: saju.year }
   ];
 
   const wuxingData = [
-    saju.wuxing.yearSky,
-    saju.wuxing.monthSky,
+    saju.wuxing.hourSky,
     saju.wuxing.daySky,
-    saju.wuxing.hourSky
+    saju.wuxing.monthSky,
+    saju.wuxing.yearSky
   ];
 
   const wuxingEarthData = [
-    saju.wuxing.yearEarth,
-    saju.wuxing.monthEarth,
+    saju.wuxing.hourEarth,
     saju.wuxing.dayEarth,
-    saju.wuxing.hourEarth
+    saju.wuxing.monthEarth,
+    saju.wuxing.yearEarth
   ];
 
   return (
