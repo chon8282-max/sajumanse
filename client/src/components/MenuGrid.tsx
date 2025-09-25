@@ -54,8 +54,6 @@ export default function MenuGrid() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-center">메뉴</h3>
-      
       <div className="grid grid-cols-3 gap-3">
         {menuItems.map((item, index) => (
           <Card 

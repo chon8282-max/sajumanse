@@ -162,19 +162,6 @@ export default function Home() {
 
         {/* 현재 시각의 만세력 */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">현재 시각의 만세력</h3>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={handleRefresh}
-              data-testid="button-refresh-current"
-            >
-              <RefreshCw className="w-4 h-4 mr-1" />
-              갱신
-            </Button>
-          </div>
-          
           <SajuTable 
             saju={currentSaju}
             title={`현재 만세력 (${lastUpdated.toLocaleTimeString('ko-KR', { 
@@ -183,32 +170,16 @@ export default function Home() {
             })})`}
             showWuxing={true}
           />
-
         </div>
 
         {/* 생년월일 입력 버튼 */}
-        <div className="space-y-3">
-          <Button 
-            onClick={handleNewInput}
-            className="w-full"
-            variant={customSaju ? "secondary" : "default"}
-            disabled={calculateMutation.isPending}
-            data-testid="button-new-input"
-          >
-            {calculateMutation.isPending 
-              ? "계산중..." 
-              : customSaju 
-                ? "다른 생년월일 보기" 
-                : "내 생년월일로 사주 보기"
-            }
-          </Button>
-
-          {showDatePicker && (
+        {showDatePicker && (
+          <div className="space-y-3">
             <DatePicker 
               onDateSelect={handleDateSelect}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         {/* 입력한 생년월일의 사주 */}
         {customSaju && (
