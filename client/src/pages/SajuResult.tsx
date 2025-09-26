@@ -293,51 +293,27 @@ export default function SajuResult() {
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
                 {/* 시주 지장간 */}
                 <div className="border-r border-border p-2 text-center text-xs">
-                  {getJijanggan(record.hourEarth || "").map((jijang, idx) => (
-                    <div 
-                      key={idx} 
-                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
-                      style={{ backgroundColor: getWuxingColor(jijang) }}
-                    >
-                      {jijang}
-                    </div>
-                  ))}
+                  <span className="font-medium text-foreground">
+                    {getJijanggan(record.hourEarth || "").join(" ")}
+                  </span>
                 </div>
                 {/* 일주 지장간 */}
                 <div className="border-r border-border p-2 text-center text-xs">
-                  {getJijanggan(record.dayEarth || "").map((jijang, idx) => (
-                    <div 
-                      key={idx} 
-                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
-                      style={{ backgroundColor: getWuxingColor(jijang) }}
-                    >
-                      {jijang}
-                    </div>
-                  ))}
+                  <span className="font-medium text-foreground">
+                    {getJijanggan(record.dayEarth || "").join(" ")}
+                  </span>
                 </div>
                 {/* 월주 지장간 */}
                 <div className="border-r border-border p-2 text-center text-xs">
-                  {getJijanggan(record.monthEarth || "").map((jijang, idx) => (
-                    <div 
-                      key={idx} 
-                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
-                      style={{ backgroundColor: getWuxingColor(jijang) }}
-                    >
-                      {jijang}
-                    </div>
-                  ))}
+                  <span className="font-medium text-foreground">
+                    {getJijanggan(record.monthEarth || "").join(" ")}
+                  </span>
                 </div>
                 {/* 년주 지장간 */}
                 <div className="p-2 text-center text-xs">
-                  {getJijanggan(record.yearEarth || "").map((jijang, idx) => (
-                    <div 
-                      key={idx} 
-                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
-                      style={{ backgroundColor: getWuxingColor(jijang) }}
-                    >
-                      {jijang}
-                    </div>
-                  ))}
+                  <span className="font-medium text-foreground">
+                    {getJijanggan(record.yearEarth || "").join(" ")}
+                  </span>
                 </div>
               </div>
 
