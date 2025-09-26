@@ -3,6 +3,7 @@ import { type SajuInfo } from "@shared/schema";
 import { getWuXingColor, getWuXingBgColor } from "@/lib/saju-calculator";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { Solar } from "lunar-javascript";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -20,15 +21,20 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
 
   // 현재 날짜 정보 생성
   const now = new Date();
-  const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
-  const dayName = dayNames[now.getDay()];
   
-  const solarDateString = `(양)${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}분 ${dayName}`;
+  // 십이지 시각 계산
+  const getZodiacHour = (hour: number) => {
+    const zodiacHours = ['子時', '丑時', '寅時', '卯時', '辰時', '巳時', '午時', '未時', '申時', '酉時', '戌時', '亥時'];
+    if (hour === 23) return zodiacHours[0]; // 子時 (23:00-01:00)
+    return zodiacHours[Math.floor((hour + 1) / 2)];
+  };
   
-  // 음력 변환 - 간단한 근사치 계산 (한국 음력 라이브러리 대신 사용)
-  const approximateLunarMonth = now.getMonth() + 1;
-  const approximateLunarDay = Math.max(1, now.getDate() - 7); // 대략 7일 차이로 가정, 최소 1일
-  const lunarDateString = `    (음) ${now.getFullYear()}년 ${approximateLunarMonth}월 ${approximateLunarDay}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}분`;
+  // 음력 변환
+  const solar = Solar.fromYmd(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const lunar = solar.getLunar();
+  const zodiacTime = getZodiacHour(now.getHours());
+  
+  const combinedDateString = `(양)${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일) ${zodiacTime}生`;
 
   const wuxingData = [
     saju.wuxing.hourSky,
@@ -50,10 +56,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         <div className="space-y-1">
           <div className="text-[13px] font-serif">
             <span className="text-foreground font-semibold" data-testid="text-saju-title">현재 만세력</span>{" "}
-            <span className="text-blue-700 dark:text-blue-300" data-testid="text-solar-date">{solarDateString}</span>
-          </div>
-          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300 pl-[84px] text-left mt-[1px] mb-[1px]" data-testid="text-lunar-date">
-            {lunarDateString}
+            <span className="text-blue-700 dark:text-blue-300" data-testid="text-combined-date">{combinedDateString}</span>
           </div>
         </div>
       </div>
