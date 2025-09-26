@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
+import MobileHeader from "@/components/MobileHeader";
+import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
 import Home from "@/pages/Home";
 import Exit from "@/pages/Exit";
@@ -26,6 +28,7 @@ function Router() {
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("home");
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   
@@ -35,6 +38,14 @@ function AppContent() {
   const previousLocation = useRef<string>("");
   const justCameFromOtherPage = useRef(false);
 
+  const handleMenuClick = () => {
+    setShowMobileMenu(!showMobileMenu);
+    console.log('Mobile menu toggled');
+  };
+
+  const handleCloseMenu = () => {
+    setShowMobileMenu(false);
+  };
 
   const handleTabChange = (tab: string) => {
     console.log(`Navigation changed to: ${tab}`);
@@ -204,6 +215,14 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background font-sans">
+      <MobileHeader
+        currentDate={new Date()}
+        isDarkMode={theme === "dark"}
+        onThemeToggle={toggleTheme}
+        onMenuClick={handleMenuClick}
+        userName="만세력 사용자"
+      />
+      
       <main className="pb-20"> {/* 하단 네비게이션 공간 */}
         <Router />
       </main>
@@ -211,6 +230,11 @@ function AppContent() {
       <BottomNavigation 
         activeTab={activeTab}
         onTabChange={handleTabChange}
+      />
+
+      <MobileMenu 
+        isOpen={showMobileMenu}
+        onClose={handleCloseMenu}
       />
       
       <Toaster />
