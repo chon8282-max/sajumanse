@@ -117,8 +117,13 @@ export default function SajuInput() {
           description: result.message || "사주 정보가 성공적으로 저장되었습니다.",
         });
 
-        // 성공시 만세력 페이지로 이동
-        setLocation("/manseryeok");
+        // 성공시 사주 결과 페이지로 이동
+        if (result.data?.record?.id) {
+          setLocation(`/saju-result/${result.data.record.id}`);
+        } else {
+          // ID가 없으면 만세력 페이지로 이동
+          setLocation("/manseryeok");
+        }
       } else {
         throw new Error(result.error || "저장 중 오류가 발생했습니다.");
       }
@@ -230,7 +235,7 @@ export default function SajuInput() {
         {/* 생시 */}
         <div className="space-y-3">
           <Label className="text-base font-medium">생시 (전통 십이시)</Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             {TRADITIONAL_TIME_PERIODS.map((period) => (
               <Button
                 key={period.code}
@@ -241,17 +246,21 @@ export default function SajuInput() {
                   handleInputChange("selectedTimeCode", period.code);
                   handleInputChange("birthTime", period.code);
                 }}
-                className="h-auto py-3 px-3 flex flex-col items-center text-center"
+                className="h-auto py-4 px-4 flex flex-col items-center text-center hover-elevate active-elevate-2"
                 data-testid={`button-time-${period.code}`}
               >
-                <div className="font-semibold text-sm">{period.name}</div>
-                <div className="text-xs text-muted-foreground">{period.range}</div>
+                <div className="font-bold text-lg mb-1">{period.name}</div>
+                <div className="text-xs text-muted-foreground leading-tight">
+                  ({period.range})
+                </div>
               </Button>
             ))}
           </div>
           {formData.selectedTimeCode && (
-            <div className="text-sm text-muted-foreground text-center mt-2">
-              선택된 시간: {TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.name} ({TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.range})
+            <div className="text-sm text-center mt-3 p-3 bg-muted/50 rounded-lg">
+              선택된 생시: <span className="font-semibold text-primary">
+                {TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.name}
+              </span> {TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.range}
             </div>
           )}
         </div>
