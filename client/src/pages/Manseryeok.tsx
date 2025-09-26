@@ -67,7 +67,7 @@ export default function Manseryeok() {
         console.log("팔자로 생일 입력 기능 준비중");
         break;
       case "saved-saju":
-        console.log("저장사주 불러오기 기능 준비중");
+        setLocation("/saju-list");
         break;
       default:
         console.log("알 수 없는 메뉴:", menuId);
