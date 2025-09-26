@@ -55,8 +55,13 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
       <div className="text-center mb-4">
         <div className="space-y-1">
           <div className="text-[13px] font-serif">
-            <span className="text-foreground font-semibold" data-testid="text-saju-title">현재 만세력</span>{" "}
-            <span className="text-blue-700 dark:text-blue-300" data-testid="text-combined-date">{combinedDateString}</span>
+            <span className="text-foreground font-semibold" data-testid="text-saju-title">현재 만세력</span>
+          </div>
+          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300" data-testid="text-solar-date">
+            (양력) {now.getFullYear()}년 {now.getMonth() + 1}월 {now.getDate()}일
+          </div>
+          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300" data-testid="text-lunar-date">
+            (음력) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일 {zodiacTime}生
           </div>
         </div>
       </div>
