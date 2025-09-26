@@ -101,7 +101,7 @@ export default function SajuInput() {
         birthTime: formData.selectedTimeCode || formData.birthTime.trim() || null,
         calendarType: formData.calendarType,
         gender: formData.gender,
-        groupId: formData.groupId || null,
+        groupId: formData.groupId === "none" ? null : formData.groupId || null,
         memo: formData.memo.trim() || null,
       };
 
@@ -288,7 +288,7 @@ export default function SajuInput() {
                 <SelectValue placeholder="그룹 선택" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="" data-testid="select-group-none">그룹 없음</SelectItem>
+                <SelectItem value="none" data-testid="select-group-none">그룹 없음</SelectItem>
                 {groups.map((group) => (
                   <SelectItem key={group.id} value={group.id} data-testid={`select-group-${group.id}`}>
                     {group.name}
