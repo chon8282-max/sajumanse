@@ -32,9 +32,16 @@ export default function SajuResult() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/saju-result/:id");
   
+  // 잘못된 경로인 경우 리다이렉트 처리
+  useEffect(() => {
+    if (!match || !params?.id) {
+      console.error("Invalid saju result route");
+      setLocation("/manseryeok");
+    }
+  }, [match, params?.id, setLocation]);
+
   if (!match || !params?.id) {
-    setLocation("/manseryeok");
-    return null;
+    return null; // 리다이렉트가 처리되는 동안 아무것도 렌더링하지 않음
   }
 
   // 사주 데이터 조회
