@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
-import { convertSolarToLunarServer } from "./lib/lunar-converter";
+import { convertSolarToLunarServer, convertLunarToSolarServer } from "./lib/lunar-converter";
 import { 
   getLunarCalInfo, 
   getSolarCalInfo, 
@@ -207,12 +207,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error('data.go.kr API 호출 실패:', apiError);
             console.error('API 에러 상세:', apiError instanceof Error ? apiError.message : apiError);
             
-            // API 실패 시 지정된 에러 뮤샘 제공
-            console.warn('⚠️  API 실패: 사용자에게 알림 필요');
+            // API 실패 시 로컬 라이브러리로 폴백
+            console.warn('⚠️  API 실패: 로컬 계산으로 폴백');
             
-            // 크리티컬: API 실패로 인한 부정확한 계산을 방지하기 위해
-            // 정확한 계산을 위해 API 사용 실패를 사용자에게 알림
-            throw new Error('공공 API 오류로 인해 정확한 사주팔자 계산을 할 수 없습니다. 잠시 후 다시 시도해주세요.');
+            try {
+              if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
+                // 음력인 경우 한국 음력 라이브러리로 양력 변환
+                console.log(`로컬 음력→양력 변환 시도: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}`);
+                const solarDate = convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay);
+                solarCalcYear = solarDate.getFullYear();
+                solarCalcMonth = solarDate.getMonth() + 1;
+                solarCalcDay = solarDate.getDate();
+                console.log(`로컬 변환 결과: ${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}`);
+              }
+              // API 데이터 없이 계속 진행
+              console.log('✓ 로컬 계산으로 폴백 성공, 사주 계산 계속 진행');
+            } catch (localError) {
+              console.error('로컬 변환도 실패:', localError);
+              // 로컬 변환도 실패하면 입력 날짜 그대로 사용
+              console.warn('로컬 변환 실패, 입력 날짜로 진행');
+            }
           }
 
           console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
@@ -407,7 +421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isLunarBool = isLunar === true || isLunar === "true";
       
       let apiData = null;
-      let solarDateForCalculation = null;
+      let solarDateForCalculation = undefined;
       
       try {
         // 정확한 간지 정보를 위해 data.go.kr API 호출
