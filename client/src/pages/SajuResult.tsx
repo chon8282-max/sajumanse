@@ -212,81 +212,163 @@ export default function SajuResult() {
         </Card>
 
 
-        {/* 대운표 */}
+        {/* 사주명식 테이블 */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg text-center">대운표</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-center text-sm text-muted-foreground mb-4">
-                지간간 및 심십 출력차기
-              </div>
-              
-              {/* 대운 나이 */}
-              <div className="border border-border rounded-lg p-4">
-                <div className="text-sm font-semibold text-center mb-3">나이</div>
-                <div className="grid grid-cols-10 gap-2">
-                  {Array.from({length: 10}, (_, i) => (
-                    <div key={i} className="text-center border border-border p-2">
-                      <div className="text-xs">{91 - i * 10}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-10 gap-2 mt-2">
-                  {Array.from({length: 10}, (_, i) => (
-                    <div key={i} className="text-center border border-border p-2">
-                      <div className="text-xs">{i === 9 ? 1 : ""}</div>
-                    </div>
-                  ))}
-                </div>
+          <CardContent className="p-2">
+            <div className="w-full">
+              {/* 1. 육친 일간 육친 육친 (4칸) */}
+              <div className="grid grid-cols-4 border-t border-l border-r border-border">
+                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
+                <div className="border-r border-border p-2 text-center text-sm font-medium bg-yellow-50 dark:bg-yellow-900/20">일간</div>
+                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
+                <div className="p-2 text-center text-sm font-medium">육친</div>
               </div>
 
-              {/* 세운 */}
-              <div className="border border-border rounded-lg p-4">
-                <div className="text-sm font-semibold text-center mb-3">세운</div>
-                <div className="grid grid-cols-10 gap-2">
-                  {Array.from({length: 10}, (_, i) => (
-                    <div key={i} className="text-center border border-border p-2">
-                      <div className="text-xs">{49 - i}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-10 gap-2 mt-2">
-                  {Array.from({length: 10}, (_, i) => (
-                    <div key={i} className="text-center border border-border p-2">
-                      <div className="text-xs">{i < 8 ? "" : (i === 8 ? "2" : "1")}</div>
-                    </div>
-                  ))}
-                </div>
+              {/* 2. 천간 (4칸) */}
+              <div className="grid grid-cols-4 border-t border-l border-r border-border">
+                <div className="border-r border-border p-3 text-center text-lg font-bold">{record.hourSky || "?"}</div>
+                <div className="border-r border-border p-3 text-center text-lg font-bold bg-yellow-50 dark:bg-yellow-900/20">{record.daySky || "?"}</div>
+                <div className="border-r border-border p-3 text-center text-lg font-bold">{record.monthSky || "?"}</div>
+                <div className="p-3 text-center text-lg font-bold">{record.yearSky || "?"}</div>
               </div>
 
-              {/* 월운 */}
-              <div className="border border-border rounded-lg p-4">
-                <div className="text-sm font-semibold text-center mb-3">월운</div>
-                <div className="grid grid-cols-12 gap-1">
-                  {Array.from({length: 12}, (_, i) => (
-                    <div key={i} className="text-center border border-border p-2">
-                      <div className="text-xs">{12 - i}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-12 gap-1 mt-2">
-                  {Array.from({length: 12}, (_, i) => (
-                    <div key={i} className="text-center border border-border p-2">
-                      <div className="text-xs"></div>
-                    </div>
-                  ))}
-                </div>
+              {/* 3. 지지 (4칸) */}
+              <div className="grid grid-cols-4 border-t border-l border-r border-border">
+                <div className="border-r border-border p-3 text-center text-lg font-bold">{record.hourEarth || "?"}</div>
+                <div className="border-r border-border p-3 text-center text-lg font-bold bg-yellow-50 dark:bg-yellow-900/20">{record.dayEarth || "?"}</div>
+                <div className="border-r border-border p-3 text-center text-lg font-bold">{record.monthEarth || "?"}</div>
+                <div className="p-3 text-center text-lg font-bold">{record.yearEarth || "?"}</div>
               </div>
 
-              {/* 메모 */}
-              {record.memo && (
-                <div className="border border-border rounded-lg p-4 bg-muted/20">
-                  <div className="text-sm font-semibold mb-2">메모</div>
-                  <div className="text-sm whitespace-pre-wrap">{record.memo}</div>
+              {/* 4. 육친 육친 육친 육친 (4칸) */}
+              <div className="grid grid-cols-4 border-t border-l border-r border-border">
+                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
+                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
+                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
+                <div className="p-2 text-center text-sm font-medium">육친</div>
+              </div>
+
+              {/* 5. 지장간 출력자리 (4칸) */}
+              <div className="grid grid-cols-4 border-t border-l border-r border-border">
+                <div className="border-r border-border p-2 text-center text-xs">지장간</div>
+                <div className="border-r border-border p-2 text-center text-xs">지장간</div>
+                <div className="border-r border-border p-2 text-center text-xs">지장간</div>
+                <div className="p-2 text-center text-xs">지장간</div>
+              </div>
+
+              {/* 6. 나이숫자 출력자리 (10칸) */}
+              <div className="grid grid-cols-10 border-t border-l border-r border-border">
+                {Array.from({length: 10}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
+                    {(() => {
+                      const currentAge = (() => {
+                        const today = new Date();
+                        const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
+                        return today.getFullYear() - birthDate.getFullYear() - 
+                          (today.getMonth() < birthDate.getMonth() || 
+                           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+                      })();
+                      const startAge = Math.floor((currentAge - 5) / 10) * 10 + 5;
+                      return startAge + i * 10;
+                    })()}
+                  </div>
+                ))}
+              </div>
+
+              {/* 7. 대운천간출력 (10칸) */}
+              <div className="grid grid-cols-10 border-t border-l border-r border-border">
+                {Array.from({length: 10}, (_, i) => (
+                  <div key={i} className="border-r border-border p-2 text-center text-sm font-bold last:border-r-0">대운천간</div>
+                ))}
+              </div>
+
+              {/* 8. 대운지지출력 (10칸) */}
+              <div className="grid grid-cols-10 border-t border-l border-r border-border">
+                {Array.from({length: 10}, (_, i) => (
+                  <div key={i} className="border-r border-border p-2 text-center text-sm font-bold last:border-r-0">대운지지</div>
+                ))}
+              </div>
+
+              {/* 9. 세운년도출력 (12칸) */}
+              <div className="grid grid-cols-12 border-t border-l border-r border-border">
+                {Array.from({length: 12}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
+                    {new Date().getFullYear() + i}
+                  </div>
+                ))}
+              </div>
+
+              {/* 10. 세운천간출력 (12칸) */}
+              <div className="grid grid-cols-12 border-t border-l border-r border-border">
+                {Array.from({length: 12}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운천간</div>
+                ))}
+              </div>
+
+              {/* 11. 세운지지출력 (12칸) */}
+              <div className="grid grid-cols-12 border-t border-l border-r border-border">
+                {Array.from({length: 12}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운지지</div>
+                ))}
+              </div>
+
+              {/* 12. 세운 나이출력 (12칸) */}
+              <div className="grid grid-cols-12 border-t border-l border-r border-border">
+                {Array.from({length: 12}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
+                    {(() => {
+                      const currentAge = (() => {
+                        const today = new Date();
+                        const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
+                        return today.getFullYear() - birthDate.getFullYear() - 
+                          (today.getMonth() < birthDate.getMonth() || 
+                           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+                      })();
+                      return currentAge + i;
+                    })()}
+                  </div>
+                ))}
+              </div>
+
+              {/* 13. 월운(폰트10) (1칸 센터정렬) */}
+              <div className="border-t border-l border-r border-border">
+                <div className="p-2 text-center text-xs font-medium">월운</div>
+              </div>
+
+              {/* 14. 월운 천간 (13칸) */}
+              <div className="grid grid-cols-13 border-t border-l border-r border-border">
+                {Array.from({length: 13}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">월운천간</div>
+                ))}
+              </div>
+
+              {/* 15. 월운 지지 (13칸) */}
+              <div className="grid grid-cols-13 border-t border-l border-r border-border">
+                {Array.from({length: 13}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">월운지지</div>
+                ))}
+              </div>
+
+              {/* 16. 월은 달표시 (13칸) */}
+              <div className="grid grid-cols-13 border-t border-l border-r border-border">
+                {Array.from({length: 13}, (_, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
+                    {i === 0 ? "월" : `${i}월`}
+                  </div>
+                ))}
+              </div>
+
+              {/* 17. 메모 (1칸 센터정렬) */}
+              <div className="border-t border-l border-r border-border">
+                <div className="p-2 text-center text-sm font-medium">메모</div>
+              </div>
+
+              {/* 18. 메모 입력하는 곳 */}
+              <div className="border-t border-l border-r border-b border-border">
+                <div className="p-3 text-sm min-h-[60px] whitespace-pre-wrap bg-muted/20">
+                  {record.memo || "메모를 입력해주세요"}
                 </div>
-              )}
+              </div>
             </div>
           </CardContent>
         </Card>
