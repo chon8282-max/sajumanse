@@ -150,7 +150,6 @@ export default function SajuResult() {
         </Button>
         <div className="flex-1 text-center">
           <h1 className="text-xl font-bold text-foreground">사주명식</h1>
-          <p className="text-sm text-muted-foreground mt-1">{record.name}님의 사주팔자</p>
         </div>
         <div className="flex items-center gap-2">
           <Button 
@@ -177,47 +176,28 @@ export default function SajuResult() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* 기본 정보 카드 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <User className="h-5 w-5" />
-              기본 정보
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">성명:</span>
-                <span className="font-semibold">{record.name}</span>
+      <div className="max-w-2xl mx-auto">
+        {/* 기본 정보 - 간단하게 2줄로 */}
+        <Card className="mb-2">
+          <CardContent className="py-3">
+            <div className="text-center space-y-1">
+              <div className="text-lg font-semibold">
+                {record.name} ({record.gender}) {(() => {
+                  const today = new Date();
+                  const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
+                  const age = today.getFullYear() - birthDate.getFullYear() - 
+                    (today.getMonth() < birthDate.getMonth() || 
+                     (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+                  return age;
+                })()}세
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">성별:</span>
-                <span className="font-semibold">{record.gender}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">생년월일:</span>
-                <div className="flex flex-col">
-                  <span className="font-semibold">
-                    {record.calendarType} {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
+              <div className="text-sm text-muted-foreground">
+                생년월일 {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
+                {record.lunarYear && record.lunarMonth && record.lunarDay && (
+                  <span>
+                    (음력 {record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일{record.isLeapMonth ? " 윤달" : ""})
                   </span>
-                  {record.lunarYear && record.lunarMonth && record.lunarDay && (
-                    <span className="text-sm text-muted-foreground mt-1">
-                      음력 {record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일
-                      {record.isLeapMonth ? " (윤달)" : ""}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">생시:</span>
-                <span className="font-semibold">
-                  {timePeriod ? `${timePeriod.name} (${timePeriod.range})` : record.birthTime || "미입력"}
-                </span>
+                )} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}생
               </div>
             </div>
           </CardContent>
@@ -225,10 +205,7 @@ export default function SajuResult() {
 
         {/* 사주팔자 표 */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg text-center">사주팔자</CardTitle>
-          </CardHeader>
-          <CardContent>
+          <CardContent className="py-3">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-border">
                 <thead>
