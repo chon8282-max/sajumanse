@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
+import { convertSolarToLunarServer } from "./lib/lunar-converter";
 import { 
   getLunarCalInfo, 
   getSolarCalInfo, 
@@ -163,8 +164,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             validatedData.calendarType === "음력" || validatedData.calendarType === "윤달"
           );
 
-          // 계산된 사주팔자로 업데이트
-          const updatedRecord = await storage.updateSajuRecord(savedRecord.id, {
+          // 음력 변환 (양력 입력인 경우에만)
+          let lunarConversion = null;
+          if (validatedData.calendarType === "양력") {
+            try {
+              const birthDate = new Date(validatedData.birthYear, validatedData.birthMonth - 1, validatedData.birthDay);
+              lunarConversion = convertSolarToLunarServer(birthDate);
+              console.log(`양력 ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
+            } catch (lunarError) {
+              console.error('Solar to lunar conversion error:', lunarError);
+              // 음력 변환 실패해도 사주 저장은 계속 진행
+            }
+          }
+
+          // 계산된 사주팔자와 음력 정보로 업데이트
+          const updateData: any = {
             yearSky: sajuResult.year.sky,
             yearEarth: sajuResult.year.earth,
             monthSky: sajuResult.month.sky,
@@ -173,7 +187,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             dayEarth: sajuResult.day.earth,
             hourSky: sajuResult.hour.sky,
             hourEarth: sajuResult.hour.earth,
-          });
+          };
+
+          // 음력 변환 결과가 있으면 추가
+          if (lunarConversion) {
+            updateData.lunarYear = lunarConversion.year;
+            updateData.lunarMonth = lunarConversion.month;
+            updateData.lunarDay = lunarConversion.day;
+            updateData.isLeapMonth = lunarConversion.isLeapMonth;
+          }
+
+          const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
 
           res.json({
             success: true,

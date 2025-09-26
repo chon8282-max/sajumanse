@@ -30,6 +30,12 @@ export const sajuRecords = pgTable("saju_records", {
   group: text("group"), // 레거시 그룹 (호환성)
   memo: text("memo"), // 메모
   
+  // 음력 변환 정보 (양력 입력 시 자동 계산되어 저장)
+  lunarYear: integer("lunar_year"), // 음력 년도
+  lunarMonth: integer("lunar_month"), // 음력 월
+  lunarDay: integer("lunar_day"), // 음력 일
+  isLeapMonth: boolean("is_leap_month").default(false), // 윤달 여부
+  
   // 사주팔자 정보 (계산 후 저장)
   yearSky: text("year_sky"), // 년주 천간
   yearEarth: text("year_earth"), // 년주 지지
