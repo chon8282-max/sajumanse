@@ -11,6 +11,8 @@ import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
 import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
 import { calculateCompleteYukjin } from "@/lib/yukjin-calculator";
+import { calculateCompleteDaeun } from "@/lib/daeun-calculator";
+import DaeunDisplay from "@/components/DaeunDisplay";
 
 interface SajuResultData {
   id: string;
@@ -141,6 +143,9 @@ export default function SajuResult() {
   const yukjinData = calculateCompleteYukjin(record);
   const heavenlyYukjin = yukjinData.heavenly; // 천간 육친
   const earthlyYukjin = yukjinData.earthly;   // 지지 육친
+  
+  // 대운 계산
+  const daeunData = calculateCompleteDaeun(record);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -475,6 +480,9 @@ export default function SajuResult() {
             </div>
           </CardContent>
         </Card>
+
+        {/* 대운 정보 */}
+        <DaeunDisplay daeunData={daeunData} />
 
         {/* 하단 버튼 */}
         <div className="pt-4 space-y-3">
