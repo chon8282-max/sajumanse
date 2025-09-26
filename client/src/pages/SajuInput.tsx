@@ -7,9 +7,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function SajuInput() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     calendarType: "양력",
@@ -30,9 +34,74 @@ export default function SajuInput() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log("사주 정보:", formData);
-    // TODO: 사주 계산 및 저장 로직 구현
+  const handleSubmit = async () => {
+    // 필수 필드 검증
+    if (!formData.name.trim()) {
+      toast({
+        title: "입력 오류",
+        description: "성명을 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.year || !formData.month || !formData.day) {
+      toast({
+        title: "입력 오류", 
+        description: "생년월일을 모두 입력해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // API 요청 데이터 준비
+      const requestData = {
+        name: formData.name.trim(),
+        birthYear: parseInt(formData.year),
+        birthMonth: parseInt(formData.month),
+        birthDay: parseInt(formData.day),
+        birthTime: formData.birthTime.trim() || null,
+        calendarType: formData.calendarType,
+        gender: formData.gender,
+        group: formData.group.trim() || null,
+        memo: formData.memo.trim() || null,
+      };
+
+      console.log("사주 정보 저장 요청:", requestData);
+
+      // API 호출
+      const response = await apiRequest("/api/saju-records", {
+        method: "POST",
+        body: JSON.stringify(requestData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.success) {
+        toast({
+          title: "저장 완료",
+          description: response.message || "사주 정보가 성공적으로 저장되었습니다.",
+        });
+
+        // 성공시 만세력 페이지로 이동
+        setLocation("/manseryeok");
+      } else {
+        throw new Error(response.error || "저장 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("사주 저장 오류:", error);
+      toast({
+        title: "저장 실패",
+        description: error instanceof Error ? error.message : "사주 정보 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -205,11 +274,12 @@ export default function SajuInput() {
         <div className="pt-4">
           <Button 
             onClick={handleSubmit}
+            disabled={isSubmitting}
             size="lg"
             className="w-full text-base"
             data-testid="button-submit-saju"
           >
-            사주 분석하기
+            {isSubmitting ? "저장 중..." : "사주 분석하기"}
           </Button>
         </div>
       </div>

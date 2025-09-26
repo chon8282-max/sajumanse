@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertManseRyeokSchema, insertLunarSolarCalendarSchema } from "@shared/schema";
+import { insertManseRyeokSchema, insertSajuRecordSchema, insertLunarSolarCalendarSchema } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
 import { 
   getLunarCalInfo, 
@@ -12,7 +12,155 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // 만세력 관련 API 라우트
+  // ========================================
+  // 사주 기록 관련 API 라우트
+  // ========================================
+
+  // 사주 기록 저장
+  app.post("/api/saju-records", async (req, res) => {
+    try {
+      // 입력 데이터 검증
+      const validatedData = insertSajuRecordSchema.parse(req.body);
+      
+      // 사주 기록 저장 (사주팔자는 나중에 계산 후 업데이트)
+      const savedRecord = await storage.createSajuRecord(validatedData);
+
+      // 생시가 있고 년월일이 모두 입력된 경우 사주팔자 계산
+      if (validatedData.birthTime && validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay) {
+        try {
+          // 생시 파싱 (예: "22:00" 또는 "오후 10시")
+          const hour = parseInt(validatedData.birthTime.split(':')[0]) || 0;
+          const minute = parseInt(validatedData.birthTime.split(':')[1]) || 0;
+          
+          // 사주팔자 계산
+          const sajuResult = calculateSaju(
+            validatedData.birthYear,
+            validatedData.birthMonth,
+            validatedData.birthDay,
+            hour,
+            minute,
+            validatedData.calendarType === "음력" || validatedData.calendarType === "윤달"
+          );
+
+          // 계산된 사주팔자로 업데이트
+          const updatedRecord = await storage.updateSajuRecord(savedRecord.id, {
+            yearSky: sajuResult.year.sky,
+            yearEarth: sajuResult.year.earth,
+            monthSky: sajuResult.month.sky,
+            monthEarth: sajuResult.month.earth,
+            daySky: sajuResult.day.sky,
+            dayEarth: sajuResult.day.earth,
+            hourSky: sajuResult.hour.sky,
+            hourEarth: sajuResult.hour.earth,
+          });
+
+          res.json({
+            success: true,
+            data: {
+              record: updatedRecord,
+              sajuInfo: sajuResult
+            },
+            message: "사주 정보가 성공적으로 저장되었습니다."
+          });
+        } catch (sajuError) {
+          console.error('Saju calculation error:', sajuError);
+          // 사주 계산 실패시에도 기본 정보는 저장된 상태로 응답
+          res.json({
+            success: true,
+            data: { record: savedRecord },
+            message: "사주 기본 정보가 저장되었습니다. (사주팔자 계산 실패)"
+          });
+        }
+      } else {
+        // 생시나 생년월일이 불완전한 경우
+        res.json({
+          success: true,
+          data: { record: savedRecord },
+          message: "사주 기본 정보가 저장되었습니다. (생시 정보 불완전으로 사주팔자 미계산)"
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Save saju record error:', error);
+      res.status(500).json({ 
+        error: "사주 정보 저장 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 사주 기록 목록 조회
+  app.get("/api/saju-records", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const records = await storage.getSajuRecords(limit);
+      res.json({
+        success: true,
+        data: records
+      });
+    } catch (error) {
+      console.error('Get saju records error:', error);
+      res.status(500).json({ 
+        error: "사주 기록 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 특정 사주 기록 조회
+  app.get("/api/saju-records/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const record = await storage.getSajuRecord(id);
+      
+      if (!record) {
+        return res.status(404).json({ 
+          error: "해당 사주 기록을 찾을 수 없습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        data: record
+      });
+    } catch (error) {
+      console.error('Get saju record error:', error);
+      res.status(500).json({ 
+        error: "사주 기록 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 사주 기록 삭제
+  app.delete("/api/saju-records/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteSajuRecord(id);
+      
+      if (!success) {
+        return res.status(404).json({ 
+          error: "해당 사주 기록을 찾을 수 없습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "사주 기록이 삭제되었습니다."
+      });
+    } catch (error) {
+      console.error('Delete saju record error:', error);
+      res.status(500).json({ 
+        error: "사주 기록 삭제 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // ========================================
+  // 만세력 관련 API 라우트 (기존 호환성)
+  // ========================================
   
   // 사주팔자 계산 API
   app.post("/api/saju/calculate", async (req, res) => {

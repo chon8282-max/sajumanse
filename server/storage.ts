@@ -1,11 +1,14 @@
 import { 
   users, 
   manseRyeok, 
+  sajuRecords,
   lunarSolarCalendar,
   type User, 
   type InsertUser, 
   type ManseRyeok, 
   type InsertManseRyeok,
+  type SajuRecord,
+  type InsertSajuRecord,
   type LunarSolarCalendar,
   type InsertLunarSolarCalendar
 } from "@shared/schema";
@@ -20,11 +23,18 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
-  // 만세력 관련
+  // 만세력 관련 (기존 호환성)
   getManseRyeok(id: string): Promise<ManseRyeok | undefined>;
   getManseRyeoksByUser(userId?: string): Promise<ManseRyeok[]>;
   createManseRyeok(data: InsertManseRyeok): Promise<ManseRyeok>;
   deleteManseRyeok(id: string): Promise<boolean>;
+  
+  // 사주 기록 관련 (새로운 스키마)
+  getSajuRecord(id: string): Promise<SajuRecord | undefined>;
+  getSajuRecords(limit?: number): Promise<SajuRecord[]>;
+  createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord>;
+  updateSajuRecord(id: string, data: Partial<SajuRecord>): Promise<SajuRecord | undefined>;
+  deleteSajuRecord(id: string): Promise<boolean>;
   
   // 음양력 변환 데이터 관련
   getLunarSolarData(solYear: number, solMonth: number, solDay: number): Promise<LunarSolarCalendar | undefined>;
@@ -105,6 +115,49 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // 사주 기록 관련 메서드
+  async getSajuRecord(id: string): Promise<SajuRecord | undefined> {
+    const [record] = await db.select().from(sajuRecords).where(eq(sajuRecords.id, id));
+    return record || undefined;
+  }
+
+  async getSajuRecords(limit: number = 50): Promise<SajuRecord[]> {
+    const results = await db.select().from(sajuRecords).limit(limit);
+    return results;
+  }
+
+  async createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord> {
+    const [result] = await db
+      .insert(sajuRecords)
+      .values(data)
+      .returning();
+    return result;
+  }
+
+  async updateSajuRecord(id: string, data: Partial<SajuRecord>): Promise<SajuRecord | undefined> {
+    try {
+      const [result] = await db
+        .update(sajuRecords)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(sajuRecords.id, id))
+        .returning();
+      return result || undefined;
+    } catch (error) {
+      console.error('Update saju record error:', error);
+      return undefined;
+    }
+  }
+
+  async deleteSajuRecord(id: string): Promise<boolean> {
+    try {
+      await db.delete(sajuRecords).where(eq(sajuRecords.id, id));
+      return true;
+    } catch (error) {
+      console.error('Delete saju record error:', error);
+      return false;
+    }
+  }
+
   // 음양력 변환 데이터 관련 메서드
   async getLunarSolarData(solYear: number, solMonth: number, solDay: number): Promise<LunarSolarCalendar | undefined> {
     const [data] = await db
@@ -165,11 +218,13 @@ export class DatabaseStorage implements IStorage {
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private manseRyeoks: Map<string, ManseRyeok>;
+  private sajuRecords: Map<string, SajuRecord>;
   private lunarSolarData: Map<string, LunarSolarCalendar>;
 
   constructor() {
     this.users = new Map();
     this.manseRyeoks = new Map();
+    this.sajuRecords = new Map();
     this.lunarSolarData = new Map();
   }
 
@@ -224,6 +279,63 @@ export class MemStorage implements IStorage {
 
   async deleteManseRyeok(id: string): Promise<boolean> {
     return this.manseRyeoks.delete(id);
+  }
+
+  // 사주 기록 관련 메서드 (메모리 버전)
+  async getSajuRecord(id: string): Promise<SajuRecord | undefined> {
+    return this.sajuRecords.get(id);
+  }
+
+  async getSajuRecords(limit: number = 50): Promise<SajuRecord[]> {
+    const records = Array.from(this.sajuRecords.values());
+    return records.slice(0, limit);
+  }
+
+  async createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord> {
+    const id = randomUUID();
+    const now = new Date();
+    const record: SajuRecord = {
+      id,
+      name: data.name,
+      birthYear: data.birthYear,
+      birthMonth: data.birthMonth,
+      birthDay: data.birthDay,
+      birthTime: data.birthTime ?? null,
+      calendarType: data.calendarType ?? "양력",
+      gender: data.gender,
+      group: data.group ?? null,
+      memo: data.memo ?? null,
+      yearSky: null,
+      yearEarth: null,
+      monthSky: null,
+      monthEarth: null,
+      daySky: null,
+      dayEarth: null,
+      hourSky: null,
+      hourEarth: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.sajuRecords.set(id, record);
+    return record;
+  }
+
+  async updateSajuRecord(id: string, data: Partial<SajuRecord>): Promise<SajuRecord | undefined> {
+    const existing = this.sajuRecords.get(id);
+    if (!existing) return undefined;
+    
+    const updated: SajuRecord = {
+      ...existing,
+      ...data,
+      id: existing.id, // ID는 변경되지 않도록
+      updatedAt: new Date(),
+    };
+    this.sajuRecords.set(id, updated);
+    return updated;
+  }
+
+  async deleteSajuRecord(id: string): Promise<boolean> {
+    return this.sajuRecords.delete(id);
   }
 
   // 음양력 변환 데이터 관련 메서드 (메모리 버전)
