@@ -192,6 +192,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
             solarCalcDay = lunarToSolarDate.getDate();
           }
           
+          // data.go.kr API를 통한 정확한 간지 정보 조회
+          let apiData = null;
+          try {
+            if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
+              // 음력인 경우 양력 변환 + 간지 정보
+              const solarInfo = await getSolarCalInfo(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay);
+              apiData = solarInfo.response.body.items.item;
+              console.log(`API 음력→양력 변환: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay} → ${apiData.solYear}-${apiData.solMonth}-${apiData.solDay}, 일진: ${apiData.solJeongja}`);
+              
+              // API에서 가져온 정확한 양력 날짜 사용
+              solarCalcYear = parseInt(apiData.solYear);
+              solarCalcMonth = parseInt(apiData.solMonth);
+              solarCalcDay = parseInt(apiData.solDay);
+            } else {
+              // 양력인 경우 직접 간지 정보 조회
+              const lunarInfo = await getLunarCalInfo(validatedData.birthYear, validatedData.birthMonth, validatedData.birthDay);
+              apiData = lunarInfo.response.body.items.item;
+              console.log(`API 양력 간지 조회: ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay}, 일진: ${apiData.solJeongja}`);
+            }
+          } catch (apiError) {
+            console.error('data.go.kr API 호출 실패:', apiError);
+            // API 실패 시 기존 방식으로 폴백
+          }
+
           console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
           const sajuResult = calculateSaju(
             sajuCalculationYear,      // 년월주는 음력
@@ -199,8 +223,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sajuCalculationDay,
             hour,
             minute,
-            false,
-            { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay }  // 일시주용 양력 날짜
+            validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
+            { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay },  // 일시주용 양력 날짜
+            apiData  // API 간지 정보 전달
           );
           console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
@@ -367,7 +392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 만세력 관련 API 라우트 (기존 호환성)
   // ========================================
   
-  // 사주팔자 계산 API
+  // 사주팔자 계산 API (API 간지 정보 활용)
   app.post("/api/saju/calculate", async (req, res) => {
     try {
       const { year, month, day, hour, minute = 0, isLunar } = req.body;
@@ -382,19 +407,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // isLunar 문자열을 올바르게 불린으로 변환
       const isLunarBool = isLunar === true || isLunar === "true";
       
-      // 사주팔자 계산
+      let apiData = null;
+      let solarDateForCalculation = null;
+      
+      try {
+        // 정확한 간지 정보를 위해 data.go.kr API 호출
+        if (isLunarBool) {
+          // 음력인 경우 양력 변환 + 간지 정보
+          const solarInfo = await getSolarCalInfo(parseInt(year), parseInt(month), parseInt(day));
+          apiData = solarInfo.response.body.items.item;
+          solarDateForCalculation = {
+            solarYear: parseInt(apiData.solYear),
+            solarMonth: parseInt(apiData.solMonth), 
+            solarDay: parseInt(apiData.solDay)
+          };
+          console.log(`API 음력→양력 변환: ${year}-${month}-${day} → ${apiData.solYear}-${apiData.solMonth}-${apiData.solDay}, 일진: ${apiData.solJeongja}`);
+        } else {
+          // 양력인 경우 직접 간지 정보 조회
+          const lunarInfo = await getLunarCalInfo(parseInt(year), parseInt(month), parseInt(day));
+          apiData = lunarInfo.response.body.items.item;
+          solarDateForCalculation = {
+            solarYear: parseInt(year),
+            solarMonth: parseInt(month),
+            solarDay: parseInt(day)
+          };
+          console.log(`API 양력 간지 조회: ${year}-${month}-${day}, 일진: ${apiData.solJeongja}`);
+        }
+      } catch (apiError) {
+        console.error('data.go.kr API 호출 실패:', apiError);
+        // API 실패 시 기존 방식으로 폴백
+      }
+      
+      // 사주팔자 계산 (API 데이터 활용)
       const sajuResult = calculateSaju(
         parseInt(year), 
         parseInt(month), 
         parseInt(day), 
         parseInt(hour),
-        parseInt(minute) || 0, // minute 값 사용
-        isLunarBool
+        parseInt(minute) || 0,
+        isLunarBool,
+        solarDateForCalculation,
+        apiData // API 간지 정보 전달
       );
 
       res.json({
         success: true,
-        data: sajuResult
+        data: {
+          ...sajuResult,
+          apiInfo: apiData ? {
+            solJeongja: apiData.solJeongja, // 일진 정보
+            lunSecha: apiData.lunSecha,     // 년간지 정보  
+            lunWolban: apiData.lunWolban    // 요일 정보
+          } : null
+        }
       });
     } catch (error) {
       console.error('Saju calculation error:', error);

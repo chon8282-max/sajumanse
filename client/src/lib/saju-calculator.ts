@@ -132,7 +132,8 @@ export function calculateSaju(
   hour: number,
   minute: number = 0,
   isLunar: boolean = false,
-  solarDate?: { solarYear: number; solarMonth: number; solarDay: number }
+  solarDate?: { solarYear: number; solarMonth: number; solarDay: number },
+  apiData?: any // data.go.kr API 응답 데이터
 ): SajuInfo {
   let calcDate: Date;
   const timeInMinutes = hour * 60 + minute;
@@ -181,9 +182,17 @@ export function calculateSaju(
   const yearSkyIndex = yearIndex % 10;
   const yearEarthIndex = yearIndex % 12;
   
-  // 월주 계산 (음력 달 기준)
-  // 음력 1월=인월(0), 2월=묘월(1), ..., 12월=축월(11)
-  const monthEarthIndex = (month - 1) % 12;
+  // 월주 계산 (24절기 기준으로 정확하게)
+  let monthEarthIndex: number;
+  
+  if (apiData?.lunMonth) {
+    // API 데이터가 있는 경우 음력 월 정보 사용
+    monthEarthIndex = (parseInt(apiData.lunMonth) - 1) % 12;
+  } else {
+    // 24절기 기준 월주 계산 (양력 기준)
+    const sajuMonth = calculateSajuMonth(calcDate);
+    monthEarthIndex = sajuMonth;
+  }
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)
   let monthSkyStartIndex: number;
@@ -201,13 +210,47 @@ export function calculateSaju(
   
   const monthSkyIndex = (monthSkyStartIndex + monthEarthIndex) % 10;
   
-  // 일주 계산 (정확한 갑자일 기준)
-  // 2025년 8월 23일을 갑자일로 설정 (역산으로 확정된 기준일)
-  const baseDate = new Date(2025, 7, 23); // 2025년 8월 23일 갑자일
-  const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
-  const dayIndex = ((daysDiff % 60) + 60) % 60;
-  const daySkyIndex = dayIndex % 10;
-  const dayEarthIndex = dayIndex % 12;
+  // 일주 계산 (API 데이터 우선 활용)
+  let daySkyIndex: number;
+  let dayEarthIndex: number;
+  
+  if (apiData?.solJeongja) {
+    // API에서 일진 정보가 있는 경우 이를 활용
+    const dayPillar = apiData.solJeongja;
+    console.log(`API 일진 정보 사용: ${dayPillar}`);
+    
+    // 일진을 천간과 지지로 분리 (예: "경신" -> "경"(천간) + "신"(지지))
+    if (dayPillar && dayPillar.length >= 2) {
+      const daySky = dayPillar[0];
+      const dayEarth = dayPillar[1];
+      daySkyIndex = CHEONGAN.indexOf(daySky);
+      dayEarthIndex = JIJI.indexOf(dayEarth);
+      
+      if (daySkyIndex === -1 || dayEarthIndex === -1) {
+        console.warn(`API 일진 파싱 실패: ${dayPillar}, 기존 방식으로 폴백`);
+        // 기존 방식으로 폴백
+        const baseDate = new Date(2025, 7, 23);
+        const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
+        const dayIndex = ((daysDiff % 60) + 60) % 60;
+        daySkyIndex = dayIndex % 10;
+        dayEarthIndex = dayIndex % 12;
+      }
+    } else {
+      // API 데이터가 잘못된 경우 기존 방식 사용
+      const baseDate = new Date(2025, 7, 23);
+      const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
+      const dayIndex = ((daysDiff % 60) + 60) % 60;
+      daySkyIndex = dayIndex % 10;
+      dayEarthIndex = dayIndex % 12;
+    }
+  } else {
+    // API 데이터가 없는 경우 기존 방식 사용
+    const baseDate = new Date(2025, 7, 23); // 2025년 8월 23일 갑자일
+    const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
+    const dayIndex = ((daysDiff % 60) + 60) % 60;
+    daySkyIndex = dayIndex % 10;
+    dayEarthIndex = dayIndex % 12;
+  }
   
   // 시주 계산 (전통 시간 구간 기준)
   let hourIndex: number;
