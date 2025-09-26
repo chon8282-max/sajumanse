@@ -12,6 +12,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import Home from "@/pages/Home";
 import Exit from "@/pages/Exit";
 import Manseryeok from "@/pages/Manseryeok";
+import SajuInput from "@/pages/SajuInput";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/manseryeok" component={Manseryeok} />
+      <Route path="/saju-input" component={SajuInput} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>

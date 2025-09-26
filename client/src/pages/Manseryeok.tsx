@@ -54,9 +54,24 @@ export default function Manseryeok() {
   ];
 
   const handleMenuClick = (menuId: string) => {
-    // 각 메뉴에 따라 다른 동작 수행
     console.log(`만세력 메뉴 클릭: ${menuId}`);
-    // 향후 구현: 각 메뉴에 맞는 페이지나 모달로 이동
+    
+    switch (menuId) {
+      case "new-birth":
+        setLocation("/saju-input");
+        break;
+      case "compatibility":
+        console.log("궁합사주 기능 준비중");
+        break;
+      case "birth-from-saju":
+        console.log("팔자로 생일 입력 기능 준비중");
+        break;
+      case "saved-saju":
+        console.log("저장사주 불러오기 기능 준비중");
+        break;
+      default:
+        console.log("알 수 없는 메뉴:", menuId);
+    }
   };
 
   return (
