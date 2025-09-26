@@ -48,13 +48,13 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
     <Card className="p-4" data-testid="card-saju-table">
       <div className="text-center mb-4">
         <div className="space-y-1">
-          <div className="text-[13px] font-serif">
+          <div className="text-[13px] font-tmon">
             <span className="text-foreground font-semibold" data-testid="text-saju-title">현재 만세력</span>
           </div>
-          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300" data-testid="text-solar-date">
+          <div className="text-[13px] font-tmon text-blue-700 dark:text-blue-300" data-testid="text-solar-date">
             (양력) {now.getFullYear()}년 {now.getMonth() + 1}월 {now.getDate()}일
           </div>
-          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300" data-testid="text-lunar-date">
+          <div className="text-[13px] font-tmon text-blue-700 dark:text-blue-300" data-testid="text-lunar-date">
             (음력) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일 {zodiacTime}生
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`sky-${index}`} className="text-center">
             <div 
-              className="py-3 px-2 rounded-md font-serif font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
+              className="py-3 px-2 rounded-md font-tmon font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
               style={{ backgroundColor: getWuxingColor(col.data.sky) }}
               data-testid={`text-sky-${index}`}
             >
@@ -87,7 +87,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`earth-${index}`} className="text-center">
             <div 
-              className="py-3 px-2 rounded-md font-serif font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
+              className="py-3 px-2 rounded-md font-tmon font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
               style={{ backgroundColor: getWuxingColor(col.data.earth) }}
               data-testid={`text-earth-${index}`}
             >
