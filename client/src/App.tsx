@@ -215,13 +215,16 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      <MobileHeader
-        currentDate={new Date()}
-        isDarkMode={theme === "dark"}
-        onThemeToggle={toggleTheme}
-        onMenuClick={handleMenuClick}
-        userName="만세력 사용자"
-      />
+      {/* 메인 페이지에만 상단 헤더 표시 */}
+      {location === "/" && (
+        <MobileHeader
+          currentDate={new Date()}
+          isDarkMode={theme === "dark"}
+          onThemeToggle={toggleTheme}
+          onMenuClick={handleMenuClick}
+          userName="만세력 사용자"
+        />
+      )}
       
       <main className="pb-20"> {/* 하단 네비게이션 공간 */}
         <Router />
@@ -232,10 +235,13 @@ function AppContent() {
         onTabChange={handleTabChange}
       />
 
-      <MobileMenu 
-        isOpen={showMobileMenu}
-        onClose={handleCloseMenu}
-      />
+      {/* 메인 페이지에만 모바일 메뉴 표시 */}
+      {location === "/" && (
+        <MobileMenu 
+          isOpen={showMobileMenu}
+          onClose={handleCloseMenu}
+        />
+      )}
       
       <Toaster />
     </div>
