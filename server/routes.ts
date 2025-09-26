@@ -185,8 +185,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
               // 음력인 경우 양력 변환 + 간지 정보
-              console.log(`음력 API 호출 시도: getSolarCalInfo(${sajuCalculationYear}, ${sajuCalculationMonth}, ${sajuCalculationDay})`);
-              const solarInfo = await getSolarCalInfo(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay);
+              const isLeapMonth = validatedData.calendarType === "윤달";
+              console.log(`음력 API 호출 시도: getSolarCalInfo(${sajuCalculationYear}, ${sajuCalculationMonth}, ${sajuCalculationDay}, 윤달=${isLeapMonth})`);
+              const solarInfo = await getSolarCalInfo(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
               apiData = solarInfo.response.body.items.item;
               console.log(`API 음력→양력 변환: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay} → ${apiData.solYear}-${apiData.solMonth}-${apiData.solDay}, 일진: ${apiData.solJeongja}`);
               console.log('API 음력 응답 전체:', JSON.stringify(apiData, null, 2));
@@ -213,8 +214,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
                 // 음력인 경우 한국 음력 라이브러리로 양력 변환
-                console.log(`로컬 음력→양력 변환 시도: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}`);
-                const solarDate = convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay);
+                const isLeapMonth = validatedData.calendarType === "윤달";
+                console.log(`로컬 음력→양력 변환 시도: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 윤달=${isLeapMonth}`);
+                const solarDate = convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
                 solarCalcYear = solarDate.getFullYear();
                 solarCalcMonth = solarDate.getMonth() + 1;
                 solarCalcDay = solarDate.getDate();
