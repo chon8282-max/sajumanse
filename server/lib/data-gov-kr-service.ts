@@ -42,8 +42,9 @@ async function makeApiRequest(endpoint: string, params: Record<string, string>):
     });
     
     // API 응답 상태 확인
-    if (jsonData.response?.header?.resultCode !== "00") {
-      throw new Error(`API Error: ${jsonData.response?.header?.resultMsg || "Unknown error"}`);
+    const apiResponse = jsonData as any;
+    if (apiResponse.response?.header?.resultCode !== "00") {
+      throw new Error(`API Error: ${apiResponse.response?.header?.resultMsg || "Unknown error"}`);
     }
     
     return jsonData;
