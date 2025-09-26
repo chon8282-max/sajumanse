@@ -40,6 +40,17 @@ export default function SajuInput() {
     memo: "",
   });
 
+  // 엔터키로 다음 입력창 이동 핸들러
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldId?: string) => {
+    if (e.key === 'Enter' && nextFieldId) {
+      e.preventDefault();
+      const nextField = document.getElementById(nextFieldId) as HTMLInputElement;
+      if (nextField) {
+        nextField.focus();
+      }
+    }
+  };
+
   // 쿼리 파라미터에서 초기 데이터 로드 (수정 모드)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -187,6 +198,7 @@ export default function SajuInput() {
             id="name"
             value={formData.name}
             onChange={(e) => handleInputChange("name", e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, "year")}
             placeholder="이름을 입력하세요"
             data-testid="input-name"
             className="text-base"
@@ -222,8 +234,10 @@ export default function SajuInput() {
           <Label className="text-base font-medium">생년월일</Label>
           <div className="flex gap-2 items-center">
             <Input
+              id="year"
               value={formData.year}
               onChange={(e) => handleInputChange("year", e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, "month")}
               placeholder="____"
               maxLength={4}
               data-testid="input-year"
@@ -231,8 +245,10 @@ export default function SajuInput() {
             />
             <span className="text-sm">년</span>
             <Input
+              id="month"
               value={formData.month}
               onChange={(e) => handleInputChange("month", e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, "day")}
               placeholder="__"
               maxLength={2}
               data-testid="input-month"
@@ -240,8 +256,19 @@ export default function SajuInput() {
             />
             <span className="text-sm">월</span>
             <Input
+              id="day"
               value={formData.day}
               onChange={(e) => handleInputChange("day", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  // 생시 Select 컴포넌트 열기
+                  const selectTrigger = document.querySelector('[data-testid="select-birth-time"]') as HTMLButtonElement;
+                  if (selectTrigger) {
+                    selectTrigger.click();
+                  }
+                }
+              }}
               placeholder="__"
               maxLength={2}
               data-testid="input-day"
