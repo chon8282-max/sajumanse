@@ -154,28 +154,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // 사주팔자 계산
-          const sajuResult = calculateSaju(
-            validatedData.birthYear,
-            validatedData.birthMonth,
-            validatedData.birthDay,
-            hour,
-            minute,
-            validatedData.calendarType === "음력" || validatedData.calendarType === "윤달"
-          );
-
-          // 음력 변환 (양력 입력인 경우에만)
+          // 음력 변환 (양력 입력인 경우)
           let lunarConversion = null;
+          let sajuCalculationYear = validatedData.birthYear;
+          let sajuCalculationMonth = validatedData.birthMonth;
+          let sajuCalculationDay = validatedData.birthDay;
+          
           if (validatedData.calendarType === "양력") {
             try {
               const birthDate = new Date(validatedData.birthYear, validatedData.birthMonth - 1, validatedData.birthDay);
               lunarConversion = convertSolarToLunarServer(birthDate);
               console.log(`양력 ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
+              
+              // 사주 계산은 음력 날짜를 사용
+              sajuCalculationYear = lunarConversion.year;
+              sajuCalculationMonth = lunarConversion.month;
+              sajuCalculationDay = lunarConversion.day;
             } catch (lunarError) {
               console.error('Solar to lunar conversion error:', lunarError);
-              // 음력 변환 실패해도 사주 저장은 계속 진행
+              // 음력 변환 실패시에도 사주 저장은 계속 진행 (양력으로 계산)
             }
           }
+
+          // 사주팔자 계산 (혼합 방식: 년월주는 음력, 일시주는 양력)
+          let solarCalcYear = validatedData.birthYear;
+          let solarCalcMonth = validatedData.birthMonth; 
+          let solarCalcDay = validatedData.birthDay;
+          
+          // 양력 입력인 경우 이미 양력이므로 그대로 사용
+          // 음력 입력인 경우 양력으로 변환해서 일주 계산에 사용
+          if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
+            // 음력을 양력으로 변환 (일주 계산용)
+            const lunarToSolarDate = new Date(sajuCalculationYear, sajuCalculationMonth - 1, sajuCalculationDay);
+            // 실제로는 서버용 변환 함수 사용해야 하지만 일단 근사치로
+            solarCalcYear = lunarToSolarDate.getFullYear();
+            solarCalcMonth = lunarToSolarDate.getMonth() + 1;
+            solarCalcDay = lunarToSolarDate.getDate();
+          }
+          
+          console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+          const sajuResult = calculateSaju(
+            sajuCalculationYear,      // 년월주는 음력
+            sajuCalculationMonth,
+            sajuCalculationDay,
+            hour,
+            minute,
+            false,
+            { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay }  // 일시주용 양력 날짜
+          );
+          console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
           // 계산된 사주팔자와 음력 정보로 업데이트
           const updateData: any = {
