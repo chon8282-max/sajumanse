@@ -32,13 +32,14 @@ export default function DaeunDisplay({ daeunData }: DaeunDisplayProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-2">
-        <div className="w-full">
+        <div className="w-full" style={{ direction: 'rtl' }}>
           {/* 1. 대운 나이 (우측→좌측) */}
           <div className="grid grid-cols-10 border-t border-l border-r border-border">
             {daeunAges.map((age, index) => (
               <div 
                 key={index}
                 className="border-r border-border p-1 text-center text-[11px] font-medium bg-blue-50 dark:bg-blue-900/20"
+                style={{ direction: 'ltr' }}
               >
                 {age}
               </div>
@@ -53,7 +54,7 @@ export default function DaeunDisplay({ daeunData }: DaeunDisplayProps) {
                 <div 
                   key={index}
                   className="border-r border-border px-1 py-0.5 text-center text-[20px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(sky) }}
+                  style={{ backgroundColor: getWuxingColor(sky), direction: 'ltr' }}
                 >
                   {sky}
                 </div>
@@ -69,7 +70,7 @@ export default function DaeunDisplay({ daeunData }: DaeunDisplayProps) {
                 <div 
                   key={index}
                   className="border-r border-border px-1 py-0.5 text-center text-[20px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(earth) }}
+                  style={{ backgroundColor: getWuxingColor(earth), direction: 'ltr' }}
                 >
                   {earth}
                 </div>
