@@ -10,6 +10,7 @@ import { calculateSaju } from "@/lib/saju-calculator";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
 import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
+import { calculateAllYukjin } from "@/lib/yukjin-calculator";
 
 interface SajuResultData {
   id: string;
@@ -135,6 +136,14 @@ export default function SajuResult() {
 
   const record = sajuData.data;
   const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === record.birthTime);
+  
+  // 육친 관계 계산
+  const yukjin = calculateAllYukjin(
+    record.daySky || '',
+    record.hourSky || '',
+    record.monthSky || '', 
+    record.yearSky || ''
+  );
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -255,10 +264,10 @@ export default function SajuResult() {
             <div className="w-full">
               {/* 1. 육친 일간 육친 육친 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium bg-yellow-50 dark:bg-yellow-900/20">일간</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
-                <div className="p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{yukjin.hour}</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium bg-yellow-50 dark:bg-yellow-900/20">{yukjin.day}</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{yukjin.month}</div>
+                <div className="p-1 text-center text-[13px] font-medium">{yukjin.year}</div>
               </div>
 
               {/* 2. 천간 (4칸) */}
@@ -319,10 +328,10 @@ export default function SajuResult() {
 
               {/* 4. 육친 육친 육친 육친 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
-                <div className="p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{yukjin.hour}</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{yukjin.day}</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{yukjin.month}</div>
+                <div className="p-1 text-center text-[13px] font-medium">{yukjin.year}</div>
               </div>
 
               {/* 5. 지장간 출력자리 (4칸) */}
