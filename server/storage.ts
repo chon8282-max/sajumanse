@@ -2,6 +2,7 @@ import {
   users, 
   manseRyeok, 
   sajuRecords,
+  groups,
   lunarSolarCalendar,
   type User, 
   type InsertUser, 
@@ -9,8 +10,11 @@ import {
   type InsertManseRyeok,
   type SajuRecord,
   type InsertSajuRecord,
+  type Group,
+  type InsertGroup,
   type LunarSolarCalendar,
-  type InsertLunarSolarCalendar
+  type InsertLunarSolarCalendar,
+  DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, count } from "drizzle-orm";
@@ -35,6 +39,14 @@ export interface IStorage {
   createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord>;
   updateSajuRecord(id: string, data: Partial<SajuRecord>): Promise<SajuRecord | undefined>;
   deleteSajuRecord(id: string): Promise<boolean>;
+  
+  // 그룹 관련
+  getGroups(): Promise<Group[]>;
+  getGroup(id: string): Promise<Group | undefined>;
+  createGroup(data: InsertGroup): Promise<Group>;
+  updateGroup(id: string, data: Partial<Group>): Promise<Group | undefined>;
+  deleteGroup(id: string): Promise<boolean>;
+  initializeDefaultGroups(): Promise<void>;
   
   // 음양력 변환 데이터 관련
   getLunarSolarData(solYear: number, solMonth: number, solDay: number): Promise<LunarSolarCalendar | undefined>;
@@ -212,6 +224,76 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     return result ? result.count > 0 : false;
   }
+
+  // 그룹 관련 메서드
+  async getGroups(): Promise<Group[]> {
+    const results = await db.select().from(groups);
+    return results;
+  }
+
+  async getGroup(id: string): Promise<Group | undefined> {
+    const [group] = await db.select().from(groups).where(eq(groups.id, id));
+    return group || undefined;
+  }
+
+  async createGroup(data: InsertGroup): Promise<Group> {
+    const [result] = await db
+      .insert(groups)
+      .values(data)
+      .returning();
+    return result;
+  }
+
+  async updateGroup(id: string, data: Partial<Group>): Promise<Group | undefined> {
+    try {
+      const [result] = await db
+        .update(groups)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(groups.id, id))
+        .returning();
+      return result || undefined;
+    } catch (error) {
+      console.error('Update group error:', error);
+      return undefined;
+    }
+  }
+
+  async deleteGroup(id: string): Promise<boolean> {
+    try {
+      // 기본 그룹은 삭제할 수 없음
+      const [group] = await db.select().from(groups).where(eq(groups.id, id));
+      if (group?.isDefault) {
+        return false;
+      }
+      
+      await db.delete(groups).where(eq(groups.id, id));
+      return true;
+    } catch (error) {
+      console.error('Delete group error:', error);
+      return false;
+    }
+  }
+
+  async initializeDefaultGroups(): Promise<void> {
+    try {
+      // 기본 그룹이 없으면 생성
+      const existingGroups = await this.getGroups();
+      const existingNames = existingGroups.map(g => g.name);
+      
+      const missingGroups = DEFAULT_GROUPS.filter(name => !existingNames.includes(name));
+      
+      if (missingGroups.length > 0) {
+        const defaultGroupsData = missingGroups.map(name => ({
+          name,
+          isDefault: true,
+        }));
+        
+        await db.insert(groups).values(defaultGroupsData);
+      }
+    } catch (error) {
+      console.error('Initialize default groups error:', error);
+    }
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -219,13 +301,18 @@ export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private manseRyeoks: Map<string, ManseRyeok>;
   private sajuRecords: Map<string, SajuRecord>;
+  private groups: Map<string, Group>;
   private lunarSolarData: Map<string, LunarSolarCalendar>;
 
   constructor() {
     this.users = new Map();
     this.manseRyeoks = new Map();
     this.sajuRecords = new Map();
+    this.groups = new Map();
     this.lunarSolarData = new Map();
+    
+    // 기본 그룹 초기화
+    this.initializeDefaultGroups();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -296,13 +383,14 @@ export class MemStorage implements IStorage {
     const now = new Date();
     const record: SajuRecord = {
       id,
-      name: data.name,
+      name: data.name ?? "이름없음",
       birthYear: data.birthYear,
       birthMonth: data.birthMonth,
       birthDay: data.birthDay,
       birthTime: data.birthTime ?? null,
       calendarType: data.calendarType ?? "양력",
       gender: data.gender,
+      groupId: data.groupId ?? null,
       group: data.group ?? null,
       memo: data.memo ?? null,
       yearSky: null,
@@ -391,6 +479,66 @@ export class MemStorage implements IStorage {
     return Array.from(this.lunarSolarData.values()).some(
       data => data.solYear === year
     );
+  }
+
+  // 그룹 관련 메서드 (메모리 버전)
+  async getGroups(): Promise<Group[]> {
+    return Array.from(this.groups.values());
+  }
+
+  async getGroup(id: string): Promise<Group | undefined> {
+    return this.groups.get(id);
+  }
+
+  async createGroup(data: InsertGroup): Promise<Group> {
+    const id = randomUUID();
+    const now = new Date();
+    const group: Group = {
+      id,
+      name: data.name,
+      isDefault: data.isDefault ?? false,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.groups.set(id, group);
+    return group;
+  }
+
+  async updateGroup(id: string, data: Partial<Group>): Promise<Group | undefined> {
+    const existing = this.groups.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Group = {
+      ...existing,
+      ...data,
+      id: existing.id, // ID는 변경되지 않도록
+      updatedAt: new Date(),
+    };
+    this.groups.set(id, updated);
+    return updated;
+  }
+
+  async deleteGroup(id: string): Promise<boolean> {
+    const group = this.groups.get(id);
+    if (group?.isDefault) {
+      return false; // 기본 그룹은 삭제할 수 없음
+    }
+    return this.groups.delete(id);
+  }
+
+  async initializeDefaultGroups(): Promise<void> {
+    // 기본 그룹이 없으면 생성
+    const existingGroups = await this.getGroups();
+    const existingNames = existingGroups.map(g => g.name);
+    
+    const missingGroups = DEFAULT_GROUPS.filter(name => !existingNames.includes(name));
+    
+    for (const groupName of missingGroups) {
+      await this.createGroup({
+        name: groupName,
+        isDefault: true,
+      });
+    }
   }
 }
 

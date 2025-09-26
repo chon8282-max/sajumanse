@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertManseRyeokSchema, insertSajuRecordSchema, insertLunarSolarCalendarSchema } from "@shared/schema";
+import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
 import { 
   getLunarCalInfo, 
@@ -12,6 +12,111 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ========================================
+  // 그룹 관련 API 라우트
+  // ========================================
+
+  // 그룹 목록 조회
+  app.get("/api/groups", async (req, res) => {
+    try {
+      // 기본 그룹 초기화 확인
+      await storage.initializeDefaultGroups();
+      
+      const groups = await storage.getGroups();
+      res.json({
+        success: true,
+        data: groups
+      });
+    } catch (error) {
+      console.error('Get groups error:', error);
+      res.status(500).json({ 
+        error: "그룹 목록 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 새 그룹 생성
+  app.post("/api/groups", async (req, res) => {
+    try {
+      const validatedData = insertGroupSchema.parse(req.body);
+      const newGroup = await storage.createGroup(validatedData);
+      
+      res.json({
+        success: true,
+        data: newGroup,
+        message: "그룹이 성공적으로 생성되었습니다."
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Create group error:', error);
+      res.status(500).json({ 
+        error: "그룹 생성 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 그룹 수정
+  app.put("/api/groups/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertGroupSchema.partial().parse(req.body);
+      
+      const updatedGroup = await storage.updateGroup(id, validatedData);
+      
+      if (!updatedGroup) {
+        return res.status(404).json({ 
+          error: "해당 그룹을 찾을 수 없습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        data: updatedGroup,
+        message: "그룹이 성공적으로 수정되었습니다."
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Update group error:', error);
+      res.status(500).json({ 
+        error: "그룹 수정 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 그룹 삭제
+  app.delete("/api/groups/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteGroup(id);
+      
+      if (!success) {
+        return res.status(404).json({ 
+          error: "해당 그룹을 찾을 수 없거나 기본 그룹은 삭제할 수 없습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "그룹이 삭제되었습니다."
+      });
+    } catch (error) {
+      console.error('Delete group error:', error);
+      res.status(500).json({ 
+        error: "그룹 삭제 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
   // ========================================
   // 사주 기록 관련 API 라우트
   // ========================================
@@ -28,9 +133,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 생시가 있고 년월일이 모두 입력된 경우 사주팔자 계산
       if (validatedData.birthTime && validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay) {
         try {
-          // 생시 파싱 (예: "22:00" 또는 "오후 10시")
-          const hour = parseInt(validatedData.birthTime.split(':')[0]) || 0;
-          const minute = parseInt(validatedData.birthTime.split(':')[1]) || 0;
+          let hour = 0;
+          let minute = 0;
+          
+          // 전통 시간대 코드인지 확인 (예: "子時")
+          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
+          if (timePeriod) {
+            // 전통 시간대의 대표 시간 사용
+            hour = timePeriod.hour;
+            minute = 0;
+          } else {
+            // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
+            const timeStr = validatedData.birthTime;
+            if (timeStr.includes(':')) {
+              hour = parseInt(timeStr.split(':')[0]) || 0;
+              minute = parseInt(timeStr.split(':')[1]) || 0;
+            } else {
+              hour = parseInt(timeStr) || 0;
+            }
+          }
           
           // 사주팔자 계산
           const sajuResult = calculateSaju(
