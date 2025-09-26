@@ -131,7 +131,8 @@ export function calculateSaju(
   day: number,
   hour: number,
   minute: number = 0,
-  isLunar: boolean = false
+  isLunar: boolean = false,
+  solarDate?: { solarYear: number; solarMonth: number; solarDay: number }
 ): SajuInfo {
   let calcDate: Date;
   const timeInMinutes = hour * 60 + minute;
@@ -146,16 +147,30 @@ export function calculateSaju(
     calcDate = new Date(year, month - 1, day, hour, minute);
   }
   
-  // 일주 계산을 위한 날짜 조정 (23시부터 다음날)
-  let sajuDate = new Date(calcDate);
-  if (timeInMinutes >= 1380) { // 23시부터 다음날
-    sajuDate = new Date(year, month - 1, day + 1);
+  // 일주 계산을 위한 날짜 준비
+  let sajuDate: Date;
+  if (solarDate) {
+    // 서버에서 일시주용 양력 날짜를 제공한 경우 사용
+    sajuDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay);
+    if (timeInMinutes >= 1380) { // 23시부터 다음날
+      sajuDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay + 1);
+    }
+  } else {
+    // 기존 방식 (일주 계산을 위한 날짜 조정)
+    sajuDate = new Date(calcDate);
+    if (timeInMinutes >= 1380) { // 23시부터 다음날
+      sajuDate = new Date(year, month - 1, day + 1);
+    }
   }
   
-  // 입춘 기준으로 년도 조정
-  const lichunDate = getLichunDate(year);
-  let sajuYear = year;
-  if (calcDate < lichunDate) {
+  // 입춘 기준으로 년도 조정 (양력 기준)
+  let baseYear = solarDate ? solarDate.solarYear : year;
+  const lichunDate = getLichunDate(baseYear);
+  let sajuYear = year; // 년주는 음력 년도 기준
+  
+  // 하지만 입춘 확인은 양력 날짜로
+  const checkDate = solarDate ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay) : calcDate;
+  if (checkDate < lichunDate) {
     sajuYear = year - 1;
   }
   
@@ -165,9 +180,9 @@ export function calculateSaju(
   const yearSkyIndex = yearIndex % 10;
   const yearEarthIndex = yearIndex % 12;
   
-  // 월주 계산 (정확한 12절기 기준)
-  const sajuMonthIndex = calculateSajuMonth(calcDate);
-  const monthEarthIndex = sajuMonthIndex; // 0:인월, 1:묘월, ..., 11:축월
+  // 월주 계산 (음력 달 기준)
+  // 음력 1월=인월(0), 2월=묘월(1), ..., 12월=축월(11)
+  const monthEarthIndex = (month - 1) % 12;
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)
   let monthSkyStartIndex: number;
@@ -313,66 +328,24 @@ export function getWuXingBgColor(wuxing: WuXing): string {
 }
 
 /**
- * 음력-양력 변환 (korean-lunar-calendar 라이브러리 사용)
+ * 클라이언트에서는 음력 변환이 지원되지 않습니다.
+ * 서버에서 변환된 데이터를 사용하세요.
  */
 export function convertLunarToSolar(year: number, month: number, day: number, isLeapMonth: boolean = false): Date {
-  try {
-    // korean-lunar-calendar 라이브러리 import
-    const KoreanLunarCalendar = require('korean-lunar-calendar');
-    
-    const result = KoreanLunarCalendar.solarCalendarFromLunarCalendar(year, month, day, isLeapMonth);
-    
-    if (result && result.solar) {
-      return new Date(result.solar.year, result.solar.month - 1, result.solar.day);
-    } else {
-      // 라이브러리 실패 시 fallback
-      console.warn('Korean lunar calendar conversion failed, using fallback');
-      return new Date(year, month - 1, day);
-    }
-  } catch (error) {
-    console.error('Lunar to solar conversion error:', error);
-    // 라이브러리 실패 시 기본 날짜 반환
-    return new Date(year, month - 1, day);
-  }
+  console.warn('Client-side lunar conversion is not supported. Use server-side conversion.');
+  return new Date(year, month - 1, day);
 }
 
 /**
- * 양력-음력 변환 (korean-lunar-calendar 라이브러리 사용)
+ * 클라이언트에서는 음력 변환이 지원되지 않습니다.
+ * 서버에서 변환된 데이터를 사용하세요.
  */
 export function convertSolarToLunar(date: Date): { year: number; month: number; day: number; isLeapMonth: boolean } {
-  try {
-    const KoreanLunarCalendar = require('korean-lunar-calendar');
-    
-    const result = KoreanLunarCalendar.lunarCalendarFromSolarCalendar(
-      date.getFullYear(), 
-      date.getMonth() + 1, 
-      date.getDate()
-    );
-    
-    if (result && result.lunar) {
-      return {
-        year: result.lunar.year,
-        month: result.lunar.month,
-        day: result.lunar.day,
-        isLeapMonth: result.lunar.leapMonth || false
-      };
-    } else {
-      // 라이브러리 실패 시 fallback
-      console.warn('Korean lunar calendar conversion failed, using fallback');
-      return {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate(),
-        isLeapMonth: false
-      };
-    }
-  } catch (error) {
-    console.error('Solar to lunar conversion error:', error);
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-      isLeapMonth: false
-    };
-  }
+  console.warn('Client-side lunar conversion is not supported. Use server-side conversion.');
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    isLeapMonth: false
+  };
 }
