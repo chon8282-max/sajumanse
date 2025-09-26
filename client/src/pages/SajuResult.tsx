@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, User, Clock } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { ArrowLeft, Calendar, User, Clock, Save, Edit } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { calculateSaju } from "@/lib/saju-calculator";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 
@@ -57,8 +58,60 @@ export default function SajuResult() {
     },
   });
 
+  const { toast } = useToast();
+
+  // 저장 mutation (기존 레코드 덮어쓰기)
+  const saveMutation = useMutation({
+    mutationFn: async (recordData: SajuResultData) => {
+      const response = await apiRequest("PUT", `/api/saju-records/${recordData.id}`, recordData);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "저장 완료",
+        description: "사주 정보가 성공적으로 저장되었습니다."
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params.id] });
+    },
+    onError: (error) => {
+      console.error('Save error:', error);
+      toast({
+        title: "저장 오류",
+        description: "사주 정보 저장 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleBack = () => {
     setLocation("/manseryeok");
+  };
+
+  const handleSave = () => {
+    if (sajuData?.data) {
+      saveMutation.mutate(sajuData.data);
+    }
+  };
+
+  const handleEdit = () => {
+    // 수정 버튼: 사주 입력 페이지로 이동 (기존 데이터 포함)
+    if (sajuData?.data) {
+      const record = sajuData.data;
+      const queryParams = new URLSearchParams({
+        name: record.name || '',
+        year: record.birthYear.toString(),
+        month: record.birthMonth.toString(),
+        day: record.birthDay.toString(),
+        birthTime: record.birthTime || '',
+        calendarType: record.calendarType || '양력',
+        gender: record.gender || '남자',
+        memo: record.memo || '',
+        edit: 'true',
+        id: record.id
+      }).toString();
+      
+      setLocation(`/saju-input?${queryParams}`);
+    }
   };
 
   if (isLoading) {
@@ -98,6 +151,29 @@ export default function SajuResult() {
         <div className="flex-1 text-center">
           <h1 className="text-xl font-bold text-foreground">사주명식</h1>
           <p className="text-sm text-muted-foreground mt-1">{record.name}님의 사주팔자</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleEdit}
+            data-testid="button-edit"
+            className="hover-elevate active-elevate-2 flex items-center gap-2"
+          >
+            <Edit className="h-4 w-4" />
+            <span className="text-sm">수정</span>
+          </Button>
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+            data-testid="button-save"
+            className="hover-elevate active-elevate-2 flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            <span className="text-sm">{saveMutation.isPending ? "저장중..." : "저장"}</span>
+          </Button>
         </div>
       </div>
 

@@ -306,6 +306,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 사주 기록 업데이트
+  app.put("/api/saju-records/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = insertSajuRecordSchema.partial().parse(req.body);
+      
+      const updatedRecord = await storage.updateSajuRecord(id, validatedData);
+      
+      if (!updatedRecord) {
+        return res.status(404).json({ 
+          error: "해당 사주 기록을 찾을 수 없습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        data: updatedRecord,
+        message: "사주 기록이 성공적으로 업데이트되었습니다."
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Update saju record error:', error);
+      res.status(500).json({ 
+        error: "사주 기록 업데이트 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
   // 사주 기록 삭제
   app.delete("/api/saju-records/:id", async (req, res) => {
     try {

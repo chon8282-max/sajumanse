@@ -40,6 +40,28 @@ export default function SajuInput() {
     memo: "",
   });
 
+  // 쿼리 파라미터에서 초기 데이터 로드 (수정 모드)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('edit')) {
+      const queryData = {
+        name: urlParams.get('name') || "",
+        calendarType: urlParams.get('calendarType') || "양력",
+        year: urlParams.get('year') || "",
+        month: urlParams.get('month') || "",
+        day: urlParams.get('day') || "",
+        birthTime: urlParams.get('birthTime') || "",
+        selectedTimeCode: "",
+        gender: urlParams.get('gender') || "남자",
+        groupId: urlParams.get('groupId') || "",
+        memo: urlParams.get('memo') || "",
+      };
+      
+      console.log('Loading data from query params:', queryData);
+      setFormData(queryData);
+    }
+  }, []);
+
   // 그룹 목록 조회
   const { data: groups = [] } = useQuery<Group[]>({
     queryKey: ["/api/groups"],
@@ -112,11 +134,8 @@ export default function SajuInput() {
       const result = await response.json();
 
       if (result.success) {
-        toast({
-          title: "저장 완료",
-          description: result.message || "사주 정보가 성공적으로 저장되었습니다.",
-        });
-
+        // 내부적으로 저장만 되고 메시지는 표시하지 않음
+        
         // 성공시 사주 결과 페이지로 이동
         if (result.data?.record?.id) {
           setLocation(`/saju-result/${result.data.record.id}`);
