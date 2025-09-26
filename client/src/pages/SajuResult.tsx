@@ -175,7 +175,6 @@ export default function SajuResult() {
           </Button>
         </div>
       </div>
-
       <div className="max-w-2xl mx-auto">
         {/* 기본 정보 - 간단하게 2줄로 */}
         <Card className="mb-2">
@@ -191,13 +190,13 @@ export default function SajuResult() {
                   return age;
                 })()}세
               </div>
-              <div className="text-sm text-muted-foreground">
-                생년월일 {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
+              <div className="text-[14px] text-[#1c1b1a] mt-[0px] mb-[0px]">
+                (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
                 {record.lunarYear && record.lunarMonth && record.lunarDay && (
                   <span>
-                    (음력 {record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일{record.isLeapMonth ? " 윤달" : ""})
+                    {" "}(음){record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일{record.isLeapMonth ? " 윤달" : ""}
                   </span>
-                )} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}생
+                )} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
               </div>
             </div>
           </CardContent>
