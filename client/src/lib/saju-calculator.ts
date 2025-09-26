@@ -246,7 +246,7 @@ export function calculateSaju(
   const yearSky = CHEONGAN[yearSkyIndex];
   const yearEarth = JIJI[yearEarthIndex];
   const monthSky = CHEONGAN[monthSkyIndex];
-  const monthEarth = JIJI[monthEarthIndex];
+  const monthEarth = MONTH_JIJI[monthEarthIndex]; // 월지는 MONTH_JIJI 사용 (寅부터 시작)
   const daySky = CHEONGAN[daySkyIndex];
   const dayEarth = JIJI[dayEarthIndex];
   const hourSky = CHEONGAN[hourSkyIndex];
