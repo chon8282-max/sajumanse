@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ArrowLeft, Plus, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
@@ -27,6 +28,7 @@ export default function SajuInput() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [isTimeCollapsibleOpen, setIsTimeCollapsibleOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     calendarType: "양력",
@@ -235,34 +237,51 @@ export default function SajuInput() {
         {/* 생시 */}
         <div className="space-y-3">
           <Label className="text-base font-medium">생시 (전통 십이시)</Label>
-          <div className="grid grid-cols-2 gap-3">
-            {TRADITIONAL_TIME_PERIODS.map((period) => (
+          <Collapsible 
+            open={isTimeCollapsibleOpen} 
+            onOpenChange={setIsTimeCollapsibleOpen}
+          >
+            <CollapsibleTrigger asChild>
               <Button
-                key={period.code}
                 type="button"
-                variant={formData.selectedTimeCode === period.code ? "default" : "outline"}
-                size="sm"
-                onClick={() => {
-                  handleInputChange("selectedTimeCode", period.code);
-                  handleInputChange("birthTime", period.code);
-                }}
-                className="h-auto py-4 px-4 flex flex-col items-center text-center hover-elevate active-elevate-2"
-                data-testid={`button-time-${period.code}`}
+                variant="outline"
+                className="w-full justify-between hover-elevate active-elevate-2"
+                data-testid="button-time-toggle"
               >
-                <div className="font-bold text-lg mb-1">{period.name}</div>
-                <div className="text-xs text-muted-foreground leading-tight">
-                  ({period.range})
-                </div>
+                <span>
+                  {formData.selectedTimeCode 
+                    ? `${TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.name} ${TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.range}`
+                    : "生시 선택"
+                  }
+                </span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isTimeCollapsibleOpen ? 'rotate-180' : ''}`} />
               </Button>
-            ))}
-          </div>
-          {formData.selectedTimeCode && (
-            <div className="text-sm text-center mt-3 p-3 bg-muted/50 rounded-lg">
-              선택된 생시: <span className="font-semibold text-primary">
-                {TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.name}
-              </span> {TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.range}
-            </div>
-          )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-2 mt-2">
+              <div className="grid grid-cols-2 gap-3">
+                {TRADITIONAL_TIME_PERIODS.map((period) => (
+                  <Button
+                    key={period.code}
+                    type="button"
+                    variant={formData.selectedTimeCode === period.code ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      handleInputChange("selectedTimeCode", period.code);
+                      handleInputChange("birthTime", period.code);
+                      setIsTimeCollapsibleOpen(false); // 선택 후 자동으로 접기
+                    }}
+                    className="h-auto py-4 px-4 flex flex-col items-center text-center hover-elevate active-elevate-2"
+                    data-testid={`button-time-${period.code}`}
+                  >
+                    <div className="font-bold text-lg mb-1">{period.name}</div>
+                    <div className="text-xs text-muted-foreground leading-tight">
+                      ({period.range})
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         {/* 성별 */}
