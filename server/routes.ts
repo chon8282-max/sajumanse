@@ -163,7 +163,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (validatedData.calendarType === "양력") {
             try {
               const birthDate = new Date(validatedData.birthYear, validatedData.birthMonth - 1, validatedData.birthDay);
-              lunarConversion = convertSolarToLunarServer(birthDate);
+              lunarConversion = await convertSolarToLunarServer(birthDate);
               console.log(`양력 ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
               
               // 사주 계산은 음력 날짜를 사용
@@ -216,7 +216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 // 음력인 경우 한국 음력 라이브러리로 양력 변환
                 const isLeapMonth = validatedData.calendarType === "윤달";
                 console.log(`로컬 음력→양력 변환 시도: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 윤달=${isLeapMonth}`);
-                const solarDate = convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
+                const solarDate = await convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
                 solarCalcYear = solarDate.getFullYear();
                 solarCalcMonth = solarDate.getMonth() + 1;
                 solarCalcDay = solarDate.getDate();
