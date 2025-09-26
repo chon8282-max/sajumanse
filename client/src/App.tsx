@@ -14,6 +14,7 @@ import Exit from "@/pages/Exit";
 import Manseryeok from "@/pages/Manseryeok";
 import SajuInput from "@/pages/SajuInput";
 import NotFound from "@/pages/not-found";
+import SajuResult from "@/pages/SajuResult";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/manseryeok" component={Manseryeok} />
       <Route path="/saju-input" component={SajuInput} />
+      <Route path="/saju-result/:id" component={SajuResult} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
