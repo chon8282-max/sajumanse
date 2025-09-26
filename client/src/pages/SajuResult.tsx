@@ -219,7 +219,7 @@ export default function SajuResult() {
                   return age;
                 })()}세
               </div>
-              <div className="text-[14px] text-[#1c1b1a] mt-[0px] mb-[0px]">
+              <div className="text-[14px] text-gray-800 dark:text-gray-200 mt-[0px] mb-[0px]">
                 (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일 {(() => {
                   // 음력 데이터가 있으면 그것을 사용하고, 없으면 클라이언트에서 변환
                   if (record.lunarYear && record.lunarMonth && record.lunarDay) {
@@ -255,25 +255,25 @@ export default function SajuResult() {
               {/* 2. 천간 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold"
+                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.hourSky) }}
                 >
                   {record.hourSky || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold"
+                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.daySky) }}
                 >
                   {record.daySky || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold"
+                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.monthSky) }}
                 >
                   {record.monthSky || "?"}
                 </div>
                 <div 
-                  className="p-3 text-center text-lg font-bold"
+                  className="p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.yearSky) }}
                 >
                   {record.yearSky || "?"}
@@ -283,25 +283,25 @@ export default function SajuResult() {
               {/* 3. 지지 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold"
+                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.hourEarth) }}
                 >
                   {record.hourEarth || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold"
+                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.dayEarth) }}
                 >
                   {record.dayEarth || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold"
+                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.monthEarth) }}
                 >
                   {record.monthEarth || "?"}
                 </div>
                 <div 
-                  className="p-3 text-center text-lg font-bold"
+                  className="p-3 text-center text-lg font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.yearEarth) }}
                 >
                   {record.yearEarth || "?"}
