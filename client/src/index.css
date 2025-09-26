@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+/* TmonMonsori 폰트 정의 */
+@font-face {
+  font-family: 'TmonMonsori';
+  src: url('/fonts/TmonMonsori.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* TmonMonsori 폰트 클래스 추가 */
+.font-tmon {
+  font-family: 'TmonMonsori', 'Noto Serif KR', Georgia, serif !important;
+}
+
 /* LIGHT MODE */
 :root {
   --button-outline: rgba(0,0,0, .10);
@@ -79,6 +93,7 @@
   --font-sans: 'Noto Sans KR', Open Sans, sans-serif;
   --font-serif: 'Noto Serif KR', Georgia, serif;
   --font-mono: 'IBM Plex Mono', Menlo, monospace;
+  --font-tmon: 'TmonMonsori', 'Noto Serif KR', Georgia, serif;
   --radius: .75rem; /* 12px */
   --shadow-2xs: 0px 1px 2px 0px hsl(25 15% 8% / 0.03);
   --shadow-xs: 0px 1px 2px 0px hsl(25 15% 8% / 0.05);
