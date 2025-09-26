@@ -1,16 +1,21 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { useState, useMemo } from "react";
 import { 
   ArrowLeft, 
   Trash2, 
   User, 
   Calendar, 
   Clock,
-  RefreshCw 
+  RefreshCw,
+  Search,
+  Plus,
+  Edit
 } from "lucide-react";
 import type { SajuRecord } from "@shared/schema";
 
@@ -24,6 +29,7 @@ interface ApiResponse<T> {
 export default function SajuList() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
 
   // 저장된 사주 목록 조회 (기본 queryFn 사용)
   const { data: sajuList, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>, Error, SajuRecord[]>({
@@ -45,7 +51,8 @@ export default function SajuList() {
       queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
       toast({
         title: "삭제 완료",
-        description: "사주가 성공적으로 삭제되었습니다."
+        description: "사주가 성공적으로 삭제되었습니다.",
+        duration: 1000
       });
     },
     onError: (error) => {
@@ -72,12 +79,49 @@ export default function SajuList() {
     }
   };
 
+  const handleEditSaju = (saju: SajuRecord, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const params = new URLSearchParams({
+      edit: 'true',
+      id: saju.id,
+      name: saju.name || '',
+      calendarType: saju.calendarType,
+      year: saju.birthYear.toString(),
+      month: saju.birthMonth.toString(),
+      day: saju.birthDay.toString(),
+      birthTime: saju.birthTime || '',
+      gender: saju.gender,
+      groupId: saju.groupId || '',
+      memo: saju.memo || ''
+    });
+    setLocation(`/saju-input?${params.toString()}`);
+  };
+
+  const calculateAge = (birthYear: number) => {
+    const currentYear = new Date().getFullYear();
+    return currentYear - birthYear + 1; // 한국 나이
+  };
+
+  // 검색된 사주 목록
+  const filteredSajuList = useMemo(() => {
+    if (!sajuList || !searchQuery.trim()) {
+      return sajuList || [];
+    }
+    
+    const query = searchQuery.toLowerCase().trim();
+    return sajuList.filter(saju => {
+      const name = (saju.name || "").toLowerCase();
+      const birthDate = `${saju.birthYear}${saju.birthMonth.toString().padStart(2, '0')}${saju.birthDay.toString().padStart(2, '0')}`;
+      return name.includes(query) || birthDate.includes(query.replace(/[^0-9]/g, ''));
+    });
+  }, [sajuList, searchQuery]);
+
   // 조건부 렌더링을 JSX에서 처리하여 hook 규칙 준수
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-md">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <Button 
             variant="ghost" 
             size="sm"
@@ -88,7 +132,27 @@ export default function SajuList() {
             뒤로
           </Button>
           <h1 className="text-lg font-semibold" data-testid="text-page-title">저장된 사주</h1>
-          <div className="w-16"></div>
+          <Button 
+            size="sm"
+            onClick={() => setLocation("/saju-input")}
+            data-testid="button-add-saju"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            추가
+          </Button>
+        </div>
+        
+        {/* 검색 바 */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            type="text"
+            placeholder="이름 또는 생년월일 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+            data-testid="input-search"
+          />
         </div>
 
         {/* 로딩 상태 */}
@@ -127,7 +191,25 @@ export default function SajuList() {
         {/* 데이터 상태 */}
         {!isLoading && !error && (
           <>
-            {!sajuList || sajuList.length === 0 ? (
+            {!filteredSajuList || filteredSajuList.length === 0 ? (
+              searchQuery.trim() ? (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2" data-testid="text-no-results-title">검색 결과가 없습니다</h3>
+                    <p className="text-sm text-muted-foreground mb-4" data-testid="text-no-results-description">
+                      '{searchQuery}' 에 해당하는 사주를 찾을 수 없습니다.
+                    </p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => setSearchQuery("")}
+                      data-testid="button-clear-search"
+                    >
+                      전체 목록 보기
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
               <Card>
                 <CardContent className="p-8 text-center">
                   <User className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
@@ -144,9 +226,10 @@ export default function SajuList() {
                   </Button>
                 </CardContent>
               </Card>
+              )
             ) : (
               <div className="space-y-4">
-                {sajuList.map((saju) => (
+                {filteredSajuList.map((saju) => (
               <Card 
                 key={saju.id} 
                 className="hover-elevate cursor-pointer"
@@ -156,13 +239,18 @@ export default function SajuList() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <h3 className="font-medium text-base mb-1" data-testid={`text-name-${saju.id}`}>
-                        {saju.name || "이름없음"}
-                      </h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-medium text-base" data-testid={`text-name-${saju.id}`}>
+                          {saju.name || "이름없음"}
+                        </h3>
+                        <span className="text-sm px-2 py-0.5 bg-muted rounded-full" data-testid={`text-gender-age-${saju.id}`}>
+                          {saju.gender} {calculateAge(saju.birthYear)}세
+                        </span>
+                      </div>
                       <div className="flex items-center text-sm text-muted-foreground mb-1">
                         <Calendar className="w-3 h-3 mr-1" />
                         <span data-testid={`text-birth-${saju.id}`}>
-                          {saju.calendarType} {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일
+                          양력 {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일{saju.lunarYear && saju.lunarMonth && saju.lunarDay ? ` (음력 ${saju.lunarYear}년 ${saju.lunarMonth}월 ${saju.lunarDay}일)` : ""}
                         </span>
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
@@ -172,56 +260,32 @@ export default function SajuList() {
                         </span>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSaju(saju.id, saju.name || "이름없음");
-                      }}
-                      disabled={deleteMutation.isPending}
-                      data-testid={`button-delete-${saju.id}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex flex-col gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary h-8 w-8"
+                        onClick={(e) => handleEditSaju(saju, e)}
+                        data-testid={`button-edit-${saju.id}`}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSaju(saju.id, saju.name || "이름없음");
+                        }}
+                        disabled={deleteMutation.isPending}
+                        data-testid={`button-delete-${saju.id}`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  {/* 사주팔자 미리보기 */}
-                  <div className="grid grid-cols-4 gap-2 text-xs bg-muted/30 rounded-lg p-2">
-                    <div className="text-center">
-                      <div className="text-muted-foreground">년주</div>
-                      <div className="font-medium" data-testid={`text-year-pillar-${saju.id}`}>
-                        {saju.yearSky}{saju.yearEarth}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-muted-foreground">월주</div>
-                      <div className="font-medium" data-testid={`text-month-pillar-${saju.id}`}>
-                        {saju.monthSky}{saju.monthEarth}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-muted-foreground">일주</div>
-                      <div className="font-medium" data-testid={`text-day-pillar-${saju.id}`}>
-                        {saju.daySky}{saju.dayEarth}
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-muted-foreground">시주</div>
-                      <div className="font-medium" data-testid={`text-hour-pillar-${saju.id}`}>
-                        {saju.hourSky}{saju.hourEarth}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                    <span>
-                      {saju.gender}
-                    </span>
-                  </div>
-                </CardContent>
               </Card>
                 ))}
               </div>
