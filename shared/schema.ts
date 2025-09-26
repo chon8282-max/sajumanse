@@ -3,7 +3,37 @@ import { pgTable, text, varchar, integer, date, boolean, timestamp } from "drizz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// 만세력 데이터 모델
+// 사주 정보 저장 테이블
+export const sajuRecords = pgTable("saju_records", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 기본 정보
+  name: text("name").notNull(), // 성명
+  birthYear: integer("birth_year").notNull(),
+  birthMonth: integer("birth_month").notNull(),
+  birthDay: integer("birth_day").notNull(),
+  birthTime: text("birth_time"), // 생시 (예: "14:30" 또는 "오후 2시 30분")
+  calendarType: text("calendar_type").notNull().default("양력"), // "양력" | "음력" | "윤달"
+  gender: text("gender").notNull(), // "남자" | "여자"
+  group: text("group"), // 그룹
+  memo: text("memo"), // 메모
+  
+  // 사주팔자 정보 (계산 후 저장)
+  yearSky: text("year_sky"), // 년주 천간
+  yearEarth: text("year_earth"), // 년주 지지
+  monthSky: text("month_sky"), // 월주 천간
+  monthEarth: text("month_earth"), // 월주 지지
+  daySky: text("day_sky"), // 일주 천간
+  dayEarth: text("day_earth"), // 일주 지지
+  hourSky: text("hour_sky"), // 시주 천간
+  hourEarth: text("hour_earth"), // 시주 지지
+  
+  // 메타데이터
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 이전 테이블과의 호환성을 위해 유지
 export const manseRyeok = pgTable("manse_ryeok", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   birthYear: integer("birth_year").notNull(),
@@ -24,6 +54,26 @@ export const manseRyeok = pgTable("manse_ryeok", {
   hourEarth: text("hour_earth").notNull(), // 시주 지지
 });
 
+// 사주 기록 스키마
+export const insertSajuRecordSchema = createInsertSchema(sajuRecords).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  // 사주팔자 정보는 계산 후 자동 추가되므로 입력에서 제외
+  yearSky: true,
+  yearEarth: true,
+  monthSky: true,
+  monthEarth: true,
+  daySky: true,
+  dayEarth: true,
+  hourSky: true,
+  hourEarth: true,
+});
+
+export type InsertSajuRecord = z.infer<typeof insertSajuRecordSchema>;
+export type SajuRecord = typeof sajuRecords.$inferSelect;
+
+// 기존 호환성 유지
 export const insertManseRyeokSchema = createInsertSchema(manseRyeok).pick({
   birthYear: true,
   birthMonth: true,
