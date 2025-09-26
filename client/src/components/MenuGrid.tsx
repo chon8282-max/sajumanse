@@ -17,6 +17,8 @@ export default function MenuGrid() {
   const handleMenuClick = (menuName: string) => {
     if (menuName === "만세력") {
       setLocation("/manseryeok");
+    } else if (menuName === "사주불러오기") {
+      setLocation("/saju-list");
     } else {
       toast({
         title: menuName,
