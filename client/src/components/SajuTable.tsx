@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo } from "@shared/schema";
 import { getWuXingColor, getWuXingBgColor } from "@/lib/saju-calculator";
+import { getWuxingColor, getZodiacHourFromTime } from "@/lib/wuxing-colors";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Solar } from "lunar-javascript";
@@ -22,17 +23,10 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
   // 현재 날짜 정보 생성
   const now = new Date();
   
-  // 십이지 시각 계산
-  const getZodiacHour = (hour: number) => {
-    const zodiacHours = ['子時', '丑時', '寅時', '卯時', '辰時', '巳時', '午時', '未時', '申時', '酉時', '戌時', '亥時'];
-    if (hour === 23) return zodiacHours[0]; // 子時 (23:00-01:00)
-    return zodiacHours[Math.floor((hour + 1) / 2)];
-  };
-  
   // 음력 변환
   const solar = Solar.fromYmd(now.getFullYear(), now.getMonth() + 1, now.getDate());
   const lunar = solar.getLunar();
-  const zodiacTime = getZodiacHour(now.getHours());
+  const zodiacTime = getZodiacHourFromTime(now.getHours(), now.getMinutes());
   
   const combinedDateString = `(양)${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일) ${zodiacTime}生`;
 
@@ -80,7 +74,8 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`sky-${index}`} className="text-center">
             <div 
-              className="py-3 px-2 rounded-md font-serif font-semibold border bg-green-100 dark:bg-green-900/20 dark:text-green-400 text-[40px] text-[6afda8] pt-[2px] pb-[2px]"
+              className="py-3 px-2 rounded-md font-serif font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
+              style={{ backgroundColor: getWuxingColor(col.data.sky) }}
               data-testid={`text-sky-${index}`}
             >
               {col.data.sky}
@@ -92,7 +87,8 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
         {columns.map((col, index) => (
           <div key={`earth-${index}`} className="text-center">
             <div 
-              className="py-3 px-2 rounded-md font-serif font-semibold border bg-red-100 dark:bg-red-900/20 dark:text-red-400 text-[40px] pt-[2px] pb-[2px] text-[#2e251f]"
+              className="py-3 px-2 rounded-md font-serif font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
+              style={{ backgroundColor: getWuxingColor(col.data.earth) }}
               data-testid={`text-earth-${index}`}
             >
               {col.data.earth}

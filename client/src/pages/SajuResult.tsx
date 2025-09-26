@@ -9,34 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { calculateSaju } from "@/lib/saju-calculator";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
-
-// 오행 색상 분류 함수 (한자 기준)
-function getWuxingColor(character: string | null): string {
-  if (!character) return "#ffffff";
-  
-  // 갑을인묘=8cf8a0 (목 - Wood)
-  if (["甲", "乙", "寅", "卯"].includes(character)) {
-    return "#8cf8a0";
-  }
-  // 병정사오=f8c0c9 (화 - Fire)
-  if (["丙", "丁", "巳", "午"].includes(character)) {
-    return "#f8c0c9";
-  }
-  // 무기진미술축=fbf5b3 (토 - Earth)
-  if (["戊", "己", "辰", "未", "戌", "丑"].includes(character)) {
-    return "#fbf5b3";
-  }
-  // 경신신유=ffffff (금 - Metal)
-  if (["庚", "辛", "申", "酉"].includes(character)) {
-    return "#ffffff";
-  }
-  // 임계해자=cbcbca (수 - Water)
-  if (["壬", "癸", "亥", "子"].includes(character)) {
-    return "#cbcbca";
-  }
-  
-  return "#ffffff"; // 기본값
-}
+import { getWuxingColor } from "@/lib/wuxing-colors";
 
 interface SajuResultData {
   id: string;
