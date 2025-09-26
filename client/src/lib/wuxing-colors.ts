@@ -81,3 +81,24 @@ export function getZodiacHourFromTime(hour: number, minute: number): string {
   // 기본값 (혹시 빠뜨린 경우)
   return '子時';
 }
+
+// 지장간 매핑 (십이지지별 지장간)
+export const JIJANGGAN_MAPPING: Record<string, string[]> = {
+  '子': ['癸'],
+  '丑': ['己', '癸', '辛'],
+  '寅': ['甲', '丙', '戊'],
+  '卯': ['乙'],
+  '辰': ['戊', '乙', '癸'],
+  '巳': ['丙', '戊', '庚'],
+  '午': ['丁', '己'],
+  '未': ['己', '乙', '丁'],
+  '申': ['庚', '壬', '戊'],
+  '酉': ['辛'],
+  '戌': ['戊', '辛', '丁'],
+  '亥': ['壬', '甲']
+};
+
+// 지지에 해당하는 지장간 반환
+export function getJijanggan(jiji: string): string[] {
+  return JIJANGGAN_MAPPING[jiji] || [];
+}

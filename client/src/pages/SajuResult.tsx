@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { calculateSaju } from "@/lib/saju-calculator";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
-import { getWuxingColor } from "@/lib/wuxing-colors";
+import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
 
 interface SajuResultData {
   id: string;
@@ -291,10 +291,54 @@ export default function SajuResult() {
 
               {/* 5. 지장간 출력자리 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-2 text-center text-xs">지장간</div>
-                <div className="border-r border-border p-2 text-center text-xs">지장간</div>
-                <div className="border-r border-border p-2 text-center text-xs">지장간</div>
-                <div className="p-2 text-center text-xs">지장간</div>
+                {/* 시주 지장간 */}
+                <div className="border-r border-border p-2 text-center text-xs">
+                  {getJijanggan(record.hourEarth || "").map((jijang, idx) => (
+                    <div 
+                      key={idx} 
+                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
+                      style={{ backgroundColor: getWuxingColor(jijang) }}
+                    >
+                      {jijang}
+                    </div>
+                  ))}
+                </div>
+                {/* 일주 지장간 */}
+                <div className="border-r border-border p-2 text-center text-xs">
+                  {getJijanggan(record.dayEarth || "").map((jijang, idx) => (
+                    <div 
+                      key={idx} 
+                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
+                      style={{ backgroundColor: getWuxingColor(jijang) }}
+                    >
+                      {jijang}
+                    </div>
+                  ))}
+                </div>
+                {/* 월주 지장간 */}
+                <div className="border-r border-border p-2 text-center text-xs">
+                  {getJijanggan(record.monthEarth || "").map((jijang, idx) => (
+                    <div 
+                      key={idx} 
+                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
+                      style={{ backgroundColor: getWuxingColor(jijang) }}
+                    >
+                      {jijang}
+                    </div>
+                  ))}
+                </div>
+                {/* 년주 지장간 */}
+                <div className="p-2 text-center text-xs">
+                  {getJijanggan(record.yearEarth || "").map((jijang, idx) => (
+                    <div 
+                      key={idx} 
+                      className="font-medium text-black rounded px-1 py-0.5 mb-0.5 text-center" 
+                      style={{ backgroundColor: getWuxingColor(jijang) }}
+                    >
+                      {jijang}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* 6. 나이숫자 출력자리 (10칸) */}
