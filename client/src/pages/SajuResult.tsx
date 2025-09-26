@@ -151,7 +151,7 @@ export default function SajuResult() {
           <span className="text-sm">뒤로</span>
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="text-xl font-bold text-foreground">사주명식</h1>
+          <h1 className="text-2xl font-bold text-foreground">사주명식</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button 
@@ -208,6 +208,42 @@ export default function SajuResult() {
                   }
                 })()} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
               </div>
+              
+              {/* 분석 버튼들 */}
+              <div className="grid grid-cols-4 gap-1 mt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-7 text-xs leading-none py-1 px-2"
+                  data-testid="button-yin-yang-wuxing"
+                >
+                  음양오행
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-7 text-xs leading-none py-1 px-2"
+                  data-testid="button-shinsal"
+                >
+                  신살
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-7 text-xs leading-none py-1 px-2"
+                  data-testid="button-12shinsal"
+                >
+                  12신살
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="h-7 text-xs leading-none py-1 px-2"
+                  data-testid="button-compatibility"
+                >
+                  궁합
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -219,10 +255,10 @@ export default function SajuResult() {
             <div className="w-full">
               {/* 1. 육친 일간 육친 육친 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
-                <div className="border-r border-border p-2 text-center text-sm font-medium bg-yellow-50 dark:bg-yellow-900/20">일간</div>
-                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
-                <div className="p-2 text-center text-sm font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium bg-yellow-50 dark:bg-yellow-900/20">일간</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="p-1 text-center text-[13px] font-medium">육친</div>
               </div>
 
               {/* 2. 천간 (4칸) */}
@@ -283,10 +319,10 @@ export default function SajuResult() {
 
               {/* 4. 육친 육친 육친 육친 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
-                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
-                <div className="border-r border-border p-2 text-center text-sm font-medium">육친</div>
-                <div className="p-2 text-center text-sm font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium">육친</div>
+                <div className="p-1 text-center text-[13px] font-medium">육친</div>
               </div>
 
               {/* 5. 지장간 출력자리 (4칸) */}
