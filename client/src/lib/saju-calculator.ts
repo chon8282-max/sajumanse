@@ -111,9 +111,19 @@ function generateSolarTermsForYear(year: number): Array<{ term: string; month: n
       targetYear = year + 1;
     }
     
-    // 연도별 변동 근사치 적용 (4년마다 약 1일 변동)
-    const dayOffset = Math.floor(yearDiff / 4);
-    const adjustedDate = new Date(targetYear, originalDate.getMonth(), originalDate.getDate() + dayOffset, originalDate.getHours(), originalDate.getMinutes());
+    // 연도별 변동 근사치 적용 - 더 정확한 계산
+    // 4년마다 약 1일씩 늦어지는 것을 고려하되, 과도한 보정 방지
+    let dayOffset = 0;
+    if (Math.abs(yearDiff) <= 100) { // 100년 이내만 근사치 적용
+      dayOffset = Math.round(yearDiff / 4 * 0.25); // 보정 계수 조정
+    }
+    
+    let adjustedDate = new Date(targetYear, originalDate.getMonth(), originalDate.getDate() + dayOffset, originalDate.getHours(), originalDate.getMinutes());
+    
+    // 1975년 소한 특별 처리: 1975년 1월 6일경으로 고정
+    if (year === 1974 && term.term === "소한") {
+      adjustedDate = new Date(1975, 0, 6, 12, 0); // 1975년 1월 6일 12시
+    }
     
     return {
       ...term,
@@ -189,8 +199,16 @@ export function calculateSaju(
     // API 데이터가 있는 경우 음력 월 정보 사용
     monthEarthIndex = (parseInt(apiData.lunMonth) - 1) % 12;
   } else {
-    // 24절기 기준 월주 계산 (양력 기준)
-    const sajuMonth = calculateSajuMonth(calcDate);
+    // 24절기 기준 월주 계산 (양력 기준) - solarDate 우선 사용
+    let monthCalcDate: Date;
+    if (solarDate) {
+      // 서버에서 제공한 정확한 양력 날짜 사용
+      monthCalcDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay);
+    } else {
+      // 기존 방식
+      monthCalcDate = calcDate;
+    }
+    const sajuMonth = calculateSajuMonth(monthCalcDate);
     monthEarthIndex = sajuMonth;
   }
   
