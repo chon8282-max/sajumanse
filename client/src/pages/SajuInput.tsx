@@ -279,7 +279,7 @@ export default function SajuInput() {
             className="w-full text-base"
             data-testid="button-submit-saju"
           >
-            {isSubmitting ? "저장 중..." : "사주 분석하기"}
+            {isSubmitting ? "저장 중..." : "사주 뽑기"}
           </Button>
         </div>
       </div>

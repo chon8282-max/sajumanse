@@ -3,19 +3,31 @@ import { pgTable, text, varchar, integer, date, boolean, timestamp } from "drizz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// 그룹 정보 테이블
+export const groups = pgTable("groups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // 그룹명
+  isDefault: boolean("is_default").notNull().default(false), // 기본 그룹 여부
+  
+  // 메타데이터
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // 사주 정보 저장 테이블
 export const sajuRecords = pgTable("saju_records", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
   // 기본 정보
-  name: text("name").notNull(), // 성명
+  name: text("name").notNull().default("이름없음"), // 성명 (기본값: 이름없음)
   birthYear: integer("birth_year").notNull(),
   birthMonth: integer("birth_month").notNull(),
   birthDay: integer("birth_day").notNull(),
-  birthTime: text("birth_time"), // 생시 (예: "14:30" 또는 "오후 2시 30분")
+  birthTime: text("birth_time"), // 생시 (예: "子時" 또는 "23:31~01:30")
   calendarType: text("calendar_type").notNull().default("양력"), // "양력" | "음력" | "윤달"
   gender: text("gender").notNull(), // "남자" | "여자"
-  group: text("group"), // 그룹
+  groupId: varchar("group_id").references(() => groups.id), // 그룹 ID 참조
+  group: text("group"), // 레거시 그룹 (호환성)
   memo: text("memo"), // 메모
   
   // 사주팔자 정보 (계산 후 저장)
@@ -53,6 +65,16 @@ export const manseRyeok = pgTable("manse_ryeok", {
   hourSky: text("hour_sky").notNull(), // 시주 천간
   hourEarth: text("hour_earth").notNull(), // 시주 지지
 });
+
+// 그룹 스키마
+export const insertGroupSchema = createInsertSchema(groups).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertGroup = z.infer<typeof insertGroupSchema>;
+export type Group = typeof groups.$inferSelect;
 
 // 사주 기록 스키마
 export const insertSajuRecordSchema = createInsertSchema(sajuRecords).omit({
