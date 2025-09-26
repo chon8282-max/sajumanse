@@ -28,7 +28,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
   // 음력 변환 - 간단한 근사치 계산 (한국 음력 라이브러리 대신 사용)
   const approximateLunarMonth = now.getMonth() + 1;
   const approximateLunarDay = Math.max(1, now.getDate() - 7); // 대략 7일 차이로 가정, 최소 1일
-  const lunarDateString = `(음) ${now.getFullYear()}년 ${approximateLunarMonth}월 ${approximateLunarDay}일`;
+  const lunarDateString = `    (음) ${now.getFullYear()}년 ${approximateLunarMonth}월 ${approximateLunarDay}일 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}분`;
 
   const wuxingData = [
     saju.wuxing.hourSky,
@@ -52,7 +52,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
             <span className="text-foreground font-semibold" data-testid="text-saju-title">현재 만세력</span>{" "}
             <span className="text-blue-700 dark:text-blue-300" data-testid="text-solar-date">{solarDateString}</span>
           </div>
-          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300 pl-[84px]" data-testid="text-lunar-date">
+          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300 pl-[84px] text-left mt-[1px] mb-[1px]" data-testid="text-lunar-date">
             {lunarDateString}
           </div>
         </div>
