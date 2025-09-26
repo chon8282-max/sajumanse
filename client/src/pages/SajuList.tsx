@@ -12,7 +12,7 @@ import {
   Clock,
   RefreshCw 
 } from "lucide-react";
-import type { ManseRyeok } from "@shared/schema";
+import type { SajuRecord } from "@shared/schema";
 
 // API 응답 타입 정의
 interface ApiResponse<T> {
@@ -26,15 +26,15 @@ export default function SajuList() {
   const { toast } = useToast();
 
   // 저장된 사주 목록 조회 (기본 queryFn 사용)
-  const { data: sajuList, isLoading, error } = useQuery<ApiResponse<ManseRyeok[]>, Error, ManseRyeok[]>({
-    queryKey: ["/api/manse"],
-    select: (response: ApiResponse<ManseRyeok[]>) => response?.data || [], // API 응답에서 data 배열 추출
+  const { data: sajuList, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>, Error, SajuRecord[]>({
+    queryKey: ["/api/saju-records"],
+    select: (response: ApiResponse<SajuRecord[]>) => response?.data || [], // API 응답에서 data 배열 추출
   });
 
   // 사주 삭제 뮤테이션
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await apiRequest("DELETE", `/api/manse/${id}`);
+      const res = await apiRequest("DELETE", `/api/saju-records/${id}`);
       const response = await res.json();
       if (!response.success) {
         throw new Error(response.error || "사주 삭제에 실패했습니다.");
@@ -42,7 +42,7 @@ export default function SajuList() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/manse"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
       toast({
         title: "삭제 완료",
         description: "사주가 성공적으로 삭제되었습니다."
@@ -70,42 +70,6 @@ export default function SajuList() {
     if (confirm(`"${name}" 사주를 정말 삭제하시겠습니까?`)) {
       deleteMutation.mutate(id);
     }
-  };
-
-  const getTimeDisplay = (hour: number, minute: number = 0) => {
-    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-    
-    // 전통 시간 구간 계산
-    const timeInMinutes = hour * 60 + minute;
-    let timePeriod = "자시";
-    
-    if ((timeInMinutes >= 1380) || (timeInMinutes >= 0 && timeInMinutes <= 59)) {
-      timePeriod = "자시";
-    } else if (timeInMinutes >= 60 && timeInMinutes <= 179) {
-      timePeriod = "축시";
-    } else if (timeInMinutes >= 180 && timeInMinutes <= 299) {
-      timePeriod = "인시";
-    } else if (timeInMinutes >= 300 && timeInMinutes <= 419) {
-      timePeriod = "묘시";
-    } else if (timeInMinutes >= 420 && timeInMinutes <= 539) {
-      timePeriod = "진시";
-    } else if (timeInMinutes >= 540 && timeInMinutes <= 659) {
-      timePeriod = "사시";
-    } else if (timeInMinutes >= 660 && timeInMinutes <= 779) {
-      timePeriod = "오시";
-    } else if (timeInMinutes >= 780 && timeInMinutes <= 899) {
-      timePeriod = "미시";
-    } else if (timeInMinutes >= 900 && timeInMinutes <= 1019) {
-      timePeriod = "신시";
-    } else if (timeInMinutes >= 1020 && timeInMinutes <= 1139) {
-      timePeriod = "유시";
-    } else if (timeInMinutes >= 1140 && timeInMinutes <= 1259) {
-      timePeriod = "술시";
-    } else if (timeInMinutes >= 1260 && timeInMinutes <= 1379) {
-      timePeriod = "해시";
-    }
-    
-    return `${timeString} (${timePeriod})`;
   };
 
   // 조건부 렌더링을 JSX에서 처리하여 hook 규칙 준수
@@ -151,7 +115,7 @@ export default function SajuList() {
                 사주 목록을 불러오는데 실패했습니다.
               </p>
               <Button 
-                onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/manse"] })}
+                onClick={() => refetch()}
                 data-testid="button-retry"
               >
                 다시 시도
@@ -193,18 +157,18 @@ export default function SajuList() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-medium text-base mb-1" data-testid={`text-name-${saju.id}`}>
-                        사주 #{saju.id.slice(-8)}
+                        {saju.name || "이름없음"}
                       </h3>
                       <div className="flex items-center text-sm text-muted-foreground mb-1">
                         <Calendar className="w-3 h-3 mr-1" />
                         <span data-testid={`text-birth-${saju.id}`}>
-                          {saju.isLunar === "true" ? "음력" : "양력"} {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일
+                          {saju.calendarType} {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일
                         </span>
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Clock className="w-3 h-3 mr-1" />
                         <span data-testid={`text-time-${saju.id}`}>
-                          {getTimeDisplay(saju.birthHour, 0)}
+                          {saju.birthTime || "시간 미설정"}
                         </span>
                       </div>
                     </div>
@@ -214,7 +178,7 @@ export default function SajuList() {
                       className="text-muted-foreground hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteSaju(saju.id, `사주 #${saju.id.slice(-8)}`);
+                        handleDeleteSaju(saju.id, saju.name || "이름없음");
                       }}
                       disabled={deleteMutation.isPending}
                       data-testid={`button-delete-${saju.id}`}
