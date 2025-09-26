@@ -46,18 +46,21 @@ export function convertLunarToSolarServer(year: number, month: number, day: numb
   try {
     const KoreanLunarCalendar = require('korean-lunar-calendar');
     
-    const result = KoreanLunarCalendar.solarCalendarFromLunarCalendar(year, month, day, isLeapMonth);
+    // 인스턴스 생성 후 음력 날짜 설정
+    const cal = new KoreanLunarCalendar();
+    cal.setLunarDate(year, month, day, isLeapMonth);
     
-    if (result && result.solar) {
-      return new Date(result.solar.year, result.solar.month - 1, result.solar.day);
-    } else {
-      // 라이브러리 실패 시 fallback
-      console.warn('Korean lunar calendar conversion failed, using fallback');
-      return new Date(year, month - 1, day);
-    }
+    // 양력 정보 가져오기
+    const solarInfo = cal.getSolarCalendar();
+    
+    console.log(`음력 ${year}-${month}-${day} → 양력 ${solarInfo.year}-${solarInfo.month}-${solarInfo.day}`);
+    
+    return new Date(solarInfo.year, solarInfo.month - 1, solarInfo.day);
+    
   } catch (error) {
     console.error('Lunar to solar conversion error:', error);
-    // 라이브러리 실패 시 기본 날짜 반환
+    // 라이브러리 실패 시 기본 날짜 반환 (양력으로 간주)
+    console.warn('Using input date as solar date fallback');
     return new Date(year, month - 1, day);
   }
 }
