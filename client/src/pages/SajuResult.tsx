@@ -18,6 +18,10 @@ interface SajuResultData {
   calendarType: string;
   gender: string;
   memo: string | null;
+  lunarYear: number | null;
+  lunarMonth: number | null;
+  lunarDay: number | null;
+  isLeapMonth: boolean | null;
   yearSky: string | null;
   yearEarth: string | null;
   monthSky: string | null;
@@ -120,9 +124,17 @@ export default function SajuResult() {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">생년월일:</span>
-                <span className="font-semibold">
-                  {record.calendarType} {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-semibold">
+                    {record.calendarType} {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
+                  </span>
+                  {record.lunarYear && record.lunarMonth && record.lunarDay && (
+                    <span className="text-sm text-muted-foreground mt-1">
+                      음력 {record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일
+                      {record.isLeapMonth ? " (윤달)" : ""}
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
