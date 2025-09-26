@@ -264,25 +264,25 @@ export default function SajuResult() {
               {/* 2. 천간 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
+                  className="border-r border-border p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.hourSky) }}
                 >
                   {record.hourSky || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
+                  className="border-r border-border p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.daySky) }}
                 >
                   {record.daySky || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
+                  className="border-r border-border p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.monthSky) }}
                 >
                   {record.monthSky || "?"}
                 </div>
                 <div 
-                  className="p-3 text-center text-lg font-bold text-black"
+                  className="p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.yearSky) }}
                 >
                   {record.yearSky || "?"}
@@ -292,25 +292,25 @@ export default function SajuResult() {
               {/* 3. 지지 (4칸) */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
+                  className="border-r border-border p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.hourEarth) }}
                 >
                   {record.hourEarth || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
+                  className="border-r border-border p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.dayEarth) }}
                 >
                   {record.dayEarth || "?"}
                 </div>
                 <div 
-                  className="border-r border-border p-3 text-center text-lg font-bold text-black"
+                  className="border-r border-border p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.monthEarth) }}
                 >
                   {record.monthEarth || "?"}
                 </div>
                 <div 
-                  className="p-3 text-center text-lg font-bold text-black"
+                  className="p-3 text-center text-[23px] font-bold text-black"
                   style={{ backgroundColor: getWuxingColor(record.yearEarth) }}
                 >
                   {record.yearEarth || "?"}
