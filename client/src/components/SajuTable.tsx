@@ -49,10 +49,10 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
       <div className="text-center mb-4">
         <div className="space-y-1">
           <div className="text-[13px] font-serif">
-            <span className="text-black font-semibold" data-testid="text-saju-title">현재 만세력</span>{" "}
-            <span className="text-[#00008b]" data-testid="text-solar-date">{solarDateString}</span>
+            <span className="text-foreground font-semibold" data-testid="text-saju-title">현재 만세력</span>{" "}
+            <span className="text-blue-700 dark:text-blue-300" data-testid="text-solar-date">{solarDateString}</span>
           </div>
-          <div className="text-[13px] font-serif text-[#00008b] pl-[84px]" data-testid="text-lunar-date">
+          <div className="text-[13px] font-serif text-blue-700 dark:text-blue-300 pl-[84px]" data-testid="text-lunar-date">
             {lunarDateString}
           </div>
         </div>

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User } from "lucide-react";
 import { format } from "date-fns";
+import logoPath from "@assets/만세력로고_1758875108140.png";
 
 interface MobileHeaderProps {
   currentDate: Date;
@@ -45,7 +46,12 @@ export default function MobileHeader({
 
         {/* 중앙: 앱 제목과 날짜 */}
         <div className="flex-1 text-center">
-          <h1 className="text-xl font-bold font-serif" data-testid="text-app-title">
+          <h1 className="text-xl font-bold font-serif flex items-center justify-center gap-2" data-testid="text-app-title">
+            <img 
+              src={logoPath} 
+              alt="만세력 로고" 
+              className="w-6 h-6 dark:invert"
+            />
             지천명 만세력
           </h1>
         </div>
