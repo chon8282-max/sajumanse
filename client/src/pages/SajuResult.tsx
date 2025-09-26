@@ -8,6 +8,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { calculateSaju } from "@/lib/saju-calculator";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
+import { Solar } from "lunar-javascript";
 
 interface SajuResultData {
   id: string;
@@ -191,11 +192,20 @@ export default function SajuResult() {
                 })()}세
               </div>
               <div className="text-[14px] text-[#1c1b1a] mt-[0px] mb-[0px]">
-                (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일{record.lunarYear && record.lunarMonth && record.lunarDay && (
-                  <span>
-                    {" "}(음){record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일{record.isLeapMonth ? " 윤달" : ""}
-                  </span>
-                )} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
+                (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일 {(() => {
+                  // 음력 데이터가 있으면 그것을 사용하고, 없으면 클라이언트에서 변환
+                  if (record.lunarYear && record.lunarMonth && record.lunarDay) {
+                    return `(음)${record.lunarYear}년 ${record.lunarMonth}월 ${record.lunarDay}일${record.isLeapMonth ? " 윤달" : ""}`;
+                  } else {
+                    try {
+                      const solar = Solar.fromYmd(record.birthYear, record.birthMonth, record.birthDay);
+                      const lunar = solar.getLunar();
+                      return `(음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일`;
+                    } catch (error) {
+                      return "(음)변환 오류";
+                    }
+                  }
+                })()} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
               </div>
             </div>
           </CardContent>
