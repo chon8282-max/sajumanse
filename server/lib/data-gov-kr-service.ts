@@ -22,7 +22,19 @@ async function makeApiRequest(endpoint: string, params: Record<string, string>):
   try {
     console.log(`Calling data.go.kr API: ${endpoint} with params:`, params);
     
-    const response = await fetch(url);
+    // AbortController로 2초 타임아웃 설정 (빠른 폴백)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2초 타임아웃
+    
+    const response = await fetch(url, { 
+      signal: controller.signal,
+      // 추가 설정으로 네트워크 타임아웃도 단축
+      headers: {
+        'Connection': 'close'
+      }
+    });
+    
+    clearTimeout(timeoutId); // 성공 시 타임아웃 정리
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
