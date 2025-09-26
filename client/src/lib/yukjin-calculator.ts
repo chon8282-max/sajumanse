@@ -10,6 +10,22 @@ const HEAVENLY_STEM_WUXING: Record<string, string> = {
   '壬': '수양', '癸': '수음'
 };
 
+// 지지별 장간 (藏干) - 각 지지에 숨어있는 천간들
+const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
+  '子': ['癸'],           // 자 - 계
+  '丑': ['己', '癸', '辛'], // 축 - 기, 계, 신
+  '寅': ['甲', '丙', '戊'], // 인 - 갑, 병, 무
+  '卯': ['乙'],           // 묘 - 을
+  '辰': ['戊', '乙', '癸'], // 진 - 무, 을, 계
+  '巳': ['丙', '庚', '戊'], // 사 - 병, 경, 무
+  '午': ['丁', '己'],      // 오 - 정, 기
+  '未': ['己', '丁', '乙'], // 미 - 기, 정, 을
+  '申': ['庚', '壬', '戊'], // 신 - 경, 임, 무
+  '酉': ['辛'],           // 유 - 신
+  '戌': ['戊', '辛', '丁'], // 술 - 무, 신, 정
+  '亥': ['壬', '甲']       // 해 - 임, 갑
+};
+
 // 육친 관계 매핑 (일간 기준)
 const YUKJIN_MAP: Record<string, Record<string, string>> = {
   // 甲일간 기준
@@ -95,7 +111,7 @@ const YUKJIN_MAP: Record<string, Record<string, string>> = {
 };
 
 /**
- * 육친 관계 계산
+ * 육친 관계 계산 (천간 기준)
  * @param dayHeavenlyStem 일간 (기준점)
  * @param targetHeavenlyStem 대상 천간
  * @returns 육친 관계
@@ -114,7 +130,29 @@ export function calculateYukjin(dayHeavenlyStem: string, targetHeavenlyStem: str
 }
 
 /**
- * 사주의 모든 육친 관계 계산
+ * 지지 육친 관계 계산 (지지의 주기를 이용)
+ * @param dayHeavenlyStem 일간 (기준점)
+ * @param targetEarthlyBranch 대상 지지
+ * @returns 육친 관계
+ */
+export function calculateEarthlyBranchYukjin(dayHeavenlyStem: string, targetEarthlyBranch: string): string {
+  if (!dayHeavenlyStem || !targetEarthlyBranch) {
+    return '육친';
+  }
+  
+  // 지지의 주기(첫 번째 장간) 찾기
+  const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[targetEarthlyBranch];
+  if (!hiddenStems || hiddenStems.length === 0) {
+    return '육친';
+  }
+  
+  // 주기(첫 번째 장간)를 이용하여 육친 계산
+  const primaryHiddenStem = hiddenStems[0];
+  return calculateYukjin(dayHeavenlyStem, primaryHiddenStem);
+}
+
+/**
+ * 사주의 모든 육친 관계 계산 (천간 기준)
  * @param daySky 일간
  * @param hourSky 시간
  * @param monthSky 월간
@@ -127,5 +165,50 @@ export function calculateAllYukjin(daySky: string, hourSky: string, monthSky: st
     day: '일간', // 일간은 항상 기준점이므로 '일간'으로 표시
     month: calculateYukjin(daySky, monthSky), 
     year: calculateYukjin(daySky, yearSky)
+  };
+}
+
+/**
+ * 사주의 모든 지지 육친 관계 계산 (지지 기준)
+ * @param daySky 일간
+ * @param hourEarth 시지
+ * @param dayEarth 일지 
+ * @param monthEarth 월지
+ * @param yearEarth 년지
+ * @returns 각 지지의 육친 관계
+ */
+export function calculateAllEarthlyBranchYukjin(daySky: string, hourEarth: string, dayEarth: string, monthEarth: string, yearEarth: string) {
+  return {
+    hour: calculateEarthlyBranchYukjin(daySky, hourEarth),
+    day: calculateEarthlyBranchYukjin(daySky, dayEarth), // 일지 육친 추가!
+    month: calculateEarthlyBranchYukjin(daySky, monthEarth),
+    year: calculateEarthlyBranchYukjin(daySky, yearEarth)
+  };
+}
+
+/**
+ * 사주 결과의 전체 육친 계산 (천간 + 지지)
+ * @param sajuData 사주 데이터
+ * @returns 천간과 지지의 육친 관계
+ */
+export function calculateCompleteYukjin(sajuData: any) {
+  const heavenlyYukjin = calculateAllYukjin(
+    sajuData.daySky, 
+    sajuData.hourSky, 
+    sajuData.monthSky, 
+    sajuData.yearSky
+  );
+  
+  const earthlyYukjin = calculateAllEarthlyBranchYukjin(
+    sajuData.daySky,
+    sajuData.hourEarth,
+    sajuData.dayEarth, 
+    sajuData.monthEarth,
+    sajuData.yearEarth
+  );
+  
+  return {
+    heavenly: heavenlyYukjin,
+    earthly: earthlyYukjin
   };
 }
