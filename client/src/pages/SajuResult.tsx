@@ -191,8 +191,7 @@ export default function SajuResult() {
                 })()}세
               </div>
               <div className="text-[14px] text-[#1c1b1a] mt-[0px] mb-[0px]">
-                (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일
-                {record.lunarYear && record.lunarMonth && record.lunarDay && (
+                (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일{record.lunarYear && record.lunarMonth && record.lunarDay && (
                   <span>
                     {" "}(음){record.lunarYear}년 {record.lunarMonth}월 {record.lunarDay}일{record.isLeapMonth ? " 윤달" : ""}
                   </span>
