@@ -163,14 +163,15 @@ export function calculateSaju(
     }
   }
   
-  // 입춘 기준으로 년도 조정 (양력 기준)
+  // 입춘 기준으로 년도 조정 (이중 조정 방지)
   let baseYear = solarDate ? solarDate.solarYear : year;
   const lichunDate = getLichunDate(baseYear);
   let sajuYear = year; // 년주는 음력 년도 기준
   
-  // 하지만 입춘 확인은 양력 날짜로
+  // 입춘 조정: 음력 변환이 이미 된 경우 추가 조정하지 않음
   const checkDate = solarDate ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay) : calcDate;
-  if (checkDate < lichunDate) {
+  // 음력 변환이 이미 되어 year가 baseYear와 다르면 이미 조정된 것으로 간주
+  if (checkDate < lichunDate && year === baseYear) {
     sajuYear = year - 1;
   }
   
