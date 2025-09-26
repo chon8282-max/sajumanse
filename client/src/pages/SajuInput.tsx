@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,14 +6,27 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface Group {
+  id: string;
+  name: string;
+  isDefault: boolean;
+}
 
 export default function SajuInput() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     calendarType: "양력",
@@ -21,9 +34,40 @@ export default function SajuInput() {
     month: "",
     day: "",
     birthTime: "",
+    selectedTimeCode: "",
     gender: "남자",
-    group: "",
+    groupId: "",
     memo: "",
+  });
+
+  // 그룹 목록 조회
+  const { data: groups = [] } = useQuery<Group[]>({
+    queryKey: ["/api/groups"],
+    select: (response: any) => response.data || [],
+  });
+
+  // 새 그룹 생성 뮤테이션
+  const createGroupMutation = useMutation({
+    mutationFn: async (groupName: string) => {
+      const response = await apiRequest("POST", "/api/groups", { name: groupName });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+      setNewGroupName("");
+      setIsGroupDialogOpen(false);
+      toast({
+        title: "그룹 생성 완료",
+        description: "새 그룹이 성공적으로 생성되었습니다.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "그룹 생성 실패",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 
   const handleBackToManseryeok = () => {
@@ -35,16 +79,7 @@ export default function SajuInput() {
   };
 
   const handleSubmit = async () => {
-    // 필수 필드 검증
-    if (!formData.name.trim()) {
-      toast({
-        title: "입력 오류",
-        description: "성명을 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // 생년월일 필수 검증
     if (!formData.year || !formData.month || !formData.day) {
       toast({
         title: "입력 오류", 
@@ -57,40 +92,35 @@ export default function SajuInput() {
     setIsSubmitting(true);
 
     try {
-      // API 요청 데이터 준비
+      // API 요청 데이터 준비 (이름이 비어있으면 "이름없음" 사용)
       const requestData = {
-        name: formData.name.trim(),
+        name: formData.name.trim() || "이름없음",
         birthYear: parseInt(formData.year),
         birthMonth: parseInt(formData.month),
         birthDay: parseInt(formData.day),
-        birthTime: formData.birthTime.trim() || null,
+        birthTime: formData.selectedTimeCode || formData.birthTime.trim() || null,
         calendarType: formData.calendarType,
         gender: formData.gender,
-        group: formData.group.trim() || null,
+        groupId: formData.groupId || null,
         memo: formData.memo.trim() || null,
       };
 
       console.log("사주 정보 저장 요청:", requestData);
 
       // API 호출
-      const response = await apiRequest("/api/saju-records", {
-        method: "POST",
-        body: JSON.stringify(requestData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await apiRequest("POST", "/api/saju-records", requestData);
+      const result = await response.json();
 
-      if (response.success) {
+      if (result.success) {
         toast({
           title: "저장 완료",
-          description: response.message || "사주 정보가 성공적으로 저장되었습니다.",
+          description: result.message || "사주 정보가 성공적으로 저장되었습니다.",
         });
 
         // 성공시 만세력 페이지로 이동
         setLocation("/manseryeok");
       } else {
-        throw new Error(response.error || "저장 중 오류가 발생했습니다.");
+        throw new Error(result.error || "저장 중 오류가 발생했습니다.");
       }
     } catch (error) {
       console.error("사주 저장 오류:", error);
@@ -198,16 +228,32 @@ export default function SajuInput() {
         </div>
 
         {/* 생시 */}
-        <div className="space-y-2">
-          <Label htmlFor="birthTime" className="text-base font-medium">생시</Label>
-          <Input
-            id="birthTime"
-            value={formData.birthTime}
-            onChange={(e) => handleInputChange("birthTime", e.target.value)}
-            placeholder="예: 14:30 또는 오후 2시 30분"
-            data-testid="input-birth-time"
-            className="text-base"
-          />
+        <div className="space-y-3">
+          <Label className="text-base font-medium">생시 (전통 십이시)</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {TRADITIONAL_TIME_PERIODS.map((period) => (
+              <Button
+                key={period.code}
+                type="button"
+                variant={formData.selectedTimeCode === period.code ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  handleInputChange("selectedTimeCode", period.code);
+                  handleInputChange("birthTime", period.code);
+                }}
+                className="h-auto py-3 px-3 flex flex-col items-center text-center"
+                data-testid={`button-time-${period.code}`}
+              >
+                <div className="font-semibold text-sm">{period.name}</div>
+                <div className="text-xs text-muted-foreground">{period.range}</div>
+              </Button>
+            ))}
+          </div>
+          {formData.selectedTimeCode && (
+            <div className="text-sm text-muted-foreground text-center mt-2">
+              선택된 시간: {TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.name} ({TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.range})
+            </div>
+          )}
         </div>
 
         {/* 성별 */}
@@ -232,24 +278,77 @@ export default function SajuInput() {
 
         {/* 그룹 */}
         <div className="space-y-2">
-          <Label htmlFor="group" className="text-base font-medium">그룹</Label>
+          <Label className="text-base font-medium">그룹</Label>
           <div className="flex gap-2">
-            <Input
-              id="group"
-              value={formData.group}
-              onChange={(e) => handleInputChange("group", e.target.value)}
-              placeholder="소속그룹용으로"
-              data-testid="input-group"
-              className="text-base flex-1"
-            />
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="whitespace-nowrap"
-              data-testid="button-create-group"
+            <Select 
+              value={formData.groupId} 
+              onValueChange={(value) => handleInputChange("groupId", value)}
             >
-              +그룹생성
-            </Button>
+              <SelectTrigger data-testid="select-group" className="text-base flex-1">
+                <SelectValue placeholder="그룹 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="" data-testid="select-group-none">그룹 없음</SelectItem>
+                {groups.map((group) => (
+                  <SelectItem key={group.id} value={group.id} data-testid={`select-group-${group.id}`}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="sm" 
+                  className="whitespace-nowrap"
+                  data-testid="button-create-group"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  그룹생성
+                </Button>
+              </DialogTrigger>
+              <DialogContent data-testid="dialog-create-group">
+                <DialogHeader>
+                  <DialogTitle>새 그룹 만들기</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="newGroupName">그룹 이름</Label>
+                    <Input
+                      id="newGroupName"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      placeholder="새 그룹 이름을 입력하세요"
+                      data-testid="input-new-group-name"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={() => setIsGroupDialogOpen(false)}
+                      data-testid="button-cancel-group"
+                    >
+                      취소
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={() => {
+                        if (newGroupName.trim()) {
+                          createGroupMutation.mutate(newGroupName.trim());
+                        }
+                      }}
+                      disabled={!newGroupName.trim() || createGroupMutation.isPending}
+                      data-testid="button-save-group"
+                    >
+                      {createGroupMutation.isPending ? "생성 중..." : "생성"}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
