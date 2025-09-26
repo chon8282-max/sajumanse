@@ -211,56 +211,6 @@ export default function SajuResult() {
           </CardContent>
         </Card>
 
-        {/* 사주팔자 표 */}
-        <Card>
-          <CardContent className="py-3">
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-border">
-                <thead>
-                  <tr className="bg-muted/50">
-                    <th className="border border-border p-3 text-sm font-semibold">구분</th>
-                    <th className="border border-border p-3 text-sm font-semibold">년주</th>
-                    <th className="border border-border p-3 text-sm font-semibold">월주</th>
-                    <th className="border border-border p-3 text-sm font-semibold">일주</th>
-                    <th className="border border-border p-3 text-sm font-semibold">시주</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border border-border p-3 text-sm font-semibold bg-muted/30">천간</td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.yearSky || "?"}
-                    </td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.monthSky || "?"}
-                    </td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.daySky || "?"}
-                    </td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.hourSky || "?"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-border p-3 text-sm font-semibold bg-muted/30">지지</td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.yearEarth || "?"}
-                    </td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.monthEarth || "?"}
-                    </td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.dayEarth || "?"}
-                    </td>
-                    <td className="border border-border p-4 text-center text-lg font-bold">
-                      {record.hourEarth || "?"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* 대운표 */}
         <Card>
