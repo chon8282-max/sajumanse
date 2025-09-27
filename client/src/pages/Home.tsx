@@ -12,7 +12,6 @@ import { type SajuInfo } from "@shared/schema";
 import { RefreshCw, Sparkles, Save } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-// lunar converter는 서버에서만 사용 가능
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
@@ -26,14 +25,44 @@ export default function Home() {
     hour: number;
     isLunar: boolean;
   } | null>(null);
+  const [lunarDateString, setLunarDateString] = useState<string>("음력 날짜");
+
+  // 음력 날짜 API 호출
+  const { data: lunarData, error: lunarError } = useQuery({
+    queryKey: ["/api/lunar-solar/convert/lunar", lastUpdated.getFullYear(), lastUpdated.getMonth() + 1, lastUpdated.getDate()],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest("POST", "/api/lunar-solar/convert/lunar", {
+          solYear: lastUpdated.getFullYear(),
+          solMonth: lastUpdated.getMonth() + 1,
+          solDay: lastUpdated.getDate()
+        }) as any;
+        return response;
+      } catch (error) {
+        console.log('Lunar API failed, using fallback');
+        return null;
+      }
+    },
+    staleTime: 1000 * 60 * 60, // 1시간 동안 캐시
+    refetchOnWindowFocus: false,
+    retry: false // API 실패 시 재시도 안함
+  });
 
   // 현재 날짜의 양력/음력 정보 생성
   const getCurrentDateInfo = () => {
     const now = lastUpdated;
-    const solarDate = format(now, 'yyyy년 M월 d일 EEEE', { locale: ko });
+    const solarDate = format(now, 'yyyy년 M월 d일', { locale: ko });
     
-    // 음력 정보 - 클라이언트에서는 간단히 표시
-    const lunarInfo = '음력 날짜';
+    // 음력 정보 - API 응답에서 가져오기, 실패 시 명확한 메시지 표시
+    let lunarInfo = "음력 정보 로딩중...";
+    if (lunarData?.success && lunarData.data) {
+      const lunar = lunarData.data;
+      const leapMonth = lunar.lunLeapMonth === '윤' ? ' (윤달)' : '';
+      lunarInfo = `음력 ${lunar.lunYear}년 ${lunar.lunMonth}월 ${lunar.lunDay}일${leapMonth}`;
+    } else if (lunarData === null || lunarError) {
+      // API 실패 시 명확한 안내 메시지
+      lunarInfo = "음력 정보 일시 불가";
+    }
 
     return { solarDate, lunarInfo };
   };
@@ -177,10 +206,17 @@ export default function Home() {
 
         {/* 현재 시각의 만세력 */}
         <div className="space-y-3">
+          {/* 양력/음력 날짜 표시 */}
+          <div className="text-center" style={{ color: '#00008b' }}>
+            <div>양력 {getCurrentDateInfo().solarDate}</div>
+            <div>{getCurrentDateInfo().lunarInfo}</div>
+          </div>
+          
           <SajuTable 
             saju={currentSaju}
             title="현재 만세력"
             gender="남자"
+            simplified={true}
           />
         </div>
 
