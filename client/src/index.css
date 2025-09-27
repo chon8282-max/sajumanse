@@ -29,10 +29,10 @@
   font-display: swap;
 }
 
-/* 조선 궁서체 폰트 정의 */
+/* 조선 굵은명조체 폰트 정의 */
 @font-face {
-  font-family: 'ChosunGs';
-  src: url('/attached_assets/ChosunGs_1758993005415.TTF') format('truetype');
+  font-family: 'ChosunKm';
+  src: url('/attached_assets/ChosunKm_1758994013019.TTF') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -50,9 +50,9 @@
   font-weight: 500 !important;
 }
 
-/* 조선 궁서체 폰트 클래스 적용 */
+/* 조선 굵은명조체 폰트 클래스 적용 */
 .font-noto-bold {
-  font-family: 'ChosunGs', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif !important;
+  font-family: 'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif !important;
   font-weight: normal !important;
 }
 
