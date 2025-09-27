@@ -145,7 +145,8 @@ export default function SajuInput() {
       const result = await response.json();
 
       if (result.success) {
-        // 내부적으로 저장만 되고 메시지는 표시하지 않음
+        // 사주 목록 캐시 새로고침 (저장된 사주가 리스트에 나타나도록)
+        queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
         
         // 성공시 사주 결과 페이지로 이동
         if (result.data?.record?.id) {
