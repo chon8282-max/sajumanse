@@ -4,11 +4,15 @@ import { type SajuInfo } from "@shared/schema";
 interface CurrentTimeTableProps {
   saju: SajuInfo;
   title?: string;
+  solarDate?: string;
+  lunarInfo?: string;
 }
 
 export default function CurrentTimeTable({ 
   saju, 
-  title = "현재 만세력"
+  title = "현재 만세력",
+  solarDate,
+  lunarInfo
 }: CurrentTimeTableProps) {
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
@@ -41,7 +45,18 @@ export default function CurrentTimeTable({
     <Card className="p-4" data-testid="card-current-time-table">
       {/* 제목 */}
       <div className="text-center mb-4">
-        <div className="font-tmon text-lg font-bold mb-2">{title}</div>
+        <div className="font-tmon text-lg font-bold" style={{ color: '#00008b', fontFamily: 'monospace' }}>
+          <div style={{ display: 'table', margin: '0 auto' }}>
+            <div style={{ display: 'table-row' }}>
+              <div style={{ display: 'table-cell', textAlign: 'right', paddingRight: '0px' }}>{title}</div>
+              <div style={{ display: 'table-cell', textAlign: 'left', paddingLeft: '8px' }}>({solarDate || '양력 정보 없음'})</div>
+            </div>
+            <div style={{ display: 'table-row' }}>
+              <div style={{ display: 'table-cell', textAlign: 'right', paddingRight: '0px' }}></div>
+              <div style={{ display: 'table-cell', textAlign: 'left', paddingLeft: '8px' }}>({lunarInfo || '음력 정보 없음'})</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* 현재 만세력 간단 테이블 (1-2행만) */}
