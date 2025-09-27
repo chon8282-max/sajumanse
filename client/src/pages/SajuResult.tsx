@@ -319,9 +319,9 @@ export default function SajuResult() {
   const saeunGridCols = getSaeunGridCols(saeunTableCols);
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-2">
       {/* 헤더 */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex items-center gap-4 mb-2">
         <Button 
           variant="ghost" 
           size="sm"
@@ -392,9 +392,9 @@ export default function SajuResult() {
           birthYear={record.birthYear}
           birthMonth={record.birthMonth}
           birthDay={record.birthDay}
-          lunarYear={record.lunarYear}
-          lunarMonth={record.lunarMonth}
-          lunarDay={record.lunarDay}
+          lunarYear={record.lunarYear || undefined}
+          lunarMonth={record.lunarMonth || undefined}
+          lunarDay={record.lunarDay || undefined}
           birthHour={record.birthTime || ''}
           daySky={record.daySky || ''}
           dayEarth={record.dayEarth || ''}
@@ -404,7 +404,7 @@ export default function SajuResult() {
 
 
         {/* 하단 버튼 */}
-        <div className="pt-4 space-y-3">
+        <div className="pt-2 space-y-2">
           <Button 
             onClick={handleBack}
             size="lg"
