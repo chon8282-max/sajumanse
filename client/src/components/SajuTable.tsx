@@ -400,7 +400,7 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(col.sky)
@@ -417,7 +417,7 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(col.earth)
@@ -474,7 +474,7 @@ export default function SajuTable({
           {daeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`daeun-sky-${colIndex}`}
-              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -491,7 +491,7 @@ export default function SajuTable({
           {daeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`daeun-earth-${colIndex}`}
-              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -522,7 +522,7 @@ export default function SajuTable({
           {saeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`saeun-sky-${colIndex}`}
-              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -539,7 +539,7 @@ export default function SajuTable({
           {saeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`saeun-earth-${colIndex}`}
-              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -580,7 +580,7 @@ export default function SajuTable({
           {wolunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`wolun-sky-${colIndex}`}
-              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -597,7 +597,7 @@ export default function SajuTable({
           {wolunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`wolun-earth-${colIndex}`}
-              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
