@@ -375,16 +375,34 @@ export default function SajuResult() {
 
               {/* 7. 대운천간출력 (10칸) */}
               <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {Array.from({length: 10}, (_, i) => (
-                  <div key={i} className="border-r border-border p-2 text-center text-sm font-bold last:border-r-0">대운천간</div>
-                ))}
+                {daeunData.daeunGapja.slice().reverse().map((gapja, i) => {
+                  const cheongan = gapja.charAt(0); // 천간 추출
+                  return (
+                    <div 
+                      key={i} 
+                      className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon last:border-r-0"
+                      style={{ backgroundColor: getWuxingColor(cheongan) }}
+                    >
+                      {cheongan}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* 8. 대운지지출력 (10칸) */}
               <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {Array.from({length: 10}, (_, i) => (
-                  <div key={i} className="border-r border-border p-2 text-center text-sm font-bold last:border-r-0">대운지지</div>
-                ))}
+                {daeunData.daeunGapja.slice().reverse().map((gapja, i) => {
+                  const jiji = gapja.charAt(1); // 지지 추출
+                  return (
+                    <div 
+                      key={i} 
+                      className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon last:border-r-0"
+                      style={{ backgroundColor: getWuxingColor(jiji) }}
+                    >
+                      {jiji}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* 9. 세운년도출력 (12칸) */}
