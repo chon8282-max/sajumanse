@@ -20,7 +20,7 @@ import {
   DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, count } from "drizzle-orm";
+import { eq, and, gte, lte, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 // 만세력 데이터를 위한 스토리지 인터페이스 확장
@@ -38,7 +38,7 @@ export interface IStorage {
   
   // 사주 기록 관련 (새로운 스키마)
   getSajuRecord(id: string): Promise<SajuRecord | undefined>;
-  getSajuRecords(limit?: number): Promise<SajuRecord[]>;
+  getSajuRecords(limit?: number, searchText?: string, groupId?: string): Promise<SajuRecord[]>;
   createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord>;
   updateSajuRecord(id: string, data: Partial<SajuRecord>): Promise<SajuRecord | undefined>;
   deleteSajuRecord(id: string): Promise<boolean>;
@@ -141,9 +141,34 @@ export class DatabaseStorage implements IStorage {
     return record || undefined;
   }
 
-  async getSajuRecords(limit: number = 50): Promise<SajuRecord[]> {
-    const results = await db.select().from(sajuRecords).limit(limit);
-    return results;
+  async getSajuRecords(
+    limit: number = 50, 
+    searchText?: string, 
+    groupId?: string
+  ): Promise<SajuRecord[]> {
+    // 조건별로 직접 쿼리 생성
+    if (searchText && groupId) {
+      // 검색과 그룹 둘 다 있을 때
+      return await db.select().from(sajuRecords)
+        .where(and(
+          sql`${sajuRecords.name} ILIKE ${'%' + searchText + '%'}`,
+          eq(sajuRecords.groupId, groupId)
+        ))
+        .limit(limit);
+    } else if (searchText) {
+      // 검색만 있을 때
+      return await db.select().from(sajuRecords)
+        .where(sql`${sajuRecords.name} ILIKE ${'%' + searchText + '%'}`)
+        .limit(limit);
+    } else if (groupId) {
+      // 그룹만 있을 때
+      return await db.select().from(sajuRecords)
+        .where(eq(sajuRecords.groupId, groupId))
+        .limit(limit);
+    } else {
+      // 아무 조건도 없을 때
+      return await db.select().from(sajuRecords).limit(limit);
+    }
   }
 
   async createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord> {
@@ -410,8 +435,25 @@ export class MemStorage implements IStorage {
     return this.sajuRecords.get(id);
   }
 
-  async getSajuRecords(limit: number = 50): Promise<SajuRecord[]> {
-    const records = Array.from(this.sajuRecords.values());
+  async getSajuRecords(
+    limit: number = 50, 
+    searchText?: string, 
+    groupId?: string
+  ): Promise<SajuRecord[]> {
+    let records = Array.from(this.sajuRecords.values());
+    
+    // 검색 텍스트 필터링 (이름으로 검색)
+    if (searchText) {
+      records = records.filter(record => 
+        record.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+    
+    // 그룹 ID 필터링
+    if (groupId) {
+      records = records.filter(record => record.groupId === groupId);
+    }
+    
     return records.slice(0, limit);
   }
 
@@ -430,6 +472,10 @@ export class MemStorage implements IStorage {
       groupId: data.groupId ?? null,
       group: data.group ?? null,
       memo: data.memo ?? null,
+      lunarYear: data.lunarYear ?? null,
+      lunarMonth: data.lunarMonth ?? null,
+      lunarDay: data.lunarDay ?? null,
+      isLeapMonth: data.isLeapMonth ?? false,
       yearSky: null,
       yearEarth: null,
       monthSky: null,
@@ -590,8 +636,8 @@ export class MemStorage implements IStorage {
       daeunStartAge: data.daeunStartAge,
       daeunList: data.daeunList,
       saeunStartYear: data.saeunStartYear,
-      calculationDate: data.calculationDate,
-      algorithmVersion: data.algorithmVersion,
+      calculationDate: data.calculationDate ?? now,
+      algorithmVersion: data.algorithmVersion ?? "1.0",
       createdAt: now,
       updatedAt: now,
     };

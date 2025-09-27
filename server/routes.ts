@@ -270,11 +270,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 사주 기록 목록 조회
+  // 사주 기록 목록 조회 (검색/필터링 지원)
   app.get("/api/saju-records", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
-      const records = await storage.getSajuRecords(limit);
+      const searchText = req.query.search as string;
+      const groupId = req.query.groupId as string;
+      
+      console.log(`사주 기록 조회 요청: limit=${limit}, searchText=${searchText}, groupId=${groupId}`);
+      
+      const records = await storage.getSajuRecords(limit, searchText, groupId);
       res.json({
         success: true,
         data: records
