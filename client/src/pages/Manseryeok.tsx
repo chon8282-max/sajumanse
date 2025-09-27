@@ -14,7 +14,7 @@ export default function Manseryeok() {
     {
       id: "new-birth",
       title: "새 생년월일 입력",
-      description: "생년월일과 시간을 입력하여 사주를 확인하세요",
+      description: "생년월일과 시간을 입력하세요.",
       icon: Calendar,
       color: "bg-blue-100 dark:bg-blue-900/50",
       borderColor: "border-blue-300 dark:border-blue-700",
@@ -119,12 +119,6 @@ export default function Manseryeok() {
         ))}
       </div>
 
-      {/* 안내 메시지 */}
-      <div className="mt-8 text-center">
-        <p className="text-sm text-muted-foreground">
-          만세력의 모든 기능을 이용하여 정확한 사주를 확인하세요
-        </p>
-      </div>
     </div>
   );
 }
