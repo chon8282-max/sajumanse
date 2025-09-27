@@ -377,7 +377,7 @@ export default function SajuResult() {
               </div>
               <div className="text-sm text-muted-foreground">
                 {record.calendarType} {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일{" "}
-                {timePeriod?.label || record.birthTime || "시간 미상"}
+                {timePeriod?.name || record.birthTime || "시간 미상"}
               </div>
             </div>
           </CardContent>
