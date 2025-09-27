@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,13 +11,13 @@ import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
 import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
 import { calculateCompleteYukjin } from "@/lib/yukjin-calculator";
-import { calculateCompleteDaeun } from "@/lib/daeun-calculator";
+import { calculateCompleteDaeun, calculateCurrentAge, findCurrentDaeun, DaeunPeriod } from "@/lib/daeun-calculator";
 import DaeunDisplay from "@/components/DaeunDisplay";
 
 // 다음 간지 계산 (60갑자 순환)
 function getNextGanji(sky: string, earth: string) {
-  const skyIndex = CHEONGAN.indexOf(sky);
-  const earthIndex = JIJI.indexOf(earth);
+  const skyIndex = CHEONGAN.indexOf(sky as any);
+  const earthIndex = JIJI.indexOf(earth as any);
   
   if (skyIndex === -1 || earthIndex === -1) {
     throw new Error(`Invalid ganji: ${sky}${earth}`);
@@ -32,8 +32,32 @@ function getNextGanji(sky: string, earth: string) {
   };
 }
 
-// 세운 계산 (태어난 다음날부터 시작)
-function calculateSaeun(birthYear: number, startSky: string, startEarth: string, yearsCount: number = 12) {
+// 이전 간지 계산 (60갑자 순환 역방향)
+function getPrevGanji(sky: string, earth: string) {
+  const skyIndex = CHEONGAN.indexOf(sky as any);
+  const earthIndex = JIJI.indexOf(earth as any);
+  
+  if (skyIndex === -1 || earthIndex === -1) {
+    throw new Error(`Invalid ganji: ${sky}${earth}`);
+  }
+  
+  const prevSkyIndex = (skyIndex - 1 + CHEONGAN.length) % CHEONGAN.length;
+  const prevEarthIndex = (earthIndex - 1 + JIJI.length) % JIJI.length;
+  
+  return {
+    sky: CHEONGAN[prevSkyIndex],
+    earth: JIJI[prevEarthIndex]
+  };
+}
+
+// 개선된 세운 계산 (offset과 window size 지원)
+function calculateSaeun(
+  birthYear: number, 
+  startSky: string, 
+  startEarth: string, 
+  windowSize: number = 12,
+  offsetAge: number = 0
+) {
   const years: number[] = [];
   const ages: number[] = [];
   const skyStems: string[] = [];
@@ -47,9 +71,33 @@ function calculateSaeun(birthYear: number, startSky: string, startEarth: string,
   currentSky = nextGanji.sky;
   currentEarth = nextGanji.earth;
   
-  for (let i = 0; i < yearsCount; i++) {
-    years.push(birthYear + i);
-    ages.push(i + 1);
+  // 실제 시작 나이와 년도 계산 (최소 1세)
+  const startAge = Math.max(1, offsetAge + 1);
+  const startYear = birthYear + startAge;
+  
+  // 시작 지점까지 간지 진행 (1세부터 계산)
+  const adjustedOffset = startAge - 1; // 1세가 0 오프셋
+  if (adjustedOffset >= 0) {
+    for (let i = 0; i < adjustedOffset; i++) {
+      const next = getNextGanji(currentSky, currentEarth);
+      currentSky = next.sky;
+      currentEarth = next.earth;
+    }
+  } else {
+    for (let i = 0; i < Math.abs(adjustedOffset); i++) {
+      const prev = getPrevGanji(currentSky, currentEarth);
+      currentSky = prev.sky;
+      currentEarth = prev.earth;
+    }
+  }
+  
+  // window size만큼 세운 데이터 생성
+  for (let i = 0; i < windowSize; i++) {
+    const currentYear = startYear + i;
+    const currentAge = startAge + i;
+    
+    years.push(currentYear);
+    ages.push(currentAge);
     skyStems.push(currentSky);
     earthBranches.push(currentEarth);
     
@@ -87,35 +135,32 @@ interface SajuResultData {
 }
 
 export default function SajuResult() {
+  // 모든 hooks를 최상단에 선언
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/saju-result/:id");
+  const [focusedDaeun, setFocusedDaeun] = useState<DaeunPeriod | null>(null);
+  const [saeunOffset, setSaeunOffset] = useState(0);
+  const { toast } = useToast();
   
-  // 잘못된 경로인 경우 리다이렉트 처리
-  useEffect(() => {
-    if (!match || !params?.id) {
-      console.error("Invalid saju result route");
-      setLocation("/manseryeok");
-    }
-  }, [match, params?.id, setLocation]);
-
-  if (!match || !params?.id) {
-    return null; // 리다이렉트가 처리되는 동안 아무것도 렌더링하지 않음
-  }
-
-  // 사주 데이터 조회
+  // 사주 데이터 조회 (항상 호출)
   const { data: sajuData, isLoading } = useQuery<{success: boolean, data: SajuResultData}>({
-    queryKey: ["/api/saju-records", params.id],
+    queryKey: ["/api/saju-records", params?.id || "null"],
     queryFn: async () => {
+      if (!params?.id) {
+        throw new Error("No ID provided");
+      }
       const response = await apiRequest("GET", `/api/saju-records/${params.id}`);
       return await response.json();
     },
+    enabled: !!params?.id,
   });
 
-  const { toast } = useToast();
-
-  // 저장 mutation (메모만 업데이트)
+  // 저장 mutation
   const saveMutation = useMutation({
     mutationFn: async (memo: string) => {
+      if (!params?.id) {
+        throw new Error("No ID provided");
+      }
       const response = await apiRequest("PUT", `/api/saju-records/${params.id}`, {
         memo: memo
       });
@@ -127,7 +172,7 @@ export default function SajuResult() {
         description: "사주 정보가 성공적으로 저장되었습니다.",
         duration: 800
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
     },
     onError: (error) => {
       console.error('Save error:', error);
@@ -139,6 +184,70 @@ export default function SajuResult() {
     }
   });
 
+  // 모든 계산을 useMemo로 감싸기
+  const calculatedData = useMemo(() => {
+    if (!sajuData?.success || !sajuData.data) {
+      return null;
+    }
+
+    const record = sajuData.data;
+    const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === record.birthTime);
+    
+    // 육친 관계 계산
+    const yukjinData = calculateCompleteYukjin(record);
+    const heavenlyYukjin = yukjinData.heavenly;
+    const earthlyYukjin = yukjinData.earthly;
+    
+    // 대운 계산
+    const daeunData = calculateCompleteDaeun(record);
+    
+    // 현재 나이 계산 및 현재 대운 찾기
+    const currentAge = calculateCurrentAge(record.birthYear, record.birthMonth, record.birthDay);
+    const currentDaeun = findCurrentDaeun(currentAge, daeunData.daeunPeriods);
+    
+    return {
+      record,
+      timePeriod,
+      yukjinData,
+      heavenlyYukjin,
+      earthlyYukjin,
+      daeunData,
+      currentAge,
+      currentDaeun
+    };
+  }, [sajuData]);
+
+  // 세운 계산
+  const saeunData = useMemo(() => {
+    if (!calculatedData?.record.daySky || !calculatedData?.record.dayEarth || !focusedDaeun) {
+      return null;
+    }
+    
+    return calculateSaeun(
+      calculatedData.record.birthYear, 
+      calculatedData.record.daySky, 
+      calculatedData.record.dayEarth, 
+      12,
+      focusedDaeun.startAge - 1 + saeunOffset
+    );
+  }, [calculatedData, focusedDaeun, saeunOffset]);
+
+  // focusedDaeun 초기 설정
+  useEffect(() => {
+    if (calculatedData?.currentDaeun && !focusedDaeun) {
+      setFocusedDaeun(calculatedData.currentDaeun);
+    }
+  }, [calculatedData, focusedDaeun]);
+
+  // 잘못된 경로인 경우 리다이렉트
+  useEffect(() => {
+    if (!match || !params?.id) {
+      console.error("Invalid saju result route");
+      setLocation("/manseryeok");
+    }
+  }, [match, params?.id, setLocation]);
+
+  // 핸들러 함수들
   const handleBack = () => {
     setLocation("/manseryeok");
   };
@@ -150,7 +259,6 @@ export default function SajuResult() {
   };
 
   const handleEdit = () => {
-    // 수정 버튼: 사주 입력 페이지로 이동 (기존 데이터 포함)
     if (sajuData?.data) {
       const record = sajuData.data;
       const queryParams = new URLSearchParams({
@@ -170,6 +278,7 @@ export default function SajuResult() {
     }
   };
 
+  // 로딩 상태
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -178,7 +287,8 @@ export default function SajuResult() {
     );
   }
 
-  if (!sajuData?.success || !sajuData.data) {
+  // 데이터 없음
+  if (!calculatedData) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <div className="text-lg text-muted-foreground">사주 정보를 찾을 수 없습니다.</div>
@@ -187,20 +297,26 @@ export default function SajuResult() {
     );
   }
 
-  const record = sajuData.data;
-  const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === record.birthTime);
+  const { record, timePeriod, heavenlyYukjin, earthlyYukjin, daeunData } = calculatedData;
+
+  // 메인 테이블 그리드 컬럼 수 계산 (사주 4주 + 대운 개수)
+  const mainTableCols = 4 + daeunData.daeunPeriods.length;
+  const getMainGridCols = (cols: number) => {
+    if (cols <= 12) return "grid-cols-12";
+    if (cols <= 13) return "grid-cols-13";
+    return "grid-cols-14"; // 최대 14컬럼
+  };
+  const mainGridCols = getMainGridCols(mainTableCols);
   
-  // 육친 관계 계산 (천간 + 지지)
-  const yukjinData = calculateCompleteYukjin(record);
-  const heavenlyYukjin = yukjinData.heavenly; // 천간 육친
-  const earthlyYukjin = yukjinData.earthly;   // 지지 육친
-  
-  // 대운 계산
-  const daeunData = calculateCompleteDaeun(record);
-  
-  // 세운 계산 (일주 천간지지 기반)
-  const saeunData = record.daySky && record.dayEarth ? 
-    calculateSaeun(record.birthYear, record.daySky, record.dayEarth, 12) : null;
+  // 세운 행 그리드 컬럼 수 (사주 4주 라벨 + 실제 세운 윈도우)
+  const saeunTableCols = saeunData ? 4 + saeunData.years.length : 16;
+  const getSaeunGridCols = (cols: number) => {
+    if (cols <= 14) return "grid-cols-14";
+    if (cols <= 15) return "grid-cols-15";
+    if (cols <= 16) return "grid-cols-16";
+    return "grid-cols-17"; // 최대값
+  };
+  const saeunGridCols = getSaeunGridCols(saeunTableCols);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -243,8 +359,9 @@ export default function SajuResult() {
           </Button>
         </div>
       </div>
+
       <div className="max-w-2xl mx-auto">
-        {/* 기본 정보 - 간단하게 2줄로 */}
+        {/* 기본 정보 */}
         <Card className="mb-2">
           <CardContent className="py-3">
             <div className="text-center space-y-1">
@@ -258,340 +375,226 @@ export default function SajuResult() {
                   return age;
                 })()}세
               </div>
-              <div className="font-semibold text-gray-800 dark:text-gray-200 text-[13px] mt-[0px] mb-[0px]">
-                {/* 김재완 특별 처리: 양력 1975.1.14, 음력 1974.12.3 */}
-                {record.name === "김재완" ? (
-                  <>양력 1975년 1월 14일 음력 1974년 12월 3일 {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生</>
-                ) : (
-                  <>
-                    {record.calendarType === "음력" ? (
-                      `(음)${record.birthYear}년 ${record.birthMonth}월 ${record.birthDay}일`
-                    ) : (
-                      `(양)${record.birthYear}년 ${record.birthMonth}월 ${record.birthDay}일`
-                    )} {(() => {
-                      // 음력 데이터가 있으면 그것을 사용하고, 없으면 클라이언트에서 변환
-                      if (record.lunarYear && record.lunarMonth && record.lunarDay && record.calendarType === "양력") {
-                        return `(음)${record.lunarYear}년 ${record.lunarMonth}월 ${record.lunarDay}일${record.isLeapMonth ? " 윤달" : ""}`;
-                      } else if (record.calendarType === "양력") {
-                        try {
-                          const solar = Solar.fromYmd(record.birthYear, record.birthMonth, record.birthDay);
-                          const lunar = solar.getLunar();
-                          return `(음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일`;
-                        } catch (error) {
-                          return "";
-                        }
-                      }
-                      return "";
-                    })()} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
-                  </>
-                )}
-              </div>
-              
-              {/* 분석 버튼들 */}
-              <div className="grid grid-cols-4 gap-1 mt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 text-xs leading-none py-1 px-2"
-                  data-testid="button-yin-yang-wuxing"
-                >
-                  음양오행
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 text-xs leading-none py-1 px-2"
-                  data-testid="button-shinsal"
-                >
-                  신살
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 text-xs leading-none py-1 px-2"
-                  data-testid="button-12shinsal"
-                >
-                  12신살
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="h-7 text-xs leading-none py-1 px-2"
-                  data-testid="button-compatibility"
-                >
-                  궁합
-                </Button>
+              <div className="text-sm text-muted-foreground">
+                {record.calendarType} {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일{" "}
+                {timePeriod?.label || record.birthTime || "시간 미상"}
               </div>
             </div>
           </CardContent>
         </Card>
 
-
         {/* 사주명식 테이블 */}
         <Card>
           <CardContent className="p-2">
+            {/* 세운 네비게이션 컨트롤 */}
+            <div className="flex items-center justify-between mb-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSaeunOffset(offset => Math.max(offset - 10, -50))}
+                disabled={saeunOffset <= -50}
+                data-testid="button-saeun-prev"
+                className="text-xs px-2 py-1"
+              >
+                ← 과거 10년
+              </Button>
+              
+              <div className="text-center">
+                <div className="text-lg font-bold font-tmon">사주 명식표</div>
+                {focusedDaeun && (
+                  <div className="text-xs text-muted-foreground">
+                    {focusedDaeun.gapja}대운 ({focusedDaeun.startAge}~{focusedDaeun.endAge}세)
+                    {saeunOffset !== 0 && (
+                      <span className="ml-2 text-blue-600 dark:text-blue-400">
+                        {saeunOffset > 0 ? `+${saeunOffset}년` : `${saeunOffset}년`}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSaeunOffset(offset => Math.min(offset + 10, 50))}
+                disabled={saeunOffset >= 50}
+                data-testid="button-saeun-next"
+                className="text-xs px-2 py-1"
+              >
+                미래 10년 →
+              </Button>
+            </div>
+            
             <div className="w-full">
-              {/* 1. 천간 육친 (4칸) */}
+              {/* 사주 명식표 내용 */}
               <div className="grid grid-cols-4 border-t border-l border-r border-border">
                 <div className="border-r border-border p-1 text-center text-[13px] font-medium">{heavenlyYukjin.hour}</div>
                 <div className="border-r border-border p-1 text-center text-[13px] font-medium bg-yellow-50 dark:bg-yellow-900/20">{heavenlyYukjin.day}</div>
                 <div className="border-r border-border p-1 text-center text-[13px] font-medium">{heavenlyYukjin.month}</div>
-                <div className="p-1 text-center text-[13px] font-medium">{heavenlyYukjin.year}</div>
+                <div className="border-r border-border p-1 text-center text-[13px] font-medium last:border-r-0">{heavenlyYukjin.year}</div>
               </div>
 
-              {/* 2. 천간 (4칸) */}
-              <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div 
-                  className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.hourSky) }}
-                >
-                  {record.hourSky || "?"}
+              {/* 사주 4주 + 대운 + 세운 */}
+              <div className={`grid ${mainGridCols} border-t border-l border-r border-border`}>
+                {/* 시주 */}
+                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.hourSky)}}>
+                  {record.hourSky}
                 </div>
-                <div 
-                  className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.daySky) }}
-                >
-                  {record.daySky || "?"}
+                {/* 일주 (배경색 강조) */}
+                <div className="border-r border-border p-1 text-center text-sm font-bold bg-yellow-50 dark:bg-yellow-900/20" style={{color: getWuxingColor(record.daySky)}}>
+                  {record.daySky}
                 </div>
-                <div 
-                  className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.monthSky) }}
-                >
-                  {record.monthSky || "?"}
+                {/* 월주 */}
+                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.monthSky)}}>
+                  {record.monthSky}
                 </div>
-                <div 
-                  className="px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.yearSky) }}
-                >
-                  {record.yearSky || "?"}
+                {/* 년주 */}
+                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.yearSky)}}>
+                  {record.yearSky}
                 </div>
-              </div>
-
-              {/* 3. 지지 (4칸) */}
-              <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div 
-                  className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.hourEarth) }}
-                >
-                  {record.hourEarth || "?"}
-                </div>
-                <div 
-                  className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.dayEarth) }}
-                >
-                  {record.dayEarth || "?"}
-                </div>
-                <div 
-                  className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.monthEarth) }}
-                >
-                  {record.monthEarth || "?"}
-                </div>
-                <div 
-                  className="px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon"
-                  style={{ backgroundColor: getWuxingColor(record.yearEarth) }}
-                >
-                  {record.yearEarth || "?"}
-                </div>
-              </div>
-
-              {/* 4. 지지 육친 (4칸) */}
-              <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{earthlyYukjin.hour}</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium bg-yellow-50 dark:bg-yellow-900/20">{earthlyYukjin.day}</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{earthlyYukjin.month}</div>
-                <div className="p-1 text-center text-[13px] font-medium">{earthlyYukjin.year}</div>
-              </div>
-
-              {/* 5. 지장간 출력자리 (4칸) */}
-              <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                {/* 시주 지장간 */}
-                <div className="border-r border-border p-2 text-center text-xs">
-                  <span className="font-medium text-foreground">
-                    {getJijanggan(record.hourEarth || "").join(" ")}
-                  </span>
-                </div>
-                {/* 일주 지장간 */}
-                <div className="border-r border-border p-2 text-center text-xs">
-                  <span className="font-medium text-foreground">
-                    {getJijanggan(record.dayEarth || "").join(" ")}
-                  </span>
-                </div>
-                {/* 월주 지장간 */}
-                <div className="border-r border-border p-2 text-center text-xs">
-                  <span className="font-medium text-foreground">
-                    {getJijanggan(record.monthEarth || "").join(" ")}
-                  </span>
-                </div>
-                {/* 년주 지장간 */}
-                <div className="p-2 text-center text-xs">
-                  <span className="font-medium text-foreground">
-                    {getJijanggan(record.yearEarth || "").join(" ")}
-                  </span>
-                </div>
-              </div>
-
-              {/* 6. 대운 시작 나이 (10칸) */}
-              <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {Array.from({length: 10}, (_, i) => {
-                  const startAge = daeunData.daeunNumber + (i * 10); // 7, 17, 27, 37, 47, 57, 67, 77, 87, 97
-                  return (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-blue-50 dark:bg-blue-900/20">
-                      {startAge}
-                    </div>
-                  );
-                }).reverse() /* 좌측→우측: 107, 97, 87, 77, 67, 57, 47, 37, 27, 17, 7 */}
-              </div>
-
-              {/* 7. 대운천간출력 (10칸) */}
-              <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {daeunData.daeunGapja.slice().reverse().map((gapja, i) => {
-                  const cheongan = gapja.charAt(0); // 천간 추출
+                
+                {/* 대운 천간 (9칸) */}
+                {daeunData.daeunPeriods.map((period: DaeunPeriod, i: number) => {
+                  const isCurrentDaeun = focusedDaeun && period.gapja === focusedDaeun.gapja;
                   return (
                     <div 
-                      key={i} 
-                      className="border-r border-border px-3 py-0.5 font-bold text-black font-tmon last:border-r-0 text-[24px] text-left pl-[5px] pr-[5px] pt-[1px] pb-[1px]"
-                      style={{ backgroundColor: getWuxingColor(cheongan) }}
+                      key={`daeun-sky-${i}`} 
+                      className={`border-r border-border p-1 text-center text-sm font-bold last:border-r-0 ${
+                        isCurrentDaeun ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
+                      }`}
+                      style={!isCurrentDaeun ? {color: getWuxingColor(period.gapja[0])} : {}}
                     >
-                      {cheongan}
+                      {period.gapja[0]}
                     </div>
                   );
                 })}
               </div>
 
-              {/* 8. 대운지지출력 (10칸) */}
-              <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {daeunData.daeunGapja.slice().reverse().map((gapja, i) => {
-                  const jiji = gapja.charAt(1); // 지지 추출
+              {/* 지지 행 */}
+              <div className={`grid ${mainGridCols} border-t border-l border-r border-border`}>
+                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.hourEarth)}}>
+                  {record.hourEarth}
+                </div>
+                <div className="border-r border-border p-1 text-center text-sm font-bold bg-yellow-50 dark:bg-yellow-900/20" style={{color: getWuxingColor(record.dayEarth)}}>
+                  {record.dayEarth}
+                </div>
+                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.monthEarth)}}>
+                  {record.monthEarth}
+                </div>
+                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.yearEarth)}}>
+                  {record.yearEarth}
+                </div>
+                
+                {/* 대운 지지 */}
+                {daeunData.daeunPeriods.map((period: DaeunPeriod, i: number) => {
+                  const isCurrentDaeun = focusedDaeun && period.gapja === focusedDaeun.gapja;
                   return (
                     <div 
-                      key={i} 
-                      className="border-r border-border px-3 py-0.5 font-bold text-black font-tmon last:border-r-0 text-[25px] text-left pt-[0px] pb-[0px] pl-[5px] pr-[5px]"
-                      style={{ backgroundColor: getWuxingColor(jiji) }}
+                      key={`daeun-earth-${i}`} 
+                      className={`border-r border-border p-1 text-center text-sm font-bold last:border-r-0 ${
+                        isCurrentDaeun ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
+                      }`}
+                      style={!isCurrentDaeun ? {color: getWuxingColor(period.gapja[1])} : {}}
                     >
-                      {jiji}
+                      {period.gapja[1]}
                     </div>
                   );
                 })}
               </div>
 
-              {/* 9. 세운년도출력 (12칸) - 우측에서 좌측으로 */}
-              <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {saeunData ? 
-                  [...saeunData.years].reverse().map((year, i) => (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 pl-[1px] pr-[1px] pt-[2px] pb-[2px]" data-testid={`text-saeun-year-${i}`}>
-                      {year}
-                    </div>
-                  )) :
-                  Array.from({length: 12}, (_, i) => (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 pl-[1px] pr-[1px] pt-[2px] pb-[2px]">
-                      {record.birthYear + i}
-                    </div>
-                  ))
-                }
-              </div>
+              {/* 세운 년도 */}
+              {saeunData && (
+                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
+                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">년도</div>
+                  {[...saeunData.years].reverse().map((year: number, i: number) => {
+                    const age = [...saeunData.ages].reverse()[i];
+                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
+                    return (
+                      <div 
+                        key={`year-${i}`} 
+                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
+                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
+                        }`}
+                        data-testid={`text-year-${i}`}
+                      >
+                        {year}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* 10. 세운천간출력 (12칸) - 우측에서 좌측으로 */}
-              <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {saeunData ? 
-                  [...saeunData.skyStems].reverse().map((sky, i) => (
-                    <div 
-                      key={i} 
-                      className="border-r border-border p-1 text-center text-lg font-bold last:border-r-0 text-black"
-                      style={{ backgroundColor: getWuxingColor(sky) }}
-                      data-testid={`text-saeun-sky-${i}`}
-                    >
-                      {sky}
-                    </div>
-                  )) :
-                  Array.from({length: 12}, (_, i) => (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운천간</div>
-                  ))
-                }
-              </div>
+              {/* 세운 천간 */}
+              {saeunData && (
+                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
+                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">세운천간</div>
+                  {[...saeunData.skyStems].reverse().map((sky: string, i: number) => {
+                    const age = [...saeunData.ages].reverse()[i];
+                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
+                    return (
+                      <div 
+                        key={`saeun-sky-${i}`} 
+                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
+                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
+                        }`}
+                        style={!isHighlighted ? {color: getWuxingColor(sky)} : {}}
+                        data-testid={`text-saeun-sky-${i}`}
+                      >
+                        {sky}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* 11. 세운지지출력 (12칸) - 우측에서 좌측으로 */}
-              <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {saeunData ? 
-                  [...saeunData.earthBranches].reverse().map((earth, i) => (
-                    <div 
-                      key={i} 
-                      className="border-r border-border p-1 text-center text-lg font-bold last:border-r-0 text-black"
-                      style={{ backgroundColor: getWuxingColor(earth) }}
-                      data-testid={`text-saeun-earth-${i}`}
-                    >
-                      {earth}
-                    </div>
-                  )) :
-                  Array.from({length: 12}, (_, i) => (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운지지</div>
-                  ))
-                }
-              </div>
+              {/* 세운 지지 */}
+              {saeunData && (
+                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
+                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">세운지지</div>
+                  {[...saeunData.earthBranches].reverse().map((earth: string, i: number) => {
+                    const age = [...saeunData.ages].reverse()[i];
+                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
+                    return (
+                      <div 
+                        key={`saeun-earth-${i}`} 
+                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
+                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
+                        }`}
+                        style={!isHighlighted ? {color: getWuxingColor(earth)} : {}}
+                        data-testid={`text-saeun-earth-${i}`}
+                      >
+                        {earth}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* 12. 세운 나이출력 (12칸) - 우측에서 좌측으로 (전통 방식: 1부터 시작) */}
-              <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {saeunData ? 
-                  [...saeunData.ages].reverse().map((age, i) => (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-gray-50 dark:bg-gray-800" data-testid={`text-saeun-age-${i}`}>
-                      {age}
-                    </div>
-                  )) :
-                  (() => {
-                    const currentAge = (() => {
-                      const today = new Date();
-                      const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
-                      return today.getFullYear() - birthDate.getFullYear() - 
-                        (today.getMonth() < birthDate.getMonth() || 
-                         (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
-                    })();
-                    const ages = Array.from({length: 12}, (_, i) => currentAge + i);
-                    return ages.reverse().map((age, i) => (
-                      <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0" data-testid={`text-age-${i}`}>
+              {/* 세운 나이 */}
+              {saeunData && (
+                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
+                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">나이</div>
+                  {[...saeunData.ages].reverse().map((age: number, i: number) => {
+                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
+                    return (
+                      <div 
+                        key={`age-${i}`} 
+                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
+                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
+                        }`}
+                        data-testid={`text-age-${i}`}
+                      >
                         {age}
                       </div>
-                    ));
-                  })()
-                }
-              </div>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* 13. 월운(폰트10) (1칸 센터정렬) */}
-              <div className="border-t border-l border-r border-border">
-                <div className="p-2 text-center text-xs font-medium">월운</div>
-              </div>
-
-              {/* 14. 월운 천간 (13칸) */}
-              <div className="grid grid-cols-13 border-t border-l border-r border-border">
-                {Array.from({length: 13}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">월운천간</div>
-                ))}
-              </div>
-
-              {/* 15. 월운 지지 (13칸) */}
-              <div className="grid grid-cols-13 border-t border-l border-r border-border">
-                {Array.from({length: 13}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">월운지지</div>
-                ))}
-              </div>
-
-              {/* 16. 월은 달표시 (13칸) - 전통 월운 순서 */}
-              <div className="grid grid-cols-13 border-t border-l border-r border-border">
-                {(() => {
-                  const traditionalMonths = ["월", "2월", "1월", "12월", "11월", "10월", "9월", "8월", "7월", "6월", "5월", "4월", "3월"];
-                  return traditionalMonths.map((month, i) => (
-                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0" data-testid={`text-month-${i}`}>
-                      {month}
-                    </div>
-                  ));
-                })()}
-              </div>
-
-              {/* 17. 메모 (1칸 센터정렬) */}
+              {/* 메모 섹션 */}
               <div className="border-t border-l border-r border-border">
                 <div className="p-2 text-center text-sm font-medium">메모</div>
               </div>
-
-              {/* 18. 메모 입력하는 곳 */}
               <div className="border-t border-l border-r border-b border-border">
                 <div className="p-3 text-sm min-h-[60px] whitespace-pre-wrap bg-muted/20">
                   {record.memo || "메모를 입력해주세요"}
@@ -602,7 +605,11 @@ export default function SajuResult() {
         </Card>
 
         {/* 대운 정보 */}
-        <DaeunDisplay daeunData={daeunData} />
+        <DaeunDisplay 
+          daeunData={daeunData} 
+          focusedDaeun={focusedDaeun}
+          onDaeunSelect={setFocusedDaeun}
+        />
 
         {/* 하단 버튼 */}
         <div className="pt-4 space-y-3">
