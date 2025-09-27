@@ -214,6 +214,11 @@ export default function Home() {
               saju={customSaju}
               title="개인 사주팔자"
               showWuxing={true}
+              birthYear={lastInputData?.year}
+              birthMonth={lastInputData?.month}
+              birthDay={lastInputData?.day}
+              daySky={customSaju.day.sky}
+              dayEarth={customSaju.day.earth}
             />
             
 
