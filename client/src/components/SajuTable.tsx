@@ -416,7 +416,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
               }}
@@ -436,7 +436,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
               }}
@@ -468,7 +468,7 @@ export default function SajuTable({
               className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#131313',
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
               }}
@@ -501,7 +501,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
               }}
@@ -521,7 +521,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
               }}
@@ -555,7 +555,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
@@ -575,7 +575,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
@@ -619,7 +619,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
@@ -639,7 +639,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunKm', sans-serif",
+                fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
