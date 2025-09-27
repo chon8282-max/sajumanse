@@ -476,7 +476,7 @@ export default function SajuTable({
               key={`daeun-sky-${colIndex}`}
               className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky)
               }}
               data-testid={`text-daeun-sky-${colIndex}`}
@@ -493,7 +493,7 @@ export default function SajuTable({
               key={`daeun-earth-${colIndex}`}
               className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth)
               }}
               data-testid={`text-daeun-earth-${colIndex}`}
@@ -524,7 +524,7 @@ export default function SajuTable({
               key={`saeun-sky-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky)
               }}
               data-testid={`text-saeun-sky-${colIndex}`}
@@ -541,7 +541,7 @@ export default function SajuTable({
               key={`saeun-earth-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth)
               }}
               data-testid={`text-saeun-earth-${colIndex}`}
@@ -582,7 +582,7 @@ export default function SajuTable({
               key={`wolun-sky-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky)
               }}
               data-testid={`text-wolun-sky-${colIndex}`}
@@ -599,7 +599,7 @@ export default function SajuTable({
               key={`wolun-earth-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth)
               }}
               data-testid={`text-wolun-earth-${colIndex}`}
