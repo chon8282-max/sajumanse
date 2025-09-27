@@ -51,7 +51,7 @@ export default function Home() {
   // 현재 날짜의 양력/음력 정보 생성
   const getCurrentDateInfo = () => {
     const now = lastUpdated;
-    const solarDate = format(now, 'yyyy년 M월 d일', { locale: ko });
+    const solarDate = `양력 ${format(now, 'yyyy년 M월 d일', { locale: ko })}`;
     
     // 음력 정보 - API 응답에서 가져오기, 실패 시 명확한 메시지 표시
     let lunarInfo = "음력 정보 로딩중...";
@@ -206,15 +206,11 @@ export default function Home() {
 
         {/* 현재 시각의 만세력 */}
         <div className="space-y-3">
-          {/* 양력/음력 날짜 표시 */}
-          <div className="text-center" style={{ color: '#00008b' }}>
-            <div>양력 {getCurrentDateInfo().solarDate}</div>
-            <div>{getCurrentDateInfo().lunarInfo}</div>
-          </div>
-          
           <CurrentTimeTable 
             saju={currentSaju}
             title="현재 만세력"
+            solarDate={getCurrentDateInfo().solarDate}
+            lunarInfo={getCurrentDateInfo().lunarInfo}
           />
         </div>
 
