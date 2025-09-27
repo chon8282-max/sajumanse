@@ -11,9 +11,6 @@ interface SajuTableProps {
   daySky?: string;
   dayEarth?: string;
   gender?: string;
-  daeunData?: any;
-  saeunData?: any;
-  currentDaeun?: any;
   memo?: string;
 }
 
@@ -33,43 +30,6 @@ const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
   '亥': ['壬', '甲']
 };
 
-// 대운수 계산 (출생일로부터 첫 대운까지의 일수)
-function calculateDaeunSu(birthYear: number, birthMonth: number, birthDay: number, gender: string): number {
-  // 간단한 대운수 계산 (실제로는 절기를 고려해야 함)
-  const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-  const yearStart = new Date(birthYear, 0, 1);
-  const dayOfYear = Math.floor((birthDate.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000));
-  
-  // 남자는 양년에 순행, 음년에 역행
-  // 여자는 양년에 역행, 음년에 순행
-  const isOddYear = birthYear % 2 === 1;
-  const isMale = gender === '남자';
-  
-  if ((isMale && isOddYear) || (!isMale && !isOddYear)) {
-    return Math.floor(dayOfYear / 3); // 순행
-  } else {
-    return Math.floor((365 - dayOfYear) / 3); // 역행
-  }
-}
-
-// 월운 천간지지 계산
-function calculateWolunGanji(daySky: string, dayEarth: string, month: number) {
-  const skyIndex = CHEONGAN.indexOf(daySky as any);
-  const earthIndex = JIJI.indexOf(dayEarth as any);
-  
-  if (skyIndex === -1 || earthIndex === -1) {
-    return { sky: daySky, earth: dayEarth };
-  }
-  
-  // 월운은 월별로 계산 (간단한 방식)
-  const monthSkyIndex = (skyIndex + month - 1) % CHEONGAN.length;
-  const monthEarthIndex = (earthIndex + month - 1) % JIJI.length;
-  
-  return {
-    sky: CHEONGAN[monthSkyIndex],
-    earth: JIJI[monthEarthIndex]
-  };
-}
 
 export default function SajuTable({ 
   saju, 
@@ -80,9 +40,6 @@ export default function SajuTable({
   daySky,
   dayEarth,
   gender = '남자',
-  daeunData,
-  saeunData,
-  currentDaeun,
   memo
 }: SajuTableProps) {
 
@@ -111,23 +68,12 @@ export default function SajuTable({
     return hiddenStems.join('');
   });
 
-  // 대운수 계산
-  const daeunSu = birthYear && birthMonth && birthDay ? 
-    calculateDaeunSu(birthYear, birthMonth, birthDay, gender) : 0;
-
-  // 세운 정보 (최대 12년 표시)
-  const displaySaeun = saeunData ? {
-    years: saeunData.years.slice(0, 12),
-    skyStems: saeunData.skyStems.slice(0, 12),
-    earthBranches: saeunData.earthBranches.slice(0, 12),
-    ages: saeunData.ages.slice(0, 12)
-  } : null;
 
   // 간지별 배경색 매핑
   function getGanjiBackgroundColor(character: string): string {
     const ganjiColorMap: Record<string, string> = {
-      // 갑을인문 = dcfce7
-      '갑': '#dcfce7', '을': '#dcfce7', '인': '#dcfce7', '문': '#dcfce7',
+      // 갑을인묘 = dcfce7
+      '갑': '#dcfce7', '을': '#dcfce7', '인': '#dcfce7', '묘': '#dcfce7',
       // 병정사오 = fee2e2
       '병': '#fee2e2', '정': '#fee2e2', '사': '#fee2e2', '오': '#fee2e2',
       // 무기진미술축 = fbfce6
@@ -141,12 +87,6 @@ export default function SajuTable({
     return ganjiColorMap[character] || '#ffffff';
   }
 
-  // 월운 계산 (12개월)
-  const wolunData = daySky && dayEarth ? Array.from({length: 12}, (_, i) => {
-    const month = i + 1;
-    const ganji = calculateWolunGanji(daySky, dayEarth, month);
-    return { month, ...ganji };
-  }) : [];
 
   return (
     <Card className="p-4" data-testid="card-saju-table">
@@ -235,135 +175,7 @@ export default function SajuTable({
 
       </div>
 
-      {/* 세운 정보 */}
-      {displaySaeun && (
-        <div className="mt-4 border border-border">
-          {/* 세운년도 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {displaySaeun.years.map((year: number, index: number) => (
-              <div 
-                key={`saeun-year-${index}`} 
-                className="p-1 text-center text-xs border-r border-border last:border-r-0"
-                data-testid={`text-saeun-year-${index}`}
-              >
-                {year}
-              </div>
-            ))}
-          </div>
 
-          {/* 세운천간 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {displaySaeun.skyStems.map((sky: string, index: number) => (
-              <div 
-                key={`saeun-sky-${index}`} 
-                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ 
-                  color: '#000000',
-                  backgroundColor: getGanjiBackgroundColor(sky)
-                }}
-                data-testid={`text-saeun-sky-${index}`}
-              >
-                {sky}
-              </div>
-            ))}
-          </div>
-
-          {/* 세운지지 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {displaySaeun.earthBranches.map((earth: string, index: number) => (
-              <div 
-                key={`saeun-earth-${index}`} 
-                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ 
-                  color: '#000000',
-                  backgroundColor: getGanjiBackgroundColor(earth)
-                }}
-                data-testid={`text-saeun-earth-${index}`}
-              >
-                {earth}
-              </div>
-            ))}
-          </div>
-
-          {/* 세운별 나이 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {displaySaeun.ages.map((age: number, index: number) => (
-              <div 
-                key={`saeun-age-${index}`} 
-                className="p-1 text-center text-xs border-r border-border last:border-r-0"
-                data-testid={`text-saeun-age-${index}`}
-              >
-                {age}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 월운 정보 */}
-      {wolunData.length > 0 && (
-        <div className="mt-4 border border-border">
-          {/* 월운 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {wolunData.map((data, index) => (
-              <div 
-                key={`wolun-${index}`} 
-                className="p-1 text-center text-xs border-r border-border last:border-r-0"
-                data-testid={`text-wolun-${index}`}
-              >
-                {data.month}월
-              </div>
-            ))}
-          </div>
-
-          {/* 월운천간 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {wolunData.map((data, index) => (
-              <div 
-                key={`wolun-sky-${index}`} 
-                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ 
-                  color: '#000000',
-                  backgroundColor: getGanjiBackgroundColor(data.sky)
-                }}
-                data-testid={`text-wolun-sky-${index}`}
-              >
-                {data.sky}
-              </div>
-            ))}
-          </div>
-
-          {/* 월운지지 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {wolunData.map((data, index) => (
-              <div 
-                key={`wolun-earth-${index}`} 
-                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ 
-                  color: '#000000',
-                  backgroundColor: getGanjiBackgroundColor(data.earth)
-                }}
-                data-testid={`text-wolun-earth-${index}`}
-              >
-                {data.earth}
-              </div>
-            ))}
-          </div>
-
-          {/* 월 표시 */}
-          <div className="grid grid-cols-12 border-b border-border">
-            {Array.from({length: 12}, (_, i) => (
-              <div 
-                key={`month-display-${i}`} 
-                className="p-1 text-center text-xs border-r border-border last:border-r-0"
-                data-testid={`text-month-display-${i}`}
-              >
-                {i + 1}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* 메모 */}
       {memo && (

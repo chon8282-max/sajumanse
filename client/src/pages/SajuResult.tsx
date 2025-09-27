@@ -375,55 +375,10 @@ export default function SajuResult() {
                   return age;
                 })()}세
               </div>
-              <div className="text-sm text-muted-foreground">
-                {record.calendarType} {record.birthYear}년 {record.birthMonth}월 {record.birthDay}일{" "}
-                {timePeriod?.name || record.birthTime || "시간 미상"}
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 세운 네비게이션 컨트롤 */}
-        <Card className="mb-4">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setSaeunOffset(offset => Math.max(offset - 10, -50))}
-                disabled={saeunOffset <= -50}
-                data-testid="button-saeun-prev"
-                className="text-xs px-2 py-1"
-              >
-                ← 과거 10년
-              </Button>
-              
-              <div className="text-center">
-                {focusedDaeun && (
-                  <div className="text-xs text-muted-foreground">
-                    {focusedDaeun.gapja}대운 ({focusedDaeun.startAge}~{focusedDaeun.endAge}세)
-                    {saeunOffset !== 0 && (
-                      <span className="ml-2 text-blue-600 dark:text-blue-400">
-                        {saeunOffset > 0 ? `+${saeunOffset}년` : `${saeunOffset}년`}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setSaeunOffset(offset => Math.min(offset + 10, 50))}
-                disabled={saeunOffset >= 50}
-                data-testid="button-saeun-next"
-                className="text-xs px-2 py-1"
-              >
-                미래 10년 →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* 사주명식 테이블 */}
         <SajuTable 
@@ -458,9 +413,6 @@ export default function SajuResult() {
           daySky={record.daySky || ''}
           dayEarth={record.dayEarth || ''}
           gender={record.gender || '남자'}
-          daeunData={daeunData}
-          saeunData={saeunData}
-          currentDaeun={focusedDaeun}
           memo={record.memo || ''}
         />
 
