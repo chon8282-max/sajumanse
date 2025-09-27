@@ -1,10 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
-import { getWuxingColor } from "@/lib/wuxing-colors";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
-import { Solar } from "lunar-javascript";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -89,12 +85,8 @@ export default function SajuTable({
   currentDaeun,
   memo
 }: SajuTableProps) {
-  // 현재 날짜 정보
-  const now = new Date();
-  const solar = Solar.fromYmd(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  const lunar = solar.getLunar();
 
-  // 사주 데이터 구성 (시주, 일주, 월주, 년주 순)
+  // 사주 데이터 구성 (우측부터 년월일시 순)
   const sajuColumns = [
     { label: "시주", sky: saju.hour.sky, earth: saju.hour.earth },
     { label: "일주", sky: saju.day.sky, earth: saju.day.earth },
@@ -131,6 +123,24 @@ export default function SajuTable({
     ages: saeunData.ages.slice(0, 12)
   } : null;
 
+  // 간지별 배경색 매핑
+  function getGanjiBackgroundColor(character: string): string {
+    const ganjiColorMap: Record<string, string> = {
+      // 갑을인문 = dcfce7
+      '갑': '#dcfce7', '을': '#dcfce7', '인': '#dcfce7', '문': '#dcfce7',
+      // 병정사오 = fee2e2
+      '병': '#fee2e2', '정': '#fee2e2', '사': '#fee2e2', '오': '#fee2e2',
+      // 무기진미술축 = fbfce6
+      '무': '#fbfce6', '기': '#fbfce6', '진': '#fbfce6', '미': '#fbfce6', '술': '#fbfce6', '축': '#fbfce6',
+      // 경신신유 = ffffff
+      '경': '#ffffff', '신': '#ffffff', '유': '#ffffff',
+      // 임계해자 = e7e7e6
+      '임': '#e7e7e6', '계': '#e7e7e6', '해': '#e7e7e6', '자': '#e7e7e6'
+    };
+    
+    return ganjiColorMap[character] || '#ffffff';
+  }
+
   // 월운 계산 (12개월)
   const wolunData = daySky && dayEarth ? Array.from({length: 12}, (_, i) => {
     const month = i + 1;
@@ -140,13 +150,9 @@ export default function SajuTable({
 
   return (
     <Card className="p-4" data-testid="card-saju-table">
-      {/* 제목 및 날짜 정보 */}
+      {/* 제목 */}
       <div className="text-center mb-4">
         <div className="font-tmon text-lg font-bold mb-2">{title}</div>
-        <div className="text-sm text-muted-foreground space-y-1">
-          <div>(양) {format(now, 'yyyy년 M월 d일 EEEE', { locale: ko })}</div>
-          <div>(음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</div>
-        </div>
       </div>
 
       {/* 사주명식 메인 테이블 */}
@@ -169,10 +175,11 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className={`p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 ${
-                index === 1 ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''
-              }`}
-              style={{ color: getWuxingColor(col.sky) }}
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(col.sky)
+              }}
               data-testid={`text-sky-${index}`}
             >
               {col.sky}
@@ -185,10 +192,11 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className={`p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 ${
-                index === 1 ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''
-              }`}
-              style={{ color: getWuxingColor(col.earth) }}
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(col.earth)
+              }}
               data-testid={`text-earth-${index}`}
             >
               {col.earth}
@@ -211,11 +219,11 @@ export default function SajuTable({
 
         {/* 5행: 지장간 */}
         <div className="grid grid-cols-4 border-b border-border">
-          <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">지장간</div>
           {jijanggan.map((stems, index) => (
             <div 
               key={`jijanggan-${index}`} 
               className="p-2 text-center text-sm border-r border-border last:border-r-0"
+              style={{ color: '#000000' }}
               data-testid={`text-jijanggan-${index}`}
             >
               {stems}
@@ -223,55 +231,15 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 6행: 대운수 */}
-        <div className="grid grid-cols-4 border-b border-border">
-          <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">대운수</div>
-          <div className="col-span-3 p-2 text-center text-sm" data-testid="text-daeun-su">
-            {daeunSu}일
-          </div>
-        </div>
 
-        {/* 7행: 대운천간 */}
-        {daeunData && (
-          <div className="grid grid-cols-4 border-b border-border">
-            <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">대운천간</div>
-            {daeunData.daeunPeriods.slice(0, 3).map((period: any, index: number) => (
-              <div 
-                key={`daeun-sky-${index}`} 
-                className="p-2 text-center text-lg font-bold border-r border-border last:border-r-0"
-                style={{ color: getWuxingColor(period.gapja[0]) }}
-                data-testid={`text-daeun-sky-${index}`}
-              >
-                {period.gapja[0]}
-              </div>
-            ))}
-          </div>
-        )}
 
-        {/* 8행: 대운지지 */}
-        {daeunData && (
-          <div className="grid grid-cols-4 border-b border-border">
-            <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">대운지지</div>
-            {daeunData.daeunPeriods.slice(0, 3).map((period: any, index: number) => (
-              <div 
-                key={`daeun-earth-${index}`} 
-                className="p-2 text-center text-lg font-bold border-r border-border last:border-r-0"
-                style={{ color: getWuxingColor(period.gapja[1]) }}
-                data-testid={`text-daeun-earth-${index}`}
-              >
-                {period.gapja[1]}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* 세운 정보 */}
       {displaySaeun && (
         <div className="mt-4 border border-border">
           {/* 세운년도 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운년도</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {displaySaeun.years.map((year: number, index: number) => (
               <div 
                 key={`saeun-year-${index}`} 
@@ -284,13 +252,15 @@ export default function SajuTable({
           </div>
 
           {/* 세운천간 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운천간</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {displaySaeun.skyStems.map((sky: string, index: number) => (
               <div 
                 key={`saeun-sky-${index}`} 
                 className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ color: getWuxingColor(sky) }}
+                style={{ 
+                  color: '#000000',
+                  backgroundColor: getGanjiBackgroundColor(sky)
+                }}
                 data-testid={`text-saeun-sky-${index}`}
               >
                 {sky}
@@ -299,13 +269,15 @@ export default function SajuTable({
           </div>
 
           {/* 세운지지 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운지지</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {displaySaeun.earthBranches.map((earth: string, index: number) => (
               <div 
                 key={`saeun-earth-${index}`} 
                 className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ color: getWuxingColor(earth) }}
+                style={{ 
+                  color: '#000000',
+                  backgroundColor: getGanjiBackgroundColor(earth)
+                }}
                 data-testid={`text-saeun-earth-${index}`}
               >
                 {earth}
@@ -314,8 +286,7 @@ export default function SajuTable({
           </div>
 
           {/* 세운별 나이 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운별 나이</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {displaySaeun.ages.map((age: number, index: number) => (
               <div 
                 key={`saeun-age-${index}`} 
@@ -333,8 +304,7 @@ export default function SajuTable({
       {wolunData.length > 0 && (
         <div className="mt-4 border border-border">
           {/* 월운 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월운</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {wolunData.map((data, index) => (
               <div 
                 key={`wolun-${index}`} 
@@ -347,13 +317,15 @@ export default function SajuTable({
           </div>
 
           {/* 월운천간 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월운천간</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {wolunData.map((data, index) => (
               <div 
                 key={`wolun-sky-${index}`} 
                 className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ color: getWuxingColor(data.sky) }}
+                style={{ 
+                  color: '#000000',
+                  backgroundColor: getGanjiBackgroundColor(data.sky)
+                }}
                 data-testid={`text-wolun-sky-${index}`}
               >
                 {data.sky}
@@ -362,13 +334,15 @@ export default function SajuTable({
           </div>
 
           {/* 월운지지 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월운지지</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {wolunData.map((data, index) => (
               <div 
                 key={`wolun-earth-${index}`} 
                 className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
-                style={{ color: getWuxingColor(data.earth) }}
+                style={{ 
+                  color: '#000000',
+                  backgroundColor: getGanjiBackgroundColor(data.earth)
+                }}
                 data-testid={`text-wolun-earth-${index}`}
               >
                 {data.earth}
@@ -377,8 +351,7 @@ export default function SajuTable({
           </div>
 
           {/* 월 표시 */}
-          <div className="grid grid-cols-13 border-b border-border">
-            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월 표시</div>
+          <div className="grid grid-cols-12 border-b border-border">
             {Array.from({length: 12}, (_, i) => (
               <div 
                 key={`month-display-${i}`} 
