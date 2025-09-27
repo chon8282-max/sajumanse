@@ -176,58 +176,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
 
-          // data.go.kr API를 통한 정확한 간지 정보 조회 및 날짜 변환
-          let apiData = null;
+          // 최적화: 로컬 라이브러리만 사용 (즉시 처리)
           let solarCalcYear = validatedData.birthYear;
           let solarCalcMonth = validatedData.birthMonth; 
           let solarCalcDay = validatedData.birthDay;
           
-          try {
-            if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
-              // 음력인 경우 양력 변환 + 간지 정보
-              const isLeapMonth = validatedData.calendarType === "윤달";
-              console.log(`음력 API 호출 시도: getSolarCalInfo(${sajuCalculationYear}, ${sajuCalculationMonth}, ${sajuCalculationDay}, 윤달=${isLeapMonth})`);
-              const solarInfo = await getSolarCalInfo(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
-              apiData = solarInfo.response.body.items.item;
-              console.log(`API 음력→양력 변환: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay} → ${apiData.solYear}-${apiData.solMonth}-${apiData.solDay}, 일진: ${apiData.solJeongja}`);
-              console.log('API 음력 응답 전체:', JSON.stringify(apiData, null, 2));
-              
-              // API에서 가져온 정확한 양력 날짜 사용
-              solarCalcYear = parseInt(apiData.solYear);
-              solarCalcMonth = parseInt(apiData.solMonth);
-              solarCalcDay = parseInt(apiData.solDay);
-            } else {
-              // 양력인 경우 직접 간지 정보 조회
-              console.log(`양력 API 호출 시도: getLunarCalInfo(${validatedData.birthYear}, ${validatedData.birthMonth}, ${validatedData.birthDay})`);
-              const lunarInfo = await getLunarCalInfo(validatedData.birthYear, validatedData.birthMonth, validatedData.birthDay);
-              apiData = lunarInfo.response.body.items.item;
-              console.log(`API 양력 간지 조회: ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay}, 일진: ${apiData.solJeongja}`);
-              console.log('API 양력 응답 전체:', JSON.stringify(apiData, null, 2));
-            }
-          } catch (apiError) {
-            console.error('data.go.kr API 호출 실패:', apiError);
-            console.error('API 에러 상세:', apiError instanceof Error ? apiError.message : apiError);
-            
-            // API 실패 시 로컬 라이브러리로 폴백
-            console.warn('⚠️  API 실패: 로컬 계산으로 폴백');
-            
+          if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
             try {
-              if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
-                // 음력인 경우 한국 음력 라이브러리로 양력 변환
-                const isLeapMonth = validatedData.calendarType === "윤달";
-                console.log(`로컬 음력→양력 변환 시도: ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 윤달=${isLeapMonth}`);
-                const solarDate = await convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
-                solarCalcYear = solarDate.getFullYear();
-                solarCalcMonth = solarDate.getMonth() + 1;
-                solarCalcDay = solarDate.getDate();
-                console.log(`로컬 변환 결과: ${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}`);
-              }
-              // API 데이터 없이 계속 진행
-              console.log('✓ 로컬 계산으로 폴백 성공, 사주 계산 계속 진행');
+              // 로컬 라이브러리로 즉시 변환 (API 호출 완전 제거)
+              const isLeapMonth = validatedData.calendarType === "윤달";
+              const solarDate = await convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
+              solarCalcYear = solarDate.getFullYear();
+              solarCalcMonth = solarDate.getMonth() + 1;
+              solarCalcDay = solarDate.getDate();
+              console.log(`⚡ 빠른 변환: 음력 ${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay} → 양력 ${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}`);
             } catch (localError) {
-              console.error('로컬 변환도 실패:', localError);
-              // 로컬 변환도 실패하면 입력 날짜 그대로 사용
-              console.warn('로컬 변환 실패, 입력 날짜로 진행');
+              console.error('로컬 변환 실패, 입력 날짜 사용:', localError);
             }
           }
 
@@ -239,8 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             hour,
             minute,
             validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
-            solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-            apiData  // API 간지 정보 전달
+            solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined  // 일시주용 양력 날짜
           );
           console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
