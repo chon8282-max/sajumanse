@@ -48,7 +48,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
     <Card className="p-4" data-testid="card-saju-table">
       <div className="text-center mb-4">
         <div className="space-y-1">
-          <div className="text-[13px] font-tmon text-foreground" data-testid="text-saju-title">
+          <div className="font-tmon text-foreground text-[15px]" data-testid="text-saju-title">
             현재 만세력 (양) {format(now, 'yyyy년 M월 d일 EEEE', { locale: ko })}
           </div>
           <div className="text-[13px] font-tmon text-foreground flex items-center justify-center gap-1" data-testid="text-lunar-date">
