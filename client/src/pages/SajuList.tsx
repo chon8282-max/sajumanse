@@ -130,7 +130,7 @@ export default function SajuList() {
       toast({
         title: "삭제 완료",
         description: "사주가 성공적으로 삭제되었습니다.",
-        duration: 800
+        duration: 700
       });
     },
     onError: (error) => {
@@ -183,7 +183,7 @@ export default function SajuList() {
       toast({
         title: "생성 완료",
         description: "그룹이 성공적으로 생성되었습니다.",
-        duration: 800
+        duration: 700
       });
     },
     onError: (error: Error) => {
@@ -221,7 +221,7 @@ export default function SajuList() {
       toast({
         title: "수정 완료",
         description: "그룹이 성공적으로 수정되었습니다.",
-        duration: 800
+        duration: 700
       });
     },
     onError: (error: Error) => {
@@ -262,7 +262,7 @@ export default function SajuList() {
       toast({
         title: "삭제 완료",
         description: "그룹이 성공적으로 삭제되었습니다.",
-        duration: 800
+        duration: 700
       });
     },
     onError: (error: Error) => {
