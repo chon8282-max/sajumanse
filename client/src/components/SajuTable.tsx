@@ -252,8 +252,8 @@ export default function SajuTable({
           <div className="flex gap-1 overflow-x-auto">
             {wolunData.map((month, index) => (
               <div key={`wolun-${index}`} className="text-center flex-shrink-0">
-                <div className="py-1 px-2 text-xs font-medium bg-green-50 dark:bg-green-900/20 border rounded min-w-[24px]">
-                  {month}
+                <div className="py-1 px-2 text-xs font-medium bg-green-50 dark:bg-green-900/20 border rounded min-w-[24px]" data-testid={`text-wolun-${index}`}>
+                  {month}월
                 </div>
               </div>
             ))}

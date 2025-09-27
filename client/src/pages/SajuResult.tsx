@@ -14,6 +14,54 @@ import { calculateCompleteYukjin } from "@/lib/yukjin-calculator";
 import { calculateCompleteDaeun } from "@/lib/daeun-calculator";
 import DaeunDisplay from "@/components/DaeunDisplay";
 
+// 다음 간지 계산 (60갑자 순환)
+function getNextGanji(sky: string, earth: string) {
+  const skyIndex = CHEONGAN.indexOf(sky);
+  const earthIndex = JIJI.indexOf(earth);
+  
+  if (skyIndex === -1 || earthIndex === -1) {
+    throw new Error(`Invalid ganji: ${sky}${earth}`);
+  }
+  
+  const nextSkyIndex = (skyIndex + 1) % CHEONGAN.length;
+  const nextEarthIndex = (earthIndex + 1) % JIJI.length;
+  
+  return {
+    sky: CHEONGAN[nextSkyIndex],
+    earth: JIJI[nextEarthIndex]
+  };
+}
+
+// 세운 계산 (태어난 다음날부터 시작)
+function calculateSaeun(birthYear: number, startSky: string, startEarth: string, yearsCount: number = 12) {
+  const years: number[] = [];
+  const ages: number[] = [];
+  const skyStems: string[] = [];
+  const earthBranches: string[] = [];
+  
+  let currentSky = startSky;
+  let currentEarth = startEarth;
+  
+  // 태어난 다음날부터 시작하므로 첫 번째부터 다음 간지
+  const nextGanji = getNextGanji(currentSky, currentEarth);
+  currentSky = nextGanji.sky;
+  currentEarth = nextGanji.earth;
+  
+  for (let i = 0; i < yearsCount; i++) {
+    years.push(birthYear + i);
+    ages.push(i + 1);
+    skyStems.push(currentSky);
+    earthBranches.push(currentEarth);
+    
+    // 다음 해의 간지 계산
+    const next = getNextGanji(currentSky, currentEarth);
+    currentSky = next.sky;
+    currentEarth = next.earth;
+  }
+  
+  return { years, ages, skyStems, earthBranches };
+}
+
 interface SajuResultData {
   id: string;
   name: string;
@@ -149,6 +197,10 @@ export default function SajuResult() {
   
   // 대운 계산
   const daeunData = calculateCompleteDaeun(record);
+  
+  // 세운 계산 (일주 천간지지 기반)
+  const saeunData = record.daySky && record.dayEarth ? 
+    calculateSaeun(record.birthYear, record.daySky, record.dayEarth, 12) : null;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -423,45 +475,84 @@ export default function SajuResult() {
                 })}
               </div>
 
-              {/* 9. 세운년도출력 (12칸) */}
+              {/* 9. 세운년도출력 (12칸) - 우측에서 좌측으로 */}
               <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {Array.from({length: 12}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 pl-[1px] pr-[1px] pt-[2px] pb-[2px]">
-                    {new Date().getFullYear() + i}
-                  </div>
-                ))}
+                {saeunData ? 
+                  [...saeunData.years].reverse().map((year, i) => (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 pl-[1px] pr-[1px] pt-[2px] pb-[2px]" data-testid={`text-saeun-year-${i}`}>
+                      {year}
+                    </div>
+                  )) :
+                  Array.from({length: 12}, (_, i) => (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 pl-[1px] pr-[1px] pt-[2px] pb-[2px]">
+                      {record.birthYear + i}
+                    </div>
+                  ))
+                }
               </div>
 
-              {/* 10. 세운천간출력 (12칸) */}
+              {/* 10. 세운천간출력 (12칸) - 우측에서 좌측으로 */}
               <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {Array.from({length: 12}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운천간</div>
-                ))}
+                {saeunData ? 
+                  [...saeunData.skyStems].reverse().map((sky, i) => (
+                    <div 
+                      key={i} 
+                      className="border-r border-border p-1 text-center text-lg font-bold last:border-r-0 text-black"
+                      style={{ backgroundColor: getWuxingColor(sky) }}
+                      data-testid={`text-saeun-sky-${i}`}
+                    >
+                      {sky}
+                    </div>
+                  )) :
+                  Array.from({length: 12}, (_, i) => (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운천간</div>
+                  ))
+                }
               </div>
 
-              {/* 11. 세운지지출력 (12칸) */}
+              {/* 11. 세운지지출력 (12칸) - 우측에서 좌측으로 */}
               <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {Array.from({length: 12}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운지지</div>
-                ))}
+                {saeunData ? 
+                  [...saeunData.earthBranches].reverse().map((earth, i) => (
+                    <div 
+                      key={i} 
+                      className="border-r border-border p-1 text-center text-lg font-bold last:border-r-0 text-black"
+                      style={{ backgroundColor: getWuxingColor(earth) }}
+                      data-testid={`text-saeun-earth-${i}`}
+                    >
+                      {earth}
+                    </div>
+                  )) :
+                  Array.from({length: 12}, (_, i) => (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">세운지지</div>
+                  ))
+                }
               </div>
 
-              {/* 12. 세운 나이출력 (12칸) */}
+              {/* 12. 세운 나이출력 (12칸) - 우측에서 좌측으로 (전통 방식: 1부터 시작) */}
               <div className="grid grid-cols-12 border-t border-l border-r border-border">
-                {Array.from({length: 12}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
-                    {(() => {
-                      const currentAge = (() => {
-                        const today = new Date();
-                        const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
-                        return today.getFullYear() - birthDate.getFullYear() - 
-                          (today.getMonth() < birthDate.getMonth() || 
-                           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
-                      })();
-                      return currentAge + i;
-                    })()}
-                  </div>
-                ))}
+                {saeunData ? 
+                  [...saeunData.ages].reverse().map((age, i) => (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-gray-50 dark:bg-gray-800" data-testid={`text-saeun-age-${i}`}>
+                      {age}
+                    </div>
+                  )) :
+                  (() => {
+                    const currentAge = (() => {
+                      const today = new Date();
+                      const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
+                      return today.getFullYear() - birthDate.getFullYear() - 
+                        (today.getMonth() < birthDate.getMonth() || 
+                         (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+                    })();
+                    const ages = Array.from({length: 12}, (_, i) => currentAge + i);
+                    return ages.reverse().map((age, i) => (
+                      <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0" data-testid={`text-age-${i}`}>
+                        {age}
+                      </div>
+                    ));
+                  })()
+                }
               </div>
 
               {/* 13. 월운(폰트10) (1칸 센터정렬) */}
@@ -483,13 +574,16 @@ export default function SajuResult() {
                 ))}
               </div>
 
-              {/* 16. 월은 달표시 (13칸) */}
+              {/* 16. 월은 달표시 (13칸) - 전통 월운 순서 */}
               <div className="grid grid-cols-13 border-t border-l border-r border-border">
-                {Array.from({length: 13}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
-                    {i === 0 ? "월" : `${i}월`}
-                  </div>
-                ))}
+                {(() => {
+                  const traditionalMonths = ["월", "2월", "1월", "12월", "11월", "10월", "9월", "8월", "7월", "6월", "5월", "4월", "3월"];
+                  return traditionalMonths.map((month, i) => (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0" data-testid={`text-month-${i}`}>
+                      {month}
+                    </div>
+                  ));
+                })()}
               </div>
 
               {/* 17. 메모 (1칸 센터정렬) */}
