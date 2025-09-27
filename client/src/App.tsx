@@ -64,12 +64,8 @@ function AppContent() {
       case 'manse':
         setLocation('/manseryeok');
         break;
-      case 'fortune':
-        toast({
-          title: "운세 서비스",
-          description: "운세 페이지는 현재 준비 중입니다.",
-          duration: 2000,
-        });
+      case 'saved':
+        setLocation('/saju-list');
         break;
       case 'study':
         toast({
@@ -97,6 +93,8 @@ function AppContent() {
       setActiveTab('home');
     } else if (location === '/manseryeok') {
       setActiveTab('manse');
+    } else if (location === '/saju-list') {
+      setActiveTab('saved');
     }
     // 기타 경로는 기본값 유지
   }, [location]);
