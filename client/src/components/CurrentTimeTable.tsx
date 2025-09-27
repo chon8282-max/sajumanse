@@ -66,10 +66,11 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-bold"
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
               style={{ 
                 color: '#131313',
-                backgroundColor: getGanjiBackgroundColor(col.sky)
+                backgroundColor: getGanjiBackgroundColor(col.sky),
+                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
               }}
               data-testid={`text-current-sky-${index}`}
             >
@@ -83,10 +84,11 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-bold"
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
               style={{ 
-                color: '#000000',
-                backgroundColor: getGanjiBackgroundColor(col.earth)
+                color: '#131313',
+                backgroundColor: getGanjiBackgroundColor(col.earth),
+                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
               }}
               data-testid={`text-current-earth-${index}`}
             >
