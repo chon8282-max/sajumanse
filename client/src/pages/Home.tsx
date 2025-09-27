@@ -179,8 +179,8 @@ export default function Home() {
         <div className="space-y-3">
           <SajuTable 
             saju={currentSaju}
-            title=""
-            showWuxing={true}
+            title="현재 만세력"
+            gender="남자"
           />
         </div>
 
@@ -213,12 +213,12 @@ export default function Home() {
             <SajuTable 
               saju={customSaju}
               title="개인 사주팔자"
-              showWuxing={true}
               birthYear={lastInputData?.year}
               birthMonth={lastInputData?.month}
               birthDay={lastInputData?.day}
               daySky={customSaju.day.sky}
               dayEarth={customSaju.day.earth}
+              gender="기타"
             />
             
 

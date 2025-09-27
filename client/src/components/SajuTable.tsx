@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
-import { getWuXingColor, getWuXingBgColor } from "@/lib/saju-calculator";
-import { getWuxingColor, getZodiacHourFromTime } from "@/lib/wuxing-colors";
+import { getWuxingColor } from "@/lib/wuxing-colors";
+import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Solar } from "lunar-javascript";
@@ -9,254 +9,395 @@ import { Solar } from "lunar-javascript";
 interface SajuTableProps {
   saju: SajuInfo;
   title?: string;
-  showWuxing?: boolean;
   birthYear?: number;
   birthMonth?: number;
   birthDay?: number;
-  daySky?: string; // 일주 천간 (세운 계산용)
-  dayEarth?: string; // 일주 지지 (세운 계산용)
+  daySky?: string;
+  dayEarth?: string;
+  gender?: string;
+  daeunData?: any;
+  saeunData?: any;
+  currentDaeun?: any;
+  memo?: string;
 }
 
-// 다음 천간지지 조합 구하기
-function getNextGanji(sky: string, earth: string): { sky: string; earth: string } {
-  const skyIndex = CHEONGAN.indexOf(sky as typeof CHEONGAN[number]);
-  const earthIndex = JIJI.indexOf(earth as typeof JIJI[number]);
+// 지장간 계산
+const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
+  '子': ['癸'],
+  '丑': ['己', '癸', '辛'],
+  '寅': ['甲', '丙', '戊'],
+  '卯': ['乙'],
+  '辰': ['戊', '乙', '癸'],
+  '巳': ['丙', '庚', '戊'],
+  '午': ['丁', '己'],
+  '未': ['己', '丁', '乙'],
+  '申': ['庚', '壬', '戊'],
+  '酉': ['辛'],
+  '戌': ['戊', '辛', '丁'],
+  '亥': ['壬', '甲']
+};
+
+// 대운수 계산 (출생일로부터 첫 대운까지의 일수)
+function calculateDaeunSu(birthYear: number, birthMonth: number, birthDay: number, gender: string): number {
+  // 간단한 대운수 계산 (실제로는 절기를 고려해야 함)
+  const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+  const yearStart = new Date(birthYear, 0, 1);
+  const dayOfYear = Math.floor((birthDate.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000));
+  
+  // 남자는 양년에 순행, 음년에 역행
+  // 여자는 양년에 역행, 음년에 순행
+  const isOddYear = birthYear % 2 === 1;
+  const isMale = gender === '남자';
+  
+  if ((isMale && isOddYear) || (!isMale && !isOddYear)) {
+    return Math.floor(dayOfYear / 3); // 순행
+  } else {
+    return Math.floor((365 - dayOfYear) / 3); // 역행
+  }
+}
+
+// 월운 천간지지 계산
+function calculateWolunGanji(daySky: string, dayEarth: string, month: number) {
+  const skyIndex = CHEONGAN.indexOf(daySky as any);
+  const earthIndex = JIJI.indexOf(dayEarth as any);
   
   if (skyIndex === -1 || earthIndex === -1) {
-    return { sky, earth }; // 잘못된 입력일 경우 원본 반환
+    return { sky: daySky, earth: dayEarth };
   }
   
-  const nextSkyIndex = (skyIndex + 1) % CHEONGAN.length;
-  const nextEarthIndex = (earthIndex + 1) % JIJI.length;
+  // 월운은 월별로 계산 (간단한 방식)
+  const monthSkyIndex = (skyIndex + month - 1) % CHEONGAN.length;
+  const monthEarthIndex = (earthIndex + month - 1) % JIJI.length;
   
   return {
-    sky: CHEONGAN[nextSkyIndex],
-    earth: JIJI[nextEarthIndex]
+    sky: CHEONGAN[monthSkyIndex],
+    earth: JIJI[monthEarthIndex]
   };
-}
-
-// 세운 계산 (태어난 다음날부터 시작)
-function calculateSaeun(birthYear: number, startSky: string, startEarth: string, yearsCount: number = 4) {
-  const years: number[] = [];
-  const ages: number[] = [];
-  const skyStems: string[] = [];
-  const earthBranches: string[] = [];
-  
-  let currentSky = startSky;
-  let currentEarth = startEarth;
-  
-  // 태어난 다음날부터 시작하므로 첫 번째부터 다음 간지
-  const nextGanji = getNextGanji(currentSky, currentEarth);
-  currentSky = nextGanji.sky;
-  currentEarth = nextGanji.earth;
-  
-  for (let i = 0; i < yearsCount; i++) {
-    const currentYear = birthYear + i;
-    const currentAge = i + 1;
-    
-    years.push(currentYear);
-    ages.push(currentAge);
-    skyStems.push(currentSky);
-    earthBranches.push(currentEarth);
-    
-    // 다음 년도를 위해 간지 증가
-    const next = getNextGanji(currentSky, currentEarth);
-    currentSky = next.sky;
-    currentEarth = next.earth;
-  }
-  
-  return { years, ages, skyStems, earthBranches };
-}
-
-// 월운 계산 (2부터 시작해서 2까지 순환)
-function calculateWolun() {
-  return [2, 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
 }
 
 export default function SajuTable({ 
   saju, 
-  title = "사주팔자", 
-  showWuxing = true,
+  title = "사주명식", 
   birthYear,
   birthMonth,
   birthDay,
   daySky,
-  dayEarth
+  dayEarth,
+  gender = '남자',
+  daeunData,
+  saeunData,
+  currentDaeun,
+  memo
 }: SajuTableProps) {
-  const columns = [
-    { label: "시주", data: saju.hour },
-    { label: "일주", data: saju.day },
-    { label: "월주", data: saju.month },
-    { label: "년주", data: saju.year }
-  ];
-
-  // 세운과 월운 계산 (생년월일이 있을 때만)
-  const showSaeunWolun = birthYear && daySky && dayEarth;
-  const saeunData = showSaeunWolun ? calculateSaeun(birthYear!, daySky!, dayEarth!) : null;
-  const wolunData = showSaeunWolun ? calculateWolun() : null;
-
-  // 현재 날짜 정보 생성
+  // 현재 날짜 정보
   const now = new Date();
-  
-  // 음력 변환
   const solar = Solar.fromYmd(now.getFullYear(), now.getMonth() + 1, now.getDate());
   const lunar = solar.getLunar();
-  const zodiacTime = getZodiacHourFromTime(now.getHours(), now.getMinutes());
-  
-  const combinedDateString = `(양)${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 (음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일) ${zodiacTime}生`;
 
-  const wuxingData = [
-    saju.wuxing.hourSky,
-    saju.wuxing.daySky,
-    saju.wuxing.monthSky,
-    saju.wuxing.yearSky
+  // 사주 데이터 구성 (시주, 일주, 월주, 년주 순)
+  const sajuColumns = [
+    { label: "시주", sky: saju.hour.sky, earth: saju.hour.earth },
+    { label: "일주", sky: saju.day.sky, earth: saju.day.earth },
+    { label: "월주", sky: saju.month.sky, earth: saju.month.earth },
+    { label: "년주", sky: saju.year.sky, earth: saju.year.earth }
   ];
 
-  const wuxingEarthData = [
-    saju.wuxing.hourEarth,
-    saju.wuxing.dayEarth,
-    saju.wuxing.monthEarth,
-    saju.wuxing.yearEarth
-  ];
+  // 육친 계산
+  const dayStem = saju.day.sky;
+  const heavenlyYukjin = sajuColumns.map(col => {
+    if (col.sky === dayStem) return "일간";
+    return calculateYukjin(dayStem, col.sky);
+  });
+
+  const earthlyYukjin = sajuColumns.map(col => {
+    return calculateEarthlyBranchYukjin(dayStem, col.earth);
+  });
+
+  // 지장간 계산
+  const jijanggan = sajuColumns.map(col => {
+    const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
+    return hiddenStems.join('');
+  });
+
+  // 대운수 계산
+  const daeunSu = birthYear && birthMonth && birthDay ? 
+    calculateDaeunSu(birthYear, birthMonth, birthDay, gender) : 0;
+
+  // 세운 정보 (최대 12년 표시)
+  const displaySaeun = saeunData ? {
+    years: saeunData.years.slice(0, 12),
+    skyStems: saeunData.skyStems.slice(0, 12),
+    earthBranches: saeunData.earthBranches.slice(0, 12),
+    ages: saeunData.ages.slice(0, 12)
+  } : null;
+
+  // 월운 계산 (12개월)
+  const wolunData = daySky && dayEarth ? Array.from({length: 12}, (_, i) => {
+    const month = i + 1;
+    const ganji = calculateWolunGanji(daySky, dayEarth, month);
+    return { month, ...ganji };
+  }) : [];
 
   return (
     <Card className="p-4" data-testid="card-saju-table">
+      {/* 제목 및 날짜 정보 */}
       <div className="text-center mb-4">
-        <div className="space-y-1">
-          <div className="font-tmon text-foreground text-[15px] text-center" data-testid="text-saju-title">
-            <span>현재 만세력 </span><span>(양) {format(now, 'yyyy년 M월 d일 EEEE', { locale: ko })}</span>
-          </div>
-          <div className="font-tmon text-foreground text-[15px] text-center" data-testid="text-lunar-date">
-            <span>.................. </span><span>(음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</span>
-          </div>
+        <div className="font-tmon text-lg font-bold mb-2">{title}</div>
+        <div className="text-sm text-muted-foreground space-y-1">
+          <div>(양) {format(now, 'yyyy년 M월 d일 EEEE', { locale: ko })}</div>
+          <div>(음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</div>
         </div>
       </div>
-      {/* 메인 사주 테이블 */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        {/* 레이블 행 */}
-        {columns.map((col, index) => (
-          <div key={index} className="text-center">
-            <div className="text-sm text-muted-foreground font-medium mb-2" data-testid={`text-column-label-${index}`}>
-              {col.label}
-            </div>
-          </div>
-        ))}
-        
-        {/* 천간 행 */}
-        {columns.map((col, index) => (
-          <div key={`sky-${index}`} className="text-center">
+
+      {/* 사주명식 메인 테이블 */}
+      <div className="border border-border">
+        {/* 1행: 천간 육친 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {heavenlyYukjin.map((yukjin, index) => (
             <div 
-              className="py-3 px-2 rounded-md font-tmon font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
-              style={{ backgroundColor: getWuxingColor(col.data.sky) }}
+              key={`yukjin-sky-${index}`} 
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
+              data-testid={`text-yukjin-sky-${index}`}
+            >
+              {yukjin}
+            </div>
+          ))}
+        </div>
+
+        {/* 2행: 천간 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {sajuColumns.map((col, index) => (
+            <div 
+              key={`sky-${index}`} 
+              className={`p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 ${
+                index === 1 ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''
+              }`}
+              style={{ color: getWuxingColor(col.sky) }}
               data-testid={`text-sky-${index}`}
             >
-              {col.data.sky}
+              {col.sky}
             </div>
-          </div>
-        ))}
-        
-        {/* 지지 행 */}
-        {columns.map((col, index) => (
-          <div key={`earth-${index}`} className="text-center">
+          ))}
+        </div>
+
+        {/* 3행: 지지 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {sajuColumns.map((col, index) => (
             <div 
-              className="py-3 px-2 rounded-md font-tmon font-semibold border text-[40px] text-black pt-[2px] pb-[2px]"
-              style={{ backgroundColor: getWuxingColor(col.data.earth) }}
+              key={`earth-${index}`} 
+              className={`p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 ${
+                index === 1 ? 'bg-yellow-50 dark:bg-yellow-900/20' : ''
+              }`}
+              style={{ color: getWuxingColor(col.earth) }}
               data-testid={`text-earth-${index}`}
             >
-              {col.data.earth}
+              {col.earth}
             </div>
+          ))}
+        </div>
+
+        {/* 4행: 지지 육친 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {earthlyYukjin.map((yukjin, index) => (
+            <div 
+              key={`yukjin-earth-${index}`} 
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
+              data-testid={`text-yukjin-earth-${index}`}
+            >
+              {yukjin}
+            </div>
+          ))}
+        </div>
+
+        {/* 5행: 지장간 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">지장간</div>
+          {jijanggan.map((stems, index) => (
+            <div 
+              key={`jijanggan-${index}`} 
+              className="p-2 text-center text-sm border-r border-border last:border-r-0"
+              data-testid={`text-jijanggan-${index}`}
+            >
+              {stems}
+            </div>
+          ))}
+        </div>
+
+        {/* 6행: 대운수 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">대운수</div>
+          <div className="col-span-3 p-2 text-center text-sm" data-testid="text-daeun-su">
+            {daeunSu}일
           </div>
-        ))}
+        </div>
+
+        {/* 7행: 대운천간 */}
+        {daeunData && (
+          <div className="grid grid-cols-4 border-b border-border">
+            <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">대운천간</div>
+            {daeunData.daeunPeriods.slice(0, 3).map((period: any, index: number) => (
+              <div 
+                key={`daeun-sky-${index}`} 
+                className="p-2 text-center text-lg font-bold border-r border-border last:border-r-0"
+                style={{ color: getWuxingColor(period.gapja[0]) }}
+                data-testid={`text-daeun-sky-${index}`}
+              >
+                {period.gapja[0]}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 8행: 대운지지 */}
+        {daeunData && (
+          <div className="grid grid-cols-4 border-b border-border">
+            <div className="p-2 text-center text-xs font-medium border-r border-border bg-muted/30">대운지지</div>
+            {daeunData.daeunPeriods.slice(0, 3).map((period: any, index: number) => (
+              <div 
+                key={`daeun-earth-${index}`} 
+                className="p-2 text-center text-lg font-bold border-r border-border last:border-r-0"
+                style={{ color: getWuxingColor(period.gapja[1]) }}
+                data-testid={`text-daeun-earth-${index}`}
+              >
+                {period.gapja[1]}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      {/* 오행 정보 */}
-      {showWuxing && (
-        <div className="mt-4 p-3 bg-muted/50 rounded-md">
-          <h3 className="text-sm font-medium mb-2 text-center" data-testid="text-wuxing-title">
-            오행 분석
-          </h3>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <span className="font-medium">천간:</span>{" "}
-              {wuxingData.map((w, i) => (
-                <span key={i} className={`${getWuXingColor(w)} font-medium`}>
-                  {w}{i < wuxingData.length - 1 ? ", " : ""}
-                </span>
-              ))}
-            </div>
-            <div>
-              <span className="font-medium">지지:</span>{" "}
-              {wuxingEarthData.map((w, i) => (
-                <span key={i} className={`${getWuXingColor(w)} font-medium`}>
-                  {w}{i < wuxingEarthData.length - 1 ? ", " : ""}
-                </span>
-              ))}
-            </div>
+
+      {/* 세운 정보 */}
+      {displaySaeun && (
+        <div className="mt-4 border border-border">
+          {/* 세운년도 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운년도</div>
+            {displaySaeun.years.map((year: number, index: number) => (
+              <div 
+                key={`saeun-year-${index}`} 
+                className="p-1 text-center text-xs border-r border-border last:border-r-0"
+                data-testid={`text-saeun-year-${index}`}
+              >
+                {year}
+              </div>
+            ))}
+          </div>
+
+          {/* 세운천간 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운천간</div>
+            {displaySaeun.skyStems.map((sky: string, index: number) => (
+              <div 
+                key={`saeun-sky-${index}`} 
+                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
+                style={{ color: getWuxingColor(sky) }}
+                data-testid={`text-saeun-sky-${index}`}
+              >
+                {sky}
+              </div>
+            ))}
+          </div>
+
+          {/* 세운지지 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운지지</div>
+            {displaySaeun.earthBranches.map((earth: string, index: number) => (
+              <div 
+                key={`saeun-earth-${index}`} 
+                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
+                style={{ color: getWuxingColor(earth) }}
+                data-testid={`text-saeun-earth-${index}`}
+              >
+                {earth}
+              </div>
+            ))}
+          </div>
+
+          {/* 세운별 나이 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">세운별 나이</div>
+            {displaySaeun.ages.map((age: number, index: number) => (
+              <div 
+                key={`saeun-age-${index}`} 
+                className="p-1 text-center text-xs border-r border-border last:border-r-0"
+                data-testid={`text-saeun-age-${index}`}
+              >
+                {age}
+              </div>
+            ))}
           </div>
         </div>
       )}
-      
-      {/* 세운과 월운 테이블 */}
-      {showSaeunWolun && saeunData && wolunData && (
-        <div className="mt-4">
-          <h3 className="text-sm font-medium mb-2 text-center">세운과 월운</h3>
-          
-          {/* 세운 테이블 (4열) */}
-          <div className="grid grid-cols-4 gap-1 mb-2">
-            {/* 9행: 년도 (우측→좌측) */}
-            {[...saeunData.years].reverse().map((year, index) => (
-              <div key={`year-${index}`} className="text-center">
-                <div className="py-1 px-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/20 border rounded">
-                  {year}
-                </div>
-              </div>
-            ))}
-            
-            {/* 10행: 세운 천간 (우측→좌측) */}
-            {[...saeunData.skyStems].reverse().map((sky, index) => (
-              <div key={`saeun-sky-${index}`} className="text-center">
-                <div 
-                  className="py-2 px-1 text-lg font-bold border rounded text-black"
-                  style={{ backgroundColor: getWuxingColor(sky) }}
-                >
-                  {sky}
-                </div>
-              </div>
-            ))}
-            
-            {/* 11행: 세운 지지 (우측→좌측) */}
-            {[...saeunData.earthBranches].reverse().map((earth, index) => (
-              <div key={`saeun-earth-${index}`} className="text-center">
-                <div 
-                  className="py-2 px-1 text-lg font-bold border rounded text-black"
-                  style={{ backgroundColor: getWuxingColor(earth) }}
-                >
-                  {earth}
-                </div>
-              </div>
-            ))}
-            
-            {/* 12행: 나이 (우측→좌측) */}
-            {[...saeunData.ages].reverse().map((age, index) => (
-              <div key={`age-${index}`} className="text-center">
-                <div className="py-1 px-1 text-xs font-medium bg-gray-50 dark:bg-gray-800 border rounded">
-                  {age}
-                </div>
+
+      {/* 월운 정보 */}
+      {wolunData.length > 0 && (
+        <div className="mt-4 border border-border">
+          {/* 월운 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월운</div>
+            {wolunData.map((data, index) => (
+              <div 
+                key={`wolun-${index}`} 
+                className="p-1 text-center text-xs border-r border-border last:border-r-0"
+                data-testid={`text-wolun-${index}`}
+              >
+                {data.month}월
               </div>
             ))}
           </div>
-          
-          {/* 빈 줄 */}
-          <div className="my-2"></div>
-          
-          {/* 14행: 월운 (flex로 변경) */}
-          <div className="flex gap-1 overflow-x-auto">
-            {wolunData.map((month, index) => (
-              <div key={`wolun-${index}`} className="text-center flex-shrink-0">
-                <div className="py-1 px-2 text-xs font-medium bg-green-50 dark:bg-green-900/20 border rounded min-w-[24px]" data-testid={`text-wolun-${index}`}>
-                  {month}월
-                </div>
+
+          {/* 월운천간 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월운천간</div>
+            {wolunData.map((data, index) => (
+              <div 
+                key={`wolun-sky-${index}`} 
+                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
+                style={{ color: getWuxingColor(data.sky) }}
+                data-testid={`text-wolun-sky-${index}`}
+              >
+                {data.sky}
               </div>
             ))}
+          </div>
+
+          {/* 월운지지 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월운지지</div>
+            {wolunData.map((data, index) => (
+              <div 
+                key={`wolun-earth-${index}`} 
+                className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0"
+                style={{ color: getWuxingColor(data.earth) }}
+                data-testid={`text-wolun-earth-${index}`}
+              >
+                {data.earth}
+              </div>
+            ))}
+          </div>
+
+          {/* 월 표시 */}
+          <div className="grid grid-cols-13 border-b border-border">
+            <div className="p-1 text-center text-xs font-medium border-r border-border bg-muted/30">월 표시</div>
+            {Array.from({length: 12}, (_, i) => (
+              <div 
+                key={`month-display-${i}`} 
+                className="p-1 text-center text-xs border-r border-border last:border-r-0"
+                data-testid={`text-month-display-${i}`}
+              >
+                {i + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 메모 */}
+      {memo && (
+        <div className="mt-4 border border-border">
+          <div className="p-2 text-center text-xs font-medium border-b border-border bg-muted/30">메모</div>
+          <div className="p-3 text-sm" data-testid="text-memo">
+            {memo}
           </div>
         </div>
       )}
