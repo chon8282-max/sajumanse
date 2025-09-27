@@ -6,6 +6,14 @@ This is a traditional Korean calendar (만세력) mobile application that provid
 
 Preferred communication style: Simple, everyday language.
 
+## Traditional Display Conventions
+- **Right-to-Left (RTL) Display**: All traditional fortune-telling elements must display right-to-left going forward:
+  - 사주원국 (Four Pillars)
+  - 대운 (Daeun/Great Luck periods) 
+  - 세운 (Saeun/Year Luck)
+  - 월운 (Wolun/Month Luck)
+- **Month Pillar Exclusion**: Daeun calculations must exclude the person's own month pillar (자기 월주는 빼는거야)
+
 # System Architecture
 
 ## Frontend Architecture

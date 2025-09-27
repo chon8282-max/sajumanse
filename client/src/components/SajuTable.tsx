@@ -177,19 +177,21 @@ export default function SajuTable({
     const skies: string[] = [];
     const earths: string[] = [];
 
+    // 월주 다음/이전부터 10개 대운 계산
     for (let i = 0; i < 10; i++) {
       if (isForward) {
-        // 순행: 월주부터 다음으로
-        skies.push(heavenlyStems[(monthSkyIndex + i) % 10]);
-        earths.push(earthlyBranches[(monthEarthIndex + i) % 12]);
+        // 순행: 월주 다음부터 (monthIndex + 1 + i)
+        skies.push(heavenlyStems[(monthSkyIndex + 1 + i) % 10]);
+        earths.push(earthlyBranches[(monthEarthIndex + 1 + i) % 12]);
       } else {
-        // 역행: 월주부터 이전으로
-        skies.push(heavenlyStems[(monthSkyIndex - i + 10) % 10]);
-        earths.push(earthlyBranches[(monthEarthIndex - i + 12) % 12]);
+        // 역행: 월주 이전부터 (monthIndex - 1 - i)
+        skies.push(heavenlyStems[(monthSkyIndex - 1 - i + 10) % 10]);
+        earths.push(earthlyBranches[(monthEarthIndex - 1 - i + 12) % 12]);
       }
     }
 
-    return { skies, earths };
+    // 우측에서 좌측으로 표시하기 위해 배열 뒤집기
+    return { skies: skies.reverse(), earths: earths.reverse() };
   }, [gender, saju.year.sky, saju.month.sky, saju.month.earth]);
 
 
