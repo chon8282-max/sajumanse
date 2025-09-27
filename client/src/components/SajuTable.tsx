@@ -655,29 +655,29 @@ export default function SajuTable({
         </div>
 
         {/* 17행: 메모 + 오늘 날짜 */}
-        <div className="grid grid-cols-2 border-b border-border">
+        <div className="flex border-b border-border">
           <div 
-            className="py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-white border-r border-border"
+            className="flex-1 py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-white border-r border-border"
             style={{ backgroundColor: '#1b1464' }}
             data-testid="text-memo-title"
           >
             메모
           </div>
-          <div 
-            className="py-1 px-2 min-h-[1.5rem] flex items-center justify-center border-r border-border last:border-r-0 cursor-pointer hover:bg-opacity-80"
-            style={{ backgroundColor: '#1b1464' }}
+          <button 
+            className="px-3 py-1 text-xs bg-white hover:bg-gray-50 border-l border-border cursor-pointer transition-colors"
+            style={{ color: 'var(--foreground)' }}
             onClick={insertTodayDate}
             data-testid="button-today-date"
           >
-            <span className="text-xs text-white">오늘날짜</span>
-          </div>
+            오늘날짜
+          </button>
         </div>
 
         {/* 18행: 메모 입력 박스 */}
-        <div className="grid grid-cols-1 border-b border-border">
-          <div className="p-2 bg-white">
+        <div className="border-b border-border">
+          <div className="p-4 bg-white flex justify-center">
             <textarea
-              className="w-full min-h-[10rem] text-xs border border-gray-300 rounded px-2 py-1 resize-vertical"
+              className="w-full max-w-2xl min-h-[10rem] text-xs border border-gray-300 rounded px-2 py-1 resize-vertical"
               placeholder="메모를 입력하세요..."
               value={memoText}
               onChange={(e) => setMemoText(e.target.value)}
