@@ -22,22 +22,21 @@ interface SajuTableProps {
   memo?: string;
 }
 
-// 지장간 계산
+// 지장간 계산 - 사용자 요청 수정사항 반영
 const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
-  '子': ['癸'],
-  '丑': ['己', '癸', '辛'],
-  '寅': ['甲', '丙', '戊'],
-  '卯': ['乙'],
-  '辰': ['戊', '乙', '癸'],
-  '巳': ['丙', '庚', '戊'],
-  '午': ['丁', '己'],
-  '未': ['己', '丁', '乙'],
-  '申': ['庚', '壬', '戊'],
-  '酉': ['辛'],
-  '戌': ['戊', '辛', '丁'],
-  '亥': ['壬', '甲']
+  '子': ['壬', '癸'],      // 자 = 임계
+  '丑': ['癸', '辛', '己'], // 축 = 계신기
+  '寅': ['戊', '丙', '甲'], // 인 = 무병갑
+  '卯': ['甲', '乙'],      // 묘 = 갑을
+  '辰': ['乙', '癸', '戊'], // 진 = 을계무
+  '巳': ['戊', '庚', '丙'], // 사 = 무경병
+  '午': ['丙', '己', '丁'], // 오 = 병기정
+  '未': ['丁', '乙', '己'], // 미 = 정을기
+  '申': ['戊', '壬', '庚'], // 신 = 무임경
+  '酉': ['庚', '辛'],      // 유 = 경신
+  '戌': ['辛', '丁', '戊'], // 술 = 신정무
+  '亥': ['戊', '甲', '壬']  // 해 = 무갑임
 };
-
 
 export default function SajuTable({ 
   saju, 
@@ -354,7 +353,7 @@ export default function SajuTable({
           {heavenlyYukjin.map((yukjin, index) => (
             <div 
               key={`yukjin-sky-${index}`} 
-              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
+              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               data-testid={`text-yukjin-sky-${index}`}
             >
               {yukjin}
@@ -401,7 +400,7 @@ export default function SajuTable({
           {earthlyYukjin.map((yukjin, index) => (
             <div 
               key={`yukjin-earth-${index}`} 
-              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
+              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               data-testid={`text-yukjin-earth-${index}`}
             >
               {yukjin}
@@ -414,7 +413,7 @@ export default function SajuTable({
           {jijanggan.map((stems, index) => (
             <div 
               key={`jijanggan-${index}`} 
-              className="p-2 text-center text-sm border-r border-border last:border-r-0"
+              className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ color: '#000000' }}
               data-testid={`text-jijanggan-${index}`}
             >
@@ -428,7 +427,7 @@ export default function SajuTable({
           {daeunAges.map((age, colIndex) => (
             <div 
               key={`daeun-age-${colIndex}`}
-              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-blue-50 dark:bg-blue-950/30"
+              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center"
               data-testid={`text-daeun-age-${colIndex}`}
             >
               {age}
@@ -441,7 +440,7 @@ export default function SajuTable({
           {daeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`daeun-sky-${colIndex}`}
-              className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -458,7 +457,7 @@ export default function SajuTable({
           {daeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`daeun-earth-${colIndex}`}
-              className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -475,7 +474,7 @@ export default function SajuTable({
           {saeunYears.map((year, colIndex) => (
             <div 
               key={`saeun-year-${colIndex}`}
-              className="p-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-yellow-50 dark:bg-yellow-950/30 flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-yellow-50 dark:bg-yellow-950/30 flex items-center justify-center"
               data-testid={`text-saeun-year-${colIndex}`}
             >
               {year}
@@ -488,7 +487,7 @@ export default function SajuTable({
           {saeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`saeun-sky-${colIndex}`}
-              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -505,7 +504,7 @@ export default function SajuTable({
           {saeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`saeun-earth-${colIndex}`}
-              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -522,7 +521,7 @@ export default function SajuTable({
           {saeunAges.map((age, colIndex) => (
             <div 
               key={`saeun-age-${colIndex}`}
-              className="p-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-green-50 dark:bg-green-950/30 flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-green-50 dark:bg-green-950/30 flex items-center justify-center"
               data-testid={`text-saeun-age-${colIndex}`}
             >
               {age}
@@ -533,7 +532,7 @@ export default function SajuTable({
         {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
-            className="p-2 text-center text-sm font-bold min-h-[2rem] bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center"
+            className="py-1 text-center text-xs font-bold min-h-[1.5rem] bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center"
             data-testid="text-wolun-title"
           >
             월운(月運)
@@ -545,7 +544,7 @@ export default function SajuTable({
           {wolunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`wolun-sky-${colIndex}`}
-              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -562,7 +561,7 @@ export default function SajuTable({
           {wolunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`wolun-earth-${colIndex}`}
-              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -579,7 +578,7 @@ export default function SajuTable({
           {wolunMonths.map((month, colIndex) => (
             <div 
               key={`wolun-month-${colIndex}`}
-              className="p-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center"
               data-testid={`text-wolun-month-${colIndex}`}
             >
               {month}

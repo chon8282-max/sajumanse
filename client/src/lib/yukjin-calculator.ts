@@ -11,7 +11,7 @@ const HEAVENLY_STEM_WUXING: Record<string, string> = {
 };
 
 // 지지별 장간 (藏干) - 각 지지에 숨어있는 천간들
-const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
+export const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
   '子': ['壬', '癸'],      // 자 = 임계
   '丑': ['癸', '辛', '己'], // 축 = 계신기
   '寅': ['戊', '丙', '甲'], // 인 = 무병갑
