@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   ArrowLeft, 
   Trash2, 
@@ -17,7 +17,8 @@ import {
   Plus,
   Edit
 } from "lucide-react";
-import type { SajuRecord } from "@shared/schema";
+import type { SajuRecord, Group } from "@shared/schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // API 응답 타입 정의
 interface ApiResponse<T> {
@@ -30,11 +31,66 @@ export default function SajuList() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  
+  // 검색 debounce (성능 최적화)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  // 저장된 사주 목록 조회 (기본 queryFn 사용)
+  // 그룹 목록 조회
+  const { data: groupsList } = useQuery<ApiResponse<Group[]>, Error, Group[]>({
+    queryKey: ["/api/groups"],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/groups');
+      
+      // 에러 상태 처리
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      }
+      
+      const responseJson = await response.json();
+      if (!responseJson.success) {
+        throw new Error(responseJson.error || '그룹 목록 조회에 실패했습니다.');
+      }
+      
+      return responseJson;
+    },
+    select: (response: ApiResponse<Group[]>) => response?.data || [],
+  });
+
+  // 저장된 사주 목록 조회 (서버 사이드 검색)
   const { data: sajuList, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>, Error, SajuRecord[]>({
-    queryKey: ["/api/saju-records"],
-    select: (response: ApiResponse<SajuRecord[]>) => response?.data || [], // API 응답에서 data 배열 추출
+    queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (debouncedSearchQuery.trim()) {
+        params.set('search', debouncedSearchQuery.trim());
+      }
+      if (selectedGroupId && selectedGroupId !== 'all') {
+        params.set('groupId', selectedGroupId);
+      }
+      const url = `/api/saju-records${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await apiRequest('GET', url);
+      
+      // 에러 상태 처리
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      }
+      
+      const responseJson = await response.json();
+      if (!responseJson.success) {
+        throw new Error(responseJson.error || '사주 목록 조회에 실패했습니다.');
+      }
+      
+      return responseJson;
+    },
+    select: (response: ApiResponse<SajuRecord[]>) => response?.data || [],
   });
 
   // 사주 삭제 뮤테이션
@@ -48,7 +104,8 @@ export default function SajuList() {
       return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
+      // 필터링된 뷰도 동기화되도록 정확한 queryKey로 무효화
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
       toast({
         title: "삭제 완료",
         description: "사주가 성공적으로 삭제되었습니다.",
@@ -102,19 +159,8 @@ export default function SajuList() {
     return currentYear - birthYear + 1; // 한국 나이
   };
 
-  // 검색된 사주 목록
-  const filteredSajuList = useMemo(() => {
-    if (!sajuList || !searchQuery.trim()) {
-      return sajuList || [];
-    }
-    
-    const query = searchQuery.toLowerCase().trim();
-    return sajuList.filter(saju => {
-      const name = (saju.name || "").toLowerCase();
-      const birthDate = `${saju.birthYear}${saju.birthMonth.toString().padStart(2, '0')}${saju.birthDay.toString().padStart(2, '0')}`;
-      return name.includes(query) || birthDate.includes(query.replace(/[^0-9]/g, ''));
-    });
-  }, [sajuList, searchQuery]);
+  // 서버 사이드 검색으로 변경하여 filteredSajuList 제거
+  // sajuList가 이미 필터링된 결과이므로 더 이상 필터링 불필요
 
   // 조건부 렌더링을 JSX에서 처리하여 hook 규칙 준수
 
@@ -142,17 +188,34 @@ export default function SajuList() {
           </Button>
         </div>
         
-        {/* 검색 바 */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            type="text"
-            placeholder="이름 또는 생년월일 검색..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-            data-testid="input-search"
-          />
+        {/* 검색 바 및 그룹 필터 */}
+        <div className="space-y-4 mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="이름 또는 생년월일 검색..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+              data-testid="input-search"
+            />
+          </div>
+          
+          {/* 그룹 선택 */}
+          <Select value={selectedGroupId} onValueChange={setSelectedGroupId} data-testid="select-group">
+            <SelectTrigger>
+              <SelectValue placeholder="모든 그룹" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 그룹</SelectItem>
+              {groupsList?.map((group) => (
+                <SelectItem key={group.id} value={group.id}>
+                  {group.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* 로딩 상태 */}
@@ -191,7 +254,7 @@ export default function SajuList() {
         {/* 데이터 상태 */}
         {!isLoading && !error && (
           <>
-            {!filteredSajuList || filteredSajuList.length === 0 ? (
+            {!sajuList || sajuList.length === 0 ? (
               searchQuery.trim() ? (
                 <Card>
                   <CardContent className="p-8 text-center">
@@ -229,7 +292,7 @@ export default function SajuList() {
               )
             ) : (
               <div className="space-y-4">
-                {filteredSajuList.map((saju) => (
+                {sajuList.map((saju) => (
               <Card 
                 key={saju.id} 
                 className="hover-elevate cursor-pointer"
