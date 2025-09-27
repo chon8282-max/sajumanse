@@ -221,12 +221,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             calendarType: validatedData.calendarType  // 원본 달력 타입 보존
           };
 
-          // 음력 변환 결과가 있으면 추가
-          if (lunarConversion) {
+          // 음력 정보 저장
+          if (validatedData.calendarType === "양력" && lunarConversion) {
+            // 양력 입력 시: 변환된 음력 정보 저장
             updateData.lunarYear = lunarConversion.year;
             updateData.lunarMonth = lunarConversion.month;
             updateData.lunarDay = lunarConversion.day;
             updateData.isLeapMonth = lunarConversion.isLeapMonth;
+          } else if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
+            // 음력 입력 시: 입력된 음력 정보 그대로 저장하고, 변환된 양력 정보로 birthYear/Month/Day 업데이트
+            updateData.lunarYear = validatedData.birthYear;
+            updateData.lunarMonth = validatedData.birthMonth;
+            updateData.lunarDay = validatedData.birthDay;
+            updateData.isLeapMonth = validatedData.calendarType === "윤달";
+            // 변환된 양력 정보로 메인 생년월일 필드 업데이트
+            updateData.birthYear = solarCalcYear;
+            updateData.birthMonth = solarCalcMonth;
+            updateData.birthDay = solarCalcDay;
           }
 
           const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
