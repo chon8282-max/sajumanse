@@ -3,6 +3,7 @@ import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateDaeunNumber } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
+import { useMemo } from "react";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -55,8 +56,8 @@ export default function SajuTable({
   memo
 }: SajuTableProps) {
 
-  // 나이 계산 함수 (한국식 나이: 만 나이 + 1)
-  const calculateAge = (birthYear?: number, birthMonth?: number, birthDay?: number): number => {
+  // 나이 계산 (메모이제이션)
+  const age = useMemo(() => {
     if (!birthYear) return 0;
     
     const today = new Date();
@@ -69,7 +70,7 @@ export default function SajuTable({
     
     // 한국식 나이 (만 나이 + 1)
     return manAge + 1;
-  };
+  }, [birthYear, birthMonth, birthDay]);
 
   // 생시 한자 표시 함수
   const formatBirthHour = (hour?: string): string => {
@@ -102,52 +103,49 @@ export default function SajuTable({
     return timeHanja[closestTime as keyof typeof timeHanja] || '未詳';
   };
 
-  // 사주 데이터 구성 (우측부터 년월일시 순)
-  const sajuColumns = [
+  // 사주 데이터 구성 (메모이제이션)
+  const sajuColumns = useMemo(() => [
     { label: "시주", sky: saju.hour.sky, earth: saju.hour.earth },
     { label: "일주", sky: saju.day.sky, earth: saju.day.earth },
     { label: "월주", sky: saju.month.sky, earth: saju.month.earth },
     { label: "년주", sky: saju.year.sky, earth: saju.year.earth }
-  ];
+  ], [saju]);
 
-  // 육친 계산
-  const dayStem = saju.day.sky;
-  const heavenlyYukjin = sajuColumns.map(col => {
-    if (col.sky === dayStem) return "일간";
-    return calculateYukjin(dayStem, col.sky);
-  });
+  // 육친 계산 (메모이제이션)
+  const { heavenlyYukjin, earthlyYukjin } = useMemo(() => {
+    const dayStem = saju.day.sky;
+    return {
+      heavenlyYukjin: sajuColumns.map(col => {
+        if (col.sky === dayStem) return "일간";
+        return calculateYukjin(dayStem, col.sky);
+      }),
+      earthlyYukjin: sajuColumns.map(col => {
+        return calculateEarthlyBranchYukjin(dayStem, col.earth);
+      })
+    };
+  }, [sajuColumns, saju.day.sky]);
 
-  const earthlyYukjin = sajuColumns.map(col => {
-    return calculateEarthlyBranchYukjin(dayStem, col.earth);
-  });
+  // 지장간 계산 (메모이제이션)
+  const jijanggan = useMemo(() => {
+    return sajuColumns.map(col => {
+      const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
+      return hiddenStems.join('');
+    });
+  }, [sajuColumns]);
 
-  // 지장간 계산
-  const jijanggan = sajuColumns.map(col => {
-    const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
-    return hiddenStems.join('');
-  });
-
-  // 대운수 계산 (6번째 행용)
-  const calculateDaeunAges = (): number[] => {
+  // 대운수 계산 (메모이제이션)
+  const daeunAges = useMemo(() => {
     if (!birthYear || !birthMonth || !birthDay || !gender || !saju.year.sky) {
-      // 기본값: 우측에서 좌측으로 (93세부터 3세까지)
       return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
     }
 
     try {
-      // 시작 대운수 계산
       const startDaeun = calculateDaeunNumber(birthYear, birthMonth, birthDay, gender, saju.year.sky);
-      
-      // 우측에서 좌측으로 표시 (최신 대운부터 - 높은 나이부터 낮은 나이 순)
       return Array.from({ length: 10 }, (_, i) => startDaeun + (9 - i) * 10);
-    } catch (error) {
-      console.error('대운수 계산 오류:', error);
-      // 기본값: 우측에서 좌측으로 (93세부터 3세까지)
+    } catch {
       return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
     }
-  };
-
-  const daeunAges = calculateDaeunAges();
+  }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
 
 
   // 간지별 배경색 매핑
@@ -186,7 +184,7 @@ export default function SajuTable({
               )}
               <span className="text-sm" data-testid="text-gender">{gender}</span>
             </div>
-            <span className="font-medium" data-testid="text-age">{calculateAge(birthYear, birthMonth, birthDay)}세</span>
+            <span className="font-medium" data-testid="text-age">{age}세</span>
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
