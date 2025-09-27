@@ -350,3 +350,67 @@ export interface DataGovKrSolarResponse {
     };
   };
 }
+
+// 운세 API 요청 검증 스키마
+export const preciseDeaunNumberRequestSchema = z.object({
+  birthDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: "올바른 날짜 형식이어야 합니다"
+  }),
+  gender: z.enum(["남자", "여자"], {
+    errorMap: () => ({ message: "성별은 '남자' 또는 '여자'여야 합니다" })
+  }),
+  yearSky: z.enum(CHEONGAN, {
+    errorMap: () => ({ message: "올바른 천간이어야 합니다" })
+  })
+});
+
+export const fortuneCalculateRequestSchema = z.object({
+  saju: z.object({
+    year: z.object({
+      sky: z.enum(CHEONGAN),
+      earth: z.enum(JIJI)
+    }),
+    month: z.object({
+      sky: z.enum(CHEONGAN),
+      earth: z.enum(JIJI)
+    }),
+    day: z.object({
+      sky: z.enum(CHEONGAN),
+      earth: z.enum(JIJI)
+    }),
+    hour: z.object({
+      sky: z.enum(CHEONGAN),
+      earth: z.enum(JIJI)
+    })
+  }),
+  birthDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: "올바른 날짜 형식이어야 합니다"
+  }),
+  gender: z.enum(["남자", "여자"], {
+    errorMap: () => ({ message: "성별은 '남자' 또는 '여자'여야 합니다" })
+  })
+});
+
+export const fortuneSaveRequestSchema = z.object({
+  sajuRecordId: z.string().min(1, "사주 기록 ID는 필수입니다"),
+  fortuneData: z.object({
+    daeunNumber: z.number().int().min(1).max(10),
+    daeunDirection: z.enum(["순행", "역행"]),
+    daeunStartAge: z.number().int().min(1),
+    daeunList: z.array(z.object({
+      startAge: z.number().int().min(1),
+      endAge: z.number().int().min(1),
+      ganji: z.object({
+        sky: z.enum(CHEONGAN),
+        earth: z.enum(JIJI)
+      })
+    })),
+    saeunStartYear: z.number().int(),
+    calculationDate: z.string().refine((date) => !isNaN(Date.parse(date))),
+    algorithmVersion: z.string().min(1)
+  })
+});
+
+export type PreciseDeaunNumberRequest = z.infer<typeof preciseDeaunNumberRequestSchema>;
+export type FortuneCalculateRequest = z.infer<typeof fortuneCalculateRequestSchema>;
+export type FortuneSaveRequest = z.infer<typeof fortuneSaveRequestSchema>;

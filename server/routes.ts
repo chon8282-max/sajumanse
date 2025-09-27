@@ -536,6 +536,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================================
+  // 운세 계산 관련 API 라우트
+  // ========================================
+
+  // 정확한 대운수 계산 API
+  app.post("/api/fortune/daeun-number", async (req, res) => {
+    try {
+      const { preciseDaeunNumberRequestSchema } = await import('@shared/schema');
+      
+      // Zod 스키마를 사용한 입력 검증
+      const validatedData = preciseDaeunNumberRequestSchema.parse(req.body);
+
+      const { calculatePreciseDaeunNumber } = await import('../lib/solar-terms-service');
+      
+      // 정확한 대운수 계산
+      const result = await calculatePreciseDaeunNumber(
+        new Date(validatedData.birthDate),
+        validatedData.gender,
+        validatedData.yearSky
+      );
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Precise daeun number calculation error:', error);
+      res.status(500).json({ 
+        error: "대운수 계산 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 전체 운세 계산 API
+  app.post("/api/fortune/calculate", async (req, res) => {
+    try {
+      const { fortuneCalculateRequestSchema } = await import('@shared/schema');
+      
+      // Zod 스키마를 사용한 입력 검증
+      const validatedData = fortuneCalculateRequestSchema.parse(req.body);
+
+      const { calculateFullFortune } = await import('@shared/fortune-calculator');
+      
+      // 전체 운세 계산
+      const result = calculateFullFortune(
+        validatedData.saju,
+        new Date(validatedData.birthDate),
+        validatedData.gender
+      );
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Full fortune calculation error:', error);
+      res.status(500).json({ 
+        error: "운세 계산 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 운세 결과 저장 API
+  app.post("/api/fortune/save", async (req, res) => {
+    try {
+      const { fortuneSaveRequestSchema } = await import('@shared/schema');
+      
+      // Zod 스키마를 사용한 입력 검증
+      const validatedData = fortuneSaveRequestSchema.parse(req.body);
+
+      // 운세 결과 저장
+      const savedFortune = await storage.saveFortuneResult({
+        sajuRecordId: validatedData.sajuRecordId,
+        daeunNumber: validatedData.fortuneData.daeunNumber,
+        daeunDirection: validatedData.fortuneData.daeunDirection,
+        daeunStartAge: validatedData.fortuneData.daeunStartAge,
+        daeunList: JSON.stringify(validatedData.fortuneData.daeunList),
+        saeunStartYear: validatedData.fortuneData.saeunStartYear,
+        calculationDate: validatedData.fortuneData.calculationDate,
+        algorithmVersion: validatedData.fortuneData.algorithmVersion
+      });
+
+      res.json({
+        success: true,
+        data: savedFortune
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Fortune save error:', error);
+      res.status(500).json({ 
+        error: "운세 결과 저장 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 운세 결과 조회 API
+  app.get("/api/fortune/:sajuRecordId", async (req, res) => {
+    try {
+      const { sajuRecordId } = req.params;
+      
+      const fortuneResult = await storage.getFortuneResult(sajuRecordId);
+      
+      if (!fortuneResult) {
+        return res.status(404).json({ 
+          error: "해당 운세 결과를 찾을 수 없습니다." 
+        });
+      }
+
+      // JSON 문자열을 파싱하여 반환
+      const parsedResult = {
+        ...fortuneResult,
+        daeunList: JSON.parse(fortuneResult.daeunList || '[]')
+      };
+
+      res.json({
+        success: true,
+        data: parsedResult
+      });
+    } catch (error) {
+      console.error('Fortune retrieval error:', error);
+      res.status(500).json({ 
+        error: "운세 결과 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
   // 저장된 만세력 조회
   app.get("/api/manse", async (req, res) => {
     try {
