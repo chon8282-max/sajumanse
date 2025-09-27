@@ -281,11 +281,11 @@ export default function SajuTable({
         </div>
 
         {/* 6행: 대운수 (우측에서 좌측으로) */}
-        <div className="grid grid-cols-10 border-b border-border" dir="rtl">
+        <div className="grid grid-cols-10 border-b border-border">
           {daeunAges.map((age, colIndex) => (
             <div 
               key={`daeun-age-${colIndex}`}
-              className="p-2 text-center text-sm font-medium border-l border-border first:border-l-0 min-h-[2rem] bg-blue-50 dark:bg-blue-950/30"
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-blue-50 dark:bg-blue-950/30"
               data-testid={`text-daeun-age-${colIndex}`}
             >
               {age}
