@@ -254,6 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             dayEarth: sajuResult.day.earth,
             hourSky: sajuResult.hour.sky,
             hourEarth: sajuResult.hour.earth,
+            calendarType: validatedData.calendarType  // 원본 달력 타입 보존
           };
 
           // 음력 변환 결과가 있으면 추가
