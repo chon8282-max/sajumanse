@@ -158,6 +158,33 @@ export interface SajuInfo {
   };
 }
 
+// 운세 계산 결과 저장 테이블
+export const fortuneResults = pgTable("fortune_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sajuRecordId: varchar("saju_record_id").notNull().references(() => sajuRecords.id),
+  
+  // 대운 정보
+  daeunNumber: integer("daeun_number").notNull(), // 대운수 (1-10)
+  daeunDirection: text("daeun_direction").notNull(), // "순행" | "역행"
+  daeunStartAge: integer("daeun_start_age").notNull(), // 대운 시작 나이
+  
+  // 대운 간지 배열 (JSON 저장)
+  daeunList: text("daeun_list").notNull(), // JSON string of DaeunSegment[]
+  
+  // 세운 정보 
+  saeunStartYear: integer("saeun_start_year").notNull(), // 세운 시작년도
+  
+  // 월운 정보는 실시간 계산하므로 저장하지 않음
+  
+  // 계산 메타데이터
+  calculationDate: timestamp("calculation_date").defaultNow(),
+  algorithmVersion: text("algorithm_version").notNull().default("1.0"),
+  
+  // 메타데이터
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // 기존 사용자 스키마 유지
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -214,6 +241,52 @@ export const insertLunarSolarCalendarSchema = createInsertSchema(lunarSolarCalen
 
 export type InsertLunarSolarCalendar = z.infer<typeof insertLunarSolarCalendarSchema>;
 export type LunarSolarCalendar = typeof lunarSolarCalendar.$inferSelect;
+
+// 대운 세그먼트 타입
+export interface DaeunSegment {
+  startAge: number; // 시작 나이
+  endAge: number; // 끝 나이  
+  sky: string; // 천간
+  earth: string; // 지지
+  period: string; // 기간 표시 (예: "6-15세")
+}
+
+// 세운 정보 타입
+export interface SaeunInfo {
+  year: number; // 년도
+  age: number; // 나이
+  sky: string; // 천간
+  earth: string; // 지지
+}
+
+// 월운 정보 타입
+export interface WolunInfo {
+  month: number; // 월
+  sky: string; // 천간
+  earth: string; // 지지
+  period: string; // 기간 (예: "2025년 1월")
+}
+
+// 운세 계산 결과 전체 타입
+export interface FortuneCalculationResult {
+  daeunNumber: number; // 대운수
+  daeunDirection: "순행" | "역행"; // 대운 방향
+  daeunStartAge: number; // 대운 시작 나이
+  daeunList: DaeunSegment[]; // 대운 목록
+  saeunStartYear: number; // 세운 시작년도
+  calculationDate: Date; // 계산 일시
+  algorithmVersion: string; // 알고리즘 버전
+}
+
+// 운세 계산 결과 스키마
+export const insertFortuneResultSchema = createInsertSchema(fortuneResults).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertFortuneResult = z.infer<typeof insertFortuneResultSchema>;
+export type FortuneResult = typeof fortuneResults.$inferSelect;
 
 // API 응답 타입 정의
 export interface DataGovKrLunarResponse {
