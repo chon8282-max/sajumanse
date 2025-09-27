@@ -392,10 +392,10 @@ export default function SajuResult() {
           birthYear={record.birthYear}
           birthMonth={record.birthMonth}
           birthDay={record.birthDay}
-          lunarYear={record.calendarType === '음력' ? record.birthYear : undefined}
-          lunarMonth={record.calendarType === '음력' ? record.birthMonth : undefined}
-          lunarDay={record.calendarType === '음력' ? record.birthDay : undefined}
-          birthHour={timePeriod?.hour?.toString() || ''}
+          lunarYear={record.lunarYear}
+          lunarMonth={record.lunarMonth}
+          lunarDay={record.lunarDay}
+          birthHour={record.birthTime || ''}
           daySky={record.daySky || ''}
           dayEarth={record.dayEarth || ''}
           gender={record.gender || '남자'}

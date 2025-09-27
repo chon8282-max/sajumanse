@@ -73,8 +73,16 @@ export default function SajuTable({
   // 생시 한자 표시 함수
   const formatBirthHour = (hour?: string): string => {
     if (!hour) return '';
-    // 시간을 한자로 변환 (예: "22" -> "戌時")
+    
+    // 이미 한자 형태인 경우 그대로 반환 (예: "亥時")
+    if (hour.includes('時')) {
+      return hour;
+    }
+    
+    // 숫자 형태인 경우 한자로 변환 (예: "22" -> "戌時")
     const hourNum = parseInt(hour);
+    if (isNaN(hourNum)) return '未詳';
+    
     const timeHanja = {
       23: '子時', 1: '子時', 3: '丑時', 5: '寅時', 7: '卯時',
       9: '辰時', 11: '巳時', 13: '午時', 15: '未時', 17: '申時',
