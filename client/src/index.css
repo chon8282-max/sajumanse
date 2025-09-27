@@ -11,9 +11,9 @@
   font-display: swap;
 }
 
-/* TmonMonsori 폰트 클래스 추가 */
+/* MS Gothic 폰트 클래스 추가 */
 .font-tmon {
-  font-family: 'TmonMonsori', 'Noto Serif KR', Georgia, serif !important;
+  font-family: 'MS Gothic', 'MS UI Gothic', 'Noto Serif KR', monospace !important;
 }
 
 /* LIGHT MODE */
