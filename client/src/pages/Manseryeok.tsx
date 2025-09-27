@@ -76,25 +76,29 @@ export default function Manseryeok() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-      {/* 헤더 */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          variant="ghost" 
-          size="sm"
-          onClick={handleBackToHome}
-          data-testid="button-back-home"
-          className="hover-elevate active-elevate-2 flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-sm">홈</span>
-        </Button>
-        <div className="flex-1 text-center">
-          <h1 className="text-xl font-bold text-foreground">만세력</h1>
+      <div className="max-w-lg mx-auto">
+        {/* 헤더 */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleBackToHome}
+              data-testid="button-back-home"
+              className="hover-elevate active-elevate-2 flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="text-sm">홈</span>
+            </Button>
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <h1 className="text-xl font-bold text-foreground">만세력</h1>
+            </div>
+            <div className="w-[60px]"></div> {/* 균형을 위한 투명한 공간 */}
+          </div>
         </div>
-      </div>
 
-      {/* 메뉴 그리드 */}
-      <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto">
+        {/* 메뉴 그리드 */}
+        <div className="grid grid-cols-1 gap-4">
         {menuItems.map((item) => (
           <Card 
             key={item.id}
@@ -102,23 +106,23 @@ export default function Manseryeok() {
             onClick={() => handleMenuClick(item.id)}
             data-testid={`card-manseryeok-${item.id}`}
           >
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
-              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
+              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center">
                 <item.icon className={`h-6 w-6 ${item.textColor}`} />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 flex flex-col justify-center">
                 <CardTitle className={`text-lg font-semibold ${item.textColor}`}>
                   {item.title}
                 </CardTitle>
-                <CardDescription className={`text-sm ${item.descriptionColor}`}>
+                <CardDescription className={`text-sm ${item.descriptionColor} mt-1`}>
                   {item.description}
                 </CardDescription>
               </div>
             </CardHeader>
           </Card>
         ))}
+        </div>
       </div>
-
     </div>
   );
 }
