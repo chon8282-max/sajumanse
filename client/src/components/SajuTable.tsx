@@ -1,13 +1,19 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
+import { User, UserCheck } from "lucide-react";
 
 interface SajuTableProps {
   saju: SajuInfo;
   title?: string;
+  name?: string;
   birthYear?: number;
   birthMonth?: number;
   birthDay?: number;
+  lunarYear?: number;
+  lunarMonth?: number;
+  lunarDay?: number;
+  birthHour?: string;
   daySky?: string;
   dayEarth?: string;
   gender?: string;
@@ -34,14 +40,59 @@ const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
 export default function SajuTable({ 
   saju, 
   title = "사주명식", 
+  name,
   birthYear,
   birthMonth,
   birthDay,
+  lunarYear,
+  lunarMonth,
+  lunarDay,
+  birthHour,
   daySky,
   dayEarth,
   gender = '남자',
   memo
 }: SajuTableProps) {
+
+  // 나이 계산 함수 (한국식 나이: 만 나이 + 1)
+  const calculateAge = (birthYear?: number, birthMonth?: number, birthDay?: number): number => {
+    if (!birthYear) return 0;
+    
+    const today = new Date();
+    const birthDate = new Date(birthYear, (birthMonth || 1) - 1, birthDay || 1);
+    
+    // 만 나이 계산
+    const manAge = today.getFullYear() - birthDate.getFullYear() - 
+      (today.getMonth() < birthDate.getMonth() || 
+       (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
+    
+    // 한국식 나이 (만 나이 + 1)
+    return manAge + 1;
+  };
+
+  // 생시 표시 함수
+  const formatBirthHour = (hour?: string): string => {
+    if (!hour) return '';
+    // 시간 형식 처리 (예: "23" -> "술시 (23시)")
+    const hourNum = parseInt(hour);
+    const timeNames = {
+      23: '자시', 1: '자시', 3: '축시', 5: '인시', 7: '묘시',
+      9: '진시', 11: '사시', 13: '오시', 15: '미시', 17: '신시',
+      19: '유시', 21: '술시'
+    };
+    
+    // 가장 가까운 시간대 찾기
+    const timeKeys = Object.keys(timeNames).map(Number).sort((a, b) => a - b);
+    let closestTime = timeKeys[0];
+    for (const time of timeKeys) {
+      if (hourNum >= time) {
+        closestTime = time;
+      }
+    }
+    
+    const timeName = timeNames[closestTime as keyof typeof timeNames] || '미상';
+    return `${timeName} (${hour}시)`;
+  };
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
   const sajuColumns = [
@@ -94,6 +145,44 @@ export default function SajuTable({
       <div className="text-center mb-4">
         <div className="font-tmon text-lg font-bold mb-2">{title}</div>
       </div>
+
+      {/* 개인정보 표시 */}
+      {name && (
+        <div className="mb-6 p-4 bg-muted/30 border border-border rounded-md">
+          {/* 첫 번째 줄: 이름, 성별, 나이 */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="font-bold text-lg" data-testid="text-name">{name}</span>
+            <div className="flex items-center gap-1">
+              {gender === '남자' ? (
+                <User className="w-4 h-4 text-blue-600" data-testid="icon-male" />
+              ) : (
+                <UserCheck className="w-4 h-4 text-pink-600" data-testid="icon-female" />
+              )}
+              <span className="text-sm" data-testid="text-gender">{gender}</span>
+            </div>
+            <span className="font-medium" data-testid="text-age">{calculateAge(birthYear, birthMonth, birthDay)}세</span>
+          </div>
+
+          {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
+          <div className="text-center text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              {birthYear && birthMonth && birthDay && (
+                <span data-testid="text-solar-birth">
+                  양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}
+                </span>
+              )}
+              {lunarYear && lunarMonth && lunarDay && (
+                <span data-testid="text-lunar-birth">
+                  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}
+                </span>
+              )}
+              {birthHour && (
+                <span data-testid="text-birth-hour">({formatBirthHour(birthHour)})</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
