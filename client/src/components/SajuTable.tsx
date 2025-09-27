@@ -240,16 +240,28 @@ export default function SajuTable({
   // 간지별 배경색 매핑
   function getGanjiBackgroundColor(character: string): string {
     const ganjiColorMap: Record<string, string> = {
-      // 갑을인묘 = dcfce7
+      // 갑을인묘 = dcfce7 (한글)
       '갑': '#dcfce7', '을': '#dcfce7', '인': '#dcfce7', '묘': '#dcfce7',
-      // 병정사오 = fee2e2
+      // 갑을인묘 = dcfce7 (한자)
+      '甲': '#dcfce7', '乙': '#dcfce7', '寅': '#dcfce7', '卯': '#dcfce7',
+      // 병정사오 = fee2e2 (한글)
       '병': '#fee2e2', '정': '#fee2e2', '사': '#fee2e2', '오': '#fee2e2',
-      // 무기진미술축 = fbfce6
+      // 병정사오 = fee2e2 (한자)
+      '丙': '#fee2e2', '丁': '#fee2e2', '巳': '#fee2e2', '午': '#fee2e2',
+      // 무기진미술축 = fbfce6 (한글)
       '무': '#fbfce6', '기': '#fbfce6', '진': '#fbfce6', '미': '#fbfce6', '술': '#fbfce6', '축': '#fbfce6',
-      // 경신신유 = ffffff
+      // 무기진미술축 = fbfce6 (한자)
+      '戊': '#fbfce6', '己': '#fbfce6', '辰': '#fbfce6', '未': '#fbfce6', '戌': '#fbfce6', '丑': '#fbfce6',
+      // 경신유 = ffffff (한글)
       '경': '#ffffff', '신': '#ffffff', '유': '#ffffff',
-      // 임계해자 = e7e7e6
-      '임': '#e7e7e6', '계': '#e7e7e6', '해': '#e7e7e6', '자': '#e7e7e6'
+      // 경신유 = ffffff (한자)
+      '庚': '#ffffff', '辛': '#ffffff', '酉': '#ffffff',
+      // 임계해자 = e7e7e6 (한글)
+      '임': '#e7e7e6', '계': '#e7e7e6', '해': '#e7e7e6', '자': '#e7e7e6',
+      // 임계해자 = e7e7e6 (한자)
+      '壬': '#e7e7e6', '癸': '#e7e7e6', '亥': '#e7e7e6', '子': '#e7e7e6',
+      // 추가 지지 (한자)
+      '申': '#ffffff' 
     };
     
     return ganjiColorMap[character] || '#ffffff';
@@ -273,7 +285,7 @@ export default function SajuTable({
               )}
               <span className="text-sm" data-testid="text-gender">{gender}</span>
             </div>
-            <span className="font-medium" data-testid="text-age">{age}세</span>
+            <span className="font-medium" data-testid="text-age">{age}</span>
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
@@ -387,7 +399,7 @@ export default function SajuTable({
           {daeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`daeun-sky-${colIndex}`}
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -404,7 +416,7 @@ export default function SajuTable({
           {daeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`daeun-earth-${colIndex}`}
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -421,7 +433,7 @@ export default function SajuTable({
           {saeunYears.map((year, colIndex) => (
             <div 
               key={`saeun-year-${colIndex}`}
-              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-yellow-50 dark:bg-yellow-950/30"
+              className="p-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-yellow-50 dark:bg-yellow-950/30 flex items-center justify-center"
               data-testid={`text-saeun-year-${colIndex}`}
             >
               {year}
@@ -434,7 +446,7 @@ export default function SajuTable({
           {saeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`saeun-sky-${colIndex}`}
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(sky)
@@ -451,7 +463,7 @@ export default function SajuTable({
           {saeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`saeun-earth-${colIndex}`}
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(earth)
@@ -468,10 +480,10 @@ export default function SajuTable({
           {saeunAges.map((age, colIndex) => (
             <div 
               key={`saeun-age-${colIndex}`}
-              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-green-50 dark:bg-green-950/30"
+              className="p-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-green-50 dark:bg-green-950/30 flex items-center justify-center"
               data-testid={`text-saeun-age-${colIndex}`}
             >
-              {age}살
+              {age}
             </div>
           ))}
         </div>
