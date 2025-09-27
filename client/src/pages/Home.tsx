@@ -25,7 +25,6 @@ export default function Home() {
     hour: number;
     isLunar: boolean;
   } | null>(null);
-  const [lunarDateString, setLunarDateString] = useState<string>("음력 날짜");
 
   // 음력 날짜 API 호출
   const { data: lunarData, error: lunarError } = useQuery({
