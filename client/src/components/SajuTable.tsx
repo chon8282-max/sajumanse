@@ -12,7 +12,6 @@ interface SajuTableProps {
   dayEarth?: string;
   gender?: string;
   memo?: string;
-  simplified?: boolean; // 메인 페이지용 간소화 모드
 }
 
 // 지장간 계산
@@ -41,8 +40,7 @@ export default function SajuTable({
   daySky,
   dayEarth,
   gender = '남자',
-  memo,
-  simplified = false
+  memo
 }: SajuTableProps) {
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
@@ -99,20 +97,18 @@ export default function SajuTable({
 
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 1행: 천간 육친 - simplified 모드에서는 숨김 */}
-        {!simplified && (
-          <div className="grid grid-cols-4 border-b border-border">
-            {heavenlyYukjin.map((yukjin, index) => (
-              <div 
-                key={`yukjin-sky-${index}`} 
-                className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
-                data-testid={`text-yukjin-sky-${index}`}
-              >
-                {yukjin}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* 1행: 천간 육친 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {heavenlyYukjin.map((yukjin, index) => (
+            <div 
+              key={`yukjin-sky-${index}`} 
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
+              data-testid={`text-yukjin-sky-${index}`}
+            >
+              {yukjin}
+            </div>
+          ))}
+        </div>
 
         {/* 2행: 천간 */}
         <div className="grid grid-cols-4 border-b border-border">
@@ -148,36 +144,32 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 4행: 지지 육친 - simplified 모드에서는 숨김 */}
-        {!simplified && (
-          <div className="grid grid-cols-4 border-b border-border">
-            {earthlyYukjin.map((yukjin, index) => (
-              <div 
-                key={`yukjin-earth-${index}`} 
-                className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
-                data-testid={`text-yukjin-earth-${index}`}
-              >
-                {yukjin}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* 4행: 지지 육친 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {earthlyYukjin.map((yukjin, index) => (
+            <div 
+              key={`yukjin-earth-${index}`} 
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0"
+              data-testid={`text-yukjin-earth-${index}`}
+            >
+              {yukjin}
+            </div>
+          ))}
+        </div>
 
-        {/* 5행: 지장간 - simplified 모드에서는 숨김 */}
-        {!simplified && (
-          <div className="grid grid-cols-4 border-b border-border">
-            {jijanggan.map((stems, index) => (
-              <div 
-                key={`jijanggan-${index}`} 
-                className="p-2 text-center text-sm border-r border-border last:border-r-0"
-                style={{ color: '#000000' }}
-                data-testid={`text-jijanggan-${index}`}
-              >
-                {stems}
-              </div>
-            ))}
-          </div>
-        )}
+        {/* 5행: 지장간 */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {jijanggan.map((stems, index) => (
+            <div 
+              key={`jijanggan-${index}`} 
+              className="p-2 text-center text-sm border-r border-border last:border-r-0"
+              style={{ color: '#000000' }}
+              data-testid={`text-jijanggan-${index}`}
+            >
+              {stems}
+            </div>
+          ))}
+        </div>
 
         {/* 추가된 13행 - 6~18행 */}
         {Array.from({ length: 13 }, (_, rowIndex) => (

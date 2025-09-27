@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import SajuTable from "@/components/SajuTable";
+import CurrentTimeTable from "@/components/CurrentTimeTable";
 import DatePicker from "@/components/DatePicker";
 import MenuGrid from "@/components/MenuGrid";
 import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
@@ -211,11 +212,9 @@ export default function Home() {
             <div>{getCurrentDateInfo().lunarInfo}</div>
           </div>
           
-          <SajuTable 
+          <CurrentTimeTable 
             saju={currentSaju}
             title="현재 만세력"
-            gender="남자"
-            simplified={true}
           />
         </div>
 
