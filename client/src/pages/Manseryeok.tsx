@@ -78,7 +78,7 @@ export default function Manseryeok() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-lg mx-auto">
         {/* 헤더 */}
-        <div className="mb-6">
+        <div className="mb-6 relative">
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
@@ -107,14 +107,14 @@ export default function Manseryeok() {
             data-testid={`card-manseryeok-${item.id}`}
           >
             <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
-              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center">
+              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center min-h-[48px]">
                 <item.icon className={`h-6 w-6 ${item.textColor}`} />
               </div>
-              <div className="flex-1 flex flex-col justify-center">
-                <CardTitle className={`text-lg font-semibold ${item.textColor}`}>
+              <div className="flex-1 flex flex-col justify-center min-h-[48px]">
+                <CardTitle className={`text-lg font-semibold ${item.textColor} leading-6`}>
                   {item.title}
                 </CardTitle>
-                <CardDescription className={`text-sm ${item.descriptionColor} mt-1`}>
+                <CardDescription className={`text-sm ${item.descriptionColor} leading-5`}>
                   {item.description}
                 </CardDescription>
               </div>
