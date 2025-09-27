@@ -52,7 +52,7 @@ export default function SajuList() {
       toast({
         title: "삭제 완료",
         description: "사주가 성공적으로 삭제되었습니다.",
-        duration: 1000
+        duration: 800
       });
     },
     onError: (error) => {
