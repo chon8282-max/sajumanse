@@ -171,20 +171,171 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 추가된 13행 - 6~18행 */}
-        {Array.from({ length: 13 }, (_, rowIndex) => (
-          <div key={`extra-row-${rowIndex + 6}`} className="grid grid-cols-4 border-b border-border">
-            {Array.from({ length: 4 }, (_, colIndex) => (
-              <div 
-                key={`extra-cell-${rowIndex + 6}-${colIndex}`}
-                className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-                data-testid={`text-extra-${rowIndex + 6}-${colIndex}`}
-              >
-                {/* 빈 셀 - 추후 내용 추가 예정 */}
-              </div>
-            ))}
+        {/* 6행: 10칸 */}
+        <div className="grid grid-cols-10 border-b border-border">
+          {Array.from({ length: 10 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-6-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-6-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 7행: 10칸 */}
+        <div className="grid grid-cols-10 border-b border-border">
+          {Array.from({ length: 10 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-7-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-7-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 8행: 10칸 */}
+        <div className="grid grid-cols-10 border-b border-border">
+          {Array.from({ length: 10 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-8-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-8-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 9행: 12칸 */}
+        <div className="grid grid-cols-12 border-b border-border">
+          {Array.from({ length: 12 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-9-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-9-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 10행: 12칸 */}
+        <div className="grid grid-cols-12 border-b border-border">
+          {Array.from({ length: 12 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-10-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-10-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 11행: 12칸 */}
+        <div className="grid grid-cols-12 border-b border-border">
+          {Array.from({ length: 12 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-11-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-11-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 12행: 12칸 */}
+        <div className="grid grid-cols-12 border-b border-border">
+          {Array.from({ length: 12 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-12-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-12-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 13행: 1칸 (합쳐진 셀) */}
+        <div className="grid grid-cols-1 border-b border-border">
+          <div 
+            className="p-2 text-center text-sm min-h-[2rem]"
+            data-testid="text-extra-13-0"
+          >
+            {/* 빈 셀 - 추후 내용 추가 예정 */}
           </div>
-        ))}
+        </div>
+
+        {/* 14행: 13칸 */}
+        <div className="grid grid-cols-13 border-b border-border">
+          {Array.from({ length: 13 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-14-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-14-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 15행: 13칸 */}
+        <div className="grid grid-cols-13 border-b border-border">
+          {Array.from({ length: 13 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-15-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-15-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 16행: 13칸 */}
+        <div className="grid grid-cols-13 border-b border-border">
+          {Array.from({ length: 13 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-16-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-16-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 17행: 4칸 (기존 유지) */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {Array.from({ length: 4 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-17-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-17-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
+
+        {/* 18행: 4칸 (기존 유지) */}
+        <div className="grid grid-cols-4 border-b border-border">
+          {Array.from({ length: 4 }, (_, colIndex) => (
+            <div 
+              key={`extra-cell-18-${colIndex}`}
+              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+              data-testid={`text-extra-18-${colIndex}`}
+            >
+              {/* 빈 셀 - 추후 내용 추가 예정 */}
+            </div>
+          ))}
+        </div>
 
       </div>
 
