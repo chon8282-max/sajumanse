@@ -13,10 +13,10 @@
 
 
 
-/* 조선 굵은명조체 폰트 정의 */
+/* 한마음명조B 폰트 정의 */
 @font-face {
-  font-family: 'ChosunKm';
-  src: url('/attached_assets/ChosunKm_1758994013019.TTF') format('truetype');
+  font-family: 'HanmaneumMyeongjo';
+  src: url('/attached_assets/KBIZ한마음명조 B_1758997592448.ttf') format('truetype');
   font-weight: 900;
   font-style: normal;
   font-display: swap;
@@ -34,9 +34,9 @@
   font-weight: 500 !important;
 }
 
-/* ChosunKm 폰트 클래스 적용 */
+/* 한마음명조B 폰트 클래스 적용 */
 .font-noto-bold {
-  font-family: 'ChosunKm', sans-serif !important;
+  font-family: 'HanmaneumMyeongjo', sans-serif !important;
   font-weight: normal !important;
 }
 
