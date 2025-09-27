@@ -396,7 +396,7 @@ export default function SajuResult() {
                   return (
                     <div 
                       key={i} 
-                      className="border-r border-border px-3 py-0.5 font-bold text-black font-tmon last:border-r-0 text-[25px] text-left"
+                      className="border-r border-border px-3 py-0.5 font-bold text-black font-tmon last:border-r-0 text-[25px] text-left pt-[0px] pb-[0px] pl-[5px] pr-[5px]"
                       style={{ backgroundColor: getWuxingColor(jiji) }}
                     >
                       {jiji}
