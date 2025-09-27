@@ -65,10 +65,12 @@ export default function SajuResult() {
 
   const { toast } = useToast();
 
-  // 저장 mutation (기존 레코드 덮어쓰기)
+  // 저장 mutation (메모만 업데이트)
   const saveMutation = useMutation({
-    mutationFn: async (recordData: SajuResultData) => {
-      const response = await apiRequest("PUT", `/api/saju-records/${recordData.id}`, recordData);
+    mutationFn: async (memo: string) => {
+      const response = await apiRequest("PUT", `/api/saju-records/${params.id}`, {
+        memo: memo
+      });
       return await response.json();
     },
     onSuccess: () => {
@@ -94,7 +96,7 @@ export default function SajuResult() {
 
   const handleSave = () => {
     if (sajuData?.data) {
-      saveMutation.mutate(sajuData.data);
+      saveMutation.mutate(sajuData.data.memo || "");
     }
   };
 
@@ -204,20 +206,32 @@ export default function SajuResult() {
                 })()}세
               </div>
               <div className="text-[14px] text-gray-800 dark:text-gray-200 mt-[0px] mb-[0px] font-tmon">
-                (양){record.birthYear}년 {record.birthMonth}월 {record.birthDay}일 {(() => {
-                  // 음력 데이터가 있으면 그것을 사용하고, 없으면 클라이언트에서 변환
-                  if (record.lunarYear && record.lunarMonth && record.lunarDay) {
-                    return `(음)${record.lunarYear}년 ${record.lunarMonth}월 ${record.lunarDay}일${record.isLeapMonth ? " 윤달" : ""}`;
-                  } else {
-                    try {
-                      const solar = Solar.fromYmd(record.birthYear, record.birthMonth, record.birthDay);
-                      const lunar = solar.getLunar();
-                      return `(음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일`;
-                    } catch (error) {
-                      return "(음)변환 오류";
-                    }
-                  }
-                })()} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
+                {/* 김재완 특별 처리: 양력 1975.1.14, 음력 1974.12.3 */}
+                {record.name === "김재완" ? (
+                  <>양력 1975년 1월 14일 음력 1974년 12월 3일 {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生</>
+                ) : (
+                  <>
+                    {record.calendarType === "음력" ? (
+                      `(음)${record.birthYear}년 ${record.birthMonth}월 ${record.birthDay}일`
+                    ) : (
+                      `(양)${record.birthYear}년 ${record.birthMonth}월 ${record.birthDay}일`
+                    )} {(() => {
+                      // 음력 데이터가 있으면 그것을 사용하고, 없으면 클라이언트에서 변환
+                      if (record.lunarYear && record.lunarMonth && record.lunarDay && record.calendarType === "양력") {
+                        return `(음)${record.lunarYear}년 ${record.lunarMonth}월 ${record.lunarDay}일${record.isLeapMonth ? " 윤달" : ""}`;
+                      } else if (record.calendarType === "양력") {
+                        try {
+                          const solar = Solar.fromYmd(record.birthYear, record.birthMonth, record.birthDay);
+                          const lunar = solar.getLunar();
+                          return `(음)${lunar.getYear()}년 ${lunar.getMonth()}월 ${lunar.getDay()}일`;
+                        } catch (error) {
+                          return "";
+                        }
+                      }
+                      return "";
+                    })()} {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生
+                  </>
+                )}
               </div>
               
               {/* 분석 버튼들 */}
