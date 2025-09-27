@@ -518,60 +518,32 @@ export default function SajuList() {
               </Card>
               )
             ) : (
-              <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>이름</TableHead>
-                      <TableHead className="hidden sm:table-cell">생년월일</TableHead>
-                      <TableHead className="hidden md:table-cell">출생시간</TableHead>
-                      <TableHead className="text-right">작업</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sajuList.map((saju) => (
-                      <TableRow 
-                        key={saju.id} 
-                        className="cursor-pointer hover-elevate"
-                        onClick={() => handleViewSaju(saju.id)}
-                        data-testid={`saju-item-${saju.id}`}
-                      >
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium" data-testid={`text-name-${saju.id}`}>
-                                {saju.name || "이름없음"}
-                              </span>
-                              <span className="text-xs px-2 py-0.5 bg-muted rounded-full" data-testid={`text-gender-age-${saju.id}`}>
-                                {saju.gender} {calculateAge(saju.birthYear)}세
-                              </span>
-                            </div>
-                            <div className="text-sm text-muted-foreground sm:hidden" data-testid={`text-birth-mobile-${saju.id}`}>
-                              {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} {saju.birthTime && `(${saju.birthTime})`}
-                            </div>
+              <div className="space-y-1">
+                {sajuList.map((saju) => {
+                  const groupName = groupsList?.find(g => g.id === saju.groupId)?.name;
+                  return (
+                    <Card 
+                      key={saju.id} 
+                      className="cursor-pointer hover-elevate py-1 px-2"
+                      onClick={() => handleViewSaju(saju.id)}
+                      data-testid={`saju-item-${saju.id}`}
+                    >
+                      <CardContent className="p-2 space-y-0.5">
+                        {/* 첫번째 줄: 이름 나이 */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm" data-testid={`text-name-${saju.id}`}>
+                              {saju.name || "이름없음"}
+                            </span>
+                            <span className="text-xs text-muted-foreground" data-testid={`text-age-${saju.id}`}>
+                              {calculateAge(saju.birthYear)}세
+                            </span>
                           </div>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell">
-                          <div className="space-y-1">
-                            <div className="text-sm" data-testid={`text-birth-${saju.id}`}>
-                              양력 {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일
-                            </div>
-                            {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
-                              <div className="text-xs text-muted-foreground">
-                                음력 {saju.lunarYear}년 {saju.lunarMonth}월 {saju.lunarDay}일
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell" data-testid={`text-time-${saju.id}`}>
-                          {saju.birthTime || "시간 미설정"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center gap-1 justify-end">
+                          <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-muted-foreground hover:text-primary h-8 w-8"
+                              className="text-muted-foreground hover:text-primary h-6 w-6"
                               onClick={(e) => handleEditSaju(saju, e)}
                               data-testid={`button-edit-${saju.id}`}
                             >
@@ -580,7 +552,7 @@ export default function SajuList() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-muted-foreground hover:text-destructive h-8 w-8"
+                              className="text-muted-foreground hover:text-destructive h-6 w-6"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteSaju(saju.id, saju.name || "이름없음");
@@ -591,11 +563,38 @@ export default function SajuList() {
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                        
+                        {/* 두번째 줄: 양력생일, 음력생일 생시 */}
+                        <div className="text-xs text-muted-foreground" data-testid={`text-birth-${saju.id}`}>
+                          양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
+                          {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
+                            <>, 음력 {saju.lunarYear}.{saju.lunarMonth}.{saju.lunarDay}</>
+                          )}
+                          {saju.birthTime && (
+                            <> {saju.birthTime}</>
+                          )}
+                        </div>
+                        
+                        {/* 세번째 줄: 최종 저장일 [소속그룹] */}
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span data-testid={`text-created-${saju.id}`}>
+                            {saju.createdAt ? new Date(saju.createdAt).toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: 'numeric', 
+                              day: 'numeric'
+                            }) : '날짜 미상'}
+                          </span>
+                          {groupName && (
+                            <span className="px-1.5 py-0.5 bg-muted rounded text-xs" data-testid={`text-group-${saju.id}`}>
+                              [{groupName}]
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </>
