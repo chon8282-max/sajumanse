@@ -48,12 +48,11 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
     <Card className="p-4" data-testid="card-saju-table">
       <div className="text-center mb-4">
         <div className="space-y-1">
-          <div className="font-tmon text-foreground text-[15px]" data-testid="text-saju-title">
-            현재 만세력 (양) {format(now, 'yyyy년 M월 d일 EEEE', { locale: ko })}
+          <div className="font-tmon text-foreground text-[15px] text-center" data-testid="text-saju-title">
+            <span>현재 만세력 </span><span>(양) {format(now, 'yyyy년 M월 d일 EEEE', { locale: ko })}</span>
           </div>
-          <div className="font-tmon text-foreground flex items-center justify-center gap-1 text-[15px]" data-testid="text-lunar-date">
-            <span>..................</span>
-            <span className="text-left">   (음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</span>
+          <div className="font-tmon text-foreground text-[15px] text-center" data-testid="text-lunar-date">
+            <span>.................. </span><span>(음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</span>
           </div>
         </div>
       </div>
