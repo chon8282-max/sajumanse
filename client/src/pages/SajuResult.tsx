@@ -380,7 +380,7 @@ export default function SajuResult() {
                   return (
                     <div 
                       key={i} 
-                      className="border-r border-border px-3 py-0.5 text-center text-[36px] font-bold text-black leading-none font-tmon last:border-r-0"
+                      className="border-r border-border px-3 py-0.5 font-bold text-black font-tmon last:border-r-0 text-[24px] text-left"
                       style={{ backgroundColor: getWuxingColor(cheongan) }}
                     >
                       {cheongan}
