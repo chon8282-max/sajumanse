@@ -189,6 +189,48 @@ export default function SajuTable({
     return { skies, earths };
   }, [birthYear, saju.year.sky, saju.year.earth]);
 
+  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측)
+  const wolunGanji = useMemo(() => {
+    if (!saju.year.sky) {
+      return { skies: Array(13).fill(''), earths: Array(13).fill('') };
+    }
+
+    // 천간 배열
+    const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+    // 지지 배열 (축부터 시작)
+    const monthlyBranches = ["丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥", "子"];
+    
+    // 년간에 따른 정월의 천간 결정
+    const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
+    let firstMonthSkyIndex = 0;
+    
+    // 갑기년: 정월은 丙 (인덱스 2)
+    // 을경년: 정월은 戊 (인덱스 4) 
+    // 병신년: 정월은 庚 (인덱스 6)
+    // 정임년: 정월은 壬 (인덱스 8)
+    // 무계년: 정월은 甲 (인덱스 0)
+    const monthStartMap = [2, 4, 6, 8, 0, 2, 4, 6, 8, 0]; // 甲부터 癸까지
+    firstMonthSkyIndex = monthStartMap[yearSkyIndex];
+    
+    const skies: string[] = [];
+    const earths: string[] = [];
+
+    // 13개월 (12개월 + 윤달 고려) 우측에서 좌측으로
+    for (let i = 0; i < 13; i++) {
+      const monthOffset = 12 - i; // 우측에서 좌측 순서
+      skies.push(heavenlyStems[(firstMonthSkyIndex + monthOffset) % 10]);
+      earths.push(monthlyBranches[monthOffset % 12]);
+    }
+
+    return { skies, earths };
+  }, [saju.year.sky]);
+
+  // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
+  const wolunMonths = useMemo(() => {
+    // 우측에서 좌측: 13월부터 1월까지
+    return Array.from({ length: 13 }, (_, i) => 13 - i);
+  }, []);
+
   // 대운 간지 계산 (7행, 8행용)
   const daeunGanji = useMemo(() => {
     if (!gender || !saju.year.sky || !saju.month.sky || !saju.month.earth) {
@@ -488,51 +530,59 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 13행: 1칸 (합쳐진 셀) */}
+        {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
-            className="p-2 text-center text-sm min-h-[2rem]"
-            data-testid="text-extra-13-0"
+            className="p-2 text-center text-sm font-bold min-h-[2rem] bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center"
+            data-testid="text-wolun-title"
           >
-            {/* 빈 셀 - 추후 내용 추가 예정 */}
+            월운(月運)
           </div>
         </div>
 
-        {/* 14행: 13칸 */}
+        {/* 14행: 월운 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
-          {Array.from({ length: 13 }, (_, colIndex) => (
+          {wolunGanji.skies.map((sky, colIndex) => (
             <div 
-              key={`extra-cell-14-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-14-${colIndex}`}
+              key={`wolun-sky-${colIndex}`}
+              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(sky)
+              }}
+              data-testid={`text-wolun-sky-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {sky}
             </div>
           ))}
         </div>
 
-        {/* 15행: 13칸 */}
+        {/* 15행: 월운 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
-          {Array.from({ length: 13 }, (_, colIndex) => (
+          {wolunGanji.earths.map((earth, colIndex) => (
             <div 
-              key={`extra-cell-15-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-15-${colIndex}`}
+              key={`wolun-earth-${colIndex}`}
+              className="p-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(earth)
+              }}
+              data-testid={`text-wolun-earth-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {earth}
             </div>
           ))}
         </div>
 
-        {/* 16행: 13칸 */}
+        {/* 16행: 월운 월 순서 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
-          {Array.from({ length: 13 }, (_, colIndex) => (
+          {wolunMonths.map((month, colIndex) => (
             <div 
-              key={`extra-cell-16-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-16-${colIndex}`}
+              key={`wolun-month-${colIndex}`}
+              className="p-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center"
+              data-testid={`text-wolun-month-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {month}
             </div>
           ))}
         </div>
