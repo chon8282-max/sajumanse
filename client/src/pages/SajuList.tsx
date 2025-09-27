@@ -1,12 +1,18 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useState, useMemo, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { 
   ArrowLeft, 
   Trash2, 
@@ -16,7 +22,9 @@ import {
   RefreshCw,
   Search,
   Plus,
-  Edit
+  Edit,
+  Settings,
+  FolderPlus
 } from "lucide-react";
 import type { SajuRecord, Group } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -28,12 +36,24 @@ interface ApiResponse<T> {
   error?: string;
 }
 
+// 그룹 form schema
+const groupFormSchema = z.object({
+  name: z.string().min(1, "그룹 이름을 입력해주세요").max(50, "그룹 이름은 50자 이하로 입력해주세요")
+});
+type GroupFormData = z.infer<typeof groupFormSchema>;
+
 export default function SajuList() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  
+  // 그룹 관리 모달 상태
+  const [showGroupModal, setShowGroupModal] = useState(false);
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null);
+  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
+  const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
   
   // 검색 debounce (성능 최적화)
   useEffect(() => {
@@ -122,6 +142,159 @@ export default function SajuList() {
       });
     }
   });
+  
+  // Form 초기화
+  const groupForm = useForm<GroupFormData>({
+    resolver: zodResolver(groupFormSchema),
+    defaultValues: {
+      name: ""
+    }
+  });
+  
+  // 편집 모드일 때 form 값 설정
+  useEffect(() => {
+    if (editingGroup) {
+      groupForm.reset({ name: editingGroup.name });
+    } else {
+      groupForm.reset({ name: "" });
+    }
+  }, [editingGroup, groupForm]);
+  
+  // 그룹 생성 mutation
+  const createGroupMutation = useMutation({
+    mutationFn: async (data: GroupFormData) => {
+      const response = await apiRequest('POST', '/api/groups', data);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      }
+      
+      const responseJson = await response.json();
+      if (!responseJson.success) {
+        throw new Error(responseJson.error || '그룹 생성에 실패했습니다.');
+      }
+      
+      return responseJson;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+      setShowGroupModal(false);
+      groupForm.reset();
+      toast({
+        title: "생성 완료",
+        description: "그룹이 성공적으로 생성되었습니다.",
+        duration: 800
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "생성 실패", 
+        description: error.message,
+        variant: "destructive",
+        duration: 2000
+      });
+    }
+  });
+  
+  // 그룹 수정 mutation
+  const updateGroupMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string, data: GroupFormData }) => {
+      const response = await apiRequest('PUT', `/api/groups/${id}`, data);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      }
+      
+      const responseJson = await response.json();
+      if (!responseJson.success) {
+        throw new Error(responseJson.error || '그룹 수정에 실패했습니다.');
+      }
+      
+      return responseJson;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
+      setShowGroupModal(false);
+      setEditingGroup(null);
+      groupForm.reset();
+      toast({
+        title: "수정 완료",
+        description: "그룹이 성공적으로 수정되었습니다.",
+        duration: 800
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "수정 실패",
+        description: error.message,
+        variant: "destructive",
+        duration: 2000
+      });
+    }
+  });
+  
+  // 그룹 삭제 mutation
+  const deleteGroupMutation = useMutation({
+    mutationFn: async (groupId: string) => {
+      const response = await apiRequest('DELETE', `/api/groups/${groupId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      }
+      
+      const responseJson = await response.json();
+      if (!responseJson.success) {
+        throw new Error(responseJson.error || '그룹 삭제에 실패했습니다.');
+      }
+      
+      return responseJson;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
+      setShowDeleteGroupDialog(false);
+      setDeletingGroupId(null);
+      // 삭제된 그룹이 현재 선택된 그룹이면 전체로 변경
+      if (selectedGroupId === deletingGroupId) {
+        setSelectedGroupId("");
+      }
+      toast({
+        title: "삭제 완료",
+        description: "그룹이 성공적으로 삭제되었습니다.",
+        duration: 800
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "삭제 실패",
+        description: error.message,
+        variant: "destructive",
+        duration: 2000
+      });
+    }
+  });
+  
+  // 그룹 생성/수정 핸들러
+  const handleGroupSubmit = async (data: GroupFormData) => {
+    if (editingGroup) {
+      updateGroupMutation.mutate({ id: editingGroup.id, data });
+    } else {
+      createGroupMutation.mutate(data);
+    }
+  };
+  
+  // 그룹 삭제 핸들러
+  const handleDeleteGroup = (groupId: string) => {
+    setDeletingGroupId(groupId);
+    setShowDeleteGroupDialog(true);
+  };
+  
+  // 그룹 수정 핸들러
+  const handleEditGroup = (group: Group) => {
+    setEditingGroup(group);
+    setShowGroupModal(true);
+  };
 
   const handleBack = () => {
     setLocation("/");
@@ -217,6 +390,59 @@ export default function SajuList() {
               ))}
             </SelectContent>
           </Select>
+          
+          {/* 그룹 관리 버튼 */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setEditingGroup(null);
+                  setShowGroupModal(true);
+                }}
+                data-testid="button-create-group"
+                className="flex-1"
+              >
+                <FolderPlus className="w-4 h-4 mr-2" />
+                그룹 추가
+              </Button>
+            </div>
+            
+            {/* 선택된 그룹 관리 버튼들 */}
+            {selectedGroupId && selectedGroupId !== "all" && (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const selectedGroup = groupsList?.find(g => g.id === selectedGroupId);
+                    if (selectedGroup) {
+                      handleEditGroup(selectedGroup);
+                    }
+                  }}
+                  data-testid="button-edit-selected-group"
+                  className="flex-1"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  선택된 그룹 수정
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (selectedGroupId) {
+                      handleDeleteGroup(selectedGroupId);
+                    }
+                  }}
+                  data-testid="button-delete-selected-group"
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 로딩 상태 */}
@@ -374,6 +600,98 @@ export default function SajuList() {
             )}
           </>
         )}
+        
+        {/* 그룹 생성/수정 모달 */}
+        <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle data-testid="text-group-modal-title">
+                {editingGroup ? "그룹 수정" : "그룹 생성"}
+              </DialogTitle>
+              <DialogDescription>
+                {editingGroup ? "그룹 이름을 수정해주세요." : "새로운 그룹을 만들어보세요."}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Form {...groupForm}>
+              <form onSubmit={groupForm.handleSubmit(handleGroupSubmit)} className="space-y-4">
+                <FormField
+                  control={groupForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>그룹 이름</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="그룹 이름을 입력해주세요"
+                          {...field}
+                          data-testid="input-group-name"
+                          autoFocus
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowGroupModal(false);
+                      setEditingGroup(null);
+                      groupForm.reset();
+                    }}
+                    data-testid="button-group-cancel"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={createGroupMutation.isPending || updateGroupMutation.isPending}
+                    data-testid="button-group-submit"
+                  >
+                    {createGroupMutation.isPending || updateGroupMutation.isPending ? (
+                      <>새로고침...</>
+                    ) : (
+                      editingGroup ? "수정" : "생성"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+        
+        {/* 그룹 삭제 확인 대화상자 */}
+        <AlertDialog open={showDeleteGroupDialog} onOpenChange={setShowDeleteGroupDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle data-testid="text-delete-group-title">그룹 삭제</AlertDialogTitle>
+              <AlertDialogDescription data-testid="text-delete-group-description">
+                정말로 이 그룹을 삭제하시겠습니까?
+                <br />
+                <span className="text-destructive font-medium">삭제된 그룹은 복구할 수 없습니다.</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-delete-group-cancel">취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  if (deletingGroupId) {
+                    deleteGroupMutation.mutate(deletingGroupId);
+                  }
+                }}
+                disabled={deleteGroupMutation.isPending}
+                data-testid="button-delete-group-confirm"
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteGroupMutation.isPending ? "삭제 중..." : "삭제"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* 하단 여백 (네비게이션 공간) */}
         <div className="h-20" />
