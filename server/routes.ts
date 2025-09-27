@@ -203,7 +203,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             hour,
             minute,
             validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
-            solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined  // 일시주용 양력 날짜
+            solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
+            null  // apiData - 로컬 계산만 사용하므로 null
           );
           console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
