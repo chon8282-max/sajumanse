@@ -3,7 +3,7 @@ import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateDaeunNumber } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -70,6 +70,18 @@ export default function SajuTable({
     // 한국식 나이 (만 나이 + 1)
     return manAge + 1;
   }, [birthYear, birthMonth, birthDay]);
+
+  // 메모 상태 관리
+  const [memoText, setMemoText] = useState(memo || '');
+
+  // 오늘 날짜를 메모에 추가하는 함수
+  const insertTodayDate = () => {
+    const today = new Date();
+    const dateString = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+    const currentMemo = memoText;
+    const newMemo = currentMemo ? `${currentMemo}\n${dateString}` : dateString;
+    setMemoText(newMemo);
+  };
 
   // 생시 한자 표시 함수
   const formatBirthHour = (hour?: string): string => {
@@ -632,15 +644,12 @@ export default function SajuTable({
             메모
           </div>
           <div 
-            className="py-1 px-2 min-h-[1.5rem] flex items-center justify-center border-r border-border last:border-r-0"
+            className="py-1 px-2 min-h-[1.5rem] flex items-center justify-center border-r border-border last:border-r-0 cursor-pointer hover:bg-opacity-80"
             style={{ backgroundColor: '#1b1464' }}
+            onClick={insertTodayDate}
+            data-testid="button-today-date"
           >
-            <input
-              type="date"
-              className="text-xs text-white bg-transparent border border-white/20 rounded px-2 py-1 w-full"
-              placeholder="오늘 날짜"
-              data-testid="input-today-date"
-            />
+            <span className="text-xs text-white">오늘날짜</span>
           </div>
         </div>
 
@@ -648,8 +657,10 @@ export default function SajuTable({
         <div className="grid grid-cols-1 border-b border-border">
           <div className="p-2 bg-white">
             <textarea
-              className="w-full min-h-[3rem] text-xs border border-gray-300 rounded px-2 py-1 resize-vertical"
+              className="w-full min-h-[10rem] text-xs border border-gray-300 rounded px-2 py-1 resize-vertical"
               placeholder="메모를 입력하세요..."
+              value={memoText}
+              onChange={(e) => setMemoText(e.target.value)}
               data-testid="textarea-memo"
             />
           </div>
