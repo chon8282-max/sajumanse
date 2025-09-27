@@ -11,9 +11,24 @@
   font-display: swap;
 }
 
+/* Noto Sans KR Medium 폰트 정의 */
+@font-face {
+  font-family: 'NotoSansKR-Medium';
+  src: url('/attached_assets/NOTOSANSKR-MEDIUM_1758990232729.OTF') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* MS Gothic 폰트 클래스 추가 */
 .font-tmon {
   font-family: 'MS Gothic', 'MS UI Gothic', 'Noto Serif KR', monospace !important;
+}
+
+/* Noto Sans KR Medium 폰트 클래스 추가 */
+.font-noto-medium {
+  font-family: 'NotoSansKR-Medium', 'Noto Sans KR', sans-serif !important;
+  font-weight: 500 !important;
 }
 
 /* LIGHT MODE */

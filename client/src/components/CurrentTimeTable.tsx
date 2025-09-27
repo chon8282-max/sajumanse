@@ -66,7 +66,7 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(col.sky)
@@ -83,7 +83,7 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-medium"
               style={{ 
                 color: '#000000',
                 backgroundColor: getGanjiBackgroundColor(col.earth)
