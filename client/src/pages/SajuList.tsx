@@ -1,5 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -291,66 +292,84 @@ export default function SajuList() {
               </Card>
               )
             ) : (
-              <div className="space-y-4">
-                {sajuList.map((saju) => (
-              <Card 
-                key={saju.id} 
-                className="hover-elevate cursor-pointer"
-                onClick={() => handleViewSaju(saju.id)}
-                data-testid={`saju-item-${saju.id}`}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-medium text-base" data-testid={`text-name-${saju.id}`}>
-                          {saju.name || "이름없음"}
-                        </h3>
-                        <span className="text-sm px-2 py-0.5 bg-muted rounded-full" data-testid={`text-gender-age-${saju.id}`}>
-                          {saju.gender} {calculateAge(saju.birthYear)}세
-                        </span>
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground mb-1">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        <span data-testid={`text-birth-${saju.id}`}>
-                          양력 {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일{saju.lunarYear && saju.lunarMonth && saju.lunarDay ? ` (음력 ${saju.lunarYear}년 ${saju.lunarMonth}월 ${saju.lunarDay}일)` : ""}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Clock className="w-3 h-3 mr-1" />
-                        <span data-testid={`text-time-${saju.id}`}>
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>이름</TableHead>
+                      <TableHead className="hidden sm:table-cell">생년월일</TableHead>
+                      <TableHead className="hidden md:table-cell">출생시간</TableHead>
+                      <TableHead className="text-right">작업</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sajuList.map((saju) => (
+                      <TableRow 
+                        key={saju.id} 
+                        className="cursor-pointer hover-elevate"
+                        onClick={() => handleViewSaju(saju.id)}
+                        data-testid={`saju-item-${saju.id}`}
+                      >
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium" data-testid={`text-name-${saju.id}`}>
+                                {saju.name || "이름없음"}
+                              </span>
+                              <span className="text-xs px-2 py-0.5 bg-muted rounded-full" data-testid={`text-gender-age-${saju.id}`}>
+                                {saju.gender} {calculateAge(saju.birthYear)}세
+                              </span>
+                            </div>
+                            <div className="text-sm text-muted-foreground sm:hidden" data-testid={`text-birth-mobile-${saju.id}`}>
+                              {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} {saju.birthTime && `(${saju.birthTime})`}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <div className="space-y-1">
+                            <div className="text-sm" data-testid={`text-birth-${saju.id}`}>
+                              양력 {saju.birthYear}년 {saju.birthMonth}월 {saju.birthDay}일
+                            </div>
+                            {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
+                              <div className="text-xs text-muted-foreground">
+                                음력 {saju.lunarYear}년 {saju.lunarMonth}월 {saju.lunarDay}일
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell" data-testid={`text-time-${saju.id}`}>
                           {saju.birthTime || "시간 미설정"}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-primary h-8 w-8"
-                        onClick={(e) => handleEditSaju(saju, e)}
-                        data-testid={`button-edit-${saju.id}`}
-                      >
-                        <Edit className="w-3 h-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-muted-foreground hover:text-destructive h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSaju(saju.id, saju.name || "이름없음");
-                        }}
-                        disabled={deleteMutation.isPending}
-                        data-testid={`button-delete-${saju.id}`}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-                ))}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center gap-1 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-primary h-8 w-8"
+                              onClick={(e) => handleEditSaju(saju, e)}
+                              data-testid={`button-edit-${saju.id}`}
+                            >
+                              <Edit className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-destructive h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSaju(saju.id, saju.name || "이름없음");
+                              }}
+                              disabled={deleteMutation.isPending}
+                              data-testid={`button-delete-${saju.id}`}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </>
