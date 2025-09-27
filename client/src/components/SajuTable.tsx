@@ -179,7 +179,20 @@ export default function SajuTable({
           </div>
         )}
 
-
+        {/* 추가된 13행 - 6~18행 */}
+        {Array.from({ length: 13 }, (_, rowIndex) => (
+          <div key={`extra-row-${rowIndex + 6}`} className="grid grid-cols-4 border-b border-border">
+            {Array.from({ length: 4 }, (_, colIndex) => (
+              <div 
+                key={`extra-cell-${rowIndex + 6}-${colIndex}`}
+                className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
+                data-testid={`text-extra-${rowIndex + 6}-${colIndex}`}
+              >
+                {/* 빈 셀 - 추후 내용 추가 예정 */}
+              </div>
+            ))}
+          </div>
+        ))}
 
       </div>
 
