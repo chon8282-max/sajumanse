@@ -362,87 +362,84 @@ export default function SajuList() {
           </Button>
         </div>
         
-        {/* 검색 바 및 그룹 필터 */}
-        <div className="space-y-4 mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              type="text"
-              placeholder="이름 또는 생년월일 검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              data-testid="input-search"
-            />
+        {/* 검색 바 및 그룹 필터 - 한 줄 배치 */}
+        <div className="mb-6">
+          <div className="flex gap-2 items-center">
+            {/* 검색창 */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                type="text"
+                placeholder="이름 또는 생년월일 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search"
+              />
+            </div>
+            
+            {/* 그룹 선택 */}
+            <Select value={selectedGroupId} onValueChange={setSelectedGroupId} data-testid="select-group">
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="모든 그룹" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 그룹</SelectItem>
+                {groupsList?.map((group) => (
+                  <SelectItem key={group.id} value={group.id}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* 그룹 추가 버튼 */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditingGroup(null);
+                setShowGroupModal(true);
+              }}
+              data-testid="button-create-group"
+            >
+              <FolderPlus className="w-4 h-4" />
+            </Button>
           </div>
           
-          {/* 그룹 선택 */}
-          <Select value={selectedGroupId} onValueChange={setSelectedGroupId} data-testid="select-group">
-            <SelectTrigger>
-              <SelectValue placeholder="모든 그룹" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">모든 그룹</SelectItem>
-              {groupsList?.map((group) => (
-                <SelectItem key={group.id} value={group.id}>
-                  {group.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {/* 그룹 관리 버튼 */}
-          <div className="space-y-2">
-            <div className="flex gap-2">
+          {/* 선택된 그룹 관리 버튼들 */}
+          {selectedGroupId && selectedGroupId !== "all" && (
+            <div className="flex gap-2 mt-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setEditingGroup(null);
-                  setShowGroupModal(true);
+                  const selectedGroup = groupsList?.find(g => g.id === selectedGroupId);
+                  if (selectedGroup) {
+                    handleEditGroup(selectedGroup);
+                  }
                 }}
-                data-testid="button-create-group"
+                data-testid="button-edit-selected-group"
                 className="flex-1"
               >
-                <FolderPlus className="w-4 h-4 mr-2" />
-                그룹 추가
+                <Edit className="w-4 h-4 mr-2" />
+                선택된 그룹 수정
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (selectedGroupId) {
+                    handleDeleteGroup(selectedGroupId);
+                  }
+                }}
+                data-testid="button-delete-selected-group"
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
               </Button>
             </div>
-            
-            {/* 선택된 그룹 관리 버튼들 */}
-            {selectedGroupId && selectedGroupId !== "all" && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const selectedGroup = groupsList?.find(g => g.id === selectedGroupId);
-                    if (selectedGroup) {
-                      handleEditGroup(selectedGroup);
-                    }
-                  }}
-                  data-testid="button-edit-selected-group"
-                  className="flex-1"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  선택된 그룹 수정
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (selectedGroupId) {
-                      handleDeleteGroup(selectedGroupId);
-                    }
-                  }}
-                  data-testid="button-delete-selected-group"
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
 
         {/* 로딩 상태 */}
