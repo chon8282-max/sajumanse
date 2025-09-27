@@ -53,7 +53,7 @@ export default function SajuTable({ saju, title = "사주팔자", showWuxing = t
           </div>
           <div className="font-tmon text-foreground flex items-center justify-center gap-1 text-[15px]" data-testid="text-lunar-date">
             <span>..................</span>
-            <span>(음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</span>
+            <span className="text-left">   (음) {lunar.getYear()}년 {lunar.getMonth()}월 {lunar.getDay()}일</span>
           </div>
         </div>
       </div>
