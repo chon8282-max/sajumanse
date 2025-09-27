@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User, Star, BookOpen, Home } from "lucide-react";
+import { Calendar, User, Archive, BookOpen, Home } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -10,7 +10,7 @@ interface BottomNavigationProps {
 const tabs = [
   { id: "home", label: "홈", icon: Home },
   { id: "manse", label: "만세력", icon: Calendar },
-  { id: "fortune", label: "운세", icon: Star },
+  { id: "saved", label: "불러오기", icon: Archive },
   { id: "study", label: "학습", icon: BookOpen },
   { id: "profile", label: "내정보", icon: User }
 ];
@@ -41,13 +41,6 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
             >
               <div className="relative">
                 <Icon className="w-5 h-5" />
-                {tab.id === "fortune" && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 w-2 h-2 p-0 text-xs"
-                    data-testid="badge-fortune-notification"
-                  />
-                )}
               </div>
               <span className="text-xs font-medium">{tab.label}</span>
             </Button>
