@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
+import { calculateDaeunNumber } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
 
 interface SajuTableProps {
@@ -125,6 +126,28 @@ export default function SajuTable({
     const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
     return hiddenStems.join('');
   });
+
+  // 대운수 계산 (6번째 행용)
+  const calculateDaeunAges = (): number[] => {
+    if (!birthYear || !birthMonth || !birthDay || !gender || !saju.year.sky) {
+      // 기본값: 우측에서 좌측으로 (93세부터 3세까지)
+      return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
+    }
+
+    try {
+      // 시작 대운수 계산
+      const startDaeun = calculateDaeunNumber(birthYear, birthMonth, birthDay, gender, saju.year.sky);
+      
+      // 우측에서 좌측으로 표시 (최신 대운부터 - 높은 나이부터 낮은 나이 순)
+      return Array.from({ length: 10 }, (_, i) => startDaeun + (9 - i) * 10);
+    } catch (error) {
+      console.error('대운수 계산 오류:', error);
+      // 기본값: 우측에서 좌측으로 (93세부터 3세까지)
+      return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
+    }
+  };
+
+  const daeunAges = calculateDaeunAges();
 
 
   // 간지별 배경색 매핑
@@ -259,15 +282,15 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 6행: 10칸 */}
-        <div className="grid grid-cols-10 border-b border-border">
-          {Array.from({ length: 10 }, (_, colIndex) => (
+        {/* 6행: 대운수 (우측에서 좌측으로) */}
+        <div className="grid grid-cols-10 border-b border-border" dir="rtl">
+          {daeunAges.map((age, colIndex) => (
             <div 
-              key={`extra-cell-6-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-6-${colIndex}`}
+              key={`daeun-age-${colIndex}`}
+              className="p-2 text-center text-sm font-medium border-l border-border first:border-l-0 min-h-[2rem] bg-blue-50 dark:bg-blue-950/30"
+              data-testid={`text-daeun-age-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {age}
             </div>
           ))}
         </div>
