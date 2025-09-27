@@ -361,25 +361,6 @@ export default function SajuResult() {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* 기본 정보 */}
-        <Card className="mb-2">
-          <CardContent className="py-3">
-            <div className="text-center space-y-1">
-              <div className="text-lg font-semibold">
-                {record.name} ({record.gender}) {(() => {
-                  const today = new Date();
-                  const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
-                  const age = today.getFullYear() - birthDate.getFullYear() - 
-                    (today.getMonth() < birthDate.getMonth() || 
-                     (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
-                  return age;
-                })()}세
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-
         {/* 사주명식 테이블 */}
         <SajuTable 
           saju={(() => {
@@ -407,9 +388,14 @@ export default function SajuResult() {
             }
           })()}
           title="사주 명식표"
+          name={record.name}
           birthYear={record.birthYear}
           birthMonth={record.birthMonth}
           birthDay={record.birthDay}
+          lunarYear={record.calendarType === '음력' ? record.birthYear : undefined}
+          lunarMonth={record.calendarType === '음력' ? record.birthMonth : undefined}
+          lunarDay={record.calendarType === '음력' ? record.birthDay : undefined}
+          birthHour={timePeriod?.hour?.toString() || ''}
           daySky={record.daySky || ''}
           dayEarth={record.dayEarth || ''}
           gender={record.gender || '남자'}
