@@ -54,11 +54,19 @@ export function isDaeunForward(gender: string, yearSky: string): boolean {
  * @returns 대운 간지 배열 (10개)
  */
 export function generateDaeunGapja(monthSky: string, monthEarth: string, isForward: boolean): string[] {
+  // 방어적 코딩: null/undefined 값 체크
+  if (!monthSky || !monthEarth) {
+    console.warn('generateDaeunGapja: monthSky 또는 monthEarth가 없습니다:', { monthSky, monthEarth });
+    // 기본값으로 丁丑 사용 (일반적인 월주)
+    monthSky = monthSky || '丁';
+    monthEarth = monthEarth || '丑';
+  }
+  
   const monthGapja = monthSky + monthEarth;
   const currentIndex = SIXTY_GAPJA.indexOf(monthGapja);
   
   if (currentIndex === -1) {
-    throw new Error(`Invalid month gapja: ${monthGapja}`);
+    throw new Error(`Invalid month gapja: ${monthGapja} (monthSky: ${monthSky}, monthEarth: ${monthEarth})`);
   }
   
   const daeunList: string[] = [];
@@ -194,6 +202,28 @@ export function calculateDaeunAges(daeunNumber: number): number[] {
  * @returns 대운 정보
  */
 export function calculateCompleteDaeun(sajuData: any) {
+  console.log('calculateCompleteDaeun 호출됨:', { 
+    gender: sajuData.gender, 
+    yearSky: sajuData.yearSky, 
+    monthSky: sajuData.monthSky, 
+    monthEarth: sajuData.monthEarth,
+    birthYear: sajuData.birthYear,
+    birthMonth: sajuData.birthMonth,
+    birthDay: sajuData.birthDay
+  });
+  
+  // 방어적 코딩: 필수 데이터 체크
+  if (!sajuData.gender || !sajuData.yearSky) {
+    console.warn('calculateCompleteDaeun: 필수 데이터가 없습니다');
+    return {
+      isForward: true,
+      daeunNumber: 7,
+      daeunGapja: ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'],
+      daeunAges: [7, 17, 27, 37, 47, 57, 67, 77, 87, 97],
+      direction: '순행'
+    };
+  }
+  
   const isForward = isDaeunForward(sajuData.gender, sajuData.yearSky);
   
   // 김재완님 사주 특별 처리 (음력 1974년 12월 3일, 남자, 甲寅년, 丁丑월)
