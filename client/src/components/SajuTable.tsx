@@ -70,19 +70,19 @@ export default function SajuTable({
     return manAge + 1;
   };
 
-  // 생시 표시 함수
+  // 생시 한자 표시 함수
   const formatBirthHour = (hour?: string): string => {
     if (!hour) return '';
-    // 시간 형식 처리 (예: "23" -> "술시 (23시)")
+    // 시간을 한자로 변환 (예: "22" -> "戌時")
     const hourNum = parseInt(hour);
-    const timeNames = {
-      23: '자시', 1: '자시', 3: '축시', 5: '인시', 7: '묘시',
-      9: '진시', 11: '사시', 13: '오시', 15: '미시', 17: '신시',
-      19: '유시', 21: '술시'
+    const timeHanja = {
+      23: '子時', 1: '子時', 3: '丑時', 5: '寅時', 7: '卯時',
+      9: '辰時', 11: '巳時', 13: '午時', 15: '未時', 17: '申時',
+      19: '酉時', 21: '戌時'
     };
     
     // 가장 가까운 시간대 찾기
-    const timeKeys = Object.keys(timeNames).map(Number).sort((a, b) => a - b);
+    const timeKeys = Object.keys(timeHanja).map(Number).sort((a, b) => a - b);
     let closestTime = timeKeys[0];
     for (const time of timeKeys) {
       if (hourNum >= time) {
@@ -90,8 +90,7 @@ export default function SajuTable({
       }
     }
     
-    const timeName = timeNames[closestTime as keyof typeof timeNames] || '미상';
-    return `${timeName} (${hour}시)`;
+    return timeHanja[closestTime as keyof typeof timeHanja] || '未詳';
   };
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
@@ -141,10 +140,6 @@ export default function SajuTable({
 
   return (
     <Card className="p-4" data-testid="card-saju-table">
-      {/* 제목 */}
-      <div className="text-center mb-4">
-        <div className="font-tmon text-lg font-bold mb-2">{title}</div>
-      </div>
 
       {/* 개인정보 표시 */}
       {name && (
@@ -164,22 +159,18 @@ export default function SajuTable({
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
-          <div className="text-center text-sm text-muted-foreground">
-            <div className="flex items-center justify-center gap-4 flex-wrap">
+          <div className="text-center text-xs text-muted-foreground">
+            <span data-testid="text-birth-info">
               {birthYear && birthMonth && birthDay && (
-                <span data-testid="text-solar-birth">
-                  양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}
-                </span>
+                <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
               )}
               {lunarYear && lunarMonth && lunarDay && (
-                <span data-testid="text-lunar-birth">
-                  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}
-                </span>
+                <>  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
               )}
               {birthHour && (
-                <span data-testid="text-birth-hour">({formatBirthHour(birthHour)})</span>
+                <>  ({formatBirthHour(birthHour)})</>
               )}
-            </div>
+            </span>
           </div>
         </div>
       )}
