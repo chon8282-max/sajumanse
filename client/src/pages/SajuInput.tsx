@@ -125,6 +125,11 @@ export default function SajuInput() {
     setIsSubmitting(true);
 
     try {
+      // 편집 모드 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      const isEditMode = urlParams.has('edit');
+      const editId = urlParams.get('id');
+
       // API 요청 데이터 준비 (이름이 비어있으면 "이름없음" 사용)
       const requestData = {
         name: formData.name.trim() || "이름없음",
@@ -140,8 +145,13 @@ export default function SajuInput() {
 
       console.log("사주 정보 저장 요청:", requestData);
 
-      // API 호출
-      const response = await apiRequest("POST", "/api/saju-records", requestData);
+      // API 호출 - 편집 모드면 PUT, 아니면 POST
+      let response;
+      if (isEditMode && editId) {
+        response = await apiRequest("PUT", `/api/saju-records/${editId}`, requestData);
+      } else {
+        response = await apiRequest("POST", "/api/saju-records", requestData);
+      }
       const result = await response.json();
 
       if (result.success) {
@@ -149,7 +159,11 @@ export default function SajuInput() {
         queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
         
         // 성공시 사주 결과 페이지로 이동
-        if (result.data?.record?.id) {
+        if (isEditMode && editId) {
+          // 편집 모드에서는 편집한 사주의 결과 페이지로 이동
+          setLocation(`/saju-result/${editId}`);
+        } else if (result.data?.record?.id) {
+          // 새로 생성한 경우 새 사주의 결과 페이지로 이동
           setLocation(`/saju-result/${result.data.record.id}`);
         } else {
           // ID가 없으면 만세력 페이지로 이동
