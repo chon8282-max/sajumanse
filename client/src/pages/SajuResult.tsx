@@ -408,7 +408,7 @@ export default function SajuResult() {
               {/* 9. 세운년도출력 (12칸) */}
               <div className="grid grid-cols-12 border-t border-l border-r border-border">
                 {Array.from({length: 12}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 pl-[1px] pr-[1px] pt-[2px] pb-[2px]">
                     {new Date().getFullYear() + i}
                   </div>
                 ))}
