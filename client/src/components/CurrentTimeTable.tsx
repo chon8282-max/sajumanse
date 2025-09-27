@@ -68,7 +68,7 @@ export default function CurrentTimeTable({
               key={`sky-${index}`} 
               className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0 font-noto-bold"
               style={{ 
-                color: '#000000',
+                color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.sky)
               }}
               data-testid={`text-current-sky-${index}`}
