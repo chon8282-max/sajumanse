@@ -314,7 +314,7 @@ export default function SajuTable({
 
       {/* 개인정보 표시 */}
       {name && (
-        <div className="mb-6 p-4 bg-muted/30 border border-border rounded-md">
+        <div className="mb-2 p-3 bg-muted/30 border border-border rounded-md">
           {/* 첫 번째 줄: 이름, 성별, 나이 */}
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="font-bold text-lg" data-testid="text-name">{name}</span>
@@ -330,7 +330,7 @@ export default function SajuTable({
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
-          <div className="text-center text-xs text-muted-foreground">
+          <div className="text-center text-xs text-muted-foreground mb-3">
             <span data-testid="text-birth-info">
               {birthYear && birthMonth && birthDay && (
                 <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
@@ -342,6 +342,40 @@ export default function SajuTable({
                 <>  ({formatBirthHour(birthHour)})</>
               )}
             </span>
+          </div>
+
+          {/* 세 번째 줄: 5개 버튼 */}
+          <div className="flex flex-wrap justify-center gap-2">
+            <button 
+              className="px-3 py-1 text-xs bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 border border-orange-300 dark:border-orange-700 rounded-md transition-colors"
+              data-testid="button-wuxing"
+            >
+              오행
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 border border-purple-300 dark:border-purple-700 rounded-md transition-colors"
+              data-testid="button-sinsal"
+            >
+              신살
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 border border-blue-300 dark:border-blue-700 rounded-md transition-colors"
+              data-testid="button-12sinsal"
+            >
+              12신살
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 border border-green-300 dark:border-green-700 rounded-md transition-colors"
+              data-testid="button-hangul"
+            >
+              한글
+            </button>
+            <button 
+              className="px-3 py-1 text-xs bg-pink-100 hover:bg-pink-200 dark:bg-pink-900 dark:hover:bg-pink-800 border border-pink-300 dark:border-pink-700 rounded-md transition-colors"
+              data-testid="button-compatibility"
+            >
+              궁합
+            </button>
           </div>
         </div>
       )}
