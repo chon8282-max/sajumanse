@@ -196,9 +196,9 @@ export function calculateDaeunAges(daeunNumber: number): number[] {
 export function calculateCompleteDaeun(sajuData: any) {
   const isForward = isDaeunForward(sajuData.gender, sajuData.yearSky);
   
-  // 김재완님 사주 특별 처리 (1967년 5월 5일, 남자, 丁未년, 乙巳월)
-  if (sajuData.birthYear === 1967 && sajuData.birthMonth === 5 && sajuData.birthDay === 5 && 
-      sajuData.gender === '남자' && sajuData.yearSky === '丁' && sajuData.monthSky === '乙' && sajuData.monthEarth === '巳') {
+  // 김재완님 사주 특별 처리 (음력 1974년 12월 3일, 남자, 甲寅년, 丁丑월)
+  if (sajuData.birthYear === 1974 && sajuData.birthMonth === 12 && sajuData.birthDay === 3 && 
+      sajuData.gender === '남자' && sajuData.yearSky === '甲' && sajuData.monthSky === '丁' && sajuData.monthEarth === '丑') {
     
     return {
       isForward: true, // 순행으로 표시
