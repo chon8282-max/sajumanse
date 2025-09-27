@@ -13,6 +13,7 @@ import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
 import { calculateCompleteYukjin } from "@/lib/yukjin-calculator";
 import { calculateCompleteDaeun, calculateCurrentAge, findCurrentDaeun, DaeunPeriod } from "@/lib/daeun-calculator";
 import DaeunDisplay from "@/components/DaeunDisplay";
+import SajuTable from "@/components/SajuTable";
 
 // 다음 간지 계산 (60갑자 순환)
 function getNextGanji(sky: string, earth: string) {
@@ -383,11 +384,10 @@ export default function SajuResult() {
           </CardContent>
         </Card>
 
-        {/* 사주명식 테이블 */}
-        <Card>
-          <CardContent className="p-2">
-            {/* 세운 네비게이션 컨트롤 */}
-            <div className="flex items-center justify-between mb-3">
+        {/* 세운 네비게이션 컨트롤 */}
+        <Card className="mb-4">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-between">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -400,7 +400,6 @@ export default function SajuResult() {
               </Button>
               
               <div className="text-center">
-                <div className="text-lg font-bold font-tmon">사주 명식표</div>
                 {focusedDaeun && (
                   <div className="text-xs text-muted-foreground">
                     {focusedDaeun.gapja}대운 ({focusedDaeun.startAge}~{focusedDaeun.endAge}세)
@@ -424,185 +423,47 @@ export default function SajuResult() {
                 미래 10년 →
               </Button>
             </div>
-            
-            <div className="w-full">
-              {/* 사주 명식표 내용 */}
-              <div className="grid grid-cols-4 border-t border-l border-r border-border">
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{heavenlyYukjin.hour}</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium bg-yellow-50 dark:bg-yellow-900/20">{heavenlyYukjin.day}</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium">{heavenlyYukjin.month}</div>
-                <div className="border-r border-border p-1 text-center text-[13px] font-medium last:border-r-0">{heavenlyYukjin.year}</div>
-              </div>
-
-              {/* 사주 4주 + 대운 + 세운 */}
-              <div className={`grid ${mainGridCols} border-t border-l border-r border-border`}>
-                {/* 시주 */}
-                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.hourSky)}}>
-                  {record.hourSky}
-                </div>
-                {/* 일주 (배경색 강조) */}
-                <div className="border-r border-border p-1 text-center text-sm font-bold bg-yellow-50 dark:bg-yellow-900/20" style={{color: getWuxingColor(record.daySky)}}>
-                  {record.daySky}
-                </div>
-                {/* 월주 */}
-                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.monthSky)}}>
-                  {record.monthSky}
-                </div>
-                {/* 년주 */}
-                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.yearSky)}}>
-                  {record.yearSky}
-                </div>
-                
-                {/* 대운 천간 (9칸) */}
-                {daeunData.daeunPeriods.map((period: DaeunPeriod, i: number) => {
-                  const isCurrentDaeun = focusedDaeun && period.gapja === focusedDaeun.gapja;
-                  return (
-                    <div 
-                      key={`daeun-sky-${i}`} 
-                      className={`border-r border-border p-1 text-center text-sm font-bold last:border-r-0 ${
-                        isCurrentDaeun ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
-                      }`}
-                      style={!isCurrentDaeun ? {color: getWuxingColor(period.gapja[0])} : {}}
-                    >
-                      {period.gapja[0]}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* 지지 행 */}
-              <div className={`grid ${mainGridCols} border-t border-l border-r border-border`}>
-                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.hourEarth)}}>
-                  {record.hourEarth}
-                </div>
-                <div className="border-r border-border p-1 text-center text-sm font-bold bg-yellow-50 dark:bg-yellow-900/20" style={{color: getWuxingColor(record.dayEarth)}}>
-                  {record.dayEarth}
-                </div>
-                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.monthEarth)}}>
-                  {record.monthEarth}
-                </div>
-                <div className="border-r border-border p-1 text-center text-sm font-bold" style={{color: getWuxingColor(record.yearEarth)}}>
-                  {record.yearEarth}
-                </div>
-                
-                {/* 대운 지지 */}
-                {daeunData.daeunPeriods.map((period: DaeunPeriod, i: number) => {
-                  const isCurrentDaeun = focusedDaeun && period.gapja === focusedDaeun.gapja;
-                  return (
-                    <div 
-                      key={`daeun-earth-${i}`} 
-                      className={`border-r border-border p-1 text-center text-sm font-bold last:border-r-0 ${
-                        isCurrentDaeun ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
-                      }`}
-                      style={!isCurrentDaeun ? {color: getWuxingColor(period.gapja[1])} : {}}
-                    >
-                      {period.gapja[1]}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* 세운 년도 */}
-              {saeunData && (
-                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
-                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">년도</div>
-                  {[...saeunData.years].reverse().map((year: number, i: number) => {
-                    const age = [...saeunData.ages].reverse()[i];
-                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
-                    return (
-                      <div 
-                        key={`year-${i}`} 
-                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
-                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
-                        }`}
-                        data-testid={`text-year-${i}`}
-                      >
-                        {year}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* 세운 천간 */}
-              {saeunData && (
-                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
-                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">세운천간</div>
-                  {[...saeunData.skyStems].reverse().map((sky: string, i: number) => {
-                    const age = [...saeunData.ages].reverse()[i];
-                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
-                    return (
-                      <div 
-                        key={`saeun-sky-${i}`} 
-                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
-                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
-                        }`}
-                        style={!isHighlighted ? {color: getWuxingColor(sky)} : {}}
-                        data-testid={`text-saeun-sky-${i}`}
-                      >
-                        {sky}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* 세운 지지 */}
-              {saeunData && (
-                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
-                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">세운지지</div>
-                  {[...saeunData.earthBranches].reverse().map((earth: string, i: number) => {
-                    const age = [...saeunData.ages].reverse()[i];
-                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
-                    return (
-                      <div 
-                        key={`saeun-earth-${i}`} 
-                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
-                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
-                        }`}
-                        style={!isHighlighted ? {color: getWuxingColor(earth)} : {}}
-                        data-testid={`text-saeun-earth-${i}`}
-                      >
-                        {earth}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* 세운 나이 */}
-              {saeunData && (
-                <div className={`grid ${saeunGridCols} border-t border-l border-r border-border`}>
-                  <div className="col-span-4 border-r border-border p-1 text-center text-xs font-medium">나이</div>
-                  {[...saeunData.ages].reverse().map((age: number, i: number) => {
-                    const isHighlighted = focusedDaeun && age >= focusedDaeun.startAge && age <= focusedDaeun.endAge;
-                    return (
-                      <div 
-                        key={`age-${i}`} 
-                        className={`border-r border-border p-1 text-center text-xs last:border-r-0 ${
-                          isHighlighted ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : ''
-                        }`}
-                        data-testid={`text-age-${i}`}
-                      >
-                        {age}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* 메모 섹션 */}
-              <div className="border-t border-l border-r border-border">
-                <div className="p-2 text-center text-sm font-medium">메모</div>
-              </div>
-              <div className="border-t border-l border-r border-b border-border">
-                <div className="p-3 text-sm min-h-[60px] whitespace-pre-wrap bg-muted/20">
-                  {record.memo || "메모를 입력해주세요"}
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
+
+        {/* 사주명식 테이블 */}
+        <SajuTable 
+          saju={(() => {
+            try {
+              return calculateSaju(
+                record.birthYear, 
+                record.birthMonth, 
+                record.birthDay, 
+                timePeriod?.hour || 0
+              );
+            } catch (error) {
+              console.warn('Failed to calculate saju:', error);
+              return {
+                hour: { sky: record.hourSky || '甲', earth: record.hourEarth || '子' },
+                day: { sky: record.daySky || '甲', earth: record.dayEarth || '子' },
+                month: { sky: record.monthSky || '甲', earth: record.monthEarth || '子' },
+                year: { sky: record.yearSky || '甲', earth: record.yearEarth || '子' },
+                wuxing: {
+                  hourSky: '목', hourEarth: '수', 
+                  daySky: '목', dayEarth: '수',
+                  monthSky: '목', monthEarth: '수',
+                  yearSky: '목', yearEarth: '수'
+                }
+              };
+            }
+          })()}
+          title="사주 명식표"
+          birthYear={record.birthYear}
+          birthMonth={record.birthMonth}
+          birthDay={record.birthDay}
+          daySky={record.daySky || ''}
+          dayEarth={record.dayEarth || ''}
+          gender={record.gender || '남자'}
+          daeunData={daeunData}
+          saeunData={saeunData}
+          currentDaeun={focusedDaeun}
+          memo={record.memo || ''}
+        />
 
         {/* 대운 정보 */}
         <DaeunDisplay 
