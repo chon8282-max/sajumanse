@@ -378,13 +378,16 @@ export default function SajuResult() {
                 </div>
               </div>
 
-              {/* 6. 대운 나이 (10칸) */}
+              {/* 6. 대운수 (10칸) */}
               <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {daeunData.daeunAges.slice().reverse().map((age, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-blue-50 dark:bg-blue-900/20">
-                    {age}
-                  </div>
-                ))}
+                {Array.from({length: 10}, (_, i) => {
+                  const daeunNum = ((daeunData.daeunNumber - 1 + i) % 10) + 1; // 대운수부터 연속된 10개
+                  return (
+                    <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-blue-50 dark:bg-blue-900/20">
+                      {daeunNum}운
+                    </div>
+                  );
+                }).reverse() /* 좌측→우측 배치를 위해 reverse */}
               </div>
 
               {/* 7. 대운천간출력 (10칸) */}
