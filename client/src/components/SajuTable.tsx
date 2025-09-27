@@ -147,6 +147,51 @@ export default function SajuTable({
     }
   }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
 
+  // 대운 간지 계산 (7행, 8행용)
+  const daeunGanji = useMemo(() => {
+    if (!gender || !saju.year.sky || !saju.month.sky || !saju.month.earth) {
+      return { skies: Array(10).fill(''), earths: Array(10).fill('') };
+    }
+
+    // 양년/음년 판정 (천간)
+    const yangCheongan = ["甲", "丙", "戊", "庚", "壬"];
+    const isYangYear = yangCheongan.includes(saju.year.sky);
+    
+    // 순행/역행 결정
+    let isForward: boolean;
+    if (gender === "남자") {
+      isForward = isYangYear; // 양년=순행, 음년=역행
+    } else {
+      isForward = !isYangYear; // 양년=역행, 음년=순행
+    }
+
+    // 천간 배열 (순서)
+    const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+    // 지지 배열 (순서)
+    const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+
+    // 월주 천간, 지지의 인덱스 찾기
+    const monthSkyIndex = heavenlyStems.indexOf(saju.month.sky);
+    const monthEarthIndex = earthlyBranches.indexOf(saju.month.earth);
+
+    const skies: string[] = [];
+    const earths: string[] = [];
+
+    for (let i = 0; i < 10; i++) {
+      if (isForward) {
+        // 순행: 월주부터 다음으로
+        skies.push(heavenlyStems[(monthSkyIndex + i) % 10]);
+        earths.push(earthlyBranches[(monthEarthIndex + i) % 12]);
+      } else {
+        // 역행: 월주부터 이전으로
+        skies.push(heavenlyStems[(monthSkyIndex - i + 10) % 10]);
+        earths.push(earthlyBranches[(monthEarthIndex - i + 12) % 12]);
+      }
+    }
+
+    return { skies, earths };
+  }, [gender, saju.year.sky, saju.month.sky, saju.month.earth]);
+
 
   // 간지별 배경색 매핑
   function getGanjiBackgroundColor(character: string): string {
@@ -293,28 +338,36 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 7행: 10칸 */}
+        {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10 border-b border-border">
-          {Array.from({ length: 10 }, (_, colIndex) => (
+          {daeunGanji.skies.map((sky, colIndex) => (
             <div 
-              key={`extra-cell-7-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-7-${colIndex}`}
+              key={`daeun-sky-${colIndex}`}
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(sky)
+              }}
+              data-testid={`text-daeun-sky-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {sky}
             </div>
           ))}
         </div>
 
-        {/* 8행: 10칸 */}
+        {/* 8행: 대운 지지 */}
         <div className="grid grid-cols-10 border-b border-border">
-          {Array.from({ length: 10 }, (_, colIndex) => (
+          {daeunGanji.earths.map((earth, colIndex) => (
             <div 
-              key={`extra-cell-8-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-8-${colIndex}`}
+              key={`daeun-earth-${colIndex}`}
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(earth)
+              }}
+              data-testid={`text-daeun-earth-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {earth}
             </div>
           ))}
         </div>
