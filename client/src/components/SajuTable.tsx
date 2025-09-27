@@ -416,7 +416,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-sky-${index}`}
             >
@@ -434,7 +434,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-earth-${index}`}
             >
@@ -464,7 +464,7 @@ export default function SajuTable({
               className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#131313',
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-jijanggan-${index}`}
             >
@@ -495,7 +495,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-daeun-sky-${colIndex}`}
             >
@@ -513,7 +513,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-daeun-earth-${colIndex}`}
             >
@@ -545,7 +545,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-saeun-sky-${colIndex}`}
             >
@@ -563,7 +563,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-saeun-earth-${colIndex}`}
             >
@@ -605,7 +605,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-wolun-sky-${colIndex}`}
             >
@@ -623,7 +623,7 @@ export default function SajuTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-wolun-earth-${colIndex}`}
             >

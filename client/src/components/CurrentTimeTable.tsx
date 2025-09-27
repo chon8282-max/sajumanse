@@ -70,7 +70,7 @@ export default function CurrentTimeTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-current-sky-${index}`}
             >
@@ -88,7 +88,7 @@ export default function CurrentTimeTable({
               style={{ 
                 color: '#131313',
                 backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'ChosunKm', 'NotoSansKR-Bold', 'Noto Sans KR', sans-serif"
+                fontFamily: "'ChosunKm', sans-serif"
               }}
               data-testid={`text-current-earth-${index}`}
             >
