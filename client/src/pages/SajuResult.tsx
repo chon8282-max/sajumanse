@@ -12,7 +12,6 @@ import { Solar } from "lunar-javascript";
 import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
 import { calculateCompleteYukjin } from "@/lib/yukjin-calculator";
 import { calculateCompleteDaeun, calculateCurrentAge, findCurrentDaeun, DaeunPeriod } from "@/lib/daeun-calculator";
-import DaeunDisplay from "@/components/DaeunDisplay";
 import SajuTable from "@/components/SajuTable";
 
 // 다음 간지 계산 (60갑자 순환)
@@ -465,12 +464,6 @@ export default function SajuResult() {
           memo={record.memo || ''}
         />
 
-        {/* 대운 정보 */}
-        <DaeunDisplay 
-          daeunData={daeunData} 
-          focusedDaeun={focusedDaeun}
-          onDaeunSelect={setFocusedDaeun}
-        />
 
         {/* 하단 버튼 */}
         <div className="pt-4 space-y-3">
