@@ -205,7 +205,7 @@ export default function SajuResult() {
                   return age;
                 })()}세
               </div>
-              <div className="text-[14px] text-gray-800 dark:text-gray-200 mt-[0px] mb-[0px] font-tmon">
+              <div className="text-lg font-semibold text-gray-800 dark:text-gray-200 mt-[0px] mb-[0px]">
                 {/* 김재완 특별 처리: 양력 1975.1.14, 음력 1974.12.3 */}
                 {record.name === "김재완" ? (
                   <>양력 1975년 1월 14일 음력 1974년 12월 3일 {timePeriod ? timePeriod.name : (record.birthTime || "미입력")}生</>
