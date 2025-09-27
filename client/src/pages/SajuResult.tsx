@@ -364,21 +364,11 @@ export default function SajuResult() {
                 </div>
               </div>
 
-              {/* 6. 나이숫자 출력자리 (10칸) */}
+              {/* 6. 대운 나이 (10칸) */}
               <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {Array.from({length: 10}, (_, i) => (
-                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0">
-                    {(() => {
-                      const currentAge = (() => {
-                        const today = new Date();
-                        const birthDate = new Date(record.birthYear, record.birthMonth - 1, record.birthDay);
-                        return today.getFullYear() - birthDate.getFullYear() - 
-                          (today.getMonth() < birthDate.getMonth() || 
-                           (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
-                      })();
-                      const startAge = Math.floor((currentAge - 5) / 10) * 10 + 5;
-                      return startAge + i * 10;
-                    })()}
+                {daeunData.daeunAges.map((age, i) => (
+                  <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-blue-50 dark:bg-blue-900/20">
+                    {age}
                   </div>
                 ))}
               </div>
