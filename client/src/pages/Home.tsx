@@ -96,7 +96,8 @@ export default function Home() {
     onSuccess: () => {
       toast({
         title: "저장 완료",
-        description: "만세력 정보가 성공적으로 저장되었습니다."
+        description: "만세력 정보가 성공적으로 저장되었습니다.",
+        duration: 800
       });
       queryClient.invalidateQueries({ queryKey: ["/api/manse"] });
     },
