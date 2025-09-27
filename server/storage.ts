@@ -4,6 +4,7 @@ import {
   sajuRecords,
   groups,
   lunarSolarCalendar,
+  fortuneResults,
   type User, 
   type InsertUser, 
   type ManseRyeok, 
@@ -14,6 +15,8 @@ import {
   type InsertGroup,
   type LunarSolarCalendar,
   type InsertLunarSolarCalendar,
+  type FortuneResult,
+  type InsertFortuneResult,
   DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
@@ -54,6 +57,11 @@ export interface IStorage {
   bulkCreateLunarSolarData(dataList: InsertLunarSolarCalendar[]): Promise<LunarSolarCalendar[]>;
   getLunarSolarDataRange(startYear: number, endYear: number): Promise<LunarSolarCalendar[]>;
   checkDataExists(year: number): Promise<boolean>;
+  
+  // 운세 계산 결과 관련
+  saveFortuneResult(data: InsertFortuneResult): Promise<FortuneResult>;
+  getFortuneResult(sajuRecordId: string): Promise<FortuneResult | undefined>;
+  deleteFortuneResult(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -294,6 +302,33 @@ export class DatabaseStorage implements IStorage {
       console.error('Initialize default groups error:', error);
     }
   }
+
+  // 운세 계산 결과 관련 메서드
+  async saveFortuneResult(data: InsertFortuneResult): Promise<FortuneResult> {
+    const [result] = await db
+      .insert(fortuneResults)
+      .values(data)
+      .returning();
+    return result;
+  }
+
+  async getFortuneResult(sajuRecordId: string): Promise<FortuneResult | undefined> {
+    const [result] = await db
+      .select()
+      .from(fortuneResults)
+      .where(eq(fortuneResults.sajuRecordId, sajuRecordId));
+    return result || undefined;
+  }
+
+  async deleteFortuneResult(id: string): Promise<boolean> {
+    try {
+      await db.delete(fortuneResults).where(eq(fortuneResults.id, id));
+      return true;
+    } catch (error) {
+      console.error('Delete fortune result error:', error);
+      return false;
+    }
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -303,6 +338,7 @@ export class MemStorage implements IStorage {
   private sajuRecords: Map<string, SajuRecord>;
   private groups: Map<string, Group>;
   private lunarSolarData: Map<string, LunarSolarCalendar>;
+  private fortuneResults: Map<string, FortuneResult>;
 
   constructor() {
     this.users = new Map();
@@ -310,6 +346,7 @@ export class MemStorage implements IStorage {
     this.sajuRecords = new Map();
     this.groups = new Map();
     this.lunarSolarData = new Map();
+    this.fortuneResults = new Map();
     
     // 기본 그룹 초기화
     this.initializeDefaultGroups();
@@ -539,6 +576,37 @@ export class MemStorage implements IStorage {
         isDefault: true,
       });
     }
+  }
+
+  // 운세 계산 결과 관련 메서드
+  async saveFortuneResult(data: InsertFortuneResult): Promise<FortuneResult> {
+    const id = randomUUID();
+    const now = new Date();
+    const fortuneResult: FortuneResult = {
+      id,
+      sajuRecordId: data.sajuRecordId,
+      daeunNumber: data.daeunNumber,
+      daeunDirection: data.daeunDirection,
+      daeunStartAge: data.daeunStartAge,
+      daeunList: data.daeunList,
+      saeunStartYear: data.saeunStartYear,
+      calculationDate: data.calculationDate,
+      algorithmVersion: data.algorithmVersion,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.fortuneResults.set(id, fortuneResult);
+    return fortuneResult;
+  }
+
+  async getFortuneResult(sajuRecordId: string): Promise<FortuneResult | undefined> {
+    return Array.from(this.fortuneResults.values()).find(
+      (result) => result.sajuRecordId === sajuRecordId
+    );
+  }
+
+  async deleteFortuneResult(id: string): Promise<boolean> {
+    return this.fortuneResults.delete(id);
   }
 }
 
