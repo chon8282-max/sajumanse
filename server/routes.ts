@@ -881,27 +881,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // 오프라인 데이터가 없으면 API 호출
-      console.log(`Calling data.go.kr API for ${solYear}-${solMonth}-${solDay}`);
-      const apiData = await getLunarCalInfo(solYear, solMonth, solDay);
+      // convertSolarToLunarServer 함수 사용 (fallback 로직 포함)
+      console.log(`Converting solar to lunar: ${solYear}-${solMonth}-${solDay}`);
+      const solarDate = new Date(solYear, solMonth - 1, solDay);
+      const lunarResult = await convertSolarToLunarServer(solarDate);
       
-      // API 응답을 데이터베이스 형식으로 변환
-      const item = apiData.response.body.items.item;
+      // 결과를 데이터베이스 형식으로 변환
       const lunarData = {
-        solYear: parseInt(item.solYear),
-        solMonth: parseInt(item.solMonth),
-        solDay: parseInt(item.solDay),
-        lunYear: parseInt(item.lunYear),
-        lunMonth: parseInt(item.lunMonth),
-        lunDay: parseInt(item.lunDay),
-        lunLeapMonth: item.lunLeapMonth || null,
-        lunWolban: item.lunWolban || null,
-        lunSecha: item.lunSecha || null,
-        lunGanjea: item.lunGanjea || null,
-        lunMonthDayCount: item.lunMonthDayCount ? parseInt(item.lunMonthDayCount) : null,
-        solSecha: item.solSecha || null,
-        solJeongja: item.solJeongja || null,
-        julianDay: item.julianDay ? parseInt(item.julianDay) : null,
+        solYear: solYear,
+        solMonth: solMonth,
+        solDay: solDay,
+        lunYear: lunarResult.year,
+        lunMonth: lunarResult.month,
+        lunDay: lunarResult.day,
+        lunLeapMonth: lunarResult.isLeapMonth ? "윤" : null,
+        lunWolban: null,
+        lunSecha: null,
+        lunGanjea: null,
+        lunMonthDayCount: null,
+        solSecha: null,
+        solJeongja: null,
+        julianDay: null,
       };
 
       // 데이터베이스에 저장
@@ -909,7 +909,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
-        source: "api",
+        source: "converted",
         data: savedData
       });
     } catch (error) {
