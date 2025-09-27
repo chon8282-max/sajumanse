@@ -508,7 +508,8 @@ export default function SajuTable({
           {saeunYears.map((year, colIndex) => (
             <div 
               key={`saeun-year-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-yellow-50 dark:bg-yellow-950/30 flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              style={{ backgroundColor: '#fde8fa' }}
               data-testid={`text-saeun-year-${colIndex}`}
             >
               {year}
@@ -555,7 +556,7 @@ export default function SajuTable({
           {saeunAges.map((age, colIndex) => (
             <div 
               key={`saeun-age-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-green-50 dark:bg-green-950/30 flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white flex items-center justify-center"
               data-testid={`text-saeun-age-${colIndex}`}
             >
               {age}
@@ -566,7 +567,8 @@ export default function SajuTable({
         {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
-            className="py-1 text-center text-xs font-bold min-h-[1.5rem] bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center"
+            className="py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-white"
+            style={{ backgroundColor: '#1b1464' }}
             data-testid="text-wolun-title"
           >
             월운(月運)
@@ -612,38 +614,45 @@ export default function SajuTable({
           {wolunMonths.map((month, colIndex) => (
             <div 
               key={`wolun-month-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white flex items-center justify-center"
               data-testid={`text-wolun-month-${colIndex}`}
             >
-              {month}
+              {colIndex === 0 ? 1 : month}
             </div>
           ))}
         </div>
 
-        {/* 17행: 4칸 (기존 유지) */}
-        <div className="grid grid-cols-4 border-b border-border">
-          {Array.from({ length: 4 }, (_, colIndex) => (
-            <div 
-              key={`extra-cell-17-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-17-${colIndex}`}
-            >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
-            </div>
-          ))}
+        {/* 17행: 메모 + 오늘 날짜 */}
+        <div className="grid grid-cols-2 border-b border-border">
+          <div 
+            className="py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-white border-r border-border"
+            style={{ backgroundColor: '#1b1464' }}
+            data-testid="text-memo-title"
+          >
+            메모
+          </div>
+          <div 
+            className="py-1 px-2 min-h-[1.5rem] flex items-center justify-center border-r border-border last:border-r-0"
+            style={{ backgroundColor: '#1b1464' }}
+          >
+            <input
+              type="date"
+              className="text-xs text-white bg-transparent border border-white/20 rounded px-2 py-1 w-full"
+              placeholder="오늘 날짜"
+              data-testid="input-today-date"
+            />
+          </div>
         </div>
 
-        {/* 18행: 4칸 (기존 유지) */}
-        <div className="grid grid-cols-4 border-b border-border">
-          {Array.from({ length: 4 }, (_, colIndex) => (
-            <div 
-              key={`extra-cell-18-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-18-${colIndex}`}
-            >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
-            </div>
-          ))}
+        {/* 18행: 메모 입력 박스 */}
+        <div className="grid grid-cols-1 border-b border-border">
+          <div className="p-2 bg-white">
+            <textarea
+              className="w-full min-h-[3rem] text-xs border border-gray-300 rounded px-2 py-1 resize-vertical"
+              placeholder="메모를 입력하세요..."
+              data-testid="textarea-memo"
+            />
+          </div>
         </div>
 
       </div>
