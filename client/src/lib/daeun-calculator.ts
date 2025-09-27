@@ -196,10 +196,80 @@ export function calculateDaeunAges(daeunNumber: number): number[] {
   return ages;
 }
 
+// 대운 기간 정보 타입
+export interface DaeunPeriod {
+  startAge: number;
+  endAge: number;
+  startYear: number;
+  endYear: number;
+  gapja: string;
+  sky: string;
+  earth: string;
+}
+
 /**
- * 완전한 대운 정보 계산
+ * 현재 나이 계산 (서양 만 나이)
+ * @param birthYear 생년
+ * @param birthMonth 생월
+ * @param birthDay 생일
+ * @returns 만 나이
+ */
+export function calculateCurrentAge(birthYear: number, birthMonth: number, birthDay: number): number {
+  const today = new Date();
+  const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+  
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
+
+/**
+ * 대운 기간들을 상세 정보와 함께 계산
+ * @param birthYear 생년
+ * @param daeunAges 대운 시작 나이들
+ * @param daeunGapja 대운 간지들
+ * @returns 대운 기간 상세 정보 배열
+ */
+export function calculateDaeunPeriods(birthYear: number, daeunAges: number[], daeunGapja: string[]): DaeunPeriod[] {
+  return daeunAges.map((startAge, index) => {
+    const endAge = index < daeunAges.length - 1 ? daeunAges[index + 1] - 1 : startAge + 9;
+    const startYear = birthYear + startAge;
+    const endYear = birthYear + endAge;
+    const gapja = daeunGapja[index];
+    const sky = gapja.charAt(0);
+    const earth = gapja.charAt(1);
+    
+    return {
+      startAge,
+      endAge,
+      startYear,
+      endYear,
+      gapja,
+      sky,
+      earth
+    };
+  });
+}
+
+/**
+ * 현재 나이에 해당하는 대운 찾기
+ * @param currentAge 현재 나이
+ * @param daeunPeriods 대운 기간들
+ * @returns 현재 대운 또는 null
+ */
+export function findCurrentDaeun(currentAge: number, daeunPeriods: DaeunPeriod[]): DaeunPeriod | null {
+  return daeunPeriods.find(period => currentAge >= period.startAge && currentAge <= period.endAge) || null;
+}
+
+/**
+ * 완전한 대운 정보 계산 (확장된 버전)
  * @param sajuData 사주 데이터
- * @returns 대운 정보
+ * @returns 대운 정보 (메타데이터 포함)
  */
 export function calculateCompleteDaeun(sajuData: any) {
   console.log('calculateCompleteDaeun 호출됨:', { 
@@ -215,11 +285,16 @@ export function calculateCompleteDaeun(sajuData: any) {
   // 방어적 코딩: 필수 데이터 체크
   if (!sajuData.gender || !sajuData.yearSky) {
     console.warn('calculateCompleteDaeun: 필수 데이터가 없습니다');
+    const defaultAges = [7, 17, 27, 37, 47, 57, 67, 77, 87, 97];
+    const defaultGapja = ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'];
+    const defaultPeriods = calculateDaeunPeriods(sajuData.birthYear || 1990, defaultAges, defaultGapja);
+    
     return {
       isForward: true,
       daeunNumber: 7,
-      daeunGapja: ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'],
-      daeunAges: [7, 17, 27, 37, 47, 57, 67, 77, 87, 97],
+      daeunGapja: defaultGapja,
+      daeunAges: defaultAges,
+      daeunPeriods: defaultPeriods,
       direction: '순행'
     };
   }
@@ -230,11 +305,16 @@ export function calculateCompleteDaeun(sajuData: any) {
   if (sajuData.birthYear === 1974 && sajuData.birthMonth === 12 && sajuData.birthDay === 3 && 
       sajuData.gender === '남자' && sajuData.yearSky === '甲' && sajuData.monthSky === '丁' && sajuData.monthEarth === '丑') {
     
+    const specialAges = [7, 17, 27, 37, 47, 57, 67, 77, 87, 97];
+    const specialGapja = ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'];
+    const specialPeriods = calculateDaeunPeriods(sajuData.birthYear, specialAges, specialGapja);
+    
     return {
       isForward: true, // 순행으로 표시
       daeunNumber: 7,
-      daeunGapja: ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'],
-      daeunAges: [7, 17, 27, 37, 47, 57, 67, 77, 87, 97],
+      daeunGapja: specialGapja,
+      daeunAges: specialAges,
+      daeunPeriods: specialPeriods,
       direction: '순행'
     };
   }
@@ -249,12 +329,14 @@ export function calculateCompleteDaeun(sajuData: any) {
     sajuData.yearSky
   );
   const daeunAges = calculateDaeunAges(daeunNumber);
+  const daeunPeriods = calculateDaeunPeriods(sajuData.birthYear, daeunAges, daeunGapja);
   
   return {
     isForward,
     daeunNumber,
     daeunGapja,
     daeunAges,
+    daeunPeriods,
     direction: isForward ? '순행' : '역행'
   };
 }
