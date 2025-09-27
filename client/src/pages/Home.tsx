@@ -12,6 +12,7 @@ import { type SajuInfo } from "@shared/schema";
 import { RefreshCw, Sparkles, Save } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+// lunar converter는 서버에서만 사용 가능
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
@@ -25,6 +26,17 @@ export default function Home() {
     hour: number;
     isLunar: boolean;
   } | null>(null);
+
+  // 현재 날짜의 양력/음력 정보 생성
+  const getCurrentDateInfo = () => {
+    const now = lastUpdated;
+    const solarDate = format(now, 'yyyy년 M월 d일 EEEE', { locale: ko });
+    
+    // 음력 정보 - 클라이언트에서는 간단히 표시
+    const lunarInfo = '음력 날짜';
+
+    return { solarDate, lunarInfo };
+  };
 
   // 현재 시각 자동 업데이트 (1초마다 실시간)
   useEffect(() => {
@@ -164,9 +176,20 @@ export default function Home() {
 
         {/* 현재 시각의 만세력 */}
         <div className="space-y-3">
+          {/* 날짜 제목 (양력/음력 정렬) */}
+          <div className="text-center space-y-1 font-serif">
+            <div className="text-base font-medium">
+              현재 만세력 (양) {getCurrentDateInfo().solarDate}
+            </div>
+            <div className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+              <span className="flex-shrink-0">.................. (음)</span>
+              <span>{getCurrentDateInfo().lunarInfo}</span>
+            </div>
+          </div>
+          
           <SajuTable 
             saju={currentSaju}
-            title="현재 만세력 2025년 9월 26일 03:29분 금요일"
+            title=""
             showWuxing={true}
           />
         </div>
