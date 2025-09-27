@@ -403,18 +403,6 @@ export default function SajuResult() {
         />
 
 
-        {/* 하단 버튼 */}
-        <div className="pt-2 space-y-2">
-          <Button 
-            onClick={handleBack}
-            size="lg"
-            variant="outline"
-            className="w-full"
-            data-testid="button-back-to-list"
-          >
-            만세력으로 돌아가기
-          </Button>
-        </div>
       </div>
     </div>
   );
