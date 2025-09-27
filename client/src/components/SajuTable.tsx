@@ -147,6 +147,48 @@ export default function SajuTable({
     }
   }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
 
+  // 세운 년도 계산 (9행용 - 12칸, 우측에서 좌측)
+  const saeunYears = useMemo(() => {
+    if (!birthYear) {
+      return Array.from({ length: 12 }, (_, i) => 2024 - i);
+    }
+    // 우측에서 좌측: 출생년도부터 11년 더한 값까지
+    return Array.from({ length: 12 }, (_, i) => birthYear + 11 - i);
+  }, [birthYear]);
+
+  // 세운 나이 계산 (12행용 - 12칸, 우측에서 좌측)  
+  const saeunAges = useMemo(() => {
+    // 우측에서 좌측: 1살부터 12살까지
+    return Array.from({ length: 12 }, (_, i) => 12 - i);
+  }, []);
+
+  // 세운 간지 계산 (10행, 11행용 - 12칸, 우측에서 좌측)
+  const saeunGanji = useMemo(() => {
+    if (!birthYear || !saju.year.sky || !saju.year.earth) {
+      return { skies: Array(12).fill(''), earths: Array(12).fill('') };
+    }
+
+    // 60갑자 순환
+    const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+    const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+    
+    // 출생년도의 간지 인덱스 찾기
+    const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
+    const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
+    
+    const skies: string[] = [];
+    const earths: string[] = [];
+
+    // 우측에서 좌측: 출생년부터 11년 더한 간지까지
+    for (let i = 0; i < 12; i++) {
+      const yearOffset = 11 - i; // 우측에서 좌측 순서
+      skies.push(heavenlyStems[(yearSkyIndex + yearOffset) % 10]);
+      earths.push(earthlyBranches[(yearEarthIndex + yearOffset) % 12]);
+    }
+
+    return { skies, earths };
+  }, [birthYear, saju.year.sky, saju.year.earth]);
+
   // 대운 간지 계산 (7행, 8행용)
   const daeunGanji = useMemo(() => {
     if (!gender || !saju.year.sky || !saju.month.sky || !saju.month.earth) {
@@ -374,54 +416,62 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 9행: 12칸 */}
+        {/* 9행: 세운 년도 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {Array.from({ length: 12 }, (_, colIndex) => (
+          {saeunYears.map((year, colIndex) => (
             <div 
-              key={`extra-cell-9-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-9-${colIndex}`}
+              key={`saeun-year-${colIndex}`}
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-yellow-50 dark:bg-yellow-950/30"
+              data-testid={`text-saeun-year-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {year}
             </div>
           ))}
         </div>
 
-        {/* 10행: 12칸 */}
+        {/* 10행: 세운 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {Array.from({ length: 12 }, (_, colIndex) => (
+          {saeunGanji.skies.map((sky, colIndex) => (
             <div 
-              key={`extra-cell-10-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-10-${colIndex}`}
+              key={`saeun-sky-${colIndex}`}
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(sky)
+              }}
+              data-testid={`text-saeun-sky-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {sky}
             </div>
           ))}
         </div>
 
-        {/* 11행: 12칸 */}
+        {/* 11행: 세운 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {Array.from({ length: 12 }, (_, colIndex) => (
+          {saeunGanji.earths.map((earth, colIndex) => (
             <div 
-              key={`extra-cell-11-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-11-${colIndex}`}
+              key={`saeun-earth-${colIndex}`}
+              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              style={{ 
+                color: '#000000',
+                backgroundColor: getGanjiBackgroundColor(earth)
+              }}
+              data-testid={`text-saeun-earth-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {earth}
             </div>
           ))}
         </div>
 
-        {/* 12행: 12칸 */}
+        {/* 12행: 세운 나이 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {Array.from({ length: 12 }, (_, colIndex) => (
+          {saeunAges.map((age, colIndex) => (
             <div 
-              key={`extra-cell-12-${colIndex}`}
-              className="p-2 text-center text-sm border-r border-border last:border-r-0 min-h-[2rem]"
-              data-testid={`text-extra-12-${colIndex}`}
+              key={`saeun-age-${colIndex}`}
+              className="p-2 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[2rem] bg-green-50 dark:bg-green-950/30"
+              data-testid={`text-saeun-age-${colIndex}`}
             >
-              {/* 빈 셀 - 추후 내용 추가 예정 */}
+              {age}살
             </div>
           ))}
         </div>
