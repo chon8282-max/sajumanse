@@ -366,7 +366,7 @@ export default function SajuResult() {
 
               {/* 6. 대운 나이 (10칸) */}
               <div className="grid grid-cols-10 border-t border-l border-r border-border">
-                {daeunData.daeunAges.map((age, i) => (
+                {daeunData.daeunAges.slice().reverse().map((age, i) => (
                   <div key={i} className="border-r border-border p-1 text-center text-xs last:border-r-0 bg-blue-50 dark:bg-blue-900/20">
                     {age}
                   </div>
