@@ -176,17 +176,6 @@ export default function Home() {
 
         {/* 현재 시각의 만세력 */}
         <div className="space-y-3">
-          {/* 날짜 제목 (양력/음력 정렬) */}
-          <div className="text-center space-y-1 font-serif">
-            <div className="text-base font-medium">
-              현재 만세력 (양) {getCurrentDateInfo().solarDate}
-            </div>
-            <div className="text-sm text-muted-foreground flex items-center justify-center gap-2">
-              <span className="flex-shrink-0">.................. (음)</span>
-              <span>{getCurrentDateInfo().lunarInfo}</span>
-            </div>
-          </div>
-          
           <SajuTable 
             saju={currentSaju}
             title=""
