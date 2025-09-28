@@ -19,24 +19,39 @@ interface DatePickerProps {
 
 export default function DatePicker({ onDateSelect, initialDate }: DatePickerProps) {
   const now = new Date();
-  const [year, setYear] = useState(initialDate?.year ?? now.getFullYear());
-  const [month, setMonth] = useState(initialDate?.month ?? now.getMonth() + 1);
-  const [day, setDay] = useState(initialDate?.day ?? now.getDate());
-  const [hour, setHour] = useState(initialDate?.hour ?? now.getHours());
+  const [year, setYear] = useState(initialDate?.year?.toString() ?? now.getFullYear().toString());
+  const [month, setMonth] = useState(initialDate?.month?.toString() ?? (now.getMonth() + 1).toString());
+  const [day, setDay] = useState(initialDate?.day?.toString() ?? now.getDate().toString());
+  const [hour, setHour] = useState(initialDate?.hour?.toString() ?? now.getHours().toString());
   const [isLunar, setIsLunar] = useState(initialDate?.isLunar ?? false);
 
   const handleSubmit = () => {
-    console.log('Date selected:', { year, month, day, hour, isLunar });
-    onDateSelect(year, month, day, hour, isLunar);
+    // 숫자 변환 및 검증
+    const yearNum = parseInt(year);
+    const monthNum = parseInt(month);
+    const dayNum = parseInt(day);
+    const hourNum = parseInt(hour);
+    
+    // 유효성 검증
+    if (isNaN(yearNum) || isNaN(monthNum) || isNaN(dayNum) || isNaN(hourNum) ||
+        yearNum < 1900 || yearNum > 2100 ||
+        monthNum < 1 || monthNum > 12 ||
+        dayNum < 1 || dayNum > 31 ||
+        hourNum < 0 || hourNum > 23) {
+      return; // 유효하지 않으면 제출하지 않음
+    }
+    
+    console.log('Date selected:', { year: yearNum, month: monthNum, day: dayNum, hour: hourNum, isLunar });
+    onDateSelect(yearNum, monthNum, dayNum, hourNum, isLunar);
   };
 
   const handleQuickSelect = (type: 'today' | 'birth') => {
     const now = new Date();
     if (type === 'today') {
-      setYear(now.getFullYear());
-      setMonth(now.getMonth() + 1);
-      setDay(now.getDate());
-      setHour(now.getHours());
+      setYear(now.getFullYear().toString());
+      setMonth((now.getMonth() + 1).toString());
+      setDay(now.getDate().toString());
+      setHour(now.getHours().toString());
       console.log('Quick select: today');
     }
     // birth는 사용자가 직접 입력하도록 유지
@@ -91,9 +106,10 @@ export default function DatePicker({ onDateSelect, initialDate }: DatePickerProp
             <Input
               id="year"
               type="number"
+              inputMode="numeric"
               value={year}
-              onChange={(e) => setYear(parseInt(e.target.value) || 0)}
-              placeholder="1990"
+              onChange={(e) => setYear(e.target.value)}
+              placeholder=""
               data-testid="input-year"
             />
           </div>
@@ -102,11 +118,12 @@ export default function DatePicker({ onDateSelect, initialDate }: DatePickerProp
             <Input
               id="month"
               type="number"
+              inputMode="numeric"
               min="1"
               max="12"
               value={month}
-              onChange={(e) => setMonth(parseInt(e.target.value) || 1)}
-              placeholder="12"
+              onChange={(e) => setMonth(e.target.value)}
+              placeholder=""
               data-testid="input-month"
             />
           </div>
@@ -115,11 +132,12 @@ export default function DatePicker({ onDateSelect, initialDate }: DatePickerProp
             <Input
               id="day"
               type="number"
+              inputMode="numeric"
               min="1"
               max="31"
               value={day}
-              onChange={(e) => setDay(parseInt(e.target.value) || 1)}
-              placeholder="25"
+              onChange={(e) => setDay(e.target.value)}
+              placeholder=""
               data-testid="input-day"
             />
           </div>
@@ -131,11 +149,12 @@ export default function DatePicker({ onDateSelect, initialDate }: DatePickerProp
           <Input
             id="hour"
             type="number"
+            inputMode="numeric"
             min="0"
             max="23"
             value={hour}
-            onChange={(e) => setHour(parseInt(e.target.value) || 0)}
-            placeholder="14"
+            onChange={(e) => setHour(e.target.value)}
+            placeholder=""
             data-testid="input-hour"
           />
           <p className="text-xs text-muted-foreground">
