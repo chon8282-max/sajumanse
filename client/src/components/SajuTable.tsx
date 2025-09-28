@@ -801,7 +801,22 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 6행: 대운수 (우측에서 좌측으로) */}
+        {/* 6행: 12신살 (조건부 표시) */}
+        {showSibiSinsal && (
+          <div className="grid grid-cols-4 border-b border-border">
+            {sibiSinsal.map((sinsal, index) => (
+              <div 
+                key={`sibisinsal-${index}`} 
+                className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-yellow-50 dark:bg-yellow-900/20"
+                data-testid={`text-sibisinsal-${index}`}
+              >
+                {sinsal}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 7행: 대운수 (우측에서 좌측으로) */}
         <div className="grid grid-cols-10 border-b border-border">
           {daeunAges.map((age, colIndex) => {
             const isCurrentDaeun = currentAge && age <= currentAge && currentAge < age + 10;
