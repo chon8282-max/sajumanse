@@ -62,7 +62,7 @@ function getWuxingElement(character: string): string {
     '무': '土', '기': '土', '진': '土', '미': '土', '술': '土', '축': '土',
     '戊': '土', '己': '土', '辰': '土', '未': '土', '戌': '土', '丑': '土',
     // 경신신유 = 金 (금)
-    '경': '金', '신': '金', '신': '金', '유': '金',
+    '경': '金', '신': '金', '유': '金',
     '庚': '金', '辛': '金', '申': '金', '酉': '金',
     // 임계해자 = 水 (수)
     '임': '水', '계': '水', '해': '水', '자': '水',
@@ -115,6 +115,9 @@ export default function SajuTable({
   
   // 선택된 歲運 나이 상태 (초기값: 현재 나이)
   const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
+  
+  // 오행 표시 상태 관리
+  const [showWuxing, setShowWuxing] = useState(false);
   
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
   useEffect(() => {
@@ -574,7 +577,12 @@ export default function SajuTable({
           {/* 세 번째 줄: 5개 버튼 */}
           <div className="flex flex-wrap justify-center gap-2">
             <button 
-              className="px-3 py-1 text-xs bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800 border border-orange-300 dark:border-orange-700 rounded-md transition-colors"
+              className={`px-3 py-1 text-xs ${
+                showWuxing 
+                  ? 'bg-orange-200 hover:bg-orange-300 dark:bg-orange-800 dark:hover:bg-orange-700' 
+                  : 'bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800'
+              } border border-orange-300 dark:border-orange-700 rounded-md transition-colors`}
+              onClick={() => setShowWuxing(!showWuxing)}
               data-testid="button-wuxing"
             >
               오행
