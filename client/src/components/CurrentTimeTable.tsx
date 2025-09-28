@@ -97,6 +97,24 @@ export default function CurrentTimeTable({
           ))}
         </div>
       </div>
+
+      {/* 알림 섹션 */}
+      <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+        <h3 className="text-sm font-semibold text-primary mb-3 flex items-center">
+          <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
+          알림
+        </h3>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-start space-x-2">
+            <span className="text-xs text-primary font-medium">•</span>
+            <span>오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
+          </div>
+          <div className="flex items-start space-x-2">
+            <span className="text-xs text-primary font-medium">•</span>
+            <span>만세력 업데이트: 2025년 음력 절입시간 정보가 업데이트되었습니다.</span>
+          </div>
+        </div>
+      </div>
     </Card>
   );
 }

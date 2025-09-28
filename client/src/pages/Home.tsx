@@ -51,9 +51,10 @@ export default function Home() {
   // 현재 날짜의 양력/음력 정보 생성
   const getCurrentDateInfo = () => {
     const now = lastUpdated;
-    const solarDate = `양력 ${format(now, 'yyyy년 M월 d일', { locale: ko })}`;
+    const dayOfWeek = format(now, 'eeee', { locale: ko });
+    const solarDate = `양력 ${format(now, 'yyyy년 M월 d일', { locale: ko })} ${dayOfWeek}`;
     
-    // 음력 정보 - API 응답에서 가져오기, 실패 시 명확한 메시지 표시
+    // 음력 정보 - API 응답에서 가져오기, 실패 시 기본 계산 사용
     let lunarInfo = "음력 정보 로딩중...";
     if (lunarData?.success && lunarData.data) {
       const lunar = lunarData.data;
@@ -61,7 +62,7 @@ export default function Home() {
       lunarInfo = `음력 ${lunar.lunYear}년 ${lunar.lunMonth}월 ${lunar.lunDay}일${leapMonth}`;
     } else if (lunarData === null || lunarError) {
       // API 실패 시 명확한 안내 메시지
-      lunarInfo = "음력 정보 일시 불가";
+      lunarInfo = "음력 정보를 불러올 수 없습니다";
     }
 
     return { solarDate, lunarInfo };
