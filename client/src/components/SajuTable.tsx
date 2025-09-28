@@ -386,23 +386,26 @@ export default function SajuTable({
     
     const skies: string[] = [];
     
-    // 15행 지지: 축자해술유신미오사진묘인축 (14개) 고정 - 우측부터 좌측으로
-    const earths = ["丑", "子", "亥", "戌", "酉", "申", "未", "午", "巳", "辰", "卯", "寅", "丑", "子"];
+    // 15행 지지: 축자해술유신미오사진묘인축 (13개) 고정 - 우측부터 좌측으로
+    const earths = ["丑", "子", "亥", "戌", "酉", "申", "未", "午", "巳", "辰", "卯", "寅", "丑"];
 
-    // 14행 천간: 시작 천간부터 순환 (갑을병정무기경신임계 갑을병정...) - 우측부터 좌측으로 
-    for (let i = 0; i < 14; i++) {
+    // 14행 천간: 13열부터 1열방향으로 순행 (기→경→신→임 순서)
+    for (let i = 0; i < 13; i++) {
       // 천간 순환: 시작 천간에서 i만큼 순행 (기→경→신→임 순서)
       const skyIndex = (startSkyIndex + i) % 10;
       skies.push(heavenlyStems[skyIndex]);
     }
 
+    // 배열을 뒤집어서 13열부터 1열방향으로 순행되도록 함
+    skies.reverse();
+
     return { skies, earths };
   }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years]);
 
-  // 월운 월 순서 (16행용 - 14칸, 우측에서 좌측)
+  // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
   const wolunMonths = useMemo(() => {
-    // 우측에서 좌측: 14월부터 1월까지
-    return Array.from({ length: 14 }, (_, i) => 14 - i);
+    // 우측에서 좌측: 13월부터 1월까지
+    return Array.from({ length: 13 }, (_, i) => 13 - i);
   }, []);
 
   // 대운 간지 계산 (7행, 8행용)
