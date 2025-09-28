@@ -177,6 +177,9 @@ export default function SajuTable({
   // 오행 표시 상태 관리
   const [showWuxing, setShowWuxing] = useState(false);
   
+  // 12신살 표시 상태 관리
+  const [showSibiSinsal, setShowSibiSinsal] = useState(false);
+  
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
   useEffect(() => {
     if (currentAge) {
@@ -271,6 +274,12 @@ export default function SajuTable({
     { label: "월주", sky: saju.month.sky, earth: saju.month.earth },
     { label: "년주", sky: saju.year.sky, earth: saju.year.earth }
   ], [saju]);
+
+  // 12신살 계산 (년지 기준)
+  const sibiSinsal = useMemo(() => {
+    if (!saju?.year?.earth) return ['', '', '', ''];
+    return calculateSibiSinsal(saju.year.earth, sajuColumns);
+  }, [saju?.year?.earth, sajuColumns]);
 
   // 육친 계산 (메모이제이션)
   const { heavenlyYukjin, earthlyYukjin } = useMemo(() => {
@@ -652,7 +661,12 @@ export default function SajuTable({
               신살
             </button>
             <button 
-              className="px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 border border-blue-300 dark:border-blue-700 rounded-md transition-colors"
+              className={`px-3 py-1 text-xs ${
+                showSibiSinsal 
+                  ? 'bg-blue-200 hover:bg-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700' 
+                  : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800'
+              } border border-blue-300 dark:border-blue-700 rounded-md transition-colors`}
+              onClick={() => setShowSibiSinsal(!showSibiSinsal)}
               data-testid="button-12sinsal"
             >
               12신살
