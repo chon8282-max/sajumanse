@@ -355,21 +355,25 @@ export default function SajuList() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 max-w-md">
-        <div className="flex items-center justify-between mb-4">
+        <div className="relative flex items-center mb-4">
           <Button 
             variant="ghost" 
             size="sm"
             onClick={handleBack}
             data-testid="button-back"
+            className="absolute left-0"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-1" />
             뒤로
           </Button>
-          <h1 className="text-lg font-semibold" data-testid="text-page-title">저장된 사주</h1>
+          <div className="w-full text-center">
+            <h1 className="text-lg font-semibold" data-testid="text-page-title">저장된 사주</h1>
+          </div>
           <Button 
             size="sm"
             onClick={() => setLocation("/saju-input")}
             data-testid="button-add-saju"
+            className="absolute right-0"
           >
             <Plus className="w-4 h-4 mr-1" />
             추가
