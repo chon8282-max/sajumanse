@@ -96,12 +96,12 @@ export default function SajuTable({
   // 선택된 세운 나이 상태 (초기값: 현재 나이)
   const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
   
-  // currentAge가 변경되면 selectedSaeunAge도 업데이트
+  // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
   useEffect(() => {
-    if (currentAge && !selectedSaeunAge) {
+    if (currentAge) {
       setSelectedSaeunAge(currentAge);
     }
-  }, [currentAge, selectedSaeunAge]);
+  }, [currentAge]); // selectedSaeunAge 의존성 제거하여 항상 업데이트되도록
   
   // 세운 클릭 핸들러 (내부용)
   const handleSaeunAgeClick = useCallback((age: number) => {

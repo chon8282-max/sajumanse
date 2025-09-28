@@ -232,12 +232,15 @@ export default function SajuResult() {
     );
   }, [calculatedData, focusedDaeun, saeunOffset]);
 
-  // focusedDaeun 초기 설정
+  // focusedDaeun 초기 설정 및 스크롤 맨 위로 이동
   useEffect(() => {
-    if (calculatedData?.currentDaeun && !focusedDaeun) {
+    if (calculatedData?.currentDaeun) {
       setFocusedDaeun(calculatedData.currentDaeun);
+      setSaeunOffset(0); // 세운 오프셋도 초기화
+      // 페이지 로드 시 스크롤을 맨 위로 이동
+      window.scrollTo(0, 0);
     }
-  }, [calculatedData, focusedDaeun]);
+  }, [calculatedData?.currentDaeun]); // focusedDaeun 의존성 제거하여 항상 설정되도록
 
   // 대운 클릭 핸들러
   const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
