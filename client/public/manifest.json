@@ -1,0 +1,20 @@
+{
+  "name": "만세력 - 전통 사주명리",
+  "short_name": "만세력",
+  "description": "한국 전통 만세력 - 사주명리학 기반 운세 정보 제공",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3d2c1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "entertainment"],
+  "lang": "ko-KR"
+}
