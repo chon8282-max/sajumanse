@@ -323,47 +323,32 @@ export default function SajuTable({
     const targetGanji = gapja60[targetGanjiIndex];
     const targetYearSky = targetGanji[0];
     
-    // 월운 간지 계산 규칙: 세운을 기준으로 우측(13열)에서 좌측(1열)로 진행
-    const wolunStartTable: { [key: string]: string } = {
-      "甲": "乙丑", // 갑년: 을축부터 시작
-      "乙": "丁丑", // 을년: 정축부터 시작
-      "丙": "己丑", // 병년: 기축부터 시작
-      "丁": "辛丑", // 정년: 신축부터 시작
-      "戊": "癸丑", // 무년: 계축부터 시작
-      "己": "乙丑", // 기년: 을축부터 시작 (갑년과 동일)
-      "庚": "丁丑", // 경년: 정축부터 시작 (을년과 동일)
-      "辛": "己丑", // 신년: 기축부터 시작 (병년과 동일)
-      "壬": "辛丑", // 임년: 신축부터 시작 (정년과 동일)
-      "癸": "癸丑"  // 계년: 계축부터 시작 (무년과 동일)
+    // 월운 천간 시작 규칙
+    const wolunSkyStartTable: { [key: string]: string } = {
+      "甲": "乙", // 갑기년=을축부터 (천간: 을부터)
+      "乙": "丁", // 을경년=정축부터 (천간: 정부터)
+      "丙": "己", // 병신년=기축부터 (천간: 기부터)
+      "丁": "辛", // 정임년=신축부터 (천간: 신부터)
+      "戊": "癸", // 무계년=계축부터 (천간: 계부터)
+      "己": "乙", // 갑기년=을축부터 (천간: 을부터)
+      "庚": "丁", // 을경년=정축부터 (천간: 정부터)
+      "辛": "己", // 병신년=기축부터 (천간: 기부터)
+      "壬": "辛", // 정임년=신축부터 (천간: 신부터)
+      "癸": "癸"  // 무계년=계축부터 (천간: 계부터)
     };
     
-    const startGanji = wolunStartTable[targetYearSky] || "乙丑";
-    const startSky = startGanji[0];
-    const startEarth = startGanji[1];
-    
+    const startSky = wolunSkyStartTable[targetYearSky] || "乙";
     const startSkyIndex = heavenlyStems.indexOf(startSky);
-    const startEarthIndex = earthlyBranches.indexOf(startEarth);
     
     const skies: string[] = [];
     
     // 15행 지지: 축자해술유신미오사진묘인축 (13개) 고정 - 우측부터 좌측으로
     const earths = ["丑", "子", "亥", "戌", "酉", "申", "未", "午", "巳", "辰", "卯", "寅", "丑"];
 
-    // 14행 천간만 계산 (13개) - 우측부터 좌측으로 
+    // 14행 천간: 시작 천간부터 순환 (갑을병정무기경신임계 갑을병정...) - 우측부터 좌측으로 
     for (let i = 0; i < 13; i++) {
-      // 월 인덱스 계산: i=0(13열)부터 i=12(1열)까지
-      let monthIndex: number;
-      
-      if (i === 0) {
-        // 13열: 전해 축월 (시작월 이전)
-        monthIndex = -1;
-      } else {
-        // 12열~1열: 올해 1월~12월에 해당 (축월=1월부터 시작)
-        monthIndex = i - 1; // 0=1월, 1=2월, ..., 11=12월
-      }
-      
-      // 천간만 계산
-      const skyIndex = (startSkyIndex + monthIndex + 10) % 10;
+      // 천간 순환: 시작 천간에서 i만큼 증가
+      const skyIndex = (startSkyIndex + i) % 10;
       skies.push(heavenlyStems[skyIndex]);
     }
 
