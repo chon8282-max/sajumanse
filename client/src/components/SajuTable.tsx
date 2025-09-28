@@ -616,17 +616,22 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 1행: 천간 육친 */}
+        {/* 1행: 천간 육친 / 오행 */}
         <div className="grid grid-cols-4 border-b border-border">
-          {heavenlyYukjin.map((yukjin, index) => (
-            <div 
-              key={`yukjin-sky-${index}`} 
-              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
-              data-testid={`text-yukjin-sky-${index}`}
-            >
-              {yukjin}
-            </div>
-          ))}
+          {heavenlyYukjin.map((yukjin, index) => {
+            const skyCharacter = sajuColumns[index]?.sky;
+            const displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
+            
+            return (
+              <div 
+                key={`yukjin-sky-${index}`} 
+                className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                data-testid={`text-yukjin-sky-${index}`}
+              >
+                {displayText}
+              </div>
+            );
+          })}
         </div>
 
         {/* 2행: 천간 */}
@@ -693,17 +698,22 @@ export default function SajuTable({
           })}
         </div>
 
-        {/* 4행: 지지 육친 */}
+        {/* 4행: 지지 육친 / 오행 */}
         <div className="grid grid-cols-4 border-b border-border">
-          {earthlyYukjin.map((yukjin, index) => (
-            <div 
-              key={`yukjin-earth-${index}`} 
-              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
-              data-testid={`text-yukjin-earth-${index}`}
-            >
-              {yukjin}
-            </div>
-          ))}
+          {earthlyYukjin.map((yukjin, index) => {
+            const earthCharacter = sajuColumns[index]?.earth;
+            const displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
+            
+            return (
+              <div 
+                key={`yukjin-earth-${index}`} 
+                className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                data-testid={`text-yukjin-earth-${index}`}
+              >
+                {displayText}
+              </div>
+            );
+          })}
         </div>
 
         {/* 5행: 지장간 */}
