@@ -5,12 +5,14 @@ interface CurrentTimeTableProps {
   saju: SajuInfo;
   title?: string;
   solarDate?: string;
+  isOffline?: boolean;
 }
 
 export default function CurrentTimeTable({ 
   saju, 
   title = "현재 만세력",
-  solarDate
+  solarDate,
+  isOffline = false
 }: CurrentTimeTableProps) {
 
   // 사주 데이터 구성 (우측부터 년월일시 순)

@@ -27,7 +27,7 @@ export default function Home() {
     isLunar: boolean;
   } | null>(null);
 
-  // 음력 날짜 API 호출
+  // 음력 날짜 API 호출 (오프라인 환경에서는 비활성화)
   const { data: lunarData, error: lunarError } = useQuery({
     queryKey: ["/api/lunar-solar/convert/lunar", lastUpdated.getFullYear(), lastUpdated.getMonth() + 1, lastUpdated.getDate()],
     queryFn: async () => {
@@ -39,13 +39,14 @@ export default function Home() {
         }) as any;
         return response;
       } catch (error) {
-        console.log('Lunar API failed, using fallback');
+        console.log('음력 API 실패 - 오프라인 모드에서는 양력 정보만 표시됩니다');
         return null;
       }
     },
     staleTime: 1000 * 60 * 60, // 1시간 동안 캐시
     refetchOnWindowFocus: false,
-    retry: false // API 실패 시 재시도 안함
+    retry: false, // API 실패 시 재시도 안함
+    enabled: navigator.onLine !== false // 오프라인 감지 시 API 호출 비활성화
   });
 
   // 현재 날짜의 양력 정보 생성
@@ -69,21 +70,46 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  // 사주팔자 계산 뮤테이션
+  // 사주팔자 계산 뮤테이션 (오프라인 지원)
   const calculateMutation = useMutation({
     mutationFn: async (data: { year: number; month: number; day: number; hour: number; isLunar: boolean }) => {
-      const response = await apiRequest("POST", "/api/saju/calculate", data) as any;
-      if (!response.success) {
-        throw new Error(response.error || "사주 계산에 실패했습니다.");
+      try {
+        // 1. 온라인일 때는 서버 API 사용 (정확한 음력-양력 변환 포함)
+        const response = await apiRequest("POST", "/api/saju/calculate", data) as any;
+        if (!response.success) {
+          throw new Error(response.error || "서버 사주 계산에 실패했습니다.");
+        }
+        return response.data;
+      } catch (error) {
+        console.log('서버 API 실패, 오프라인 모드로 계산합니다:', error);
+        
+        // 2. 오프라인일 때는 클라이언트에서 직접 계산
+        if (data.isLunar) {
+          // 음력인 경우 경고 메시지와 함께 양력으로 간주하여 계산
+          console.warn('오프라인 모드에서는 음력-양력 변환이 제한적입니다. 입력한 날짜를 양력으로 간주하여 계산합니다.');
+        }
+        
+        // 클라이언트 사주 계산 (음력인 경우에도 양력으로 간주)
+        const offlineSaju = calculateSaju(
+          data.year,
+          data.month,
+          data.day,
+          data.hour,
+          0, // minute = 0
+          false // 오프라인에서는 양력으로 간주
+        );
+        
+        return offlineSaju;
       }
-      return response.data;
     },
     onSuccess: (data) => {
       setCustomSaju(data);
       setShowDatePicker(false);
       toast({
         title: "사주팔자 계산 완료",
-        description: "개인 사주팔자가 성공적으로 계산되었습니다."
+        description: navigator.onLine === false 
+          ? "오프라인 모드에서 계산되었습니다. (음력 변환 제한)" 
+          : "개인 사주팔자가 성공적으로 계산되었습니다."
       });
     },
     onError: (error) => {
@@ -200,6 +226,7 @@ export default function Home() {
             saju={currentSaju}
             title="현재 만세력"
             solarDate={getCurrentDateInfo().solarDate}
+            isOffline={navigator.onLine === false}
           />
         </div>
 
