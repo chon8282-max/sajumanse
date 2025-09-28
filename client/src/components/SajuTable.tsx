@@ -516,12 +516,11 @@ export default function SajuTable({
 
   return (
     <Card className="p-4" style={{ backgroundColor: 'hsl(var(--saju-header-bg))' }} data-testid="card-saju-table">
-
       {/* 개인정보 표시 */}
       {name && (
         <div className="mb-2 p-3 border border-border rounded-md" style={{ backgroundColor: 'hsl(var(--name-card-bg))' }}>
           {/* 첫 번째 줄: 이름, 성별, 나이 */}
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-2 mt-[0px] mb-[0px]">
             <span className="font-bold text-lg" data-testid="text-name">{name}</span>
             <div className="flex items-center gap-1">
               {gender === '남자' ? (
@@ -584,7 +583,6 @@ export default function SajuTable({
           </div>
         </div>
       )}
-
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
         {/* 1행: 천간 육친 */}
@@ -1020,9 +1018,6 @@ export default function SajuTable({
         </div>
 
       </div>
-
-
-
       {/* 메모 */}
       {memo && (
         <div className="mt-4 border border-border">

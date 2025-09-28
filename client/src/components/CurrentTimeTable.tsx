@@ -60,7 +60,6 @@ export default function CurrentTimeTable({
           <p>{solarDate || '양력 정보 없음'}</p>
         </div>
       </div>
-
       {/* 현재 만세력 간단 테이블 (1-2행만) */}
       <div className="border border-border rounded-lg overflow-hidden shadow-sm">
         {/* 1행: 천간 */}
@@ -125,10 +124,9 @@ export default function CurrentTimeTable({
           })}
         </div>
       </div>
-
       {/* 알림 섹션 */}
       <div className="mt-2 p-2 bg-muted/30 rounded-lg border">
-        <h3 className="text-sm font-semibold text-primary mb-3 flex items-center">
+        <h3 className="text-sm font-semibold text-primary flex items-center mt-[0px] mb-[0px]">
           <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
           알림
         </h3>
