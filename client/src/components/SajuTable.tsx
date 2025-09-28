@@ -878,6 +878,7 @@ export default function SajuTable({
                     alt="공망"
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                     style={{ margin: '0', padding: '0' }}
+                    data-testid={`img-gongmang-earth-${index}`}
                   />
                 )}
               </div>
@@ -1047,6 +1048,7 @@ export default function SajuTable({
                     alt="공망"
                     className="absolute inset-0 w-full h-full object-cover pointer-events-none"
                     style={{ margin: '0', padding: '0' }}
+                    data-testid={`img-gongmang-daeun-earth-${colIndex}`}
                   />
                 )}
               </div>
