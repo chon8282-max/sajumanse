@@ -514,11 +514,11 @@ export default function SajuTable({
 
 
   return (
-    <Card className="p-4" data-testid="card-saju-table">
+    <Card className="p-4" style={{ backgroundColor: 'hsl(var(--saju-header-bg))' }} data-testid="card-saju-table">
 
       {/* 개인정보 표시 */}
       {name && (
-        <div className="mb-2 p-3 bg-muted/30 border border-border rounded-md">
+        <div className="mb-2 p-3 border border-border rounded-md" style={{ backgroundColor: 'hsl(var(--name-card-bg))' }}>
           {/* 첫 번째 줄: 이름, 성별, 나이 */}
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="font-bold text-lg" data-testid="text-name">{name}</span>
@@ -591,7 +591,7 @@ export default function SajuTable({
           {heavenlyYukjin.map((yukjin, index) => (
             <div 
               key={`yukjin-sky-${index}`} 
-              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
               data-testid={`text-yukjin-sky-${index}`}
             >
               {yukjin}
@@ -642,7 +642,7 @@ export default function SajuTable({
           {earthlyYukjin.map((yukjin, index) => (
             <div 
               key={`yukjin-earth-${index}`} 
-              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
               data-testid={`text-yukjin-earth-${index}`}
             >
               {yukjin}
@@ -655,10 +655,7 @@ export default function SajuTable({
           {jijanggan.map((stems, index) => (
             <div 
               key={`jijanggan-${index}`} 
-              className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
-              style={{ 
-                color: '#131313'
-              }}
+              className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
               data-testid={`text-jijanggan-${index}`}
             >
               {stems}
@@ -677,7 +674,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-age-${colIndex}`}
-                className={`py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                className={`py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white ${
                   isHighlighted 
                     ? 'bg-yellow-200 dark:bg-yellow-800/50 font-bold border-2 border-yellow-600' 
                     : 'bg-blue-50 dark:bg-blue-950/30'
@@ -743,7 +740,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-year-${colIndex}`}
-                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-white dark:bg-gray-800'
