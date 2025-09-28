@@ -256,12 +256,7 @@ export default function SajuResult() {
     
     if (targetDaeun) {
       setFocusedDaeun(targetDaeun);
-      // 해당 나이가 세운 창의 중앙에 오도록 오프셋 조정 (음수 허용)
-      const targetOffset = age - targetDaeun.startAge - 5; // 12열 중 중앙(6번째)에 위치
-      // 대운 범위 내에서만 제한 (10년 범위)
-      const minOffset = -5; // 대운 시작 5년 전까지
-      const maxOffset = 10; // 대운 시작 10년 후까지 (10년 대운 + 몇 년 여유)
-      setSaeunOffset(Math.max(minOffset, Math.min(maxOffset, targetOffset)));
+      // 오프셋 변경하지 않음 - 클릭한 자리에서 선택되도록 유지
     }
   }, [calculatedData]);
 
