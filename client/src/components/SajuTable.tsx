@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
-import { calculateDaeunNumber, type DaeunPeriod } from "@/lib/daeun-calculator";
+import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
@@ -78,10 +78,13 @@ export default function SajuTable({
   const age = useMemo(() => {
     if (!birthYear) return 0;
     
-    // 간지년 기준 나이 계산: 태어난 해가 1세
-    const currentYear = new Date().getFullYear();
-    return currentYear - birthYear + 1;
-  }, [birthYear]);
+    // saju 데이터에서 년간/년지 정보 가져오기
+    const yearSky = saju?.year?.sky;
+    const yearEarth = saju?.year?.earth;
+    
+    // calculateCurrentAge 함수 사용하여 정확한 간지년 기준 나이 계산
+    return calculateCurrentAge(birthYear, birthMonth || 1, birthDay || 1, yearSky, yearEarth);
+  }, [birthYear, birthMonth, birthDay, saju?.year?.sky, saju?.year?.earth]);
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
