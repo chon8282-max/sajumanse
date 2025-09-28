@@ -72,6 +72,64 @@ function getWuxingElement(character: string): string {
   return wuxingMap[character] || character;
 }
 
+// 12신살 계산 함수
+function calculateSibiSinsal(yearEarth: string, sajuColumns: Array<{sky: string, earth: string}>): string[] {
+  // 12신살 순서
+  const sinsalNames = ['劫殺', '災殺', '天殺', '地殺', '年殺', '月殺', '亡身殺', '將星殺', '攀鞍殺', '驛馬殺', '六害殺', '華蓋殺'];
+  
+  // 12지지 순서
+  const jiji = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+  
+  // 삼합과 시작 지지 매핑
+  const samhapStartMap: Record<string, string> = {
+    // 申子辰 (수국) - 辰 다음인 巳부터
+    '申': '巳', '子': '巳', '辰': '巳',
+    // 亥卯未 (목국) - 未 다음인 申부터  
+    '亥': '申', '卯': '申', '未': '申',
+    // 寅午戌 (화국) - 戌 다음인 亥부터
+    '寅': '亥', '午': '亥', '戌': '亥',
+    // 巳酉丑 (금국) - 丑 다음인 寅부터
+    '巳': '寅', '酉': '寅', '丑': '寅'
+  };
+  
+  // 년지 기준 시작 지지 찾기
+  const startJiji = samhapStartMap[yearEarth];
+  if (!startJiji) {
+    return ['', '', '', '']; // 계산 불가시 빈 배열
+  }
+  
+  // 시작 지지의 인덱스 찾기
+  const startIndex = jiji.indexOf(startJiji);
+  if (startIndex === -1) {
+    return ['', '', '', ''];
+  }
+  
+  // 각 사주 기둥(시일월년)에 해당하는 12신살 계산
+  const result: string[] = [];
+  
+  for (let i = 0; i < 4; i++) {
+    const currentEarth = sajuColumns[i].earth;
+    const currentIndex = jiji.indexOf(currentEarth);
+    
+    if (currentIndex === -1) {
+      result.push('');
+      continue;
+    }
+    
+    // 시작 지지부터의 거리 계산 (12로 나눈 나머지)
+    let distance = (currentIndex - startIndex + 12) % 12;
+    
+    // 12신살 이름 할당
+    if (distance < sinsalNames.length) {
+      result.push(sinsalNames[distance]);
+    } else {
+      result.push('');
+    }
+  }
+  
+  return result;
+}
+
 export default function SajuTable({ 
   saju, 
   title = "四柱命式", 
