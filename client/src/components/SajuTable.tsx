@@ -781,7 +781,12 @@ export default function SajuTable({
         </div>
 
         {/* 9행: 歲運 년도 (우측에서 좌측) */}
-        <div className="grid grid-cols-12 border-b border-border">
+        <div 
+          className="grid grid-cols-12 border-b border-border"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           {saeunYears.map((year, colIndex) => {
             const correspondingAge = saeunAges[colIndex];
             const isSelectedAge = selectedSaeunAge === correspondingAge;
@@ -796,7 +801,9 @@ export default function SajuTable({
                 }`}
                 style={{ backgroundColor: isSelectedAge ? undefined : '#fde8fa' }}
                 onClick={() => {
-                  handleSaeunAgeClick(correspondingAge);
+                  if (!isDragging.current) {
+                    handleSaeunAgeClick(correspondingAge);
+                  }
                 }}
                 data-testid={`text-saeun-year-${colIndex}`}
               >
