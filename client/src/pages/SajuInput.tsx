@@ -92,6 +92,7 @@ export default function SajuInput() {
       toast({
         title: "그룹 생성 완료",
         description: "새 그룹이 성공적으로 생성되었습니다.",
+        duration: 700
       });
     },
     onError: (error: Error) => {
@@ -99,6 +100,7 @@ export default function SajuInput() {
         title: "그룹 생성 실패",
         description: error.message,
         variant: "destructive",
+        duration: 700
       });
     },
   });
@@ -126,6 +128,7 @@ export default function SajuInput() {
         title: "입력 오류", 
         description: "올바른 생년월일을 입력해주세요. (년: 1900-2100, 월: 1-12, 일: 1-31)",
         variant: "destructive",
+        duration: 700
       });
       return;
     }
@@ -194,6 +197,7 @@ export default function SajuInput() {
           ? "인터넷 연결을 확인하고 다시 시도해주세요."
           : (error instanceof Error ? error.message : "사주 정보 저장 중 오류가 발생했습니다."),
         variant: "destructive",
+        duration: 700
       });
     } finally {
       setIsSubmitting(false);

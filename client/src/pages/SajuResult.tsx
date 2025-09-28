@@ -179,7 +179,8 @@ export default function SajuResult() {
       toast({
         title: "저장 오류",
         description: "사주 정보 저장 중 오류가 발생했습니다.",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 700
       });
     }
   });
