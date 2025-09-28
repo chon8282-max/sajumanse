@@ -575,7 +575,8 @@ export default function SajuTable({
           {daeunAges.map((age, colIndex) => {
             const isCurrentDaeun = currentAge && age <= currentAge && currentAge < age + 10;
             const isFocusedDaeun = focusedDaeun && daeunPeriods.find(p => p.startAge === age && p === focusedDaeun);
-            const isHighlighted = isCurrentDaeun || isFocusedDaeun;
+            // 선택된 대운이 있으면 선택된 대운만 하이라이트, 없으면 현재 대운 하이라이트
+            const isHighlighted = focusedDaeun ? isFocusedDaeun : isCurrentDaeun;
             
             return (
               <div 
