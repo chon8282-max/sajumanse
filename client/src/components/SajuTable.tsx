@@ -330,12 +330,12 @@ export default function SajuTable({
 
   // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측) - 선택된 세운과 연동
   const wolunGanji = useMemo(() => {
-    // 선택된 세운 나이에 해당하는 연도 기준, 없으면 태어난 해 기준
-    let targetYear = birthYear || new Date().getFullYear();
+    // 선택된 세운 나이에 해당하는 연도 기준, 없으면 간지년 기준
+    let targetYear = actualGanjiYear || new Date().getFullYear();
     
-    if (selectedSaeunAge && birthYear) {
-      // 선택된 세운 나이에 해당하는 연도 계산
-      targetYear = birthYear + selectedSaeunAge - 1;
+    if (selectedSaeunAge && actualGanjiYear) {
+      // 선택된 세운 나이에 해당하는 연도 계산 (간지년 기준)
+      targetYear = actualGanjiYear + selectedSaeunAge - 1;
     } else if (focusedDaeun && saeunDisplayData.years.length > 0) {
       // fallback: 현재 표시된 세운의 첫 번째 연도 사용
       targetYear = saeunDisplayData.years[0];
@@ -397,7 +397,7 @@ export default function SajuTable({
     }
 
     return { skies, earths };
-  }, [birthYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years]);
+  }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years]);
 
   // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
   const wolunMonths = useMemo(() => {
