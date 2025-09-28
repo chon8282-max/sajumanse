@@ -282,8 +282,13 @@ export default function SajuTable({
         
         // 갑자년(1984)을 기준으로 해당 연도의 간지 계산
         const yearsSince1984 = yearForThisColumn - 1984;
-        const skyIndex = (yearsSince1984 % 10 + 10) % 10;
-        const earthIndex = (yearsSince1984 % 12 + 12) % 12;
+        
+        // 음수 처리를 위한 올바른 모듈로 연산
+        let skyIndex = yearsSince1984 % 10;
+        if (skyIndex < 0) skyIndex += 10;
+        
+        let earthIndex = yearsSince1984 % 12; 
+        if (earthIndex < 0) earthIndex += 12;
         
         skies.push(heavenlyStems[skyIndex]);
         earths.push(earthlyBranches[earthIndex]);
