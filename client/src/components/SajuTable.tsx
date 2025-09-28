@@ -330,9 +330,27 @@ export default function SajuTable({
     const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
     const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
     
-    // 갑자년(1984)을 기준으로 해당 연도의 천간 계산
-    const yearSkyIndex = (targetYear - 1984) % 10;
-    const targetYearSky = heavenlyStems[yearSkyIndex < 0 ? yearSkyIndex + 10 : yearSkyIndex];
+    // 60갑자 정확한 순서로 해당 연도의 간지 찾기
+    const gapja60 = [
+      "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
+      "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
+      "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑", "庚寅", "辛卯", "壬辰", "癸巳",
+      "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑", "壬寅", "癸卯",
+      "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑",
+      "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥"
+    ];
+    
+    // 1975년 을묘(乙卯)를 기준으로 targetYear의 간지 계산
+    if (!saju.year.sky || !saju.year.earth) {
+      return { skies: Array(13).fill(''), earths: Array(13).fill('') };
+    }
+    
+    const birthGanji = saju.year.sky + saju.year.earth;
+    const birthGanjiIndex = gapja60.indexOf(birthGanji);
+    const yearOffset = targetYear - (birthYear || 1975);
+    const targetGanjiIndex = (birthGanjiIndex + yearOffset) % 60;
+    const targetGanji = gapja60[targetGanjiIndex];
+    const targetYearSky = targetGanji[0];
     
     // 월운 간지 계산 규칙: 세운을 기준으로 우측(13열)에서 좌측(1열)로 진행
     const wolunStartTable: { [key: string]: string } = {
