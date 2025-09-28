@@ -163,13 +163,13 @@ export function calculateSaju(
   if (solarDate) {
     // 서버에서 일시주용 양력 날짜를 제공한 경우 사용
     sajuDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay);
-    if (timeInMinutes >= 1380) { // 23시부터 다음날
+    if (timeInMinutes >= 1411) { // 23시 31분부터 다음날 (자시 시작)
       sajuDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay + 1);
     }
   } else {
     // 기존 방식 (일주 계산을 위한 날짜 조정)
     sajuDate = new Date(calcDate);
-    if (timeInMinutes >= 1380) { // 23시부터 다음날
+    if (timeInMinutes >= 1411) { // 23시 31분부터 다음날 (자시 시작)
       sajuDate = new Date(year, month - 1, day + 1);
     }
   }
@@ -270,33 +270,33 @@ export function calculateSaju(
     dayEarthIndex = dayIndex % 12;
   }
   
-  // 시주 계산 (전통 시간 구간 기준)
+  // 시주 계산 (전통 시간 구간 기준 - 31분부터 시간 변경)
   let hourIndex: number;
   
-  // 31분에 시간이 바뀌도록 수정
-  if ((timeInMinutes >= 1351) || (timeInMinutes >= 0 && timeInMinutes <= 30)) { // 22:31-00:30 (자시)
+  // 23:31-01:30 자시, 01:31-03:30 축시, ... 순서대로 정확한 시간 구분
+  if ((timeInMinutes >= 1411) || (timeInMinutes >= 0 && timeInMinutes <= 90)) { // 23:31-01:30 (자시)
     hourIndex = 0; // 子時
-  } else if (timeInMinutes >= 31 && timeInMinutes <= 150) { // 00:31-02:30 (축시)
+  } else if (timeInMinutes >= 91 && timeInMinutes <= 210) { // 01:31-03:30 (축시)
     hourIndex = 1; // 丑時
-  } else if (timeInMinutes >= 151 && timeInMinutes <= 270) { // 02:31-04:30 (인시)
+  } else if (timeInMinutes >= 211 && timeInMinutes <= 330) { // 03:31-05:30 (인시)
     hourIndex = 2; // 寅時
-  } else if (timeInMinutes >= 271 && timeInMinutes <= 390) { // 04:31-06:30 (묘시)
+  } else if (timeInMinutes >= 331 && timeInMinutes <= 450) { // 05:31-07:30 (묘시)
     hourIndex = 3; // 卯時
-  } else if (timeInMinutes >= 391 && timeInMinutes <= 510) { // 06:31-08:30 (진시)
+  } else if (timeInMinutes >= 451 && timeInMinutes <= 570) { // 07:31-09:30 (진시)
     hourIndex = 4; // 辰時
-  } else if (timeInMinutes >= 511 && timeInMinutes <= 630) { // 08:31-10:30 (사시)
+  } else if (timeInMinutes >= 571 && timeInMinutes <= 690) { // 09:31-11:30 (사시)
     hourIndex = 5; // 巳時
-  } else if (timeInMinutes >= 631 && timeInMinutes <= 750) { // 10:31-12:30 (오시)
+  } else if (timeInMinutes >= 691 && timeInMinutes <= 810) { // 11:31-13:30 (오시)
     hourIndex = 6; // 午時
-  } else if (timeInMinutes >= 751 && timeInMinutes <= 870) { // 12:31-14:30 (미시)
+  } else if (timeInMinutes >= 811 && timeInMinutes <= 930) { // 13:31-15:30 (미시)
     hourIndex = 7; // 未時
-  } else if (timeInMinutes >= 871 && timeInMinutes <= 990) { // 14:31-16:30 (신시)
+  } else if (timeInMinutes >= 931 && timeInMinutes <= 1050) { // 15:31-17:30 (신시)
     hourIndex = 8; // 申時
-  } else if (timeInMinutes >= 991 && timeInMinutes <= 1110) { // 16:31-18:30 (유시)
+  } else if (timeInMinutes >= 1051 && timeInMinutes <= 1170) { // 17:31-19:30 (유시)
     hourIndex = 9; // 酉時
-  } else if (timeInMinutes >= 1111 && timeInMinutes <= 1230) { // 18:31-20:30 (술시)
+  } else if (timeInMinutes >= 1171 && timeInMinutes <= 1290) { // 19:31-21:30 (술시)
     hourIndex = 10; // 戌時
-  } else if (timeInMinutes >= 1231 && timeInMinutes <= 1350) { // 20:31-22:30 (해시)
+  } else if (timeInMinutes >= 1291 && timeInMinutes <= 1410) { // 21:31-23:30 (해시)
     hourIndex = 11; // 亥時
   } else {
     hourIndex = 0; // 기본값: 자시
