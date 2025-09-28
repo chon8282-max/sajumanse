@@ -611,7 +611,9 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
-                  minHeight: '3.5rem'
+                  minHeight: '3.5rem',
+                  padding: '0',
+                  margin: '0'
                 }}
                 data-testid={`text-sky-${index}`}
               >
@@ -619,7 +621,8 @@ export default function SajuTable({
                   <img 
                     src={cheonganImage} 
                     alt={col.sky} 
-                    className="w-12 h-12 object-contain"
+                    className="w-full h-full object-cover"
+                    style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
                   <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.sky}</span>
@@ -650,7 +653,7 @@ export default function SajuTable({
                   <img 
                     src={jijiImage} 
                     alt={col.earth} 
-                    className="w-12 h-12 object-contain"
+                    className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
@@ -727,7 +730,9 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
-                  fontFamily: "'ChosunKim', sans-serif"
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
                 }}
                 data-testid={`text-daeun-sky-${colIndex}`}
               >
@@ -735,7 +740,8 @@ export default function SajuTable({
                   <img 
                     src={cheonganImage} 
                     alt={sky} 
-                    className="w-5 h-5 object-contain"
+                    className="w-full h-full object-cover"
+                    style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
                   <span className="text-gray-800" style={{ fontSize: '22px' }}>{sky}</span>
@@ -765,7 +771,7 @@ export default function SajuTable({
                   <img 
                     src={jijiImage} 
                     alt={earth} 
-                    className="w-5 h-5 object-contain"
+                    className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
@@ -812,7 +818,9 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
-                  fontFamily: "'ChosunKim', sans-serif"
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
                 }}
                 data-testid={`text-saeun-sky-${colIndex}`}
               >
@@ -820,7 +828,8 @@ export default function SajuTable({
                   <img 
                     src={cheonganImage} 
                     alt={sky} 
-                    className="w-4 h-4 object-contain"
+                    className="w-full h-full object-cover"
+                    style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
                   <span className="text-gray-800" style={{ fontSize: '19px' }}>{sky}</span>
@@ -850,7 +859,7 @@ export default function SajuTable({
                   <img 
                     src={jijiImage} 
                     alt={earth} 
-                    className="w-4 h-4 object-contain"
+                    className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
@@ -913,7 +922,9 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
-                  fontFamily: "'ChosunKim', sans-serif"
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
                 }}
                 data-testid={`text-wolun-sky-${colIndex}`}
               >
@@ -921,7 +932,8 @@ export default function SajuTable({
                   <img 
                     src={cheonganImage} 
                     alt={sky} 
-                    className="w-4 h-4 object-contain"
+                    className="w-full h-full object-cover"
+                    style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
                   <span className="text-gray-800" style={{ fontSize: '19px' }}>{sky}</span>
@@ -951,7 +963,7 @@ export default function SajuTable({
                   <img 
                     src={jijiImage} 
                     alt={earth} 
-                    className="w-4 h-4 object-contain"
+                    className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
