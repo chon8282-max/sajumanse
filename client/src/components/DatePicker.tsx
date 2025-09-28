@@ -127,7 +127,7 @@ export default function DatePicker({ onDateSelect, initialDate }: DatePickerProp
 
         {/* 시간 입력 */}
         <div className="space-y-2">
-          <Label htmlFor="hour">시간 (24시간)</Label>
+          <Label htmlFor="hour">時間 (24時間)</Label>
           <Input
             id="hour"
             type="number"

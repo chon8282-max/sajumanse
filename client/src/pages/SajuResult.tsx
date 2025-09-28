@@ -50,7 +50,7 @@ function getPrevGanji(sky: string, earth: string) {
   };
 }
 
-// 개선된 세운 계산 (offset과 window size 지원)
+// 개선된 歲運 계산 (offset과 window size 지원)
 function calculateSaeun(
   birthYear: number, 
   startSky: string, 
@@ -91,7 +91,7 @@ function calculateSaeun(
     }
   }
   
-  // window size만큼 세운 데이터 생성
+  // window size만큼 歲運 데이터 생성
   for (let i = 0; i < windowSize; i++) {
     const currentYear = startYear + i;
     const currentAge = startAge + i;
@@ -217,7 +217,7 @@ export default function SajuResult() {
     };
   }, [sajuData]);
 
-  // 세운 계산
+  // 歲運 계산
   const saeunData = useMemo(() => {
     if (!calculatedData?.record.daySky || !calculatedData?.record.dayEarth || !focusedDaeun) {
       return null;
@@ -236,7 +236,7 @@ export default function SajuResult() {
   useEffect(() => {
     if (calculatedData?.currentDaeun) {
       setFocusedDaeun(calculatedData.currentDaeun);
-      setSaeunOffset(0); // 세운 오프셋도 초기화
+      setSaeunOffset(0); // 歲運 오프셋도 초기화
       // 페이지 로드 시 스크롤을 맨 위로 이동
       window.scrollTo(0, 0);
     }
@@ -245,10 +245,10 @@ export default function SajuResult() {
   // 대운 클릭 핸들러
   const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
     setFocusedDaeun(daeunPeriod);
-    setSaeunOffset(0); // 세운 오프셋 초기화
+    setSaeunOffset(0); // 歲運 오프셋 초기화
   }, []);
 
-  // 세운 클릭 핸들러 
+  // 歲運 클릭 핸들러 
   const handleSaeunClick = useCallback((age: number) => {
     if (!calculatedData?.daeunData.daeunPeriods) return;
     
@@ -263,7 +263,7 @@ export default function SajuResult() {
     }
   }, [calculatedData]);
 
-  // 세운 드래그/스크롤 핸들러
+  // 歲運 드래그/스크롤 핸들러
   const handleSaeunScroll = useCallback((direction: 'left' | 'right') => {
     setSaeunOffset(prev => {
       const step = 5; // 5년씩 이동
@@ -348,7 +348,7 @@ export default function SajuResult() {
   };
   const mainGridCols = getMainGridCols(mainTableCols);
   
-  // 세운 행 그리드 컬럼 수 (사주 4주 라벨 + 실제 세운 윈도우)
+  // 歲運 행 그리드 컬럼 수 (사주 4주 라벨 + 실제 歲運 윈도우)
   const saeunTableCols = saeunData ? 4 + saeunData.years.length : 16;
   const getSaeunGridCols = (cols: number) => {
     if (cols <= 14) return "grid-cols-14";

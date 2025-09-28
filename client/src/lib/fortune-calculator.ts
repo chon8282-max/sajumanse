@@ -57,10 +57,10 @@ export async function calculatePreciseDaeunNumberClient(
 }
 
 /**
- * 세운(년운) 계산
- * @param startYear 세운 시작년도
+ * 歲運(년운) 계산
+ * @param startYear 歲運 시작년도
  * @param targetYear 계산할 년도
- * @returns 세운 정보
+ * @returns 歲運 정보
  */
 export function calculateSaeun(startYear: number, targetYear: number): SaeunInfo {
   // 갑자부터 시작하는 60갑자 순서로 계산
@@ -69,11 +69,9 @@ export function calculateSaeun(startYear: number, targetYear: number): SaeunInfo
   // 간단한 구현 - 실제로는 더 복잡한 계산 필요
   return {
     year: targetYear,
-    ganji: {
-      sky: "甲", // 실제 계산 필요
-      earth: "子" // 실제 계산 필요
-    },
-    description: `${targetYear}년 세운`
+    age: targetYear - startYear + 1, // 간단한 나이 계산
+    sky: "甲", // 실제 계산 필요
+    earth: "子" // 실제 계산 필요
   };
 }
 
@@ -86,13 +84,10 @@ export function calculateSaeun(startYear: number, targetYear: number): SaeunInfo
 export function calculateWolun(year: number, month: number): WolunInfo {
   // 월운 간지 계산 로직 (간단한 구현)
   return {
-    year,
     month,
-    ganji: {
-      sky: "甲", // 실제 계산 필요
-      earth: "寅" // 실제 계산 필요
-    },
-    description: `${year}년 ${month}월 월운`
+    sky: "甲", // 실제 계산 필요
+    earth: "寅", // 실제 계산 필요
+    period: `${year}년 ${month}월`
   };
 }
 

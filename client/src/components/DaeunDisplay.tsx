@@ -35,7 +35,7 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-bold text-center font-tmon">
-          대운 ({daeunData.direction})
+          大運 ({daeunData.direction})
         </CardTitle>
       </CardHeader>
       <CardContent className="p-2">
