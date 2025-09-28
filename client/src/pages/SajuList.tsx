@@ -141,11 +141,6 @@ export default function SajuList() {
     onSuccess: () => {
       // 필터링된 뷰도 동기화되도록 정확한 queryKey로 무효화
       queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
-      toast({
-        title: "삭제 완료",
-        description: "사주가 성공적으로 삭제되었습니다.",
-        duration: 700
-      });
     },
     onError: (error) => {
       console.error('Delete error:', error);
