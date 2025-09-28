@@ -62,11 +62,11 @@ export default function MenuGrid() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3">
         {menuItems.map((item, index) => (
           <Card 
             key={index} 
-            className="aspect-square hover-elevate cursor-pointer"
+            className="aspect-square hover-elevate cursor-pointer border-0 rounded-none"
             onClick={item.onClick}
             data-testid={`menu-${item.title.replace(/\s+/g, '-').toLowerCase()}`}
           >
