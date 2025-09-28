@@ -5,10 +5,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ChosunCentennial 폰트 정의 - 사주 간지용으로만 유지 */
+/* ChosunKim 폰트 정의 - 사주 간지용 */
 @font-face {
-  font-family: 'ChosunCentennial';
-  src: url('/fonts/ChosunCentennial.ttf') format('truetype');
+  font-family: 'ChosunKim';
+  src: url('/fonts/ChosunKim.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -250,9 +250,9 @@
     inset: -1px;
   }
 
-  /* 궁서체 폰트 클래스 */
-  .font-gungseo {
-    font-family: 'ChosunCentennial', serif;
+  /* 한자 폰트 클래스 */
+  .font-ganji {
+    font-family: 'ChosunKim', serif;
   }
 
   /* 한국어 폰트 적용 */

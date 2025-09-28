@@ -71,7 +71,7 @@ export default function CurrentTimeTable({
               className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center text-gray-800 dark:text-gray-100"
               style={{ 
                 backgroundColor: `hsl(var(${getGanjiCSSVariable(col.sky)}))`,
-                fontFamily: "'ChosunCentennial', sans-serif"
+                fontFamily: "'ChosunKim', sans-serif"
               }}
               data-testid={`text-current-sky-${index}`}
             >
@@ -88,7 +88,7 @@ export default function CurrentTimeTable({
               className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center text-gray-800 dark:text-gray-100"
               style={{ 
                 backgroundColor: `hsl(var(${getGanjiCSSVariable(col.earth)}))`,
-                fontFamily: "'ChosunCentennial', sans-serif"
+                fontFamily: "'ChosunKim', sans-serif"
               }}
               data-testid={`text-current-earth-${index}`}
             >

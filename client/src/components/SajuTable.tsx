@@ -608,7 +608,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(col.sky),
                 backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '40px'
               }}
               data-testid={`text-sky-${index}`}
@@ -627,7 +627,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(col.earth),
                 backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '40px'
               }}
               data-testid={`text-earth-${index}`}
@@ -702,7 +702,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '22px'
               }}
               data-testid={`text-daeun-sky-${colIndex}`}
@@ -721,7 +721,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '22px'
               }}
               data-testid={`text-daeun-earth-${colIndex}`}
@@ -766,7 +766,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '19px'
               }}
               data-testid={`text-saeun-sky-${colIndex}`}
@@ -785,7 +785,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '19px'
               }}
               data-testid={`text-saeun-earth-${colIndex}`}
@@ -846,7 +846,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '19px'
               }}
               data-testid={`text-wolun-sky-${colIndex}`}
@@ -865,7 +865,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
+                fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '19px'
               }}
               data-testid={`text-wolun-earth-${colIndex}`}
