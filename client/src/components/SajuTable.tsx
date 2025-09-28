@@ -346,10 +346,11 @@ export default function SajuTable({
     const startEarthIndex = earthlyBranches.indexOf(startEarth);
     
     const skies: string[] = [];
-    const earths: string[] = [];
+    
+    // 15행 지지: 축자해술유신미오사진묘인축 (13개) 고정 - 우측부터 좌측으로
+    const earths = ["丑", "子", "亥", "戌", "酉", "申", "未", "午", "巳", "辰", "卯", "寅", "丑"];
 
-    // 우측에서 좌측으로 배치: 축자해술유신미오사진묘인축 (13개월)
-    // 13열부터 1열까지 순서대로 채우기
+    // 14행 천간만 계산 (13개) - 우측부터 좌측으로 
     for (let i = 0; i < 13; i++) {
       // 월 인덱스 계산: i=0(13열)부터 i=12(1열)까지
       let monthIndex: number;
@@ -362,13 +363,9 @@ export default function SajuTable({
         monthIndex = i - 1; // 0=1월, 1=2월, ..., 11=12월
       }
       
-      // 천간 계산
+      // 천간만 계산
       const skyIndex = (startSkyIndex + monthIndex + 10) % 10;
       skies.push(heavenlyStems[skyIndex]);
-      
-      // 지지 계산
-      const earthIndex = (startEarthIndex + monthIndex + 12) % 12;
-      earths.push(earthlyBranches[earthIndex]);
     }
 
     return { skies, earths };
