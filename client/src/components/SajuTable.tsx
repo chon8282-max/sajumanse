@@ -276,25 +276,29 @@ export default function SajuTable({
       const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
       const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
       
-      // 태어난 해의 간지에서 시작하여 순차적으로 계산
-      const birthYearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
-      const birthYearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
+      // 60갑자 순서 배열
+      const gapja60 = [
+        "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
+        "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
+        "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑", "庚寅", "辛卯", "壬辰", "癸巳",
+        "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑", "壬寅", "癸卯",
+        "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑",
+        "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥"
+      ];
+      
+      // 태어난 해의 간지 찾기
+      const birthGanji = saju.year.sky + saju.year.earth;
+      const birthGanjiIndex = gapja60.indexOf(birthGanji);
       
       for (let i = 0; i < 12; i++) {
         const ageForThisColumn = startAge + 11 - i;
         
-        // 태어난 해(1세)부터 현재 나이까지의 간지 계산
-        // 나이 - 1 = 태어난 해부터의 연도 차이
-        const yearOffset = ageForThisColumn - 1;
+        // 60갑자 무한 반복으로 계산 (나이 - 1 = 년도 오프셋)
+        const ganjiIndex = (birthGanjiIndex + ageForThisColumn - 1) % 60;
+        const ganji = gapja60[ganjiIndex];
         
-        const skyIndex = (birthYearSkyIndex + yearOffset) % 10;
-        const earthIndex = (birthYearEarthIndex + yearOffset) % 12;
-        
-        const skyChar = heavenlyStems[skyIndex];
-        const earthChar = earthlyBranches[earthIndex];
-        
-        skies.push(skyChar);
-        earths.push(earthChar);
+        skies.push(ganji[0]); // 천간
+        earths.push(ganji[1]); // 지지
       }
     } else {
       skies = Array(12).fill('');
