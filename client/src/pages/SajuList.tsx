@@ -49,6 +49,10 @@ export default function SajuList() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   
+  // 페이지네이션 상태 (성능 최적화)
+  const [page, setPage] = useState(1);
+  const pageSize = 20; // 한 번에 20개씩 로드
+  
   // 그룹 관리 모달 상태
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
@@ -63,6 +67,11 @@ export default function SajuList() {
     
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // 검색/필터 변경 시 페이지 리셋
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchQuery, selectedGroupId]);
 
   // 그룹 목록 조회
   const { data: groupsList } = useQuery<ApiResponse<Group[]>, Error, Group[]>({
@@ -85,18 +94,19 @@ export default function SajuList() {
     select: (response: ApiResponse<Group[]>) => response?.data || [],
   });
 
-  // 저장된 사주 목록 조회 (서버 사이드 검색)
-  const { data: sajuList, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>, Error, SajuRecord[]>({
-    queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId],
+  // 저장된 사주 목록 조회 (페이지네이션 + 서버 사이드 검색)
+  const { data: sajuResponse, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>>({
+    queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId, page],
     queryFn: async () => {
       const params = new URLSearchParams();
+      params.set('limit', (page * pageSize).toString()); // 누적 로딩
       if (debouncedSearchQuery.trim()) {
         params.set('search', debouncedSearchQuery.trim());
       }
       if (selectedGroupId && selectedGroupId !== 'all') {
         params.set('groupId', selectedGroupId);
       }
-      const url = `/api/saju-records${params.toString() ? '?' + params.toString() : ''}`;
+      const url = `/api/saju-records?${params.toString()}`;
       const response = await apiRequest('GET', url);
       
       // 에러 상태 처리
@@ -111,8 +121,12 @@ export default function SajuList() {
       
       return responseJson;
     },
-    select: (response: ApiResponse<SajuRecord[]>) => response?.data || [],
+    staleTime: 1000 * 60 * 5, // 5분간 캐시 유지 (성능 향상)
   });
+
+  // 사주 목록과 더 보기 가능 여부 계산  
+  const sajuList = sajuResponse?.data || [];
+  const hasMore = sajuList.length > (page - 1) * pageSize && sajuList.length === page * pageSize;
 
   // 사주 삭제 뮤테이션
   const deleteMutation = useMutation({
@@ -600,6 +614,20 @@ export default function SajuList() {
                     })}
                   </TableBody>
                 </Table>
+                
+                {/* 더 보기 버튼 (성능 최적화) */}
+                {hasMore && !isLoading && (
+                  <div className="flex justify-center p-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setPage(prev => prev + 1)}
+                      disabled={isLoading}
+                      data-testid="button-load-more"
+                    >
+                      더 보기 ({sajuList.length}개 표시됨)
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </>
