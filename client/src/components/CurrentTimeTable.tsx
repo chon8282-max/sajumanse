@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo } from "@shared/schema";
-import { getCheonganImage, isCheongan } from "@/lib/cheongan-images";
+import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 
 interface CurrentTimeTableProps {
   saju: SajuInfo;
@@ -93,19 +93,33 @@ export default function CurrentTimeTable({
 
         {/* 2행: 지지 */}
         <div className="grid grid-cols-4">
-          {sajuColumns.map((col, index) => (
-            <div 
-              key={`earth-${index}`} 
-              className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center text-gray-800"
-              style={{ 
-                backgroundColor: 'white',
-                fontFamily: "'ChosunKim', sans-serif"
-              }}
-              data-testid={`text-current-earth-${index}`}
-            >
-              {col.earth}
-            </div>
-          ))}
+          {sajuColumns.map((col, index) => {
+            const jijiImage = getJijiImage(col.earth);
+            return (
+              <div 
+                key={`earth-${index}`} 
+                className="text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
+                }}
+                data-testid={`text-current-earth-${index}`}
+              >
+                {jijiImage ? (
+                  <img 
+                    src={jijiImage} 
+                    alt={col.earth} 
+                    className="w-6 h-6 object-contain"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                ) : (
+                  <span className="text-gray-800">{col.earth}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

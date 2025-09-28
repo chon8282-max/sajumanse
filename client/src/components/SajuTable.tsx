@@ -5,7 +5,7 @@ import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/l
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
-import { getCheonganImage, isCheongan } from "@/lib/cheongan-images";
+import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -631,21 +631,34 @@ export default function SajuTable({
 
         {/* 3행: 지지 */}
         <div className="grid grid-cols-4 border-b border-border">
-          {sajuColumns.map((col, index) => (
-            <div 
-              key={`earth-${index}`} 
-              className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center text-gray-800"
-              style={{ 
-                backgroundColor: 'white',
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '40px',
-                minHeight: '3.5rem'
-              }}
-              data-testid={`text-earth-${index}`}
-            >
-              {col.earth}
-            </div>
-          ))}
+          {sajuColumns.map((col, index) => {
+            const jijiImage = getJijiImage(col.earth);
+            return (
+              <div 
+                key={`earth-${index}`} 
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif",
+                  minHeight: '3.5rem',
+                  padding: '0',
+                  margin: '0'
+                }}
+                data-testid={`text-earth-${index}`}
+              >
+                {jijiImage ? (
+                  <img 
+                    src={jijiImage} 
+                    alt={col.earth} 
+                    className="w-12 h-12 object-contain"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 4행: 지지 육친 */}
@@ -734,20 +747,33 @@ export default function SajuTable({
 
         {/* 8행: 대운 지지 */}
         <div className="grid grid-cols-10 border-b border-border">
-          {daeunGanji.earths.map((earth, colIndex) => (
-            <div 
-              key={`daeun-earth-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-gray-800"
-              style={{ 
-                backgroundColor: 'white',
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '22px'
-              }}
-              data-testid={`text-daeun-earth-${colIndex}`}
-            >
-              {earth}
-            </div>
-          ))}
+          {daeunGanji.earths.map((earth, colIndex) => {
+            const jijiImage = getJijiImage(earth);
+            return (
+              <div 
+                key={`daeun-earth-${colIndex}`}
+                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
+                }}
+                data-testid={`text-daeun-earth-${colIndex}`}
+              >
+                {jijiImage ? (
+                  <img 
+                    src={jijiImage} 
+                    alt={earth} 
+                    className="w-5 h-5 object-contain"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '22px' }}>{earth}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 9행: 歲運 년도 (우측에서 좌측) */}
@@ -806,20 +832,33 @@ export default function SajuTable({
 
         {/* 11행: 歲運 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {saeunGanji.earths.map((earth, colIndex) => (
-            <div 
-              key={`saeun-earth-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-gray-800"
-              style={{ 
-                backgroundColor: 'white',
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '19px'
-              }}
-              data-testid={`text-saeun-earth-${colIndex}`}
-            >
-              {earth}
-            </div>
-          ))}
+          {saeunGanji.earths.map((earth, colIndex) => {
+            const jijiImage = getJijiImage(earth);
+            return (
+              <div 
+                key={`saeun-earth-${colIndex}`}
+                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
+                }}
+                data-testid={`text-saeun-earth-${colIndex}`}
+              >
+                {jijiImage ? (
+                  <img 
+                    src={jijiImage} 
+                    alt={earth} 
+                    className="w-4 h-4 object-contain"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{earth}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 12행: 歲運 나이 (우측에서 좌측) */}
@@ -894,20 +933,33 @@ export default function SajuTable({
 
         {/* 15행: 월운 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
-          {wolunGanji.earths.map((earth, colIndex) => (
-            <div 
-              key={`wolun-earth-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-gray-800"
-              style={{ 
-                backgroundColor: 'white',
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '19px'
-              }}
-              data-testid={`text-wolun-earth-${colIndex}`}
-            >
-              {earth}
-            </div>
-          ))}
+          {wolunGanji.earths.map((earth, colIndex) => {
+            const jijiImage = getJijiImage(earth);
+            return (
+              <div 
+                key={`wolun-earth-${colIndex}`}
+                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
+                }}
+                data-testid={`text-wolun-earth-${colIndex}`}
+              >
+                {jijiImage ? (
+                  <img 
+                    src={jijiImage} 
+                    alt={earth} 
+                    className="w-4 h-4 object-contain"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{earth}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 16행: 월운 월 순서 (우측에서 좌측) */}
