@@ -291,44 +291,49 @@ export default function SajuTable({
     const yearSkyIndex = (targetYear - 1984) % 10;
     const targetYearSky = heavenlyStems[yearSkyIndex < 0 ? yearSkyIndex + 10 : yearSkyIndex];
     
-    // 월운 테이블 - 1월부터 12월까지 (1월=축월=丑부터 시작)
-    const wolunTable: { [key: string]: string[] } = {
-      "甲": ["丁丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉", "甲戌", "乙亥", "丙子"], // 갑년 (1월=丁丑)
-      "乙": ["己丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未", "甲申", "乙酉", "丙戌", "丁亥", "戊子"], // 을년 (1월=己丑)
-      "丙": ["辛丑", "庚寅", "辛卯", "壬辰", "癸巳", "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子"], // 병년 (1월=辛丑)
-      "丁": ["癸丑", "壬寅", "癸卯", "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子"], // 정년 (1월=癸丑)
-      "戊": ["乙丑", "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥", "甲子"], // 무년 (1월=乙丑)
-      "己": ["丁丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉", "甲戌", "乙亥", "丙子"], // 기년 (갑년과 동일)
-      "庚": ["己丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未", "甲申", "乙酉", "丙戌", "丁亥", "戊子"], // 경년 (을년과 동일)
-      "辛": ["辛丑", "庚寅", "辛卯", "壬辰", "癸巳", "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子"], // 신년 (병년과 동일)
-      "壬": ["癸丑", "壬寅", "癸卯", "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子"], // 임년 (정년과 동일)
-      "癸": ["乙丑", "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥", "甲子"]  // 계년 (무년과 동일)
+    // 월운 계산 규칙: 갑기년(을축,병인), 을경년(무인,기묘), 병신년(경인,신묘), 정임년(임인,계묘), 무계년(갑인,을묘)
+    // 을경년은 무인월부터 시작
+    const wolunStartTable: { [key: string]: string } = {
+      "甲": "乙丑", // 갑년: 을축월부터
+      "乙": "戊寅", // 을년: 무인월부터 
+      "丙": "庚寅", // 병년: 경인월부터
+      "丁": "壬寅", // 정년: 임인월부터
+      "戊": "甲寅", // 무년: 갑인월부터
+      "己": "乙丑", // 기년: 을축월부터 (갑년과 동일)
+      "庚": "戊寅", // 경년: 무인월부터 (을년과 동일)
+      "辛": "庚寅", // 신년: 경인월부터 (병년과 동일)
+      "壬": "壬寅", // 임년: 임인월부터 (정년과 동일)
+      "癸": "甲寅"  // 계년: 갑인월부터 (무년과 동일)
     };
     
-    const targetYearSkyIdx = heavenlyStems.indexOf(targetYearSky);
-    const monthGanjiList = wolunTable[targetYearSky] || wolunTable["甲"]; // 기본값으로 갑년 사용
+    const startGanji = wolunStartTable[targetYearSky] || "乙丑";
+    const startSky = startGanji[0];
+    const startEarth = startGanji[1];
+    
+    const startSkyIndex = heavenlyStems.indexOf(startSky);
+    const startEarthIndex = earthlyBranches.indexOf(startEarth);
     
     const skies: string[] = [];
     const earths: string[] = [];
 
     // 13개월 (우측에서 좌측으로 배치)
-    // 13열부터 축(丑), 12열 인(寅), 11열 묘(卯)... 순서
+    // 13열: 전해 축월, 12열: 올해 인월, 11열: 올해 묘월, ..., 1열: 올해 자월
     for (let i = 0; i < 13; i++) {
-      let monthIndex: number;
+      let monthOffset: number;
       
-      // 13열(i=0)은 1월(축월), 12열(i=1)은 2월(인월), 11열(i=2)은 3월(묘월)...
-      // 1열(i=12)은 12월(자월) + 윤달로 13월
-      if (i === 12) {
-        // 1열 (좌측 마지막) = 윤달 또는 12월 반복
-        monthIndex = 11; // 12월 인덱스 (자월)
+      if (i === 0) {
+        // 13열: 전해 축월 (축월 시작 전 달)
+        monthOffset = -1;
       } else {
-        // 나머지는 1월부터 12월까지 순서대로
-        monthIndex = i; // 0=1월, 1=2월, 2=3월, ... 11=12월
+        // 12열부터 1열까지: 인월부터 자월까지 (1월~12월)
+        monthOffset = i - 1; // 0=인월, 1=묘월, ..., 11=자월
       }
       
-      const ganji = monthGanjiList[monthIndex];
-      skies.push(ganji[0]); // 천간
-      earths.push(ganji[1]); // 지지
+      const skyIndex = (startSkyIndex + monthOffset + 10) % 10;
+      const earthIndex = (startEarthIndex + monthOffset + 12) % 12;
+      
+      skies.push(heavenlyStems[skyIndex]);
+      earths.push(earthlyBranches[earthIndex]);
     }
 
     return { skies, earths };
