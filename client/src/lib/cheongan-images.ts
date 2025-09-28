@@ -7,8 +7,8 @@ import byeongImage from "@assets/병_1759096342036.jpg";
 import jeongImage from "@assets/정_1759096342036.jpg";
 import muImage from "@assets/무_1759096342037.jpg";
 import giImage from "@assets/기_1759096342037.jpg";
-import gyeongImage from "@assets/경_1759096342038.jpg";
-import sinImage from "@assets/辛_1759096342038.jpg";
+import gyeongImage from "@assets/경_1759099520975.jpg";
+import sinImage from "@assets/辛_1759099520975.jpg";
 import imImage from "@assets/임_1759096342038.jpg";
 import gyeImage from "@assets/계_1759096342036.jpg";
 
@@ -21,9 +21,9 @@ import jinImage from "@assets/진_1759096365545.jpg";
 import saImage from "@assets/사_1759096365546.jpg";
 import oImage from "@assets/오_1759096365546.jpg";
 import miImage from "@assets/미_1759096365547.jpg";
-import sinJijiImage from "@assets/申_1759096365547.jpg";
-import yuImage from "@assets/유_1759096365547.jpg";
-import sulImage from "@assets/술_1759096365548.jpg";
+import sinJijiImage from "@assets/申_1759099520976.jpg";
+import yuImage from "@assets/유_1759099520976.jpg";
+import sulImage from "@assets/술_1759099520974.jpg";
 import haeImage from "@assets/해_1759096365548.jpg";
 
 // 천간 이미지 매핑
