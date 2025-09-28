@@ -277,9 +277,16 @@ export default function SajuTable({
       const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
       
       for (let i = 0; i < 12; i++) {
-        const yearOffset = actualStartAge + (11 - i) - 1;
-        skies.push(heavenlyStems[(yearSkyIndex + yearOffset) % 10]);
-        earths.push(earthlyBranches[(yearEarthIndex + yearOffset) % 12]);
+        const ageForThisColumn = startAge + 11 - i;
+        const yearForThisColumn = birthYear + (ageForThisColumn - 1);
+        
+        // 갑자년(1984)을 기준으로 해당 연도의 간지 계산
+        const yearsSince1984 = yearForThisColumn - 1984;
+        const skyIndex = (yearsSince1984 % 10 + 10) % 10;
+        const earthIndex = (yearsSince1984 % 12 + 12) % 12;
+        
+        skies.push(heavenlyStems[skyIndex]);
+        earths.push(earthlyBranches[earthIndex]);
       }
     } else {
       skies = Array(12).fill('');
