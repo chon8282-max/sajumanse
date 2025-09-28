@@ -361,13 +361,13 @@ export default function SajuResult() {
   return (
     <div className="min-h-screen bg-background p-2">
       {/* 헤더 */}
-      <div className="flex items-center gap-4 mb-2">
+      <div className="flex items-center gap-2 mb-2">
         <Button 
           variant="ghost" 
           size="sm"
           onClick={handleBack}
           data-testid="button-back-manseryeok"
-          className="hover-elevate active-elevate-2 flex items-center gap-2"
+          className="hover-elevate active-elevate-2 flex items-center gap-2 ml-0 pl-1"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="text-sm">뒤로</span>
@@ -381,7 +381,7 @@ export default function SajuResult() {
             size="sm"
             onClick={handleEdit}
             data-testid="button-edit"
-            className="hover-elevate active-elevate-2 flex items-center gap-2"
+            className="hover-elevate active-elevate-2 flex items-center gap-1 min-h-6 px-2 py-0.5 text-xs"
           >
             <Edit className="h-4 w-4" />
             <span className="text-sm">수정</span>
@@ -392,7 +392,7 @@ export default function SajuResult() {
             onClick={handleSave}
             disabled={saveMutation.isPending}
             data-testid="button-save"
-            className="hover-elevate active-elevate-2 flex items-center gap-2"
+            className="hover-elevate active-elevate-2 flex items-center gap-1 min-h-6 px-2 py-0.5 text-xs"
           >
             <Save className="h-4 w-4" />
             <span className="text-sm">{saveMutation.isPending ? "저장중..." : "저장"}</span>
