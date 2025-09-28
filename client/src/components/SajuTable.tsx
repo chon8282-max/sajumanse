@@ -3,7 +3,7 @@ import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateDaeunNumber, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
-import { useMemo, useState, useRef, useCallback } from "react";
+import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 
 interface SajuTableProps {
@@ -92,6 +92,24 @@ export default function SajuTable({
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
+  
+  // 선택된 세운 나이 상태 (초기값: 현재 나이)
+  const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
+  
+  // currentAge가 변경되면 selectedSaeunAge도 업데이트
+  useEffect(() => {
+    if (currentAge && !selectedSaeunAge) {
+      setSelectedSaeunAge(currentAge);
+    }
+  }, [currentAge, selectedSaeunAge]);
+  
+  // 세운 클릭 핸들러 (내부용)
+  const handleSaeunAgeClick = useCallback((age: number) => {
+    setSelectedSaeunAge(age);
+    if (onSaeunClick) {
+      onSaeunClick(age);
+    }
+  }, [onSaeunClick]);
   
   // 터치 드래그 상태 관리
   const touchStartX = useRef<number>(0);
@@ -274,12 +292,16 @@ export default function SajuTable({
   const saeunAges = saeunDisplayData.ages;
   const saeunGanji = { skies: saeunDisplayData.skies, earths: saeunDisplayData.earths };
 
-  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측) - 세운과 연동
+  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측) - 선택된 세운과 연동
   const wolunGanji = useMemo(() => {
-    // 세운이 활성화되어 있으면 해당 연도 기준, 없으면 태어난 해 기준
+    // 선택된 세운 나이에 해당하는 연도 기준, 없으면 태어난 해 기준
     let targetYear = birthYear || new Date().getFullYear();
-    if (focusedDaeun && saeunDisplayData.years.length > 0) {
-      // 현재 표시된 세운의 첫 번째 연도 사용
+    
+    if (selectedSaeunAge && birthYear) {
+      // 선택된 세운 나이에 해당하는 연도 계산
+      targetYear = birthYear + selectedSaeunAge - 1;
+    } else if (focusedDaeun && saeunDisplayData.years.length > 0) {
+      // fallback: 현재 표시된 세운의 첫 번째 연도 사용
       targetYear = saeunDisplayData.years[0];
     }
     
@@ -337,7 +359,7 @@ export default function SajuTable({
     }
 
     return { skies, earths };
-  }, [birthYear, focusedDaeun, saeunDisplayData.years]);
+  }, [birthYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years]);
 
   // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
   const wolunMonths = useMemo(() => {
@@ -675,21 +697,19 @@ export default function SajuTable({
         <div className="grid grid-cols-12 border-b border-border">
           {saeunYears.map((year, colIndex) => {
             const correspondingAge = saeunAges[colIndex];
-            const isCurrentAge = currentAge === correspondingAge;
+            const isSelectedAge = selectedSaeunAge === correspondingAge;
             
             return (
               <div 
                 key={`saeun-year-${colIndex}`}
                 className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
-                  isCurrentAge 
+                  isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-white dark:bg-gray-800'
                 }`}
-                style={{ backgroundColor: isCurrentAge ? undefined : '#fde8fa' }}
+                style={{ backgroundColor: isSelectedAge ? undefined : '#fde8fa' }}
                 onClick={() => {
-                  if (onSaeunClick) {
-                    onSaeunClick(correspondingAge);
-                  }
+                  handleSaeunAgeClick(correspondingAge);
                 }}
                 data-testid={`text-saeun-year-${colIndex}`}
               >
@@ -745,19 +765,19 @@ export default function SajuTable({
           onTouchEnd={handleTouchEnd}
         >
           {saeunAges.map((age, colIndex) => {
-            const isCurrentAge = currentAge === age;
+            const isSelectedAge = selectedSaeunAge === age;
             
             return (
               <div 
                 key={`saeun-age-${colIndex}`}
                 className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
-                  isCurrentAge 
+                  isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-white dark:bg-gray-800'
                 }`}
                 onClick={() => {
-                  if (!isDragging.current && onSaeunClick) {
-                    onSaeunClick(age);
+                  if (!isDragging.current) {
+                    handleSaeunAgeClick(age);
                   }
                 }}
                 data-testid={`text-saeun-age-${colIndex}`}
