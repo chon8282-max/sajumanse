@@ -511,11 +511,7 @@ export default function SajuTable({
               className="p-3 text-center font-bold border-r border-border last:border-r-0"
               style={{ 
                 color: getGanjiTextColor(col.sky),
-                backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                fontSize: '40px',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(col.sky)
               }}
               data-testid={`text-sky-${index}`}
             >
@@ -532,11 +528,7 @@ export default function SajuTable({
               className="p-3 text-center font-bold border-r border-border last:border-r-0"
               style={{ 
                 color: getGanjiTextColor(col.earth),
-                backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                fontSize: '40px',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(col.earth)
               }}
               data-testid={`text-earth-${index}`}
             >
@@ -565,10 +557,7 @@ export default function SajuTable({
               key={`jijanggan-${index}`} 
               className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
+                color: '#131313'
               }}
               data-testid={`text-jijanggan-${index}`}
             >
@@ -614,11 +603,7 @@ export default function SajuTable({
               className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(sky),
-                backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                fontSize: '22px',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(sky)
               }}
               data-testid={`text-daeun-sky-${colIndex}`}
             >
@@ -635,11 +620,7 @@ export default function SajuTable({
               className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(earth),
-                backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                fontSize: '22px',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(earth)
               }}
               data-testid={`text-daeun-earth-${colIndex}`}
             >
@@ -670,11 +651,7 @@ export default function SajuTable({
               className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(sky),
-                backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                fontSize: '19px',
-                textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(sky)
               }}
               data-testid={`text-saeun-sky-${colIndex}`}
             >
@@ -691,11 +668,7 @@ export default function SajuTable({
               className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(earth),
-                backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                fontSize: '19px',
-                textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(earth)
               }}
               data-testid={`text-saeun-earth-${colIndex}`}
             >
@@ -754,10 +727,7 @@ export default function SajuTable({
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(sky),
-                backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(sky)
               }}
               data-testid={`text-wolun-sky-${colIndex}`}
             >
@@ -774,10 +744,7 @@ export default function SajuTable({
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(earth),
-                backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif",
-                fontWeight: '900',
-                textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
+                backgroundColor: getGanjiBackgroundColor(earth)
               }}
               data-testid={`text-wolun-earth-${colIndex}`}
             >
