@@ -270,41 +270,59 @@ export default function SajuTable({
   const saeunAges = saeunDisplayData.ages;
   const saeunGanji = { skies: saeunDisplayData.skies, earths: saeunDisplayData.earths };
 
-  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측)
+  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측) - 세운과 연동
   const wolunGanji = useMemo(() => {
-    if (!saju.year.sky) {
-      return { skies: Array(13).fill(''), earths: Array(13).fill('') };
+    // 세운이 활성화되어 있으면 해당 연도 기준, 없으면 태어난 해 기준
+    let targetYear = birthYear || new Date().getFullYear();
+    if (focusedDaeun && saeunDisplayData.years.length > 0) {
+      // 현재 표시된 세운의 첫 번째 연도 사용
+      targetYear = saeunDisplayData.years[0];
     }
-
-    // 천간 배열
+    
+    // 해당 연도의 천간 찾기
     const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
-    // 지지 배열 (축부터 시작)
-    const monthlyBranches = ["丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥", "子"];
+    const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
     
-    // 년간에 따른 정월의 천간 결정
-    const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
-    let firstMonthSkyIndex = 0;
+    // 갑자년(1984)을 기준으로 해당 연도의 천간 계산
+    const yearSkyIndex = (targetYear - 1984) % 10;
+    const targetYearSky = heavenlyStems[yearSkyIndex < 0 ? yearSkyIndex + 10 : yearSkyIndex];
     
-    // 갑기년: 정월은 丙 (인덱스 2)
-    // 을경년: 정월은 戊 (인덱스 4) 
-    // 병신년: 정월은 庚 (인덱스 6)
-    // 정임년: 정월은 壬 (인덱스 8)
-    // 무계년: 정월은 甲 (인덱스 0)
-    const monthStartMap = [2, 4, 6, 8, 0, 2, 4, 6, 8, 0]; // 甲부터 癸까지
-    firstMonthSkyIndex = monthStartMap[yearSkyIndex];
+    // 월운 테이블 (사용자 제공 이미지 기반) - 각 연간별 월운 간지
+    const wolunTable: { [key: string]: string[] } = {
+      "甲": ["丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉", "甲戌", "乙亥", "丙子", "丁丑"], // 갑년
+      "乙": ["戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未", "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑"], // 을년  
+      "丙": ["庚寅", "辛卯", "壬辰", "癸巳", "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑"], // 병년
+      "丁": ["壬寅", "癸卯", "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑"], // 정년
+      "戊": ["甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥", "甲子", "乙丑"], // 무년
+      "己": ["丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉", "甲戌", "乙亥", "丙子", "丁丑"], // 기년 (갑년과 동일)
+      "庚": ["戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未", "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑"], // 경년 (을년과 동일)
+      "辛": ["庚寅", "辛卯", "壬辰", "癸巳", "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑"], // 신년 (병년과 동일)
+      "壬": ["壬寅", "癸卯", "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑"], // 임년 (정년과 동일)
+      "癸": ["甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥", "甲子", "乙丑"]  // 계년 (무년과 동일)
+    };
+    
+    const targetYearSkyIdx = heavenlyStems.indexOf(targetYearSky);
+    const monthGanjiList = wolunTable[targetYearSky] || wolunTable["甲"]; // 기본값으로 갑년 사용
     
     const skies: string[] = [];
     const earths: string[] = [];
 
-    // 13개월 (12개월 + 윤달 고려) 우측에서 좌측으로
+    // 13개월 (우측에서 좌측으로: 13월부터 1월까지)
     for (let i = 0; i < 13; i++) {
-      const monthOffset = 12 - i; // 우측에서 좌측 순서
-      skies.push(heavenlyStems[(firstMonthSkyIndex + monthOffset) % 10]);
-      earths.push(monthlyBranches[monthOffset % 12]);
+      const monthIndex = 12 - i; // 우측에서 좌측 순서로
+      let actualMonthIndex = monthIndex - 1; // 0부터 시작하는 인덱스
+      
+      if (actualMonthIndex < 0) {
+        actualMonthIndex = 0; // 1월을 의미
+      }
+      
+      const ganji = monthGanjiList[actualMonthIndex];
+      skies.push(ganji[0]); // 천간
+      earths.push(ganji[1]); // 지지
     }
 
     return { skies, earths };
-  }, [saju.year.sky]);
+  }, [birthYear, focusedDaeun, saeunDisplayData.years]);
 
   // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
   const wolunMonths = useMemo(() => {
