@@ -290,8 +290,25 @@ export default function SajuTable({
         let earthIndex = yearsSince1984 % 12; 
         if (earthIndex < 0) earthIndex += 12;
         
-        skies.push(heavenlyStems[skyIndex]);
-        earths.push(earthlyBranches[earthIndex]);
+        const skyChar = heavenlyStems[skyIndex];
+        const earthChar = earthlyBranches[earthIndex];
+        
+        // 김재완 51세 디버깅
+        if (ageForThisColumn === 51 && birthYear === 1975) {
+          console.log(`김재완 51세 세운 계산:`, {
+            age: ageForThisColumn,
+            year: yearForThisColumn,
+            yearsSince1984,
+            skyIndex,
+            earthIndex,
+            sky: skyChar,
+            earth: earthChar,
+            ganji: skyChar + earthChar
+          });
+        }
+        
+        skies.push(skyChar);
+        earths.push(earthChar);
       }
     } else {
       skies = Array(12).fill('');
