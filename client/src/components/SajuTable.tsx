@@ -348,33 +348,30 @@ export default function SajuTable({
     const startSkyIndex = heavenlyStems.indexOf(startSky);
     const startEarthIndex = earthlyBranches.indexOf(startEarth);
     
-    // 우측에서 좌측으로 배치: 축자해술유신미오사진묘인축
-    // 지지 순서 (우측에서 좌측): 13열=축, 12열=자, 11열=해, ..., 2열=인, 1열=축
-    const earthOrder = ["丑", "子", "亥", "戌", "酉", "申", "未", "午", "巳", "辰", "卯", "寅", "丑"];
-    
     const skies: string[] = [];
     const earths: string[] = [];
 
-    // 13개월 (우측에서 좌측으로 배치)
+    // 우측에서 좌측으로 배치: 축자해술유신미오사진묘인축 (13개월)
+    // 13열부터 1열까지 순서대로 채우기
     for (let i = 0; i < 13; i++) {
-      // 지지는 고정 순서 사용
-      const earthChar = earthOrder[i];
-      earths.push(earthChar);
+      // 월 인덱스 계산: i=0(13열)부터 i=12(1열)까지
+      let monthIndex: number;
       
-      // 천간은 해당 연도와 월에 맞게 계산
-      const earthIndex = earthlyBranches.indexOf(earthChar);
-      const startEarthIdx = earthlyBranches.indexOf(startEarth);
-      
-      // 시작 지지로부터의 오프셋 계산
-      let monthOffset = (earthIndex - startEarthIdx + 12) % 12;
-      
-      // 13열(i=0)과 1열(i=12)이 모두 축이므로, 1열은 전해 축월이 되도록 조정
-      if (i === 12) {
-        monthOffset = monthOffset - 12; // 1년 전으로 설정
+      if (i === 0) {
+        // 13열: 전해 축월 (시작월 이전)
+        monthIndex = -1;
+      } else {
+        // 12열~1열: 올해 1월~12월에 해당 (축월=1월부터 시작)
+        monthIndex = i - 1; // 0=1월, 1=2월, ..., 11=12월
       }
       
-      const skyIndex = (startSkyIndex + monthOffset + 10) % 10;
+      // 천간 계산
+      const skyIndex = (startSkyIndex + monthIndex + 10) % 10;
       skies.push(heavenlyStems[skyIndex]);
+      
+      // 지지 계산
+      const earthIndex = (startEarthIndex + monthIndex + 12) % 12;
+      earths.push(earthlyBranches[earthIndex]);
     }
 
     return { skies, earths };
