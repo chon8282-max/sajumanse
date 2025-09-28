@@ -363,31 +363,57 @@ export default function SajuTable({
   // 간지별 배경색 매핑
   function getGanjiBackgroundColor(character: string): string {
     const ganjiColorMap: Record<string, string> = {
-      // 갑을인묘 = dcfce7 (한글)
-      '갑': '#dcfce7', '을': '#dcfce7', '인': '#dcfce7', '묘': '#dcfce7',
-      // 갑을인묘 = dcfce7 (한자)
-      '甲': '#dcfce7', '乙': '#dcfce7', '寅': '#dcfce7', '卯': '#dcfce7',
-      // 병정사오 = fee2e2 (한글)
-      '병': '#fee2e2', '정': '#fee2e2', '사': '#fee2e2', '오': '#fee2e2',
-      // 병정사오 = fee2e2 (한자)
-      '丙': '#fee2e2', '丁': '#fee2e2', '巳': '#fee2e2', '午': '#fee2e2',
-      // 무기진미술축 = fbfce6 (한글)
-      '무': '#fbfce6', '기': '#fbfce6', '진': '#fbfce6', '미': '#fbfce6', '술': '#fbfce6', '축': '#fbfce6',
-      // 무기진미술축 = fbfce6 (한자)
-      '戊': '#fbfce6', '己': '#fbfce6', '辰': '#fbfce6', '未': '#fbfce6', '戌': '#fbfce6', '丑': '#fbfce6',
-      // 경신유 = ffffff (한글)
+      // 갑을인묘 = 206000 (목) - 한글
+      '갑': '#206000', '을': '#206000', '인': '#206000', '묘': '#206000',
+      // 갑을인묘 = 206000 (목) - 한자
+      '甲': '#206000', '乙': '#206000', '寅': '#206000', '卯': '#206000',
+      // 병정사오 = ff0000 (화) - 한글
+      '병': '#ff0000', '정': '#ff0000', '사': '#ff0000', '오': '#ff0000',
+      // 병정사오 = ff0000 (화) - 한자
+      '丙': '#ff0000', '丁': '#ff0000', '巳': '#ff0000', '午': '#ff0000',
+      // 무기진미술축 = ffff00 (토) - 한글
+      '무': '#ffff00', '기': '#ffff00', '진': '#ffff00', '미': '#ffff00', '술': '#ffff00', '축': '#ffff00',
+      // 무기진미술축 = ffff00 (토) - 한자
+      '戊': '#ffff00', '己': '#ffff00', '辰': '#ffff00', '未': '#ffff00', '戌': '#ffff00', '丑': '#ffff00',
+      // 경신신유 = ffffff (금) - 한글
       '경': '#ffffff', '신': '#ffffff', '유': '#ffffff',
-      // 경신유 = ffffff (한자)
-      '庚': '#ffffff', '辛': '#ffffff', '酉': '#ffffff',
-      // 임계해자 = e7e7e6 (한글)
-      '임': '#e7e7e6', '계': '#e7e7e6', '해': '#e7e7e6', '자': '#e7e7e6',
-      // 임계해자 = e7e7e6 (한자)
-      '壬': '#e7e7e6', '癸': '#e7e7e6', '亥': '#e7e7e6', '子': '#e7e7e6',
-      // 추가 지지 (한자)
-      '申': '#ffffff' 
+      // 경신신유 = ffffff (금) - 한자
+      '庚': '#ffffff', '辛': '#ffffff', '申': '#ffffff', '酉': '#ffffff',
+      // 임계해자 = 000000 (수) - 한글
+      '임': '#000000', '계': '#000000', '해': '#000000', '자': '#000000',
+      // 임계해자 = 000000 (수) - 한자
+      '壬': '#000000', '癸': '#000000', '亥': '#000000', '子': '#000000'
     };
     
     return ganjiColorMap[character] || '#ffffff';
+  }
+
+  // 간지별 글자색 매핑
+  function getGanjiTextColor(character: string): string {
+    const ganjiTextColorMap: Record<string, string> = {
+      // 갑을인묘 = ffffff (목) - 한글
+      '갑': '#ffffff', '을': '#ffffff', '인': '#ffffff', '묘': '#ffffff',
+      // 갑을인묘 = ffffff (목) - 한자
+      '甲': '#ffffff', '乙': '#ffffff', '寅': '#ffffff', '卯': '#ffffff',
+      // 병정사오 = ffffff (화) - 한글
+      '병': '#ffffff', '정': '#ffffff', '사': '#ffffff', '오': '#ffffff',
+      // 병정사오 = ffffff (화) - 한자
+      '丙': '#ffffff', '丁': '#ffffff', '巳': '#ffffff', '午': '#ffffff',
+      // 무기진미술축 = 000000 (토) - 한글
+      '무': '#000000', '기': '#000000', '진': '#000000', '미': '#000000', '술': '#000000', '축': '#000000',
+      // 무기진미술축 = 000000 (토) - 한자
+      '戊': '#000000', '己': '#000000', '辰': '#000000', '未': '#000000', '戌': '#000000', '丑': '#000000',
+      // 경신신유 = 000000 (금) - 한글
+      '경': '#000000', '신': '#000000', '유': '#000000',
+      // 경신신유 = 000000 (금) - 한자
+      '庚': '#000000', '辛': '#000000', '申': '#000000', '酉': '#000000',
+      // 임계해자 = ffffff (수) - 한글
+      '임': '#ffffff', '계': '#ffffff', '해': '#ffffff', '자': '#ffffff',
+      // 임계해자 = ffffff (수) - 한자
+      '壬': '#ffffff', '癸': '#ffffff', '亥': '#ffffff', '子': '#ffffff'
+    };
+    
+    return ganjiTextColorMap[character] || '#000000';
   }
 
 
@@ -484,7 +510,7 @@ export default function SajuTable({
               key={`sky-${index}`} 
               className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(col.sky),
                 backgroundColor: getGanjiBackgroundColor(col.sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -504,7 +530,7 @@ export default function SajuTable({
               key={`earth-${index}`} 
               className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(col.earth),
                 backgroundColor: getGanjiBackgroundColor(col.earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -585,7 +611,7 @@ export default function SajuTable({
               key={`daeun-sky-${colIndex}`}
               className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -605,7 +631,7 @@ export default function SajuTable({
               key={`daeun-earth-${colIndex}`}
               className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -639,7 +665,7 @@ export default function SajuTable({
               key={`saeun-sky-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -659,7 +685,7 @@ export default function SajuTable({
               key={`saeun-earth-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -721,7 +747,7 @@ export default function SajuTable({
               key={`wolun-sky-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
@@ -741,7 +767,7 @@ export default function SajuTable({
               key={`wolun-earth-${colIndex}`}
               className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
