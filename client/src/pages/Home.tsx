@@ -203,10 +203,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-md space-y-8">
+      <div className="container mx-auto px-4 py-6 max-w-md space-y-2">
 
         {/* 현재 시각의 만세력 */}
-        <div className="space-y-3">
+        <div>
           <CurrentTimeTable 
             saju={currentSaju}
             title="현재 만세력"

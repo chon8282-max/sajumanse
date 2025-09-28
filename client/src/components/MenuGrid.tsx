@@ -62,7 +62,7 @@ export default function MenuGrid() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3">
+      <div className="grid grid-cols-3 gap-px">
         {menuItems.map((item, index) => (
           <Card 
             key={index} 

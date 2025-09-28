@@ -105,13 +105,13 @@ export default function CurrentTimeTable({
           알림
         </h3>
         <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-start space-x-2">
-            <span className="text-xs text-primary font-medium">•</span>
-            <span>오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
+          <div className="flex items-start space-x-2 min-w-0">
+            <span className="text-xs text-primary font-medium flex-shrink-0">•</span>
+            <span className="flex-1 min-w-0 truncate">오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
           </div>
-          <div className="flex items-start space-x-2">
-            <span className="text-xs text-primary font-medium">•</span>
-            <span>만세력 업데이트: 2025년 음력 절입시간 정보가 업데이트되었습니다.</span>
+          <div className="flex items-start space-x-2 min-w-0">
+            <span className="text-xs text-primary font-medium flex-shrink-0">•</span>
+            <span className="flex-1 min-w-0 truncate">만세력 업데이트: 2025년 음력 절입시간 정보가 업데이트되었습니다.</span>
           </div>
         </div>
       </div>
