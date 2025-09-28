@@ -909,8 +909,8 @@ export default function SajuTable({
         {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
-            className="py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-white"
-            style={{ backgroundColor: '#1b1464' }}
+            className="py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-black"
+            style={{ backgroundColor: '#f6f8fc' }}
             data-testid="text-wolun-title"
           >
             월운(月運)
@@ -995,8 +995,8 @@ export default function SajuTable({
         {/* 17행: 메모 + 오늘 날짜 */}
         <div className="flex border-b border-border">
           <div 
-            className="flex-1 py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-white border-r border-border"
-            style={{ backgroundColor: '#1b1464' }}
+            className="flex-1 py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-black border-r border-border"
+            style={{ backgroundColor: '#d4bda5' }}
             data-testid="text-memo-title"
           >
             메모
