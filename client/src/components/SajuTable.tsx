@@ -251,17 +251,19 @@ export default function SajuTable({
     
     // 현재 나이가 중간에 오도록 (6번째 위치)
     const centerAge = currentAge || age;
-    const startAge = Math.max(1, centerAge - 5);
-    const baseYear = birthYear + startAge - 1;
+    let startAge = Math.max(1, centerAge - 5);
     
     // focusedDaeun이 있으면 해당 대운의 시작 나이 기준으로 조정
-    let actualStartAge = startAge;
     if (focusedDaeun) {
-      actualStartAge = focusedDaeun.startAge + (saeunOffset || 0);
+      startAge = focusedDaeun.startAge + (saeunOffset || 0);
     }
     
-    const years = Array.from({ length: 12 }, (_, i) => baseYear + actualStartAge - startAge + 11 - i);
-    const ages = Array.from({ length: 12 }, (_, i) => actualStartAge + 11 - i);
+    // 나이와 연도 계산: 태어난 해가 1세 (한국식 나이)
+    const ages = Array.from({ length: 12 }, (_, i) => startAge + 11 - i);
+    const years = Array.from({ length: 12 }, (_, i) => {
+      const ageForYear = startAge + 11 - i;
+      return birthYear + (ageForYear - 1); // 1세 = 태어난 해
+    });
     
     // 간지 계산
     let skies: string[] = [];
