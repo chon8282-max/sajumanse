@@ -74,21 +74,14 @@ export default function SajuTable({
   onSaeunScroll
 }: SajuTableProps) {
 
-  // 나이 계산 (메모이제이션)
+  // 나이 계산 (간지년 기준)
   const age = useMemo(() => {
     if (!birthYear) return 0;
     
-    const today = new Date();
-    const birthDate = new Date(birthYear, (birthMonth || 1) - 1, birthDay || 1);
-    
-    // 만 나이 계산
-    const manAge = today.getFullYear() - birthDate.getFullYear() - 
-      (today.getMonth() < birthDate.getMonth() || 
-       (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate()) ? 1 : 0);
-    
-    // 한국식 나이 (만 나이 + 1)
-    return manAge + 1;
-  }, [birthYear, birthMonth, birthDay]);
+    // 간지년 기준 나이 계산: 태어난 해가 1세
+    const currentYear = new Date().getFullYear();
+    return currentYear - birthYear + 1;
+  }, [birthYear]);
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');

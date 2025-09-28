@@ -346,4 +346,9 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* 궁서체 폰트 클래스 */
+  .font-gungseo {
+    font-family: 'ChosunCentennial', serif;
+  }
 }
