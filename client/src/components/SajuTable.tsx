@@ -967,6 +967,12 @@ export default function SajuTable({
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth);
+            const gongmangStyle = isGongmang(earth) ? {
+              border: '2px solid #f2ecec',
+              borderRadius: '50%',
+              margin: '4px'
+            } : {};
+            
             return (
               <div 
                 key={`daeun-earth-${colIndex}`}
@@ -979,16 +985,27 @@ export default function SajuTable({
                 }}
                 data-testid={`text-daeun-earth-${colIndex}`}
               >
-                {jijiImage ? (
-                  <img 
-                    src={jijiImage} 
-                    alt={earth} 
-                    className="w-full h-full object-cover"
-                    style={{ margin: '0', padding: '0' }}
-                  />
-                ) : (
-                  <span className="text-gray-800" style={{ fontSize: '22px' }}>{earth}</span>
-                )}
+                <div 
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    ...gongmangStyle
+                  }}
+                >
+                  {jijiImage ? (
+                    <img 
+                      src={jijiImage} 
+                      alt={earth} 
+                      className="w-full h-full object-cover"
+                      style={{ margin: '0', padding: '0' }}
+                    />
+                  ) : (
+                    <span className="text-gray-800" style={{ fontSize: '22px' }}>{earth}</span>
+                  )}
+                </div>
               </div>
             );
           })}
