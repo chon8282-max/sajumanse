@@ -239,6 +239,9 @@ export default function SajuTable({
   // 12신살 표시 상태 관리
   const [showSibiSinsal, setShowSibiSinsal] = useState(false);
   
+  // 공망 표시 상태 관리
+  const [showGongmang, setShowGongmang] = useState(false);
+  
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
   useEffect(() => {
     if (currentAge) {
@@ -742,6 +745,17 @@ export default function SajuTable({
               12신살
             </button>
             <button 
+              className={`px-3 py-1 text-xs ${
+                showGongmang 
+                  ? 'bg-red-200 hover:bg-red-300 dark:bg-red-800 dark:hover:bg-red-700' 
+                  : 'bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800'
+              } border border-red-300 dark:border-red-700 rounded-md transition-colors`}
+              onClick={() => setShowGongmang(!showGongmang)}
+              data-testid="button-gongmang"
+            >
+              공망
+            </button>
+            <button 
               className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 border border-green-300 dark:border-green-700 rounded-md transition-colors"
               data-testid="button-hangul"
             >
@@ -858,7 +872,7 @@ export default function SajuTable({
                     <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
                   )}
                 </div>
-                {isGongmangPosition && (
+                {showGongmang && isGongmangPosition && (
                   <img 
                     src={gongmangImage}
                     alt="공망"
@@ -1027,7 +1041,7 @@ export default function SajuTable({
                     <span className="text-gray-800" style={{ fontSize: '22px' }}>{earth}</span>
                   )}
                 </div>
-                {isGongmangPosition && (
+                {showGongmang && isGongmangPosition && (
                   <img 
                     src={gongmangImage}
                     alt="공망"
