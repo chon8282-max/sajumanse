@@ -1,8 +1,11 @@
+/* 현대적인 한국어 폰트 추가 - @import는 맨 위에 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ChosunCentennial 폰트 정의 */
+/* ChosunCentennial 폰트 정의 - 사주 간지용으로만 유지 */
 @font-face {
   font-family: 'ChosunCentennial';
   src: url('/fonts/ChosunCentennial.ttf') format('truetype');
@@ -11,67 +14,67 @@
   font-display: swap;
 }
 
-/* LIGHT MODE */
+/* CYBER PUNK MODE - 신세대 스타일 */
 :root {
-  --button-outline: rgba(0,0,0, .10);
-  --badge-outline: rgba(0,0,0, .05);
+  --button-outline: rgba(0, 255, 255, 0.3);
+  --badge-outline: rgba(255, 0, 255, 0.2);
 
   /* Automatic computation of border around primary / danger buttons */
   --opaque-button-border-intensity: -8; /* In terms of percentages */
 
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,0,0, .03);
-  --elevate-2: rgba(0,0,0, .08);
+  /* Neon glow effects for hover/active states */
+  --elevate-1: rgba(0, 255, 255, 0.1);
+  --elevate-2: rgba(255, 0, 255, 0.2);
 
-  --background: 45 25% 97%;
+  --background: 260 30% 8%;  /* 다크 퍼플 배경 */
 
-  --foreground: 25 20% 15%;
+  --foreground: 180 100% 85%;  /* 청록 텍스트 */
 
-  --border: 25 8% 88%;
+  --border: 280 50% 20%;  /* 다크 퍼플 보더 */
 
-  --card: 0 0% 100%;
+  --card: 270 25% 12%;  /* 다크 카드 배경 */
 
-  --card-foreground: 25 20% 15%;
+  --card-foreground: 180 100% 90%;  /* 밝은 청록 텍스트 */
 
-  --card-border: 25 6% 92%;
+  --card-border: 300 100% 50%;  /* 네온 핑크 보더 */
 
-  --sidebar: 45 20% 94%;
+  --sidebar: 260 35% 10%;  /* 다크 사이드바 */
 
-  --sidebar-foreground: 25 20% 15%;
+  --sidebar-foreground: 180 100% 85%;
 
-  --sidebar-border: 25 8% 86%;
+  --sidebar-border: 280 60% 25%;
 
-  --sidebar-primary: 25 45% 25%;
+  --sidebar-primary: 300 100% 50%;  /* 네온 핑크 */
 
-  --sidebar-primary-foreground: 45 25% 95%;
+  --sidebar-primary-foreground: 0 0% 100%;
 
-  --sidebar-accent: 45 15% 88%;
+  --sidebar-accent: 180 100% 50%;  /* 네온 청록 */
 
-  --sidebar-accent-foreground: 25 30% 20%;
+  --sidebar-accent-foreground: 0 0% 0%;
 
-  --sidebar-ring: 25 45% 25%;
+  --sidebar-ring: 300 100% 50%;
 
-  --popover: 0 0% 100%;
+  --popover: 270 30% 10%;
 
-  --popover-foreground: 25 20% 15%;
+  --popover-foreground: 180 100% 85%;
 
-  --popover-border: 25 6% 90%;
+  --popover-border: 300 100% 50%;
 
-  --primary: 25 45% 25%;
+  --primary: 300 100% 50%;  /* 네온 핑크 */
 
-  --primary-foreground: 45 25% 95%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 25 10% 90%;
+  --secondary: 180 80% 15%;  /* 다크 청록 */
 
-  --secondary-foreground: 25 25% 20%;
+  --secondary-foreground: 180 100% 90%;
 
-  --muted: 25 8% 92%;
+  --muted: 260 20% 15%;
 
-  --muted-foreground: 25 10% 45%;
+  --muted-foreground: 180 50% 60%;
 
-  --accent: 45 15% 90%;
+  --accent: 180 100% 50%;  /* 네온 청록 */
 
-  --accent-foreground: 25 25% 20%;
+  --accent-foreground: 0 0% 0%;
 
   --destructive: 0 65% 35%;
 
@@ -350,5 +353,111 @@
   /* 궁서체 폰트 클래스 */
   .font-gungseo {
     font-family: 'ChosunCentennial', serif;
+  }
+
+  /* 신세대 사이버펑크 스타일 */
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+    background: linear-gradient(135deg, 
+      #0f0518 0%, 
+      #1a0a2e 25%, 
+      #16213e 50%, 
+      #0f3460 75%, 
+      #533483 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* 네온 글로우 카드 효과 */
+  .shadcn-card {
+    background: rgba(16, 5, 24, 0.8) !important;
+    border: 1px solid rgba(255, 0, 255, 0.3) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.2), 
+                0 0 40px rgba(0, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+
+  .shadcn-card:hover {
+    border-color: rgba(255, 0, 255, 0.6) !important;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.4), 
+                0 0 60px rgba(0, 255, 255, 0.2) !important;
+    transform: translateY(-2px);
+  }
+
+  /* 네온 텍스트 효과 */
+  .neon-text {
+    color: #00ffff;
+    text-shadow: 0 0 5px #00ffff, 
+                 0 0 10px #00ffff, 
+                 0 0 20px #00ffff;
+  }
+
+  .neon-text-pink {
+    color: #ff00ff;
+    text-shadow: 0 0 5px #ff00ff, 
+                 0 0 10px #ff00ff, 
+                 0 0 20px #ff00ff;
+  }
+
+  /* 버튼 네온 효과 */
+  button {
+    border-radius: 8px !important;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5) !important;
+  }
+
+  /* 테이블 셀 네온 효과 개선 */
+  .ganji-cell {
+    border-radius: 6px !important;
+    border: 1px solid rgba(255, 0, 255, 0.2) !important;
+    box-shadow: inset 0 0 10px rgba(255, 0, 255, 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .ganji-cell:hover {
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.4),
+                inset 0 0 15px rgba(0, 255, 255, 0.1) !important;
+    transform: scale(1.02);
+  }
+
+  /* 애니메이션 효과 */
+  @keyframes neon-pulse {
+    0%, 100% {
+      text-shadow: 0 0 5px currentColor, 
+                   0 0 10px currentColor, 
+                   0 0 20px currentColor;
+    }
+    50% {
+      text-shadow: 0 0 2px currentColor, 
+                   0 0 5px currentColor, 
+                   0 0 10px currentColor;
+    }
+  }
+
+  .neon-pulse {
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+
+  /* 스크롤바 스타일링 */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(16, 5, 24, 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #ff44ff, #44ffff);
   }
 }
