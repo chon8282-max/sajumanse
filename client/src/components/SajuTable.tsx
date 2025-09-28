@@ -508,12 +508,13 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-3 text-center font-bold border-r border-border last:border-r-0"
               style={{ 
                 color: getGanjiTextColor(col.sky),
                 backgroundColor: getGanjiBackgroundColor(col.sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
+                fontSize: '40px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
               }}
               data-testid={`text-sky-${index}`}
@@ -528,12 +529,13 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-3 text-center font-bold border-r border-border last:border-r-0"
               style={{ 
                 color: getGanjiTextColor(col.earth),
                 backgroundColor: getGanjiBackgroundColor(col.earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
+                fontSize: '40px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
               }}
               data-testid={`text-earth-${index}`}
@@ -609,12 +611,13 @@ export default function SajuTable({
           {daeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`daeun-sky-${colIndex}`}
-              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
+                fontSize: '22px',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
               }}
               data-testid={`text-daeun-sky-${colIndex}`}
@@ -629,12 +632,13 @@ export default function SajuTable({
           {daeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`daeun-earth-${colIndex}`}
-              className="py-1 text-center text-sm font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
+                fontSize: '22px',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
               }}
               data-testid={`text-daeun-earth-${colIndex}`}
@@ -663,12 +667,13 @@ export default function SajuTable({
           {saeunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`saeun-sky-${colIndex}`}
-              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
+                fontSize: '19px',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
               data-testid={`text-saeun-sky-${colIndex}`}
@@ -683,12 +688,13 @@ export default function SajuTable({
           {saeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`saeun-earth-${colIndex}`}
-              className="py-1 text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="py-1 text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
                 fontFamily: "'HanmaneumMyeongjo', sans-serif",
                 fontWeight: '900',
+                fontSize: '19px',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
               data-testid={`text-saeun-earth-${colIndex}`}
