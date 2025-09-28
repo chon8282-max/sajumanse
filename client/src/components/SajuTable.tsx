@@ -5,6 +5,7 @@ import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/l
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
+import { getCheonganImage, isCheongan } from "@/lib/cheongan-images";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -601,21 +602,31 @@ export default function SajuTable({
 
         {/* 2행: 천간 */}
         <div className="grid grid-cols-4 border-b border-border">
-          {sajuColumns.map((col, index) => (
-            <div 
-              key={`sky-${index}`} 
-              className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
-              style={{ 
-                color: getGanjiTextColor(col.sky),
-                backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '40px'
-              }}
-              data-testid={`text-sky-${index}`}
-            >
-              {col.sky}
-            </div>
-          ))}
+          {sajuColumns.map((col, index) => {
+            const cheonganImage = getCheonganImage(col.sky);
+            return (
+              <div 
+                key={`sky-${index}`} 
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif",
+                  minHeight: '3.5rem'
+                }}
+                data-testid={`text-sky-${index}`}
+              >
+                {cheonganImage ? (
+                  <img 
+                    src={cheonganImage} 
+                    alt={col.sky} 
+                    className="w-12 h-12 object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.sky}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 3행: 지지 */}
@@ -623,12 +634,12 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+              className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center text-gray-800"
               style={{ 
-                color: getGanjiTextColor(col.earth),
-                backgroundColor: getGanjiBackgroundColor(col.earth),
+                backgroundColor: 'white',
                 fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '40px'
+                fontSize: '40px',
+                minHeight: '3.5rem'
               }}
               data-testid={`text-earth-${index}`}
             >
@@ -695,21 +706,30 @@ export default function SajuTable({
 
         {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10 border-b border-border">
-          {daeunGanji.skies.map((sky, colIndex) => (
-            <div 
-              key={`daeun-sky-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
-              style={{ 
-                color: getGanjiTextColor(sky),
-                backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '22px'
-              }}
-              data-testid={`text-daeun-sky-${colIndex}`}
-            >
-              {sky}
-            </div>
-          ))}
+          {daeunGanji.skies.map((sky, colIndex) => {
+            const cheonganImage = getCheonganImage(sky);
+            return (
+              <div 
+                key={`daeun-sky-${colIndex}`}
+                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif"
+                }}
+                data-testid={`text-daeun-sky-${colIndex}`}
+              >
+                {cheonganImage ? (
+                  <img 
+                    src={cheonganImage} 
+                    alt={sky} 
+                    className="w-5 h-5 object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '22px' }}>{sky}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 8행: 대운 지지 */}
@@ -717,10 +737,9 @@ export default function SajuTable({
           {daeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`daeun-earth-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-gray-800"
               style={{ 
-                color: getGanjiTextColor(earth),
-                backgroundColor: getGanjiBackgroundColor(earth),
+                backgroundColor: 'white',
                 fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '22px'
               }}
@@ -759,21 +778,30 @@ export default function SajuTable({
 
         {/* 10행: 歲運 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {saeunGanji.skies.map((sky, colIndex) => (
-            <div 
-              key={`saeun-sky-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
-              style={{ 
-                color: getGanjiTextColor(sky),
-                backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '19px'
-              }}
-              data-testid={`text-saeun-sky-${colIndex}`}
-            >
-              {sky}
-            </div>
-          ))}
+          {saeunGanji.skies.map((sky, colIndex) => {
+            const cheonganImage = getCheonganImage(sky);
+            return (
+              <div 
+                key={`saeun-sky-${colIndex}`}
+                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif"
+                }}
+                data-testid={`text-saeun-sky-${colIndex}`}
+              >
+                {cheonganImage ? (
+                  <img 
+                    src={cheonganImage} 
+                    alt={sky} 
+                    className="w-4 h-4 object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{sky}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 11행: 歲運 지지 (우측에서 좌측) */}
@@ -781,10 +809,9 @@ export default function SajuTable({
           {saeunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`saeun-earth-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-gray-800"
               style={{ 
-                color: getGanjiTextColor(earth),
-                backgroundColor: getGanjiBackgroundColor(earth),
+                backgroundColor: 'white',
                 fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '19px'
               }}
@@ -839,21 +866,30 @@ export default function SajuTable({
 
         {/* 14행: 월운 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
-          {wolunGanji.skies.map((sky, colIndex) => (
-            <div 
-              key={`wolun-sky-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
-              style={{ 
-                color: getGanjiTextColor(sky),
-                backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunKim', sans-serif",
-                fontSize: '19px'
-              }}
-              data-testid={`text-wolun-sky-${colIndex}`}
-            >
-              {sky}
-            </div>
-          ))}
+          {wolunGanji.skies.map((sky, colIndex) => {
+            const cheonganImage = getCheonganImage(sky);
+            return (
+              <div 
+                key={`wolun-sky-${colIndex}`}
+                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif"
+                }}
+                data-testid={`text-wolun-sky-${colIndex}`}
+              >
+                {cheonganImage ? (
+                  <img 
+                    src={cheonganImage} 
+                    alt={sky} 
+                    className="w-4 h-4 object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{sky}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 15행: 월운 지지 (우측에서 좌측) */}
@@ -861,10 +897,9 @@ export default function SajuTable({
           {wolunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`wolun-earth-${colIndex}`}
-              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-gray-800"
               style={{ 
-                color: getGanjiTextColor(earth),
-                backgroundColor: getGanjiBackgroundColor(earth),
+                backgroundColor: 'white',
                 fontFamily: "'ChosunKim', sans-serif",
                 fontSize: '19px'
               }}
