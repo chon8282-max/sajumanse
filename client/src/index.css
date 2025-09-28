@@ -14,130 +14,75 @@
   font-display: swap;
 }
 
-/* CYBER PUNK MODE - 신세대 스타일 */
 :root {
-  --button-outline: rgba(0, 255, 255, 0.3);
-  --badge-outline: rgba(255, 0, 255, 0.2);
-
-  /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
-
-  /* Neon glow effects for hover/active states */
-  --elevate-1: rgba(0, 255, 255, 0.1);
-  --elevate-2: rgba(255, 0, 255, 0.2);
-
-  --background: 260 30% 8%;  /* 다크 퍼플 배경 */
-
-  --foreground: 180 100% 85%;  /* 청록 텍스트 */
-
-  --border: 280 50% 20%;  /* 다크 퍼플 보더 */
-
-  --card: 270 25% 12%;  /* 다크 카드 배경 */
-
-  --card-foreground: 180 100% 90%;  /* 밝은 청록 텍스트 */
-
-  --card-border: 300 100% 50%;  /* 네온 핑크 보더 */
-
-  --sidebar: 260 35% 10%;  /* 다크 사이드바 */
-
-  --sidebar-foreground: 180 100% 85%;
-
-  --sidebar-border: 280 60% 25%;
-
-  --sidebar-primary: 300 100% 50%;  /* 네온 핑크 */
-
-  --sidebar-primary-foreground: 0 0% 100%;
-
-  --sidebar-accent: 180 100% 50%;  /* 네온 청록 */
-
-  --sidebar-accent-foreground: 0 0% 0%;
-
-  --sidebar-ring: 300 100% 50%;
-
-  --popover: 270 30% 10%;
-
-  --popover-foreground: 180 100% 85%;
-
-  --popover-border: 300 100% 50%;
-
-  --primary: 300 100% 50%;  /* 네온 핑크 */
-
-  --primary-foreground: 0 0% 100%;
-
-  --secondary: 180 80% 15%;  /* 다크 청록 */
-
-  --secondary-foreground: 180 100% 90%;
-
-  --muted: 260 20% 15%;
-
-  --muted-foreground: 180 50% 60%;
-
-  --accent: 180 100% 50%;  /* 네온 청록 */
-
-  --accent-foreground: 0 0% 0%;
-
-  --destructive: 0 65% 35%;
-
-  --destructive-foreground: 0 15% 95%;
-
-  --input: 25 12% 82%;
-  --ring: 25 45% 25%;
-  --chart-1: 25 45% 25%;
-  --chart-2: 140 45% 35%;
-  --chart-3: 35 55% 40%;
-  --chart-4: 210 30% 35%;
-  --chart-5: 280 35% 35%;
-
-  --font-sans: Open Sans, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: 'IBM Plex Mono', Menlo, monospace;
-  --font-tmon: 'TmonMonsori', Georgia, serif;
-  --radius: .75rem; /* 12px */
-  --shadow-2xs: 0px 1px 2px 0px hsl(25 15% 8% / 0.03);
-  --shadow-xs: 0px 1px 2px 0px hsl(25 15% 8% / 0.05);
-  --shadow-sm: 0px 1px 2px 0px hsl(25 15% 8% / 0.05), 0px 1px 3px -1px hsl(25 15% 8% / 0.08);
-  --shadow: 0px 1px 3px 0px hsl(25 15% 8% / 0.08), 0px 1px 2px -1px hsl(25 15% 8% / 0.06);
-  --shadow-md: 0px 4px 6px -1px hsl(25 15% 8% / 0.08), 0px 2px 4px -2px hsl(25 15% 8% / 0.05);
-  --shadow-lg: 0px 10px 15px -3px hsl(25 15% 8% / 0.08), 0px 4px 6px -4px hsl(25 15% 8% / 0.05);
-  --shadow-xl: 0px 20px 25px -5px hsl(25 15% 8% / 0.08), 0px 8px 10px -6px hsl(25 15% 8% / 0.05);
-  --shadow-2xl: 0px 25px 50px -12px hsl(25 15% 8% / 0.12);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
-
-  /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
-
-  /* Fallback for older browsers */
-  --sidebar-primary-border: hsl(var(--sidebar-primary));
-  --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --sidebar-accent-border: hsl(var(--sidebar-accent));
-  --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --primary-border: hsl(var(--primary));
-  --primary-border: hsl(from hsl(var(--primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --secondary-border: hsl(var(--secondary));
-  --secondary-border: hsl(from hsl(var(--secondary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --muted-border: hsl(var(--muted));
-  --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --accent-border: hsl(var(--accent));
-  --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-
-  /* Fallback for older browsers */
-  --destructive-border: hsl(var(--destructive));
-  --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 23 54% 25%;  /* 5c3b23 저장버튼색 */
+  --primary-foreground: 210 40% 98%;
+  --primary-border: 23 54% 25%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --secondary-border: 214.3 31.8% 91.4%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --destructive-border: 0 84.2% 60.2%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --chart-1: 12 76% 61%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  --radius: 0.5rem;
+  
+  /* 사용자 요청 색상 */
+  --saju-header-bg: 37 4% 98%;  /* f9f8f5 사주명식 바탕색 */
+  --bottom-nav-bg: 37 4% 98%;   /* f9f8f5 하단메뉴 바탕색 */
+  --name-card-bg: 40 3% 98%;    /* f9f8f8 이름카드 바탕색 */
 }
 
 .dark {
-  --button-outline: rgba(255,255,255, .10);
-  --badge-outline: rgba(255,255,255, .05);
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 23 54% 25%;  /* 5c3b23 저장버튼색 */
+  --primary-foreground: 210 40% 98%;
+  --primary-border: 23 54% 25%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --secondary-border: 217.2 32.6% 17.5%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --destructive-border: 0 62.8% 30.6%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --chart-1: 220 70% 50%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  
+  /* 다크모드에서 사용자 요청 색상 */
+  --saju-header-bg: 217.2 32.6% 17.5%;  /* 다크모드 사주명식 바탕색 */
+  --bottom-nav-bg: 217.2 32.6% 17.5%;   /* 다크모드 하단메뉴 바탕색 */
+  --name-card-bg: 217.2 32.6% 17.5%;    /* 다크모드 이름카드 바탕색 */
 
   --opaque-button-border-intensity: 9;  /* In terms of percentages */
 

@@ -17,7 +17,7 @@ const tabs = [
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t z-40">
+    <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-sm border-t z-40" style={{ backgroundColor: 'hsl(var(--bottom-nav-bg))' }}>
       <div className="flex items-center justify-around py-2 px-2 max-w-md mx-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -49,7 +49,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
       </div>
       
       {/* Safe area for devices with home indicator */}
-      <div className="h-safe-bottom bg-background/95" />
+      <div className="h-safe-bottom" style={{ backgroundColor: 'hsl(var(--bottom-nav-bg))' }} />
     </nav>
   );
 }
