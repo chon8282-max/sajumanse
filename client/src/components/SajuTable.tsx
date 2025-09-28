@@ -345,6 +345,11 @@ export default function SajuTable({
     return calculateGongmang(saju.day.sky, saju.day.earth);
   }, [saju?.day?.sky, saju?.day?.earth]);
 
+  // 공망 확인 함수
+  const isGongmang = useCallback((earth: string) => {
+    return gongmang.includes(earth);
+  }, [gongmang]);
+
   // 육친 계산 (메모이제이션)
   const { heavenlyYukjin, earthlyYukjin } = useMemo(() => {
     const dayStem = saju.day.sky;
@@ -806,6 +811,12 @@ export default function SajuTable({
         <div className="grid grid-cols-4 border-b border-border">
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth);
+            const gongmangStyle = isGongmang(col.earth) ? {
+              border: '2px solid #f2ecec',
+              borderRadius: '50%',
+              margin: '4px'
+            } : {};
+            
             return (
               <div 
                 key={`earth-${index}`} 
@@ -819,16 +830,27 @@ export default function SajuTable({
                 }}
                 data-testid={`text-earth-${index}`}
               >
-                {jijiImage ? (
-                  <img 
-                    src={jijiImage} 
-                    alt={col.earth} 
-                    className="w-full h-full object-cover"
-                    style={{ margin: '0', padding: '0' }}
-                  />
-                ) : (
-                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
-                )}
+                <div 
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    ...gongmangStyle
+                  }}
+                >
+                  {jijiImage ? (
+                    <img 
+                      src={jijiImage} 
+                      alt={col.earth} 
+                      className="w-full h-full object-cover"
+                      style={{ margin: '0', padding: '0' }}
+                    />
+                  ) : (
+                    <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
+                  )}
+                </div>
               </div>
             );
           })}
