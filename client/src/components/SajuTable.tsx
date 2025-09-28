@@ -758,7 +758,9 @@ export default function SajuTable({
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
         {/* 1행: 천간 육친 / 오행 */}
-        <div className="grid grid-cols-4 border-b border-border">
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
           {heavenlyYukjin.map((yukjin, index) => {
             const skyCharacter = sajuColumns[index]?.sky;
             const displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
@@ -766,23 +768,27 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-sky-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
                 data-testid={`text-yukjin-sky-${index}`}
               >
                 {displayText}
               </div>
             );
           })}
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white"></div>
         </div>
 
         {/* 2행: 천간 */}
-        <div className="grid grid-cols-4 border-b border-border">
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '3.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky);
             return (
               <div 
                 key={`sky-${index}`} 
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className="text-center font-bold border-r border-border flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
@@ -805,10 +811,14 @@ export default function SajuTable({
               </div>
             );
           })}
+          {/* 빈 칸 */}
+          <div className="text-center font-bold flex items-center justify-center bg-white" style={{ minHeight: '3.5rem' }}></div>
         </div>
 
         {/* 3행: 지지 */}
-        <div className="grid grid-cols-4 border-b border-border">
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '3.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth);
             const gongmangStyle = isGongmang(col.earth) ? {
@@ -820,7 +830,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`earth-${index}`} 
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className="text-center font-bold border-r border-border flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
@@ -854,10 +864,14 @@ export default function SajuTable({
               </div>
             );
           })}
+          {/* 빈 칸 */}
+          <div className="text-center font-bold flex items-center justify-center bg-white" style={{ minHeight: '3.5rem' }}></div>
         </div>
 
         {/* 4행: 지지 육친 / 오행 */}
-        <div className="grid grid-cols-4 border-b border-border">
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
             const displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
@@ -865,26 +879,32 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-earth-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
                 data-testid={`text-yukjin-earth-${index}`}
               >
                 {displayText}
               </div>
             );
           })}
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white"></div>
         </div>
 
         {/* 5행: 지장간 */}
-        <div className="grid grid-cols-4 border-b border-border">
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
           {jijanggan.map((stems, index) => (
             <div 
               key={`jijanggan-${index}`} 
-              className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+              className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
               data-testid={`text-jijanggan-${index}`}
             >
               {stems}
             </div>
           ))}
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm min-h-[1.5rem] flex items-center justify-center bg-white"></div>
         </div>
 
         {/* 6행: 12신살 (조건부 표시) */}
