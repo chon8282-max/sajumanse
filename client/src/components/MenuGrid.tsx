@@ -66,7 +66,8 @@ export default function MenuGrid() {
         {menuItems.map((item, index) => (
           <Card 
             key={index} 
-            className="aspect-square hover-elevate cursor-pointer border-0 rounded-none"
+            className="hover-elevate cursor-pointer border-0 rounded-none"
+            style={{ aspectRatio: '1 / 0.65' }}
             onClick={item.onClick}
             data-testid={`menu-${item.title.replace(/\s+/g, '-').toLowerCase()}`}
           >
