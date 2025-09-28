@@ -260,19 +260,20 @@ export default function SajuTable({
     const earths: string[] = [];
     
     // 12칸 우측부터 좌측으로 배치
+    // 갑인년생 기준: 1974년=1세, 甲=천간 시작, 寅=지지 시작
     for (let i = 0; i < 12; i++) {
       const currentAge = startAge + 11 - i;
-      const currentYear = birthYear + (currentAge - 1); // 1세 = 태어난 해
+      const currentYear = 1974 + (currentAge - 1); // 1974년이 1세
       
       years.push(currentYear);
       ages.push(currentAge);
       
-      // 천간: 태어난 해 천간부터 순환
-      const skyIndex = (birthSkyIndex + currentAge - 1) % 10;
+      // 천간: 甲부터 순환 (갑인년생 기준)
+      const skyIndex = (currentAge - 1) % 10; // 甲=0부터 시작
       skies.push(heavenlyStems[skyIndex]);
       
-      // 지지: 태어난 해 지지부터 순환
-      const earthIndex = (birthEarthIndex + currentAge - 1) % 12;
+      // 지지: 寅부터 순환 (갑인년생 기준) 
+      const earthIndex = (2 + currentAge - 1) % 12; // 寅=2부터 시작
       earths.push(earthlyBranches[earthIndex]);
     }
     
