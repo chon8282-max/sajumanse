@@ -23,22 +23,27 @@ export default function CurrentTimeTable({
     { label: "년주", sky: saju.year.sky, earth: saju.year.earth }
   ];
 
-  // 간지별 배경색 매핑
-  function getGanjiBackgroundColor(character: string): string {
-    const ganjiColorMap: Record<string, string> = {
-      // 갑을인묘 = dcfce7
-      '갑': '#dcfce7', '을': '#dcfce7', '인': '#dcfce7', '묘': '#dcfce7',
-      // 병정사오 = fee2e2
-      '병': '#fee2e2', '정': '#fee2e2', '사': '#fee2e2', '오': '#fee2e2',
-      // 무기진미술축 = fbfce6
-      '무': '#fbfce6', '기': '#fbfce6', '진': '#fbfce6', '미': '#fbfce6', '술': '#fbfce6', '축': '#fbfce6',
-      // 경신신유 = ffffff
-      '경': '#ffffff', '신': '#ffffff', '유': '#ffffff',
-      // 임계해자 = e7e7e6
-      '임': '#e7e7e6', '계': '#e7e7e6', '해': '#e7e7e6', '자': '#e7e7e6'
+  // 간지별 CSS 변수 매핑 (다크모드 자동 호환)
+  function getGanjiCSSVariable(character: string): string {
+    const ganjiVariableMap: Record<string, string> = {
+      // 갑을인묘 = 목
+      '갑': '--ganji-wood', '을': '--ganji-wood', 
+      '인': '--ganji-wood', '묘': '--ganji-wood',
+      // 병정사오 = 화
+      '병': '--ganji-fire', '정': '--ganji-fire', 
+      '사': '--ganji-fire', '오': '--ganji-fire',
+      // 무기진미술축 = 토
+      '무': '--ganji-earth', '기': '--ganji-earth', 
+      '진': '--ganji-earth', '미': '--ganji-earth', 
+      '술': '--ganji-earth', '축': '--ganji-earth',
+      // 경신신유 = 금
+      '경': '--ganji-metal', '신': '--ganji-metal', '유': '--ganji-metal',
+      // 임계해자 = 수
+      '임': '--ganji-water', '계': '--ganji-water', 
+      '해': '--ganji-water', '자': '--ganji-water'
     };
     
-    return ganjiColorMap[character] || '#ffffff';
+    return ganjiVariableMap[character] || '--muted';
   }
 
   return (
@@ -63,10 +68,9 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center"
+              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center text-gray-800 dark:text-gray-100"
               style={{ 
-                color: '#2E2A27',
-                backgroundColor: getGanjiBackgroundColor(col.sky),
+                backgroundColor: `hsl(var(${getGanjiCSSVariable(col.sky)}))`,
                 fontFamily: "'ChosunCentennial', sans-serif"
               }}
               data-testid={`text-current-sky-${index}`}
@@ -81,10 +85,9 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center"
+              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center text-gray-800 dark:text-gray-100"
               style={{ 
-                color: '#2E2A27',
-                backgroundColor: getGanjiBackgroundColor(col.earth),
+                backgroundColor: `hsl(var(${getGanjiCSSVariable(col.earth)}))`,
                 fontFamily: "'ChosunCentennial', sans-serif"
               }}
               data-testid={`text-current-earth-${index}`}
