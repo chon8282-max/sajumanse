@@ -229,18 +229,7 @@ export default function SajuTable({
 
   // 세운 데이터 계산 (현재 나이 기준, 기존 규칙 복원)
   const saeunDisplayData = useMemo(() => {
-    if (saeunData && saeunData.years && saeunData.ages && saeunData.skyStems && saeunData.earthBranches) {
-      // saeunData에서 직접 사용 (우측에서 좌측 순서로 정렬)
-      return {
-        years: [...saeunData.years].reverse(),
-        ages: [...saeunData.ages].reverse(),
-        skies: [...saeunData.skyStems].reverse(),
-        earths: [...saeunData.earthBranches].reverse()
-      };
-    }
-    
-    // 기존 규칙: 현재 나이를 중심으로 12년 표시 (현재 나이가 중간에 위치)
-    if (!birthYear) {
+    if (!birthYear || !saju.year.sky || !saju.year.earth) {
       return {
         years: Array.from({ length: 12 }, (_, i) => 2024 - i),
         ages: Array.from({ length: 12 }, (_, i) => 12 - i),
@@ -258,55 +247,37 @@ export default function SajuTable({
       startAge = focusedDaeun.startAge + (saeunOffset || 0);
     }
     
-    // 나이와 연도 계산: 태어난 해가 1세 (한국식 나이)
-    const ages = Array.from({ length: 12 }, (_, i) => startAge + 11 - i);
-    const years = Array.from({ length: 12 }, (_, i) => {
-      const ageForYear = startAge + 11 - i;
-      return birthYear + (ageForYear - 1); // 1세 = 태어난 해
-    });
+    const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+    const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
     
-    // 간지 계산
-    let skies: string[] = [];
-    let earths: string[] = [];
+    // 태어난 해의 천간, 지지 인덱스 찾기
+    const birthSkyIndex = heavenlyStems.indexOf(saju.year.sky);
+    const birthEarthIndex = earthlyBranches.indexOf(saju.year.earth);
     
-    if (saju.year.sky && saju.year.earth) {
-      const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
-      const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+    const years: number[] = [];
+    const ages: number[] = [];
+    const skies: string[] = [];
+    const earths: string[] = [];
+    
+    // 12칸 우측부터 좌측으로 배치
+    for (let i = 0; i < 12; i++) {
+      const currentAge = startAge + 11 - i;
+      const currentYear = birthYear + (currentAge - 1); // 1세 = 태어난 해
       
-      const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
-      const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
+      years.push(currentYear);
+      ages.push(currentAge);
       
-      // 60갑자 정확한 순서 (사용자 제공)
-      const gapja60 = [
-        "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
-        "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
-        "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑", "庚寅", "辛卯", "壬辰", "癸巳",
-        "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑", "壬寅", "癸卯",
-        "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑",
-        "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥"
-      ];
+      // 천간: 태어난 해 천간부터 순환
+      const skyIndex = (birthSkyIndex + currentAge - 1) % 10;
+      skies.push(heavenlyStems[skyIndex]);
       
-      // 태어난 해의 간지 찾기
-      const birthGanji = saju.year.sky + saju.year.earth;
-      const birthGanjiIndex = gapja60.indexOf(birthGanji);
-      
-      for (let i = 0; i < 12; i++) {
-        const ageForThisColumn = startAge + 11 - i;
-        
-        // 60갑자 무한 반복으로 계산 (나이 - 1 = 년도 오프셋)
-        const ganjiIndex = (birthGanjiIndex + ageForThisColumn - 1) % 60;
-        const ganji = gapja60[ganjiIndex];
-        
-        skies.push(ganji[0]); // 천간
-        earths.push(ganji[1]); // 지지
-      }
-    } else {
-      skies = Array(12).fill('');
-      earths = Array(12).fill('');
+      // 지지: 태어난 해 지지부터 순환
+      const earthIndex = (birthEarthIndex + currentAge - 1) % 12;
+      earths.push(earthlyBranches[earthIndex]);
     }
     
     return { years, ages, skies, earths };
-  }, [saeunData, birthYear, currentAge, age, focusedDaeun, saeunOffset, saju.year.sky, saju.year.earth]);
+  }, [birthYear, currentAge, age, focusedDaeun, saeunOffset, saju.year.sky, saju.year.earth]);
 
   // 개별 배열들 (기존 코드 호환성을 위해)
   const saeunYears = saeunDisplayData.years;
