@@ -147,7 +147,8 @@ export default function SajuList() {
       toast({
         title: "삭제 오류",
         description: "사주 삭제 중 오류가 발생했습니다.",
-        variant: "destructive"
+        variant: "destructive",
+        duration: 700
       });
     }
   });
@@ -200,7 +201,7 @@ export default function SajuList() {
         title: "생성 실패", 
         description: error.message,
         variant: "destructive",
-        duration: 2000
+        duration: 700
       });
     }
   });
@@ -238,7 +239,7 @@ export default function SajuList() {
         title: "수정 실패",
         description: error.message,
         variant: "destructive",
-        duration: 2000
+        duration: 700
       });
     }
   });
@@ -279,7 +280,7 @@ export default function SajuList() {
         title: "삭제 실패",
         description: error.message,
         variant: "destructive",
-        duration: 2000
+        duration: 700
       });
     }
   });
