@@ -21,7 +21,7 @@ interface SajuTableProps {
   dayEarth?: string;
   gender?: string;
   memo?: string;
-  // 대운/세운 상호작용 props
+  // 대운/歲運 상호작용 props
   currentAge?: number | null;
   focusedDaeun?: DaeunPeriod | null;
   daeunPeriods?: DaeunPeriod[];
@@ -50,7 +50,7 @@ const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
 
 export default function SajuTable({ 
   saju, 
-  title = "사주명식", 
+  title = "四柱命式", 
   name,
   birthYear,
   birthMonth,
@@ -63,7 +63,7 @@ export default function SajuTable({
   dayEarth,
   gender = '남자',
   memo,
-  // 대운/세운 상호작용 props
+  // 대운/歲運 상호작용 props
   currentAge,
   focusedDaeun,
   daeunPeriods = [],
@@ -89,7 +89,7 @@ export default function SajuTable({
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
   
-  // 선택된 세운 나이 상태 (초기값: 현재 나이)
+  // 선택된 歲運 나이 상태 (초기값: 현재 나이)
   const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
   
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
@@ -99,7 +99,7 @@ export default function SajuTable({
     }
   }, [currentAge]); // selectedSaeunAge 의존성 제거하여 항상 업데이트되도록
   
-  // 세운 클릭 핸들러 (내부용)
+  // 歲運 클릭 핸들러 (내부용)
   const handleSaeunAgeClick = useCallback((age: number) => {
     setSelectedSaeunAge(age);
     if (onSaeunClick) {
@@ -225,8 +225,8 @@ export default function SajuTable({
 
   // 정확한 간지년 계산 함수
   const calculateActualGanjiYear = useCallback((birthYear: number, yearSky: string, yearEarth: string): number => {
-    const skyIndex = CHEONGAN.indexOf(yearSky);
-    const earthIndex = JIJI.indexOf(yearEarth);
+    const skyIndex = CHEONGAN.indexOf(yearSky as any);
+    const earthIndex = JIJI.indexOf(yearEarth as any);
     
     if (skyIndex === -1 || earthIndex === -1) {
       return birthYear;
@@ -271,7 +271,7 @@ export default function SajuTable({
     return calculateActualGanjiYear(birthYear, saju.year.sky, saju.year.earth);
   }, [birthYear, saju.year.sky, saju.year.earth, calculateActualGanjiYear]);
 
-  // 세운 데이터 계산 (현재 나이 기준, 기존 규칙 복원)
+  // 歲運 데이터 계산 (현재 나이 기준, 기존 규칙 복원)
   const saeunDisplayData = useMemo(() => {
     if (!birthYear || !saju.year.sky || !saju.year.earth) {
       return {
@@ -328,16 +328,16 @@ export default function SajuTable({
   const saeunAges = saeunDisplayData.ages;
   const saeunGanji = { skies: saeunDisplayData.skies, earths: saeunDisplayData.earths };
 
-  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측) - 선택된 세운과 연동
+  // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측) - 선택된 歲運과 연동
   const wolunGanji = useMemo(() => {
-    // 선택된 세운 나이에 해당하는 연도 기준, 없으면 간지년 기준
+    // 선택된 歲運 나이에 해당하는 연도 기준, 없으면 간지년 기준
     let targetYear = actualGanjiYear || new Date().getFullYear();
     
     if (selectedSaeunAge && actualGanjiYear) {
-      // 선택된 세운 나이에 해당하는 연도 계산 (간지년 기준)
+      // 선택된 歲運 나이에 해당하는 연도 계산 (간지년 기준)
       targetYear = actualGanjiYear + selectedSaeunAge - 1;
     } else if (focusedDaeun && saeunDisplayData.years.length > 0) {
-      // fallback: 현재 표시된 세운의 첫 번째 연도 사용
+      // fallback: 현재 표시된 歲運의 첫 번째 연도 사용
       targetYear = saeunDisplayData.years[0];
     }
     
@@ -731,7 +731,7 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 9행: 세운 년도 (우측에서 좌측) */}
+        {/* 9행: 歲運 년도 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunYears.map((year, colIndex) => {
             const correspondingAge = saeunAges[colIndex];
@@ -757,7 +757,7 @@ export default function SajuTable({
           })}
         </div>
 
-        {/* 10행: 세운 천간 (우측에서 좌측) */}
+        {/* 10행: 歲運 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.skies.map((sky, colIndex) => (
             <div 
@@ -776,7 +776,7 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 11행: 세운 지지 (우측에서 좌측) */}
+        {/* 11행: 歲運 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => (
             <div 
@@ -795,7 +795,7 @@ export default function SajuTable({
           ))}
         </div>
 
-        {/* 12행: 세운 나이 (우측에서 좌측) */}
+        {/* 12행: 歲運 나이 (우측에서 좌측) */}
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
