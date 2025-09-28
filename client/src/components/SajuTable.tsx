@@ -223,6 +223,54 @@ export default function SajuTable({
     }
   }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
 
+  // 정확한 간지년 계산 함수
+  const calculateActualGanjiYear = useCallback((birthYear: number, yearSky: string, yearEarth: string): number => {
+    const skyIndex = CHEONGAN.indexOf(yearSky);
+    const earthIndex = JIJI.indexOf(yearEarth);
+    
+    if (skyIndex === -1 || earthIndex === -1) {
+      return birthYear;
+    }
+    
+    // 60갑자에서의 위치 계산
+    let ganjiIndex = -1;
+    for (let i = 0; i < 60; i++) {
+      if (i % 10 === skyIndex && i % 12 === earthIndex) {
+        ganjiIndex = i;
+        break;
+      }
+    }
+    
+    if (ganjiIndex === -1) {
+      return birthYear;
+    }
+    
+    // 갑자년(1924년) 기준으로 정확한 간지년 계산
+    // 입력된 생년 주변에서 해당 간지가 나오는 년도 찾기
+    const baseYear = 1924;
+    
+    // 가장 가까운 해당 간지년 찾기
+    for (let offset = -5; offset <= 5; offset++) {
+      const testYear = birthYear + offset;
+      const testYearDiff = testYear - baseYear;
+      const testCyclePosition = ((testYearDiff % 60) + 60) % 60;
+      
+      if (testCyclePosition === ganjiIndex) {
+        return testYear;
+      }
+    }
+    
+    return birthYear;
+  }, []);
+
+  // 정확한 간지년 계산
+  const actualGanjiYear = useMemo(() => {
+    if (!birthYear || !saju.year.sky || !saju.year.earth) {
+      return birthYear || new Date().getFullYear();
+    }
+    return calculateActualGanjiYear(birthYear, saju.year.sky, saju.year.earth);
+  }, [birthYear, saju.year.sky, saju.year.earth, calculateActualGanjiYear]);
+
   // 세운 데이터 계산 (현재 나이 기준, 기존 규칙 복원)
   const saeunDisplayData = useMemo(() => {
     if (!birthYear || !saju.year.sky || !saju.year.earth) {
@@ -258,7 +306,7 @@ export default function SajuTable({
     // 12칸 우측부터 좌측으로 배치
     for (let i = 0; i < 12; i++) {
       const currentAge = startAge + 11 - i;
-      const currentYear = birthYear + (currentAge - 1); // 태어난 해가 1세
+      const currentYear = actualGanjiYear + (currentAge - 1); // 간지년 기준으로 계산
       
       years.push(currentYear);
       ages.push(currentAge);
@@ -314,7 +362,7 @@ export default function SajuTable({
     
     const birthGanji = saju.year.sky + saju.year.earth;
     const birthGanjiIndex = gapja60.indexOf(birthGanji);
-    const yearOffset = targetYear - (birthYear || 1975);
+    const yearOffset = targetYear - actualGanjiYear; // 정확한 간지년 사용
     const targetGanjiIndex = (birthGanjiIndex + yearOffset) % 60;
     const targetGanji = gapja60[targetGanjiIndex];
     const targetYearSky = targetGanji[0];
