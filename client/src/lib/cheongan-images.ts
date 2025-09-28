@@ -1,16 +1,16 @@
 // 천간, 지지 한자를 이미지로 매핑하는 유틸리티
 
 // 천간 이미지 imports
-import gapImage from "@assets/갑_1759040922198.jpg";
-import eulImage from "@assets/을_1759040922202.jpg";
-import byeongImage from "@assets/병_1759040922202.jpg";
-import jeongImage from "@assets/정_1759040922201.jpg";
-import muImage from "@assets/무_1759040922201.jpg";
-import giImage from "@assets/기_1759040922201.jpg";
-import gyeongImage from "@assets/경_1759040922200.jpg";
-import sinImage from "@assets/신_1759040922200.jpg";
-import imImage from "@assets/임_1759040922199.jpg";
-import gyeImage from "@assets/계_1759040922199.jpg";
+import gapImage from "@assets/갑_1759096342037.jpg";
+import eulImage from "@assets/을_1759096342037.jpg";
+import byeongImage from "@assets/병_1759096342036.jpg";
+import jeongImage from "@assets/정_1759096342036.jpg";
+import muImage from "@assets/무_1759096342037.jpg";
+import giImage from "@assets/기_1759096342037.jpg";
+import gyeongImage from "@assets/경_1759096342038.jpg";
+import sinImage from "@assets/辛_1759096342038.jpg";
+import imImage from "@assets/임_1759096342038.jpg";
+import gyeImage from "@assets/계_1759096342036.jpg";
 
 // 지지 이미지 imports
 import jaImage from "@assets/자_1759042612487.jpg";
