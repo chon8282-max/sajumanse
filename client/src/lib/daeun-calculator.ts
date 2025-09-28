@@ -208,24 +208,16 @@ export interface DaeunPeriod {
 }
 
 /**
- * 현재 나이 계산 (서양 만 나이)
- * @param birthYear 생년
- * @param birthMonth 생월
- * @param birthDay 생일
- * @returns 만 나이
+ * 현재 나이 계산 (간지년 기준)
+ * @param birthYear 생년 (간지년)
+ * @param birthMonth 생월 (사용 안함)
+ * @param birthDay 생일 (사용 안함)
+ * @returns 간지년 기준 나이 (태어난 해가 1세)
  */
 export function calculateCurrentAge(birthYear: number, birthMonth: number, birthDay: number): number {
-  const today = new Date();
-  const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-  
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
+  // 간지년 기준 나이 계산: 태어난 해가 1세
+  const currentYear = new Date().getFullYear();
+  return currentYear - birthYear + 1;
 }
 
 /**
