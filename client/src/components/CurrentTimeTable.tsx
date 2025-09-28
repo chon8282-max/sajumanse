@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo } from "@shared/schema";
+import { getCheonganImage, isCheongan } from "@/lib/cheongan-images";
 
 interface CurrentTimeTableProps {
   saju: SajuInfo;
@@ -64,19 +65,30 @@ export default function CurrentTimeTable({
       <div className="border border-border rounded-lg overflow-hidden shadow-sm">
         {/* 1행: 천간 */}
         <div className="grid grid-cols-4 border-b border-border">
-          {sajuColumns.map((col, index) => (
-            <div 
-              key={`sky-${index}`} 
-              className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-start justify-center text-gray-800 dark:text-gray-100"
-              style={{ 
-                backgroundColor: `hsl(var(${getGanjiCSSVariable(col.sky)}))`,
-                fontFamily: "'ChosunKim', sans-serif"
-              }}
-              data-testid={`text-current-sky-${index}`}
-            >
-              {col.sky}
-            </div>
-          ))}
+          {sajuColumns.map((col, index) => {
+            const cheonganImage = getCheonganImage(col.sky);
+            return (
+              <div 
+                key={`sky-${index}`} 
+                className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center"
+                style={{ 
+                  backgroundColor: 'white',
+                  fontFamily: "'ChosunKim', sans-serif"
+                }}
+                data-testid={`text-current-sky-${index}`}
+              >
+                {cheonganImage ? (
+                  <img 
+                    src={cheonganImage} 
+                    alt={col.sky} 
+                    className="w-6 h-6 object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-800">{col.sky}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* 2행: 지지 */}
@@ -84,9 +96,9 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-start justify-center text-gray-800 dark:text-gray-100"
+              className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center text-gray-800"
               style={{ 
-                backgroundColor: `hsl(var(${getGanjiCSSVariable(col.earth)}))`,
+                backgroundColor: 'white',
                 fontFamily: "'ChosunKim', sans-serif"
               }}
               data-testid={`text-current-earth-${index}`}
