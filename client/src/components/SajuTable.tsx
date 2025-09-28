@@ -515,7 +515,7 @@ export default function SajuTable({
 
 
   return (
-    <Card className="p-4 pl-[0px] pr-[0px] pt-[1px] pb-[1px]" style={{ backgroundColor: 'hsl(var(--saju-header-bg))' }} data-testid="card-saju-table">
+    <Card className="shadcn-card rounded-xl border bg-card border-card-border text-card-foreground shadow-sm p-4 pl-[0px] pr-[0px] pt-[1px] pb-[1px]" style={{ backgroundColor: 'hsl(var(--saju-header-bg))' }} data-testid="card-saju-table">
       {/* 개인정보 표시 */}
       {name && (
         <div className="mb-2 p-3 border border-border rounded-md" style={{ backgroundColor: 'hsl(var(--name-card-bg))' }}>
