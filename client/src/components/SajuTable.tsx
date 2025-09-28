@@ -1,9 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
-import { calculateDaeunNumber } from "@/lib/daeun-calculator";
+import { calculateDaeunNumber, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useCallback } from "react";
+import type { TouchEvent } from "react";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -20,6 +21,15 @@ interface SajuTableProps {
   dayEarth?: string;
   gender?: string;
   memo?: string;
+  // 대운/세운 상호작용 props
+  currentAge?: number | null;
+  focusedDaeun?: DaeunPeriod | null;
+  daeunPeriods?: DaeunPeriod[];
+  saeunOffset?: number;
+  saeunData?: any;
+  onDaeunClick?: (period: DaeunPeriod) => void;
+  onSaeunClick?: (age: number) => void;
+  onSaeunScroll?: (direction: 'left' | 'right') => void;
 }
 
 // 지장간 계산 - 사용자 요청 수정사항 반영
@@ -52,7 +62,16 @@ export default function SajuTable({
   daySky,
   dayEarth,
   gender = '남자',
-  memo
+  memo,
+  // 대운/세운 상호작용 props
+  currentAge,
+  focusedDaeun,
+  daeunPeriods = [],
+  saeunOffset = 0,
+  saeunData,
+  onDaeunClick,
+  onSaeunClick,
+  onSaeunScroll
 }: SajuTableProps) {
 
   // 나이 계산 (메모이제이션)
@@ -73,6 +92,11 @@ export default function SajuTable({
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
+  
+  // 터치 드래그 상태 관리
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const isDragging = useRef<boolean>(false);
 
   // 오늘 날짜를 메모에 추가하는 함수
   const insertTodayDate = () => {
@@ -82,6 +106,33 @@ export default function SajuTable({
     const newMemo = currentMemo ? `${currentMemo}\n${dateString}` : dateString;
     setMemoText(newMemo);
   };
+
+  // 터치 이벤트 핸들러
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    isDragging.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+    if (Math.abs(touchEndX.current - touchStartX.current) > 10) {
+      isDragging.current = true;
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (isDragging.current && onSaeunScroll) {
+      const deltaX = touchEndX.current - touchStartX.current;
+      if (Math.abs(deltaX) > 50) { // 최소 50px 드래그 시에만 반응
+        if (deltaX > 0) {
+          onSaeunScroll('left'); // 오른쪽으로 드래그 = 왼쪽으로 스크롤
+        } else {
+          onSaeunScroll('right'); // 왼쪽으로 드래그 = 오른쪽으로 스크롤
+        }
+      }
+    }
+    isDragging.current = false;
+  }, [onSaeunScroll]);
 
   // 생시 한자 표시 함수
   const formatBirthHour = (hour?: string): string => {
@@ -158,47 +209,66 @@ export default function SajuTable({
     }
   }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
 
-  // 세운 년도 계산 (9행용 - 12칸, 우측에서 좌측)
-  const saeunYears = useMemo(() => {
-    if (!birthYear) {
-      return Array.from({ length: 12 }, (_, i) => 2024 - i);
+  // 세운 데이터에서 직접 추출 (saeunData 우선 사용, fallback 제공)
+  const saeunDisplayData = useMemo(() => {
+    if (saeunData && saeunData.years && saeunData.ages && saeunData.skyStems && saeunData.earthBranches) {
+      // saeunData에서 직접 사용 (우측에서 좌측 순서로 정렬)
+      return {
+        years: [...saeunData.years].reverse(),
+        ages: [...saeunData.ages].reverse(),
+        skies: [...saeunData.skyStems].reverse(),
+        earths: [...saeunData.earthBranches].reverse()
+      };
     }
-    // 우측에서 좌측: 출생년도부터 11년 더한 값까지
-    return Array.from({ length: 12 }, (_, i) => birthYear + 11 - i);
-  }, [birthYear]);
-
-  // 세운 나이 계산 (12행용 - 12칸, 우측에서 좌측)  
-  const saeunAges = useMemo(() => {
-    // 우측에서 좌측: 1살부터 12살까지
-    return Array.from({ length: 12 }, (_, i) => 12 - i);
-  }, []);
-
-  // 세운 간지 계산 (10행, 11행용 - 12칸, 우측에서 좌측)
-  const saeunGanji = useMemo(() => {
-    if (!birthYear || !saju.year.sky || !saju.year.earth) {
-      return { skies: Array(12).fill(''), earths: Array(12).fill('') };
-    }
-
-    // 60갑자 순환
-    const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
-    const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
     
-    // 출생년도의 간지 인덱스 찾기
-    const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
-    const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
-    
-    const skies: string[] = [];
-    const earths: string[] = [];
-
-    // 우측에서 좌측: 출생년부터 11년 더한 간지까지
-    for (let i = 0; i < 12; i++) {
-      const yearOffset = 11 - i; // 우측에서 좌측 순서
-      skies.push(heavenlyStems[(yearSkyIndex + yearOffset) % 10]);
-      earths.push(earthlyBranches[(yearEarthIndex + yearOffset) % 12]);
+    // Fallback: 기존 로직
+    if (!birthYear || !focusedDaeun) {
+      return {
+        years: Array.from({ length: 12 }, (_, i) => 2024 - i),
+        ages: Array.from({ length: 12 }, (_, i) => 12 - i),
+        skies: Array(12).fill(''),
+        earths: Array(12).fill('')
+      };
     }
+    
+    // calculateSaeun과 일치하는 계산: offsetAge를 전달하면 내부에서 Math.max(1, offsetAge + 1) 처리
+    // 따라서 focusedDaeun.startAge - 1을 offsetAge로 전달해야 올바른 시작점
+    const offsetAge = focusedDaeun.startAge - 1 + (saeunOffset || 0);
+    const startAge = Math.max(1, offsetAge + 1);
+    const baseAge = startAge;
+    const baseYear = birthYear + baseAge;
+    
+    const years = Array.from({ length: 12 }, (_, i) => baseYear + 11 - i);
+    const ages = Array.from({ length: 12 }, (_, i) => baseAge + 11 - i);
+    
+    // 간지 계산
+    let skies: string[] = [];
+    let earths: string[] = [];
+    
+    if (saju.year.sky && saju.year.earth) {
+      const heavenlyStems = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
+      const earthlyBranches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+      
+      const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
+      const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
+      
+      for (let i = 0; i < 12; i++) {
+        const yearOffset = baseAge + (11 - i);
+        skies.push(heavenlyStems[(yearSkyIndex + yearOffset) % 10]);
+        earths.push(earthlyBranches[(yearEarthIndex + yearOffset) % 12]);
+      }
+    } else {
+      skies = Array(12).fill('');
+      earths = Array(12).fill('');
+    }
+    
+    return { years, ages, skies, earths };
+  }, [saeunData, birthYear, focusedDaeun, saeunOffset, saju.year.sky, saju.year.earth]);
 
-    return { skies, earths };
-  }, [birthYear, saju.year.sky, saju.year.earth]);
+  // 개별 배열들 (기존 코드 호환성을 위해)
+  const saeunYears = saeunDisplayData.years;
+  const saeunAges = saeunDisplayData.ages;
+  const saeunGanji = { skies: saeunDisplayData.skies, earths: saeunDisplayData.earths };
 
   // 월운 간지 계산 (14행, 15행용 - 13칸, 우측에서 좌측)
   const wolunGanji = useMemo(() => {
@@ -481,15 +551,31 @@ export default function SajuTable({
 
         {/* 6행: 대운수 (우측에서 좌측으로) */}
         <div className="grid grid-cols-10 border-b border-border">
-          {daeunAges.map((age, colIndex) => (
-            <div 
-              key={`daeun-age-${colIndex}`}
-              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center"
-              data-testid={`text-daeun-age-${colIndex}`}
-            >
-              {age}
-            </div>
-          ))}
+          {daeunAges.map((age, colIndex) => {
+            const isCurrentDaeun = currentAge && age <= currentAge && currentAge < age + 10;
+            const isFocusedDaeun = focusedDaeun && daeunPeriods.find(p => p.startAge === age && p === focusedDaeun);
+            const isHighlighted = isCurrentDaeun || isFocusedDaeun;
+            
+            return (
+              <div 
+                key={`daeun-age-${colIndex}`}
+                className={`py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isHighlighted 
+                    ? 'bg-yellow-200 dark:bg-yellow-800/50 font-bold border-2 border-yellow-600' 
+                    : 'bg-blue-50 dark:bg-blue-950/30'
+                }`}
+                onClick={() => {
+                  const targetDaeun = daeunPeriods.find(p => p.startAge === age);
+                  if (targetDaeun && onDaeunClick) {
+                    onDaeunClick(targetDaeun);
+                  }
+                }}
+                data-testid={`text-daeun-age-${colIndex}`}
+              >
+                {age}
+              </div>
+            );
+          })}
         </div>
 
         {/* 7행: 대운 천간 */}
@@ -587,16 +673,34 @@ export default function SajuTable({
         </div>
 
         {/* 12행: 세운 나이 (우측에서 좌측) */}
-        <div className="grid grid-cols-12 border-b border-border">
-          {saeunAges.map((age, colIndex) => (
-            <div 
-              key={`saeun-age-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white flex items-center justify-center"
-              data-testid={`text-saeun-age-${colIndex}`}
-            >
-              {age}
-            </div>
-          ))}
+        <div 
+          className="grid grid-cols-12 border-b border-border"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {saeunAges.map((age, colIndex) => {
+            const isCurrentAge = currentAge === age;
+            
+            return (
+              <div 
+                key={`saeun-age-${colIndex}`}
+                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isCurrentAge 
+                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
+                    : 'bg-white dark:bg-gray-800'
+                }`}
+                onClick={() => {
+                  if (!isDragging.current && onSaeunClick) {
+                    onSaeunClick(age);
+                  }
+                }}
+                data-testid={`text-saeun-age-${colIndex}`}
+              >
+                {age}
+              </div>
+            );
+          })}
         </div>
 
         {/* 13행: 월운(月運) 제목 */}

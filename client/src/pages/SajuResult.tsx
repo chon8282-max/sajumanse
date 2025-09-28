@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -239,6 +239,48 @@ export default function SajuResult() {
     }
   }, [calculatedData, focusedDaeun]);
 
+  // 대운 클릭 핸들러
+  const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
+    setFocusedDaeun(daeunPeriod);
+    setSaeunOffset(0); // 세운 오프셋 초기화
+  }, []);
+
+  // 세운 클릭 핸들러 
+  const handleSaeunClick = useCallback((age: number) => {
+    if (!calculatedData?.daeunData.daeunPeriods) return;
+    
+    // 해당 나이에 맞는 대운 찾기
+    const targetDaeun = calculatedData.daeunData.daeunPeriods.find(
+      period => age >= period.startAge && age <= period.endAge
+    );
+    
+    if (targetDaeun) {
+      setFocusedDaeun(targetDaeun);
+      // 해당 나이가 세운 창의 중앙에 오도록 오프셋 조정 (음수 허용)
+      const targetOffset = age - targetDaeun.startAge - 5; // 12열 중 중앙(6번째)에 위치
+      // 대운 범위 내에서만 제한 (10년 범위)
+      const minOffset = -5; // 대운 시작 5년 전까지
+      const maxOffset = 10; // 대운 시작 10년 후까지 (10년 대운 + 몇 년 여유)
+      setSaeunOffset(Math.max(minOffset, Math.min(maxOffset, targetOffset)));
+    }
+  }, [calculatedData]);
+
+  // 세운 드래그/스크롤 핸들러
+  const handleSaeunScroll = useCallback((direction: 'left' | 'right') => {
+    setSaeunOffset(prev => {
+      const step = 5; // 5년씩 이동
+      // 대운 범위 제한
+      const minOffset = -5; // 대운 시작 5년 전까지
+      const maxOffset = 10; // 대운 시작 10년 후까지
+      
+      if (direction === 'left') {
+        return Math.max(minOffset, prev - step);
+      } else {
+        return Math.min(maxOffset, prev + step);
+      }
+    });
+  }, []);
+
   // 잘못된 경로인 경우 리다이렉트
   useEffect(() => {
     if (!match || !params?.id) {
@@ -400,6 +442,14 @@ export default function SajuResult() {
           dayEarth={record.dayEarth || ''}
           gender={record.gender || '남자'}
           memo={record.memo || ''}
+          daeunPeriods={calculatedData?.daeunData.daeunPeriods || []}
+          focusedDaeun={focusedDaeun}
+          currentAge={calculatedData?.currentAge || null}
+          saeunOffset={saeunOffset}
+          saeunData={saeunData}
+          onDaeunClick={handleDaeunClick}
+          onSaeunClick={handleSaeunClick}
+          onSaeunScroll={handleSaeunScroll}
         />
 
 
