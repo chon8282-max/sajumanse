@@ -208,16 +208,77 @@ export interface DaeunPeriod {
 }
 
 /**
+ * yearSky와 yearEarth를 이용해 정확한 간지년 계산
+ * @param birthYear 생년 (양력)
+ * @param yearSky 년간 (천간)
+ * @param yearEarth 년지 (지지)
+ * @returns 정확한 간지년
+ */
+function calculateActualGanjiYear(birthYear: number, yearSky?: string, yearEarth?: string): number {
+  if (!yearSky || !yearEarth) {
+    return birthYear; // 간지 정보가 없으면 생년 그대로 사용
+  }
+  
+  // 천간 인덱스 (갑=0, 을=1, ...)
+  const skyIndex = CHEONGAN.indexOf(yearSky);
+  // 지지 인덱스 (자=0, 축=1, ...)
+  const earthIndex = JIJI.indexOf(yearEarth);
+  
+  if (skyIndex === -1 || earthIndex === -1) {
+    return birthYear;
+  }
+  
+  // 60갑자에서의 위치 계산
+  let ganjiIndex = -1;
+  for (let i = 0; i < 60; i++) {
+    if (i % 10 === skyIndex && i % 12 === earthIndex) {
+      ganjiIndex = i;
+      break;
+    }
+  }
+  
+  if (ganjiIndex === -1) {
+    return birthYear;
+  }
+  
+  // 갑자년(1924년) 기준으로 정확한 간지년 계산
+  // 입력된 생년 주변에서 해당 간지가 나오는 년도 찾기
+  const baseYear = 1924;
+  const yearDiff = birthYear - baseYear;
+  const cyclePosition = yearDiff % 60;
+  
+  // 가장 가까운 해당 간지년 찾기
+  let targetYear = birthYear;
+  for (let offset = -5; offset <= 5; offset++) {
+    const testYear = birthYear + offset;
+    const testYearDiff = testYear - baseYear;
+    const testCyclePosition = ((testYearDiff % 60) + 60) % 60;
+    
+    if (testCyclePosition === ganjiIndex) {
+      targetYear = testYear;
+      break;
+    }
+  }
+  
+  return targetYear;
+}
+
+/**
  * 현재 나이 계산 (간지년 기준)
- * @param birthYear 생년 (간지년)
+ * @param birthYear 생년 (양력)
  * @param birthMonth 생월 (사용 안함)
  * @param birthDay 생일 (사용 안함)
+ * @param yearSky 년간 (선택사항)
+ * @param yearEarth 년지 (선택사항)
  * @returns 간지년 기준 나이 (태어난 해가 1세)
  */
-export function calculateCurrentAge(birthYear: number, birthMonth: number, birthDay: number): number {
+export function calculateCurrentAge(birthYear: number, birthMonth: number, birthDay: number, yearSky?: string, yearEarth?: string): number {
+  // 정확한 간지년 계산
+  const actualGanjiYear = calculateActualGanjiYear(birthYear, yearSky, yearEarth);
+  
   // 간지년 기준 나이 계산: 태어난 해가 1세
   const currentYear = new Date().getFullYear();
-  return currentYear - birthYear + 1;
+  return currentYear - actualGanjiYear + 1;
 }
 
 /**
