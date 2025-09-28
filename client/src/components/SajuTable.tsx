@@ -276,7 +276,7 @@ export default function SajuTable({
       const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
       const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
       
-      // 60갑자 순서 배열
+      // 60갑자 정확한 순서 (사용자 제공)
       const gapja60 = [
         "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
         "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
