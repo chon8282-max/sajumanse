@@ -211,7 +211,6 @@ export default function Home() {
             saju={currentSaju}
             title="현재 만세력"
             solarDate={getCurrentDateInfo().solarDate}
-            lunarInfo={getCurrentDateInfo().lunarInfo}
           />
         </div>
 

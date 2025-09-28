@@ -5,14 +5,12 @@ interface CurrentTimeTableProps {
   saju: SajuInfo;
   title?: string;
   solarDate?: string;
-  lunarInfo?: string;
 }
 
 export default function CurrentTimeTable({ 
   saju, 
   title = "현재 만세력",
-  solarDate,
-  lunarInfo
+  solarDate
 }: CurrentTimeTableProps) {
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
@@ -48,16 +46,15 @@ export default function CurrentTimeTable({
 
   return (
     <Card 
-      className="p-6 shadow-md" 
+      className="p-2 shadow-md" 
       style={{ backgroundColor: 'hsl(var(--clock-bg))' }}
       data-testid="card-current-time-table"
     >
       {/* 제목 */}
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-primary mb-2">{title}</h2>
-        <div className="space-y-1 text-sm text-muted-foreground">
+      <div className="text-center mb-1">
+        <h2 className="text-lg font-bold text-primary mb-1">{title}</h2>
+        <div className="text-xs text-muted-foreground">
           <p>{solarDate || '양력 정보 없음'}</p>
-          <p>{lunarInfo || '음력 정보 없음'}</p>
         </div>
       </div>
 
@@ -68,7 +65,7 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center text-gray-800 dark:text-gray-100"
+              className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-start justify-center text-gray-800 dark:text-gray-100"
               style={{ 
                 backgroundColor: `hsl(var(${getGanjiCSSVariable(col.sky)}))`,
                 fontFamily: "'ChosunKim', sans-serif"
@@ -85,7 +82,7 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center text-gray-800 dark:text-gray-100"
+              className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-start justify-center text-gray-800 dark:text-gray-100"
               style={{ 
                 backgroundColor: `hsl(var(${getGanjiCSSVariable(col.earth)}))`,
                 fontFamily: "'ChosunKim', sans-serif"
@@ -99,7 +96,7 @@ export default function CurrentTimeTable({
       </div>
 
       {/* 알림 섹션 */}
-      <div className="mt-6 p-4 bg-muted/30 rounded-lg border">
+      <div className="mt-2 p-2 bg-muted/30 rounded-lg border">
         <h3 className="text-sm font-semibold text-primary mb-3 flex items-center">
           <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
           알림
