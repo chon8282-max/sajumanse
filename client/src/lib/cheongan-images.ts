@@ -1,6 +1,6 @@
-// 천간 한자를 이미지로 매핑하는 유틸리티
+// 천간, 지지 한자를 이미지로 매핑하는 유틸리티
 
-// 이미지 imports
+// 천간 이미지 imports
 import gapImage from "@assets/갑_1759040922198.jpg";
 import eulImage from "@assets/을_1759040922202.jpg";
 import byeongImage from "@assets/병_1759040922202.jpg";
@@ -11,6 +11,20 @@ import gyeongImage from "@assets/경_1759040922200.jpg";
 import sinImage from "@assets/신_1759040922200.jpg";
 import imImage from "@assets/임_1759040922199.jpg";
 import gyeImage from "@assets/계_1759040922199.jpg";
+
+// 지지 이미지 imports
+import jaImage from "@assets/자_1759042612487.jpg";
+import chukImage from "@assets/축_1759042612488.jpg";
+import inImage from "@assets/인_1759042612492.jpg";
+import myoImage from "@assets/묘_1759042612492.jpg";
+import jinImage from "@assets/진_1759042612489.jpg";
+import saImage from "@assets/사_1759042612491.jpg";
+import oImage from "@assets/오_1759042612491.jpg";
+import miImage from "@assets/미_1759042612489.jpg";
+import sinJijiImage from "@assets/지지_신_1759042612490.jpg";
+import yuImage from "@assets/유_1759042612490.jpg";
+import sulImage from "@assets/술_1759042612488.jpg";
+import haeImage from "@assets/해_1759042612493.jpg";
 
 // 천간 이미지 매핑
 const CHEONGAN_IMAGES: Record<string, string> = {
@@ -26,11 +40,34 @@ const CHEONGAN_IMAGES: Record<string, string> = {
   '癸': gyeImage
 };
 
+// 지지 이미지 매핑
+const JIJI_IMAGES: Record<string, string> = {
+  '子': jaImage,
+  '丑': chukImage,
+  '寅': inImage,
+  '卯': myoImage,
+  '辰': jinImage,
+  '巳': saImage,
+  '午': oImage,
+  '未': miImage,
+  '申': sinJijiImage,
+  '酉': yuImage,
+  '戌': sulImage,
+  '亥': haeImage
+};
+
 /**
  * 천간 한자에 해당하는 이미지 경로를 반환
  */
 export function getCheonganImage(character: string): string | null {
   return CHEONGAN_IMAGES[character] || null;
+}
+
+/**
+ * 지지 한자에 해당하는 이미지 경로를 반환
+ */
+export function getJijiImage(character: string): string | null {
+  return JIJI_IMAGES[character] || null;
 }
 
 /**
@@ -41,8 +78,22 @@ export function isCheongan(character: string): boolean {
 }
 
 /**
+ * 해당 한자가 지지인지 확인
+ */
+export function isJiji(character: string): boolean {
+  return character in JIJI_IMAGES;
+}
+
+/**
  * 천간 리스트 반환
  */
 export function getCheonganList(): string[] {
   return Object.keys(CHEONGAN_IMAGES);
+}
+
+/**
+ * 지지 리스트 반환
+ */
+export function getJijiList(): string[] {
+  return Object.keys(JIJI_IMAGES);
 }
