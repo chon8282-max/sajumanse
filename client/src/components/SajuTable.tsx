@@ -736,11 +736,12 @@ export default function SajuTable({
           {wolunGanji.skies.map((sky, colIndex) => (
             <div 
               key={`wolun-sky-${colIndex}`}
-              className="text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'ChosunCentennial', sans-serif"
+                fontFamily: "'ChosunCentennial', sans-serif",
+                fontSize: '19px'
               }}
               data-testid={`text-wolun-sky-${colIndex}`}
             >
@@ -754,11 +755,12 @@ export default function SajuTable({
           {wolunGanji.earths.map((earth, colIndex) => (
             <div 
               key={`wolun-earth-${colIndex}`}
-              className="text-center text-xs font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+              className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'ChosunCentennial', sans-serif"
+                fontFamily: "'ChosunCentennial', sans-serif",
+                fontSize: '19px'
               }}
               data-testid={`text-wolun-earth-${colIndex}`}
             >
