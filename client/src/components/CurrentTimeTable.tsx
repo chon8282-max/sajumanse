@@ -42,37 +42,32 @@ export default function CurrentTimeTable({
   }
 
   return (
-    <Card className="p-4" data-testid="card-current-time-table">
+    <Card 
+      className="p-6 shadow-md" 
+      style={{ backgroundColor: 'hsl(var(--clock-bg))' }}
+      data-testid="card-current-time-table"
+    >
       {/* 제목 */}
-      <div className="text-center mb-4">
-        <div className="font-tmon text-lg font-bold" style={{ color: '#00008b', fontFamily: 'monospace' }}>
-          <div style={{ display: 'table', margin: '0 auto' }}>
-            <div style={{ display: 'table-row' }}>
-              <div style={{ display: 'table-cell', textAlign: 'right', paddingRight: '0px' }}>{title}</div>
-              <div style={{ display: 'table-cell', textAlign: 'left', paddingLeft: '8px' }}>({solarDate || '양력 정보 없음'})</div>
-            </div>
-            <div style={{ display: 'table-row' }}>
-              <div style={{ display: 'table-cell', textAlign: 'right', paddingRight: '0px' }}></div>
-              <div style={{ display: 'table-cell', textAlign: 'left', paddingLeft: '8px' }}>({lunarInfo || '음력 정보 없음'})</div>
-            </div>
-          </div>
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold text-primary mb-2">{title}</h2>
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <p>{solarDate || '양력 정보 없음'}</p>
+          <p>{lunarInfo || '음력 정보 없음'}</p>
         </div>
       </div>
 
       {/* 현재 만세력 간단 테이블 (1-2행만) */}
-      <div className="border border-border">
+      <div className="border border-border rounded-lg overflow-hidden shadow-sm">
         {/* 1행: 천간 */}
         <div className="grid grid-cols-4 border-b border-border">
           {sajuColumns.map((col, index) => (
             <div 
               key={`sky-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: '#2E2A27',
                 backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
-                fontWeight: '900',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
+                fontFamily: "'ChosunCentennial', sans-serif"
               }}
               data-testid={`text-current-sky-${index}`}
             >
@@ -86,13 +81,11 @@ export default function CurrentTimeTable({
           {sajuColumns.map((col, index) => (
             <div 
               key={`earth-${index}`} 
-              className="p-3 text-center text-2xl font-bold border-r border-border last:border-r-0"
+              className="p-4 text-center text-2xl font-bold border-r border-border last:border-r-0 min-h-[3rem] flex items-center justify-center"
               style={{ 
-                color: '#131313',
+                color: '#2E2A27',
                 backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
-                fontWeight: '900',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
+                fontFamily: "'ChosunCentennial', sans-serif"
               }}
               data-testid={`text-current-earth-${index}`}
             >
