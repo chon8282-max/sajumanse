@@ -1050,7 +1050,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-year-${colIndex}`}
-                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white ${
+                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-white dark:bg-gray-800'
