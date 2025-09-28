@@ -2,59 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TmonMonsori 폰트 정의 */
-@font-face {
-  font-family: 'TmonMonsori';
-  src: url('/fonts/TmonMonsori.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-
-
-/* 한마음명조B 폰트 정의 */
-@font-face {
-  font-family: 'HanmaneumMyeongjo';
-  src: url('/attached_assets/KBIZ한마음명조 B_1758997592448.ttf') format('truetype');
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0020-007F, U+4E00-9FFF, U+AC00-D7AF;
-}
-
-/* ChosunCentennial 폰트 정의 */
-@font-face {
-  font-family: 'ChosunCentennial';
-  src: url('/attached_assets/ChosunCentennial_ttf_1758992071191.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0020-007F, U+4E00-9FFF, U+AC00-D7AF;
-}
-
-/* MS Gothic 폰트 클래스 추가 */
-.font-tmon {
-  font-family: 'MS Gothic', 'MS UI Gothic', 'Noto Serif KR', monospace !important;
-}
-
-/* Medium 폰트 클래스 */
-.font-noto-medium {
-  font-family: sans-serif !important;
-  font-weight: 500 !important;
-}
-
-/* 한마음명조B 폰트 클래스 적용 */
-.font-noto-bold {
-  font-family: 'HanmaneumMyeongjo', sans-serif !important;
-  font-weight: normal !important;
-}
-
-/* ChosunCentennial 폰트 클래스 추가 */
-.font-chosun {
-  font-family: 'ChosunCentennial', sans-serif !important;
-  font-weight: normal !important;
-}
 
 /* LIGHT MODE */
 :root {
