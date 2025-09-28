@@ -209,7 +209,7 @@ export default function SajuTable({
     }
   }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
 
-  // 세운 데이터에서 직접 추출 (saeunData 우선 사용, fallback 제공)
+  // 세운 데이터 계산 (현재 나이 기준, 기존 규칙 복원)
   const saeunDisplayData = useMemo(() => {
     if (saeunData && saeunData.years && saeunData.ages && saeunData.skyStems && saeunData.earthBranches) {
       // saeunData에서 직접 사용 (우측에서 좌측 순서로 정렬)
@@ -221,8 +221,8 @@ export default function SajuTable({
       };
     }
     
-    // Fallback: 기존 로직
-    if (!birthYear || !focusedDaeun) {
+    // 기존 규칙: 현재 나이를 중심으로 12년 표시 (현재 나이가 중간에 위치)
+    if (!birthYear) {
       return {
         years: Array.from({ length: 12 }, (_, i) => 2024 - i),
         ages: Array.from({ length: 12 }, (_, i) => 12 - i),
@@ -231,15 +231,19 @@ export default function SajuTable({
       };
     }
     
-    // calculateSaeun과 일치하는 계산: offsetAge를 전달하면 내부에서 Math.max(1, offsetAge + 1) 처리
-    // 따라서 focusedDaeun.startAge - 1을 offsetAge로 전달해야 올바른 시작점
-    const offsetAge = focusedDaeun.startAge - 1 + (saeunOffset || 0);
-    const startAge = Math.max(1, offsetAge + 1);
-    const baseAge = startAge;
-    const baseYear = birthYear + baseAge;
+    // 현재 나이가 중간에 오도록 (6번째 위치)
+    const centerAge = currentAge || age;
+    const startAge = Math.max(1, centerAge - 5);
+    const baseYear = birthYear + startAge - 1;
     
-    const years = Array.from({ length: 12 }, (_, i) => baseYear + 11 - i);
-    const ages = Array.from({ length: 12 }, (_, i) => baseAge + 11 - i);
+    // focusedDaeun이 있으면 해당 대운의 시작 나이 기준으로 조정
+    let actualStartAge = startAge;
+    if (focusedDaeun) {
+      actualStartAge = focusedDaeun.startAge + (saeunOffset || 0);
+    }
+    
+    const years = Array.from({ length: 12 }, (_, i) => baseYear + actualStartAge - startAge + 11 - i);
+    const ages = Array.from({ length: 12 }, (_, i) => actualStartAge + 11 - i);
     
     // 간지 계산
     let skies: string[] = [];
@@ -253,7 +257,7 @@ export default function SajuTable({
       const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
       
       for (let i = 0; i < 12; i++) {
-        const yearOffset = baseAge + (11 - i);
+        const yearOffset = actualStartAge + (11 - i) - 1;
         skies.push(heavenlyStems[(yearSkyIndex + yearOffset) % 10]);
         earths.push(earthlyBranches[(yearEarthIndex + yearOffset) % 12]);
       }
@@ -263,7 +267,7 @@ export default function SajuTable({
     }
     
     return { years, ages, skies, earths };
-  }, [saeunData, birthYear, focusedDaeun, saeunOffset, saju.year.sky, saju.year.earth]);
+  }, [saeunData, birthYear, currentAge, age, focusedDaeun, saeunOffset, saju.year.sky, saju.year.earth]);
 
   // 개별 배열들 (기존 코드 호환성을 위해)
   const saeunYears = saeunDisplayData.years;
@@ -308,22 +312,21 @@ export default function SajuTable({
     const earths: string[] = [];
 
     // 13개월 (우측에서 좌측으로 배치)
-    // 13열(우측 첫 번째)은 1월이고 지지가 丑이어야 함
+    // 13열부터 축(丑), 12열 인(寅), 11열 묘(卯)... 순서
     for (let i = 0; i < 13; i++) {
-      let actualMonthIndex: number;
+      let monthIndex: number;
       
-      if (i === 0) {
-        // 13열 (우측 첫 번째) = 1월 = 축월(丑)
-        actualMonthIndex = 0; // 1월 인덱스 (축월)
-      } else if (i === 12) {
-        // 1열 (좌측 마지막) = 13월 = 12월 반복 
-        actualMonthIndex = 11; // 12월 인덱스 (자월)
+      // 13열(i=0)은 1월(축월), 12열(i=1)은 2월(인월), 11열(i=2)은 3월(묘월)...
+      // 1열(i=12)은 12월(자월) + 윤달로 13월
+      if (i === 12) {
+        // 1열 (좌측 마지막) = 윤달 또는 12월 반복
+        monthIndex = 11; // 12월 인덱스 (자월)
       } else {
-        // 2~12열: 2월부터 12월까지 순서대로
-        actualMonthIndex = i; // 1, 2, 3, ... 11
+        // 나머지는 1월부터 12월까지 순서대로
+        monthIndex = i; // 0=1월, 1=2월, 2=3월, ... 11=12월
       }
       
-      const ganji = monthGanjiList[actualMonthIndex];
+      const ganji = monthGanjiList[monthIndex];
       skies.push(ganji[0]); // 천간
       earths.push(ganji[1]); // 지지
     }
@@ -600,8 +603,8 @@ export default function SajuTable({
           {daeunAges.map((age, colIndex) => {
             const isCurrentDaeun = currentAge && age <= currentAge && currentAge < age + 10;
             const isFocusedDaeun = focusedDaeun && daeunPeriods.find(p => p.startAge === age && p === focusedDaeun);
-            // 선택된 대운이 있으면 선택된 대운만 하이라이트, 없으면 현재 대운 하이라이트
-            const isHighlighted = focusedDaeun ? isFocusedDaeun : isCurrentDaeun;
+            // 포커스된 대운이 있으면 우선, 없으면 현재 나이 대운 하이라이트
+            const isHighlighted = isFocusedDaeun || (isCurrentDaeun && !focusedDaeun);
             
             return (
               <div 
@@ -665,16 +668,30 @@ export default function SajuTable({
 
         {/* 9행: 세운 년도 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
-          {saeunYears.map((year, colIndex) => (
-            <div 
-              key={`saeun-year-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
-              style={{ backgroundColor: '#fde8fa' }}
-              data-testid={`text-saeun-year-${colIndex}`}
-            >
-              {year}
-            </div>
-          ))}
+          {saeunYears.map((year, colIndex) => {
+            const correspondingAge = saeunAges[colIndex];
+            const isCurrentAge = currentAge === correspondingAge;
+            
+            return (
+              <div 
+                key={`saeun-year-${colIndex}`}
+                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isCurrentAge 
+                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
+                    : 'bg-white dark:bg-gray-800'
+                }`}
+                style={{ backgroundColor: isCurrentAge ? undefined : '#fde8fa' }}
+                onClick={() => {
+                  if (onSaeunClick) {
+                    onSaeunClick(correspondingAge);
+                  }
+                }}
+                data-testid={`text-saeun-year-${colIndex}`}
+              >
+                {year}
+              </div>
+            );
+          })}
         </div>
 
         {/* 10행: 세운 천간 (우측에서 좌측) */}
