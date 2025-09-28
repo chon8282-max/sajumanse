@@ -71,13 +71,14 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
               return (
                 <div 
                   key={index}
-                  className={`border-r border-border px-1 py-0.5 text-center text-[20px] font-bold leading-none font-tmon cursor-pointer transition-colors ${
+                  className={`border-r border-border px-1 py-0.5 text-center text-[20px] font-bold leading-none cursor-pointer transition-colors ${
                     isCurrentDaeun ? 'text-red-700 dark:text-red-300' : 'text-black'
                   }`}
                   style={{ 
                     backgroundColor: isCurrentDaeun 
                       ? 'rgba(239, 68, 68, 0.2)' 
-                      : getWuxingColor(sky)
+                      : getWuxingColor(sky),
+                    fontFamily: "'ChosunCentennial', sans-serif"
                   }}
                   onClick={() => onDaeunSelect && onDaeunSelect(period)}
                   data-testid={`button-daeun-sky-${sky}`}
@@ -97,13 +98,14 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
               return (
                 <div 
                   key={index}
-                  className={`border-r border-border px-1 py-0.5 text-center text-[20px] font-bold leading-none font-tmon cursor-pointer transition-colors ${
+                  className={`border-r border-border px-1 py-0.5 text-center text-[20px] font-bold leading-none cursor-pointer transition-colors ${
                     isCurrentDaeun ? 'text-red-700 dark:text-red-300' : 'text-black'
                   }`}
                   style={{ 
                     backgroundColor: isCurrentDaeun 
                       ? 'rgba(239, 68, 68, 0.2)' 
-                      : getWuxingColor(earth)
+                      : getWuxingColor(earth),
+                    fontFamily: "'ChosunCentennial', sans-serif"
                   }}
                   onClick={() => onDaeunSelect && onDaeunSelect(period)}
                   data-testid={`button-daeun-earth-${earth}`}
