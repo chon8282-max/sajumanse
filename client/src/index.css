@@ -15,143 +15,84 @@
 }
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  /* 모던한 중성 팔레트 - 따뜻한 회색 기반 */
+  --background: 36 15% 94%;     /* 따뜻한 회색 배경 #F3F0EC */
+  --foreground: 25 8% 18%;      /* 깊은 차콜 타이포 #2E2A27 */
+  --card: 0 0% 100%;            /* 깔끔한 카드 배경 */
+  --card-foreground: 25 8% 18%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 23 54% 25%;  /* 5c3b23 저장버튼색 */
-  --primary-foreground: 210 40% 98%;
-  --primary-border: 23 54% 25%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --secondary-border: 214.3 31.8% 91.4%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --destructive-border: 0 84.2% 60.2%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
+  --popover-foreground: 25 8% 18%;
+  --primary: 30 33% 56%;        /* 점토색 기본 #B78B66 */
+  --primary-foreground: 0 0% 100%;
+  --primary-border: 30 33% 56%;
+  --secondary: 146 16% 55%;     /* 세이지 그린 액센트 #7D9C88 */
+  --secondary-foreground: 0 0% 100%;
+  --secondary-border: 146 16% 55%;
+  --muted: 36 10% 90%;          /* 부드러운 뮤트 배경 */
+  --muted-foreground: 25 8% 45%;
+  --accent: 220 22% 52%;        /* 인디고 액센트 #677B9C */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-border: 0 70% 55%;
+  --border: 36 8% 85%;          /* 부드러운 사암색 구분선 #DAD1C7 */
+  --input: 36 8% 88%;
+  --ring: 30 33% 56%;
   --chart-1: 12 76% 61%;
   --chart-2: 173 58% 39%;
   --chart-3: 197 37% 24%;
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
-  --radius: 0.5rem;
+  --radius: 0.75rem;            /* 더 모던한 라운드 모서리 */
   
-  /* 사용자 요청 색상 */
-  --saju-header-bg: 37 4% 98%;  /* f9f8f5 사주명식 바탕색 */
-  --bottom-nav-bg: 37 4% 98%;   /* f9f8f5 하단메뉴 바탕색 */
-  --name-card-bg: 40 3% 98%;    /* f9f8f8 이름카드 바탕색 */
+  /* 새로운 디자인 시스템 색상 */
+  --saju-header-bg: 36 12% 96%; /* 헤더 배경 */
+  --bottom-nav-bg: 36 12% 96%;  /* 하단 네비 배경 */
+  --name-card-bg: 0 0% 100%;    /* 이름 카드 배경 */
+  --clock-bg: 146 20% 92%;      /* 만세력 시계 배경 */
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 23 54% 25%;  /* 5c3b23 저장버튼색 */
-  --primary-foreground: 210 40% 98%;
-  --primary-border: 23 54% 25%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --secondary-border: 217.2 32.6% 17.5%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --destructive-border: 0 62.8% 30.6%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  /* 다크모드 모던 중성 팔레트 */
+  --background: 25 12% 10%;        /* 따뜻한 어두운 배경 */
+  --foreground: 36 8% 90%;         /* 부드러운 밝은 텍스트 */
+  --card: 25 15% 12%;              /* 카드 배경 */
+  --card-foreground: 36 8% 90%;
+  --popover: 25 15% 12%;
+  --popover-foreground: 36 8% 90%;
+  --primary: 30 33% 56%;           /* 점토색 기본 유지 */
+  --primary-foreground: 0 0% 100%;
+  --primary-border: 30 33% 56%;
+  --secondary: 146 16% 45%;        /* 어두운 세이지 그린 */
+  --secondary-foreground: 0 0% 100%;
+  --secondary-border: 146 16% 45%;
+  --muted: 25 8% 18%;              /* 뮤트 배경 */
+  --muted-foreground: 36 8% 70%;
+  --accent: 220 22% 52%;           /* 인디고 액센트 유지 */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 70% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-border: 0 70% 55%;
+  --border: 25 12% 20%;            /* 부드러운 어두운 테두리 */
+  --input: 25 12% 22%;
+  --ring: 30 33% 56%;
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
   
-  /* 다크모드에서 사용자 요청 색상 */
-  --saju-header-bg: 217.2 32.6% 17.5%;  /* 다크모드 사주명식 바탕색 */
-  --bottom-nav-bg: 217.2 32.6% 17.5%;   /* 다크모드 하단메뉴 바탕색 */
-  --name-card-bg: 217.2 32.6% 17.5%;    /* 다크모드 이름카드 바탕색 */
+  /* 다크모드 새로운 디자인 시스템 색상 */
+  --saju-header-bg: 25 15% 12%;    /* 헤더 배경 */
+  --bottom-nav-bg: 25 15% 12%;     /* 하단 네비 배경 */
+  --name-card-bg: 25 15% 14%;      /* 이름 카드 배경 */
+  --clock-bg: 146 20% 15%;         /* 만세력 시계 배경 */
 
   --opaque-button-border-intensity: 9;  /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
-
-  --background: 25 15% 8%;
-
-  --foreground: 0 0% 95%;
-
-  --border: 25 12% 16%;
-
-  --card: 25 12% 12%;
-
-  --card-foreground: 0 0% 95%;
-
-  --card-border: 25 15% 18%;
-
-  --sidebar: 25 10% 6%;
-
-  --sidebar-foreground: 0 0% 95%;
-
-  --sidebar-border: 25 12% 14%;
-
-  --sidebar-primary: 45 65% 55%;
-
-  --sidebar-primary-foreground: 25 20% 15%;
-
-  --sidebar-accent: 25 15% 18%;
-
-  --sidebar-accent-foreground: 0 0% 85%;
-
-  --sidebar-ring: 45 65% 55%;
-
-  --popover: 25 12% 12%;
-
-  --popover-foreground: 0 0% 95%;
-
-  --popover-border: 25 15% 20%;
-
-  --primary: 45 65% 55%;
-
-  --primary-foreground: 25 20% 15%;
-
-  --secondary: 25 12% 20%;
-
-  --secondary-foreground: 0 0% 85%;
-
-  --muted: 25 8% 14%;
-
-  --muted-foreground: 0 0% 70%;
-
-  --accent: 25 12% 16%;
-
-  --accent-foreground: 0 0% 85%;
-
-  --destructive: 0 65% 35%;
-
-  --destructive-foreground: 0 15% 95%;
-
-  /* Used as the border around inputs. Dark mode: Should be a border that is light enough to have high contrast when rendered on a --card background. More contrast than standard --border */
-  --input: 25 15% 24%;
-  --ring: 45 65% 55%;
-  --chart-1: 45 70% 65%;
-  --chart-2: 140 50% 55%;
-  --chart-3: 35 60% 60%;
-  --chart-4: 210 40% 55%;
-  --chart-5: 280 45% 55%;
 
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.15);
   --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.20);
