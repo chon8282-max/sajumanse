@@ -276,36 +276,22 @@ export default function SajuTable({
       const yearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
       const yearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
       
+      // 태어난 해의 간지에서 시작하여 순차적으로 계산
+      const birthYearSkyIndex = heavenlyStems.indexOf(saju.year.sky);
+      const birthYearEarthIndex = earthlyBranches.indexOf(saju.year.earth);
+      
       for (let i = 0; i < 12; i++) {
         const ageForThisColumn = startAge + 11 - i;
-        const yearForThisColumn = birthYear + (ageForThisColumn - 1);
         
-        // 갑자년(1984)을 기준으로 해당 연도의 간지 계산
-        const yearsSince1984 = yearForThisColumn - 1984;
+        // 태어난 해(1세)부터 현재 나이까지의 간지 계산
+        // 나이 - 1 = 태어난 해부터의 연도 차이
+        const yearOffset = ageForThisColumn - 1;
         
-        // 음수 처리를 위한 올바른 모듈로 연산
-        let skyIndex = yearsSince1984 % 10;
-        if (skyIndex < 0) skyIndex += 10;
-        
-        let earthIndex = yearsSince1984 % 12; 
-        if (earthIndex < 0) earthIndex += 12;
+        const skyIndex = (birthYearSkyIndex + yearOffset) % 10;
+        const earthIndex = (birthYearEarthIndex + yearOffset) % 12;
         
         const skyChar = heavenlyStems[skyIndex];
         const earthChar = earthlyBranches[earthIndex];
-        
-        // 김재완 51세 디버깅
-        if (ageForThisColumn === 51 && birthYear === 1975) {
-          console.log(`김재완 51세 세운 계산:`, {
-            age: ageForThisColumn,
-            year: yearForThisColumn,
-            yearsSince1984,
-            skyIndex,
-            earthIndex,
-            sky: skyChar,
-            earth: earthChar,
-            ganji: skyChar + earthChar
-          });
-        }
         
         skies.push(skyChar);
         earths.push(earthChar);
