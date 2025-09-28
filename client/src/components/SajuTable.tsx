@@ -512,7 +512,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(col.sky),
                 backgroundColor: getGanjiBackgroundColor(col.sky),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 fontSize: '40px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
@@ -533,7 +533,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(col.earth),
                 backgroundColor: getGanjiBackgroundColor(col.earth),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 fontSize: '40px',
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3), 1px 1px 2px rgba(0,0,0,0.2)'
@@ -566,7 +566,7 @@ export default function SajuTable({
               className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
               style={{ 
                 color: '#131313',
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
               }}
@@ -615,7 +615,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 fontSize: '22px',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
@@ -636,7 +636,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 fontSize: '22px',
                 textShadow: '1px 1px 2px rgba(0,0,0,0.3), 0.5px 0.5px 1px rgba(0,0,0,0.2)'
@@ -671,7 +671,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 fontSize: '19px',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
@@ -692,7 +692,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 fontSize: '19px',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
@@ -755,7 +755,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(sky),
                 backgroundColor: getGanjiBackgroundColor(sky),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}
@@ -775,7 +775,7 @@ export default function SajuTable({
               style={{ 
                 color: getGanjiTextColor(earth),
                 backgroundColor: getGanjiBackgroundColor(earth),
-                fontFamily: "'HanmaneumMyeongjo', sans-serif",
+                fontFamily: "'ChosunCentennial', sans-serif",
                 fontWeight: '900',
                 textShadow: '0.5px 0.5px 1px rgba(0,0,0,0.3), 0.25px 0.25px 0.5px rgba(0,0,0,0.2)'
               }}

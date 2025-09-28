@@ -23,6 +23,16 @@
   unicode-range: U+0020-007F, U+4E00-9FFF, U+AC00-D7AF;
 }
 
+/* ChosunCentennial 폰트 정의 */
+@font-face {
+  font-family: 'ChosunCentennial';
+  src: url('/attached_assets/ChosunCentennial_ttf_1758992071191.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007F, U+4E00-9FFF, U+AC00-D7AF;
+}
+
 /* MS Gothic 폰트 클래스 추가 */
 .font-tmon {
   font-family: 'MS Gothic', 'MS UI Gothic', 'Noto Serif KR', monospace !important;
