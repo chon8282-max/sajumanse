@@ -70,10 +70,12 @@ export default function CurrentTimeTable({
             return (
               <div 
                 key={`sky-${index}`} 
-                className="p-1 text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center"
+                className="text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
-                  fontFamily: "'ChosunKim', sans-serif"
+                  fontFamily: "'ChosunKim', sans-serif",
+                  padding: '0',
+                  margin: '0'
                 }}
                 data-testid={`text-current-sky-${index}`}
               >
@@ -81,7 +83,8 @@ export default function CurrentTimeTable({
                   <img 
                     src={cheonganImage} 
                     alt={col.sky} 
-                    className="w-6 h-6 object-contain"
+                    className="w-full h-full object-cover"
+                    style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
                   <span className="text-gray-800">{col.sky}</span>
@@ -111,7 +114,7 @@ export default function CurrentTimeTable({
                   <img 
                     src={jijiImage} 
                     alt={col.earth} 
-                    className="w-6 h-6 object-contain"
+                    className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
