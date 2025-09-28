@@ -233,6 +233,9 @@ export default function SajuTable({
   // 선택된 歲運 나이 상태 (초기값: 현재 나이)
   const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
   
+  // 월운 활성화 상태
+  const [isWolunActive, setIsWolunActive] = useState<boolean>(false);
+  
   // 오행 표시 상태 관리
   const [showWuxing, setShowWuxing] = useState(false);
   
@@ -1058,7 +1061,20 @@ export default function SajuTable({
                 style={{ backgroundColor: isSelectedAge ? undefined : '#fde8fa' }}
                 onClick={() => {
                   if (!isDragging.current) {
-                    handleSaeunAgeClick(correspondingAge);
+                    // 1열과 2열(colIndex 0, 1)은 월운 활성화 동작
+                    if (colIndex === 0 || colIndex === 1) {
+                      // 월운 모드 토글
+                      setIsWolunActive(!isWolunActive);
+                      // 선택된 나이도 설정 (월운 계산용)
+                      setSelectedSaeunAge(correspondingAge);
+                      if (onSaeunClick) {
+                        onSaeunClick(correspondingAge);
+                      }
+                    } else {
+                      // 나머지 열은 세운 모드로 전환하고 기존 처리
+                      setIsWolunActive(false);
+                      handleSaeunAgeClick(correspondingAge);
+                    }
                   }
                 }}
                 data-testid={`text-saeun-year-${colIndex}`}
@@ -1165,27 +1181,39 @@ export default function SajuTable({
         {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
-            className="py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-black"
-            style={{ backgroundColor: '#f6f8fc' }}
+            className={`py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center ${
+              isWolunActive 
+                ? 'text-blue-800 dark:text-blue-300 border-2 border-blue-500' 
+                : 'text-black dark:text-white'
+            }`}
+            style={{ 
+              backgroundColor: isWolunActive ? '#e0f2fe' : '#f6f8fc',
+              transition: 'all 0.3s ease'
+            }}
             data-testid="text-wolun-title"
           >
-            월운(月運)
+            월운(月運) {isWolunActive && '✓ 활성화'}
           </div>
         </div>
 
         {/* 14행: 월운 천간 (우측에서 좌측) */}
-        <div className="grid grid-cols-13 border-b border-border">
+        <div className={`grid grid-cols-13 border-b border-border ${
+          isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
+        }`}>
           {wolunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky);
             return (
               <div 
                 key={`wolun-sky-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                className={`text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center ${
+                  isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
+                }`}
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: isWolunActive ? undefined : 'white',
                   fontFamily: "'ChosunKim', sans-serif",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  transition: 'all 0.3s ease'
                 }}
                 data-testid={`text-wolun-sky-${colIndex}`}
               >
@@ -1205,15 +1233,19 @@ export default function SajuTable({
         </div>
 
         {/* 15행: 월운 지지 (우측에서 좌측) */}
-        <div className="grid grid-cols-13 border-b border-border">
+        <div className={`grid grid-cols-13 border-b border-border ${
+          isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
+        }`}>
           {wolunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth);
             return (
               <div 
                 key={`wolun-earth-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                className={`text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center ${
+                  isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
+                }`}
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: isWolunActive ? undefined : 'white',
                   fontFamily: "'ChosunKim', sans-serif",
                   padding: '0',
                   margin: '0'
