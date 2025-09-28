@@ -113,10 +113,18 @@ export default function SajuInput() {
 
   const handleSubmit = async () => {
     // 생년월일 필수 검증
-    if (!formData.year || !formData.month || !formData.day) {
+    const yearNum = parseInt(formData.year);
+    const monthNum = parseInt(formData.month);
+    const dayNum = parseInt(formData.day);
+    
+    if (!formData.year || !formData.month || !formData.day || 
+        isNaN(yearNum) || isNaN(monthNum) || isNaN(dayNum) ||
+        yearNum < 1900 || yearNum > 2100 ||
+        monthNum < 1 || monthNum > 12 ||
+        dayNum < 1 || dayNum > 31) {
       toast({
         title: "입력 오류", 
-        description: "생년월일을 모두 입력해주세요.",
+        description: "올바른 생년월일을 입력해주세요. (년: 1900-2100, 월: 1-12, 일: 1-31)",
         variant: "destructive",
       });
       return;
@@ -133,9 +141,9 @@ export default function SajuInput() {
       // API 요청 데이터 준비 (이름이 비어있으면 "이름없음" 사용)
       const requestData = {
         name: formData.name.trim() || "이름없음",
-        birthYear: parseInt(formData.year),
-        birthMonth: parseInt(formData.month),
-        birthDay: parseInt(formData.day),
+        birthYear: yearNum,
+        birthMonth: monthNum,
+        birthDay: dayNum,
         birthTime: formData.selectedTimeCode || formData.birthTime.trim() || null,
         calendarType: formData.calendarType,
         gender: formData.gender,
@@ -174,9 +182,17 @@ export default function SajuInput() {
       }
     } catch (error) {
       console.error("사주 저장 오류:", error);
+      
+      // 네트워크 오류인지 확인
+      const isNetworkError = error instanceof Error && 
+        (error.message.includes("fetch") || error.message.includes("Failed to fetch") || 
+         error.message.includes("네트워크") || error.message.includes("network"));
+      
       toast({
-        title: "저장 실패",
-        description: error instanceof Error ? error.message : "사주 정보 저장 중 오류가 발생했습니다.",
+        title: isNetworkError ? "네트워크 연결 오류" : "저장 실패",
+        description: isNetworkError 
+          ? "인터넷 연결을 확인하고 다시 시도해주세요."
+          : (error instanceof Error ? error.message : "사주 정보 저장 중 오류가 발생했습니다."),
         variant: "destructive",
       });
     } finally {
@@ -250,10 +266,12 @@ export default function SajuInput() {
           <div className="flex gap-2 items-center">
             <Input
               id="year"
+              type="number"
+              inputMode="numeric"
               value={formData.year}
               onChange={(e) => handleInputChange("year", e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, "month")}
-              placeholder="____"
+              placeholder=""
               maxLength={4}
               data-testid="input-year"
               className="w-20 text-center"
@@ -261,10 +279,12 @@ export default function SajuInput() {
             <span className="text-sm">년</span>
             <Input
               id="month"
+              type="number"
+              inputMode="numeric"
               value={formData.month}
               onChange={(e) => handleInputChange("month", e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, "day")}
-              placeholder="__"
+              placeholder=""
               maxLength={2}
               data-testid="input-month"
               className="w-16 text-center"
@@ -272,6 +292,8 @@ export default function SajuInput() {
             <span className="text-sm">월</span>
             <Input
               id="day"
+              type="number"
+              inputMode="numeric"
               value={formData.day}
               onChange={(e) => handleInputChange("day", e.target.value)}
               onKeyDown={(e) => {
@@ -284,7 +306,7 @@ export default function SajuInput() {
                   }
                 }
               }}
-              placeholder="__"
+              placeholder=""
               maxLength={2}
               data-testid="input-day"
               className="w-16 text-center"
