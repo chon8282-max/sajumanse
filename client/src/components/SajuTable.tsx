@@ -6,6 +6,7 @@ import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
+import gongmangImage from "@assets/gongmang_1759099902237.png";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -821,11 +822,7 @@ export default function SajuTable({
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '3.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth);
-            const gongmangStyle = isGongmang(col.earth) ? {
-              border: '2px solid #f2ecec',
-              borderRadius: '50%',
-              margin: '4px'
-            } : {};
+            const isGongmangPosition = isGongmang(col.earth);
             
             return (
               <div 
@@ -836,7 +833,8 @@ export default function SajuTable({
                   fontFamily: "'ChosunKim', sans-serif",
                   minHeight: '3.5rem',
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  position: 'relative'
                 }}
                 data-testid={`text-earth-${index}`}
               >
@@ -846,8 +844,7 @@ export default function SajuTable({
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    ...gongmangStyle
+                    justifyContent: 'center'
                   }}
                 >
                   {jijiImage ? (
@@ -861,6 +858,14 @@ export default function SajuTable({
                     <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
                   )}
                 </div>
+                {isGongmangPosition && (
+                  <img 
+                    src={gongmangImage}
+                    alt="공망"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                )}
               </div>
             );
           })}
@@ -987,11 +992,7 @@ export default function SajuTable({
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth);
-            const gongmangStyle = isGongmang(earth) ? {
-              border: '2px solid #f2ecec',
-              borderRadius: '50%',
-              margin: '4px'
-            } : {};
+            const isGongmangPosition = isGongmang(earth);
             
             return (
               <div 
@@ -1001,7 +1002,8 @@ export default function SajuTable({
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  position: 'relative'
                 }}
                 data-testid={`text-daeun-earth-${colIndex}`}
               >
@@ -1011,8 +1013,7 @@ export default function SajuTable({
                     height: '100%',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    ...gongmangStyle
+                    justifyContent: 'center'
                   }}
                 >
                   {jijiImage ? (
@@ -1026,6 +1027,14 @@ export default function SajuTable({
                     <span className="text-gray-800" style={{ fontSize: '22px' }}>{earth}</span>
                   )}
                 </div>
+                {isGongmangPosition && (
+                  <img 
+                    src={gongmangImage}
+                    alt="공망"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    style={{ margin: '0', padding: '0' }}
+                  />
+                )}
               </div>
             );
           })}
