@@ -61,26 +61,32 @@ export default function TraditionalCalendar({
     },
   });
 
-  // 절기 데이터 조회 (임시로 고정값 사용)
+  // 절기 데이터 조회
+  const { data: solarTermsData } = useQuery({
+    queryKey: [`/api/solar-terms`, currentYear, currentMonth],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/solar-terms/${currentYear}/${currentMonth}`);
+      return response.json();
+    },
+  });
+
   const solarTerms: SolarTermInfo[] = useMemo(() => {
-    if (currentYear === 2025 && currentMonth === 9) {
-      return [
-        {
-          name: "백로",
-          date: new Date(2025, 8, 7, 17, 52),
-          dateString: "09/07",
-          timeString: "17:52"
-        },
-        {
-          name: "추분", 
-          date: new Date(2025, 8, 23, 3, 19),
-          dateString: "09/23",
-          timeString: "03:19"
-        }
-      ];
-    }
-    return [];
-  }, [currentYear, currentMonth]);
+    if (!solarTermsData?.success) return [];
+    
+    return solarTermsData.data.map((term: any) => ({
+      name: term.name,
+      date: new Date(term.date),
+      dateString: new Date(term.date).toLocaleDateString('ko-KR', { 
+        month: '2-digit', 
+        day: '2-digit' 
+      }).replace('. ', '/').replace('.', ''),
+      timeString: new Date(term.date).toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      })
+    }));
+  }, [solarTermsData]);
 
   // 달력 데이터와 음력 데이터 결합
   const enrichedCalendarData = useMemo(() => {
