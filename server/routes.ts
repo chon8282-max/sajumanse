@@ -10,6 +10,7 @@ import {
   getLunarDataForYear, 
   getLunarDataForYearRange 
 } from "./lib/data-gov-kr-service";
+import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1288,6 +1289,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Offline data retrieval error:', error);
       res.status(500).json({ 
         error: "오프라인 데이터 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // ========================================
+  // 절기 관련 API 라우트
+  // ========================================
+
+  // 특정 년도의 절기 정보 조회
+  app.get("/api/solar-terms/:year", async (req, res) => {
+    try {
+      const year = parseInt(req.params.year);
+      
+      if (!year || year < 1900 || year > 2100) {
+        return res.status(400).json({ 
+          error: "올바른 년도를 입력해주세요 (1900-2100)" 
+        });
+      }
+
+      console.log(`Fetching solar terms for year: ${year}`);
+      const solarTerms = await getSolarTermsForYear(year);
+      
+      res.json({
+        success: true,
+        data: solarTerms,
+        year: year
+      });
+    } catch (error) {
+      console.error('Solar terms retrieval error:', error);
+      res.status(500).json({ 
+        error: "절기 정보 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 특정 월의 절기 정보 조회
+  app.get("/api/solar-terms/:year/:month", async (req, res) => {
+    try {
+      const year = parseInt(req.params.year);
+      const month = parseInt(req.params.month);
+      
+      if (!year || !month || year < 1900 || year > 2100 || month < 1 || month > 12) {
+        return res.status(400).json({ 
+          error: "올바른 년도와 월을 입력해주세요 (년도: 1900-2100, 월: 1-12)" 
+        });
+      }
+
+      console.log(`Fetching solar terms for ${year}-${month}`);
+      const allSolarTerms = await getSolarTermsForYear(year);
+      
+      // 해당 월의 절기들 필터링 (해당 월에 시작하는 절기들)
+      const monthSolarTerms = allSolarTerms.filter(term => {
+        const termMonth = term.date.getMonth() + 1;
+        return termMonth === month;
+      });
+      
+      res.json({
+        success: true,
+        data: monthSolarTerms,
+        year: year,
+        month: month
+      });
+    } catch (error) {
+      console.error('Monthly solar terms retrieval error:', error);
+      res.status(500).json({ 
+        error: "월별 절기 정보 조회 중 오류가 발생했습니다." 
       });
     }
   });
