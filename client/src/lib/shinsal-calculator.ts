@@ -19,6 +19,20 @@ const CHEONUL_GWIIN_MAP: Record<string, string[]> = {
   "癸": ["巳", "卯"]
 };
 
+// 문창귀인 매핑 테이블
+const MUNCHANG_GWIIN_MAP: Record<string, string[]> = {
+  "甲": ["巳", "午"],
+  "乙": ["巳", "午"],
+  "丙": ["申", "酉"],
+  "丁": ["申", "酉"],
+  "戊": ["申", "酉"],
+  "己": ["申", "酉"],
+  "庚": ["亥", "子"],
+  "辛": ["亥", "子"],
+  "壬": ["寅", "卯"],
+  "癸": ["寅", "卯"]
+};
+
 export interface ShinSalResult {
   yearPillar: string[];
   monthPillar: string[];
@@ -68,8 +82,61 @@ export function calculateCheonulGwiin(
 }
 
 /**
- * 모든 신살 계산 (현재는 천을귀인만 포함)
- * 향후 다른 신살들을 추가할 수 있도록 확장 가능한 구조
+ * 문창귀인(文昌貴人) 계산
+ * 일간을 기준으로 년주, 월주, 일주, 시주의 지지에서 문창귀인을 찾습니다.
+ */
+export function calculateMunchangGwiin(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  // 일간에 해당하는 문창귀인 지지 목록 가져오기
+  const munchangGwiinEarths = MUNCHANG_GWIIN_MAP[daySky] || [];
+
+  // 각 주의 지지가 문창귀인에 해당하는지 확인
+  if (munchangGwiinEarths.includes(yearEarth)) {
+    result.yearPillar.push("문창귀인");
+  }
+  
+  if (munchangGwiinEarths.includes(monthEarth)) {
+    result.monthPillar.push("문창귀인");
+  }
+  
+  if (munchangGwiinEarths.includes(dayEarth)) {
+    result.dayPillar.push("문창귀인");
+  }
+  
+  if (munchangGwiinEarths.includes(hourEarth)) {
+    result.hourPillar.push("문창귀인");
+  }
+
+  return result;
+}
+
+/**
+ * 여러 신살 결과를 합치는 유틸리티 함수
+ */
+function mergeShinSalResults(result1: ShinSalResult, result2: ShinSalResult): ShinSalResult {
+  return {
+    yearPillar: [...result1.yearPillar, ...result2.yearPillar],
+    monthPillar: [...result1.monthPillar, ...result2.monthPillar],
+    dayPillar: [...result1.dayPillar, ...result2.dayPillar],
+    hourPillar: [...result1.hourPillar, ...result2.hourPillar]
+  };
+}
+
+/**
+ * 모든 신살 계산 (천을귀인, 문창귀인 포함)
+ * 여러 신살이 동시에 나타날 수 있습니다.
  */
 export function calculateAllShinSal(
   daySky: string,
@@ -78,10 +145,14 @@ export function calculateAllShinSal(
   dayEarth: string,
   hourEarth: string
 ): ShinSalResult {
-  // 현재는 천을귀인만 계산
+  // 천을귀인 계산
   const cheonulGwiin = calculateCheonulGwiin(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
   
-  return cheonulGwiin;
+  // 문창귀인 계산
+  const munchangGwiin = calculateMunchangGwiin(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 두 신살 결과를 합쳐서 반환
+  return mergeShinSalResults(cheonulGwiin, munchangGwiin);
 }
 
 /**
