@@ -7,6 +7,7 @@ import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal } from "@/lib/shinsal-calculator";
+import BirthTimeSelector from "@/components/BirthTimeSelector";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -32,6 +33,7 @@ interface SajuTableProps {
   onDaeunClick?: (period: DaeunPeriod) => void;
   onSaeunClick?: (age: number) => void;
   onSaeunScroll?: (direction: 'left' | 'right') => void;
+  onBirthTimeChange?: (timeCode: string) => void;
 }
 
 // 지장간 계산 - 사용자 요청 수정사항 반영
@@ -205,7 +207,8 @@ export default function SajuTable({
   saeunData,
   onDaeunClick,
   onSaeunClick,
-  onSaeunScroll
+  onSaeunScroll,
+  onBirthTimeChange
 }: SajuTableProps) {
 
   // 나이 계산 (간지년 기준)
@@ -237,6 +240,9 @@ export default function SajuTable({
   
   // 신살 표시 상태 관리 (기본값: false, 지장간 표시)
   const [showShinsal, setShowShinsal] = useState(false);
+  
+  // 생시 선택 모달 상태 관리
+  const [isBirthTimeSelectorOpen, setIsBirthTimeSelectorOpen] = useState(false);
   
   
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
@@ -294,6 +300,18 @@ export default function SajuTable({
     }
     isDragging.current = false;
   }, [onSaeunScroll]);
+
+  // 생시 선택 관련 핸들러
+  const handleHourEarthClick = useCallback(() => {
+    setIsBirthTimeSelectorOpen(true);
+  }, []);
+
+  const handleBirthTimeSelect = useCallback((timeCode: string) => {
+    if (onBirthTimeChange) {
+      onBirthTimeChange(timeCode);
+    }
+    setIsBirthTimeSelectorOpen(false);
+  }, [onBirthTimeChange]);
 
   // 생시 한자 표시 함수
   const formatBirthHour = (hour?: string): string => {
@@ -895,11 +913,14 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth);
             const isGongmangPosition = isGongmang(col.earth);
+            const isHourEarth = index === 0; // 시지(첫 번째 칸)인지 확인
             
             return (
               <div 
                 key={`earth-${index}`} 
-                className="text-center font-bold border-r border-border flex items-center justify-center"
+                className={`text-center font-bold border-r border-border flex items-center justify-center ${
+                  isHourEarth ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
+                }`}
                 style={{ 
                   backgroundColor: isGongmangPosition ? '#9CA3AF' : 'white',  // 공망은 회색 배경
                   fontFamily: "'ChosunKim', sans-serif",
@@ -909,6 +930,7 @@ export default function SajuTable({
                   position: 'relative'
                 }}
                 data-testid={`text-earth-${index}`}
+                onClick={isHourEarth ? handleHourEarthClick : undefined}
               >
                 <div 
                   style={{
@@ -1407,6 +1429,14 @@ export default function SajuTable({
           </div>
         </div>
       )}
+      
+      {/* 생시 선택 모달 */}
+      <BirthTimeSelector
+        isOpen={isBirthTimeSelectorOpen}
+        onClose={() => setIsBirthTimeSelectorOpen(false)}
+        onSelect={handleBirthTimeSelect}
+        currentTime={birthHour}
+      />
     </Card>
   );
 }

@@ -280,6 +280,37 @@ export default function SajuResult() {
     });
   }, []);
 
+  // 생시 변경 핸들러 (useMutation 사용)
+  const birthTimeUpdateMutation = useMutation({
+    mutationFn: async (timeCode: string) => {
+      if (!params?.id) throw new Error('No ID provided');
+      
+      return apiRequest('PATCH', `/api/saju-records/${params.id}`, { birthTime: timeCode });
+    },
+    onSuccess: (_, timeCode) => {
+      // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      toast({
+        title: "생시 변경됨",
+        description: `생시가 ${timeCode}로 변경되었습니다.`,
+        duration: 1000
+      });
+    },
+    onError: (error) => {
+      console.error('Birth time update error:', error);
+      toast({
+        title: "변경 오류",
+        description: "생시 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+        duration: 1000
+      });
+    }
+  });
+
+  const handleBirthTimeChange = useCallback((timeCode: string) => {
+    birthTimeUpdateMutation.mutate(timeCode);
+  }, [birthTimeUpdateMutation]);
+
   // 잘못된 경로인 경우 리다이렉트
   useEffect(() => {
     if (!match || !params?.id) {
@@ -449,6 +480,7 @@ export default function SajuResult() {
           onDaeunClick={handleDaeunClick}
           onSaeunClick={handleSaeunClick}
           onSaeunScroll={handleSaeunScroll}
+          onBirthTimeChange={handleBirthTimeChange}
         />
 
 
