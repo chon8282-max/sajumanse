@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI, CHINESE_TO_KOREAN_MAP, KOREAN_TO_CHINESE_MAP } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
+import { calculateMonthGanji } from "@/lib/calendar-calculator";
 import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
@@ -640,20 +641,23 @@ export default function SajuTable({
     const startSky = wolunSkyStartTable[targetYearSky] || "乙";
     const startSkyIndex = heavenlyStems.indexOf(startSky);
     
+    // 월운은 calculateMonthGanji 함수 사용하여 60갑자 순환 적용
     const skies: string[] = [];
+    const earths: string[] = [];
     
-    // 15행 지지: 축자해술유신미오사진묘인축 (13개) 고정 - 우측부터 좌측으로
-    const earths = ["丑", "子", "亥", "戌", "酉", "申", "未", "午", "巳", "辰", "卯", "寅", "丑"];
-
-    // 14행 천간: 13열부터 1열방향으로 순행 (기→경→신→임 순서)
+    // 13개월에 대해 각각 60갑자 순환으로 월간지 계산 
     for (let i = 0; i < 13; i++) {
-      // 천간 순환: 시작 천간에서 i만큼 순행 (기→경→신→임 순서)
-      const skyIndex = (startSkyIndex + i) % 10;
-      skies.push(heavenlyStems[skyIndex]);
+      const monthOffset = 13 - i; // 13월부터 1월까지 (우측에서 좌측)
+      const currentMonth = monthOffset > 12 ? monthOffset - 12 : monthOffset;
+      
+      // 1월~8월인 경우 다음해로 계산 (월운은 연속된 13개월)
+      const currentYear = currentMonth < 9 ? targetYear + 1 : targetYear;
+      
+      // 해당 연도/월의 정확한 월간지 계산
+      const monthGanji = calculateMonthGanji(currentYear, currentMonth);
+      skies.push(monthGanji.sky);
+      earths.push(monthGanji.earth);
     }
-
-    // 배열을 뒤집어서 13열부터 1열방향으로 순행되도록 함
-    skies.reverse();
 
     return { skies, earths };
   }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years]);
