@@ -1359,6 +1359,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 년도별 전체 24절기 API
+  app.get("/api/solar-terms/:year", async (req, res) => {
+    try {
+      const year = parseInt(req.params.year);
+      
+      if (!year || year < 1900 || year > 2100) {
+        return res.status(400).json({ 
+          error: "올바른 년도를 입력해주세요 (년도: 1900-2100)" 
+        });
+      }
+
+      console.log(`Fetching all solar terms for ${year}`);
+      const allSolarTerms = await getSolarTermsForYear(year);
+      
+      res.json({
+        success: true,
+        data: allSolarTerms,
+        year: year,
+        count: allSolarTerms.length
+      });
+    } catch (error) {
+      console.error('Yearly solar terms retrieval error:', error);
+      res.status(500).json({ 
+        error: "연도별 절기 정보 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
