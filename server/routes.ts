@@ -131,29 +131,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // 사주 기록 저장 (사주팔자는 나중에 계산 후 업데이트)
       const savedRecord = await storage.createSajuRecord(validatedData);
 
-      // 생시가 있고 년월일이 모두 입력된 경우 사주팔자 계산
-      if (validatedData.birthTime && validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay) {
+      // 년월일이 모두 입력된 경우 음력 변환 시도 (생시 유무와 상관없이)
+      if (validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay) {
         try {
-          let hour = 0;
-          let minute = 0;
-          
-          // 전통 시간대 코드인지 확인 (예: "子時")
-          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
-          if (timePeriod) {
-            // 전통 시간대의 대표 시간 사용
-            hour = timePeriod.hour;
-            minute = 0;
-          } else {
-            // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
-            const timeStr = validatedData.birthTime;
-            if (timeStr.includes(':')) {
-              hour = parseInt(timeStr.split(':')[0]) || 0;
-              minute = parseInt(timeStr.split(':')[1]) || 0;
-            } else {
-              hour = parseInt(timeStr) || 0;
-            }
-          }
-          
           // 음력 변환 (양력 입력인 경우)
           let lunarConversion = null;
           let sajuCalculationYear = validatedData.birthYear;
@@ -195,29 +175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
 
-          console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
-          const sajuResult = calculateSaju(
-            sajuCalculationYear,      // 년월주는 음력
-            sajuCalculationMonth,
-            sajuCalculationDay,
-            hour,
-            minute,
-            validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
-            solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-            null  // apiData - 로컬 계산만 사용하므로 null
-          );
-          console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
-
-          // 계산된 사주팔자와 음력 정보로 업데이트
+          // 음력 정보 저장을 위한 기본 updateData 준비
           const updateData: any = {
-            yearSky: sajuResult.year.sky,
-            yearEarth: sajuResult.year.earth,
-            monthSky: sajuResult.month.sky,
-            monthEarth: sajuResult.month.earth,
-            daySky: sajuResult.day.sky,
-            dayEarth: sajuResult.day.earth,
-            hourSky: sajuResult.hour.sky,
-            hourEarth: sajuResult.hour.earth,
             calendarType: validatedData.calendarType  // 원본 달력 타입 보존
           };
 
@@ -240,31 +199,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updateData.birthDay = solarCalcDay;
           }
 
-          const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+          // 생시가 있는 경우에만 사주팔자 계산
+          if (validatedData.birthTime) {
+            try {
+              let hour = 0;
+              let minute = 0;
+              
+              // 전통 시간대 코드인지 확인 (예: "子時")
+              const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
+              if (timePeriod) {
+                // 전통 시간대의 대표 시간 사용
+                hour = timePeriod.hour;
+                minute = 0;
+              } else {
+                // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
+                const timeStr = validatedData.birthTime;
+                if (timeStr.includes(':')) {
+                  hour = parseInt(timeStr.split(':')[0]) || 0;
+                  minute = parseInt(timeStr.split(':')[1]) || 0;
+                } else {
+                  hour = parseInt(timeStr) || 0;
+                }
+              }
 
+              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+              const sajuResult = calculateSaju(
+                sajuCalculationYear,      // 년월주는 음력
+                sajuCalculationMonth,
+                sajuCalculationDay,
+                hour,
+                minute,
+                validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
+                solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
+                null  // apiData - 로컬 계산만 사용하므로 null
+              );
+              console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+
+              // 사주팔자 정보 추가
+              updateData.yearSky = sajuResult.year.sky;
+              updateData.yearEarth = sajuResult.year.earth;
+              updateData.monthSky = sajuResult.month.sky;
+              updateData.monthEarth = sajuResult.month.earth;
+              updateData.daySky = sajuResult.day.sky;
+              updateData.dayEarth = sajuResult.day.earth;
+              updateData.hourSky = sajuResult.hour.sky;
+              updateData.hourEarth = sajuResult.hour.earth;
+
+              const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+
+              res.json({
+                success: true,
+                data: {
+                  record: updatedRecord,
+                  sajuInfo: sajuResult
+                },
+                message: "사주 정보가 성공적으로 저장되었습니다."
+              });
+            } catch (sajuError) {
+              console.error('Saju calculation error:', sajuError);
+              // 사주 계산 실패시에도 음력 정보는 저장
+              const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+              res.status(500).json({
+                success: false,
+                error: sajuError instanceof Error ? sajuError.message : '사주팔자 계산 중 오류가 발생했습니다.',
+                details: '정확한 사주팔자 계산을 위해 API 연결이 필요합니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.',
+                data: { record: updatedRecord }
+              });
+            }
+          } else {
+            // 생시가 없는 경우: 음력 정보만 저장
+            const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+            res.json({
+              success: true,
+              data: { record: updatedRecord },
+              message: "사주 기본 정보가 저장되었습니다. (생시 정보 없음으로 사주팔자 미계산)"
+            });
+          }
+        } catch (conversionError) {
+          console.error('Date conversion error:', conversionError);
+          // 음력 변환 실패시에도 기본 정보는 저장됨
           res.json({
             success: true,
-            data: {
-              record: updatedRecord,
-              sajuInfo: sajuResult
-            },
-            message: "사주 정보가 성공적으로 저장되었습니다."
-          });
-        } catch (sajuError) {
-          console.error('Saju calculation error:', sajuError);
-          // 사주 계산 실패시 사용자에게 명확한 오류 메시지 전달
-          res.status(500).json({
-            success: false,
-            error: sajuError instanceof Error ? sajuError.message : '사주팔자 계산 중 오류가 발생했습니다.',
-            details: '정확한 사주팔자 계산을 위해 API 연결이 필요합니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.'
+            data: { record: savedRecord },
+            message: "사주 기본 정보가 저장되었습니다. (음력 변환 실패)"
           });
         }
       } else {
-        // 생시나 생년월일이 불완전한 경우
+        // 생년월일이 불완전한 경우
         res.json({
           success: true,
           data: { record: savedRecord },
-          message: "사주 기본 정보가 저장되었습니다. (생시 정보 불완전으로 사주팔자 미계산)"
+          message: "사주 기본 정보가 저장되었습니다. (생년월일 정보 불완전)"
         });
       }
     } catch (error) {
@@ -342,29 +367,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // 생시와 생년월일이 모두 있고, 달력 타입이 변경된 경우 사주 재계산
-      if (validatedData.birthTime && validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay && validatedData.calendarType) {
+      // 년월일과 달력 타입이 변경된 경우 음력 변환 시도 (생시 유무와 상관없이)
+      if (validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay && validatedData.calendarType) {
         try {
-          let hour = 0;
-          let minute = 0;
-          
-          // 전통 시간대 코드인지 확인 (예: "子時")
-          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
-          if (timePeriod) {
-            // 전통 시간대의 대표 시간 사용
-            hour = timePeriod.hour;
-            minute = 0;
-          } else {
-            // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
-            const timeStr = validatedData.birthTime;
-            if (timeStr.includes(':')) {
-              hour = parseInt(timeStr.split(':')[0]) || 0;
-              minute = parseInt(timeStr.split(':')[1]) || 0;
-            } else {
-              hour = parseInt(timeStr) || 0;
-            }
-          }
-          
           // 음력 변환 (양력 입력인 경우)
           let lunarConversion = null;
           let sajuCalculationYear = validatedData.birthYear;
@@ -406,29 +411,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
 
-          console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
-          const sajuResult = calculateSaju(
-            sajuCalculationYear,      // 년월주는 음력
-            sajuCalculationMonth,
-            sajuCalculationDay,
-            hour,
-            minute,
-            validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
-            solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-            null  // apiData - 로컬 계산만 사용하므로 null
-          );
-          console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
-
-          // 계산된 사주팔자와 음력 정보로 업데이트
+          // 음력 정보 저장을 위한 기본 updateData 준비
           const updateData: any = {
-            yearSky: sajuResult.year.sky,
-            yearEarth: sajuResult.year.earth,
-            monthSky: sajuResult.month.sky,
-            monthEarth: sajuResult.month.earth,
-            daySky: sajuResult.day.sky,
-            dayEarth: sajuResult.day.earth,
-            hourSky: sajuResult.hour.sky,
-            hourEarth: sajuResult.hour.earth,
             calendarType: validatedData.calendarType  // 원본 달력 타입 보존
           };
 
@@ -451,27 +435,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updateData.birthDay = solarCalcDay;
           }
 
-          updatedRecord = await storage.updateSajuRecord(id, updateData);
+          // 생시가 있는 경우에만 사주팔자 계산
+          if (validatedData.birthTime) {
+            try {
+              let hour = 0;
+              let minute = 0;
+              
+              // 전통 시간대 코드인지 확인 (예: "子時")
+              const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
+              if (timePeriod) {
+                // 전통 시간대의 대표 시간 사용
+                hour = timePeriod.hour;
+                minute = 0;
+              } else {
+                // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
+                const timeStr = validatedData.birthTime;
+                if (timeStr.includes(':')) {
+                  hour = parseInt(timeStr.split(':')[0]) || 0;
+                  minute = parseInt(timeStr.split(':')[1]) || 0;
+                } else {
+                  hour = parseInt(timeStr) || 0;
+                }
+              }
 
-          res.json({
-            success: true,
-            data: {
-              record: updatedRecord,
-              sajuInfo: sajuResult
-            },
-            message: "사주 정보가 성공적으로 업데이트되었습니다."
-          });
-        } catch (sajuError) {
-          console.error('Saju calculation error:', sajuError);
-          // 사주 계산 실패시 기본 업데이트 결과 반환
+              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+              const sajuResult = calculateSaju(
+                sajuCalculationYear,      // 년월주는 음력
+                sajuCalculationMonth,
+                sajuCalculationDay,
+                hour,
+                minute,
+                validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
+                solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
+                null  // apiData - 로컬 계산만 사용하므로 null
+              );
+              console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+
+              // 사주팔자 정보 추가
+              updateData.yearSky = sajuResult.year.sky;
+              updateData.yearEarth = sajuResult.year.earth;
+              updateData.monthSky = sajuResult.month.sky;
+              updateData.monthEarth = sajuResult.month.earth;
+              updateData.daySky = sajuResult.day.sky;
+              updateData.dayEarth = sajuResult.day.earth;
+              updateData.hourSky = sajuResult.hour.sky;
+              updateData.hourEarth = sajuResult.hour.earth;
+
+              updatedRecord = await storage.updateSajuRecord(id, updateData);
+
+              res.json({
+                success: true,
+                data: {
+                  record: updatedRecord,
+                  sajuInfo: sajuResult
+                },
+                message: "사주 정보가 성공적으로 업데이트되었습니다."
+              });
+            } catch (sajuError) {
+              console.error('Saju calculation error:', sajuError);
+              // 사주 계산 실패시에도 음력 정보는 저장
+              updatedRecord = await storage.updateSajuRecord(id, updateData);
+              res.json({
+                success: true,
+                data: updatedRecord,
+                message: "기본 정보 및 음력 정보만 업데이트되었습니다. (사주 계산 오류)"
+              });
+            }
+          } else {
+            // 생시가 없는 경우: 음력 정보만 저장
+            updatedRecord = await storage.updateSajuRecord(id, updateData);
+            res.json({
+              success: true,
+              data: updatedRecord,
+              message: "사주 기본 정보 및 음력 정보가 업데이트되었습니다. (생시 정보 없음으로 사주팔자 미계산)"
+            });
+          }
+        } catch (conversionError) {
+          console.error('Date conversion error:', conversionError);
+          // 음력 변환 실패시에도 기본 업데이트 결과 반환
           res.json({
             success: true,
             data: updatedRecord,
-            message: "기본 정보만 업데이트되었습니다. (사주 계산 오류)"
+            message: "기본 정보만 업데이트되었습니다. (음력 변환 실패)"
           });
         }
       } else {
-        // 생시나 생년월일이 없는 경우 기본 업데이트만
+        // 생년월일이나 달력 타입이 없는 경우 기본 업데이트만
         res.json({
           success: true,
           data: updatedRecord,
