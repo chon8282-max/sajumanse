@@ -24,30 +24,44 @@ export function calculateYearGanji(year: number): { sky: string; earth: string }
   };
 }
 
+// 60갑자 순환 배열 생성
+function generate60Ganji(): string[] {
+  const ganji60: string[] = [];
+  for (let i = 0; i < 60; i++) {
+    const sky = CHEONGAN[i % 10];
+    const earth = JIJI[i % 12];
+    ganji60.push(sky + earth);
+  }
+  return ganji60;
+}
+
+const GANJI_60 = generate60Ganji();
+
+// 기준 월간지 (2000년 1월 = 정축월로 설정)
+const BASE_YEAR = 2000;
+const BASE_MONTH = 1;
+const BASE_MONTH_GANJI_INDEX = 13; // 정축(丁丑) = 14번째 (0부터 시작이므로 13)
+
 /**
- * 월간지 계산 (월의 간지)
+ * 월간지 계산 (월의 간지) - 60갑자 순환 방식
  * @param year 서기 연도
  * @param month 서기 월 (1-12)
  * @returns {sky: string, earth: string} 천간과 지지
  */
 export function calculateMonthGanji(year: number, month: number): { sky: string; earth: string } {
-  // 월지는 양력 기준으로 고정 매핑
-  const earthIndex = (month - 1) % 12;
-  const earth = MONTH_DIZHI[earthIndex];
+  // 기준년월로부터 총 개월수 차이 계산
+  const totalMonths = (year - BASE_YEAR) * 12 + (month - BASE_MONTH);
   
-  // 월천간은 년천간에 따라 달라짐 - 정확한 룩업 테이블 사용
-  const yearGanji = calculateYearGanji(year);
-  const yearSky = yearGanji.sky;
+  // 60갑자 순환에서 해당 월간지 인덱스 계산
+  const ganjiIndex = (BASE_MONTH_GANJI_INDEX + totalMonths) % 60;
   
-  // 년천간별 월천간 매핑 테이블에서 해당 월의 천간 조회
-  const monthSkyArray = YEAR_MONTH_SKY_MAP[yearSky];
-  if (!monthSkyArray) {
-    console.warn(`Unknown year sky: ${yearSky}, falling back to default`);
-    // 기본값으로 甲년 기준 사용
-    return { sky: YEAR_MONTH_SKY_MAP['甲'][month - 1], earth };
-  }
+  // 음수 방지
+  const adjustedIndex = ganjiIndex < 0 ? ganjiIndex + 60 : ganjiIndex;
   
-  const sky = monthSkyArray[month - 1];
+  // 60갑자에서 해당 월간지 가져오기
+  const monthGanji = GANJI_60[adjustedIndex];
+  const sky = monthGanji[0]; // 첫 번째 글자는 천간
+  const earth = monthGanji[1]; // 두 번째 글자는 지지
   
   return { sky, earth };
 }
