@@ -33,6 +33,42 @@ const MUNCHANG_GWIIN_MAP: Record<string, string[]> = {
   "癸": ["寅", "卯"]
 };
 
+// 천덕귀인 매핑 테이블 (월지 → 찾을 천간 또는 지지)
+const CHEONDEOK_GWIIN_MAP: Record<string, string> = {
+  "子": "巳",
+  "丑": "庚", 
+  "寅": "丁",
+  "卯": "申",
+  "辰": "壬",
+  "巳": "辛",
+  "午": "亥",
+  "未": "甲",
+  "申": "癸",
+  "酉": "寅",
+  "戌": "丙",
+  "亥": "乙"
+};
+
+// 월덕귀인 매핑 테이블 (월지 → 찾을 천간)
+const WOLDEOK_GWIIN_MAP: Record<string, string> = {
+  // 신월,자월,진월(申子辰) → 임(壬)
+  "申": "壬",
+  "子": "壬", 
+  "辰": "壬",
+  // 사월,유월,축월(巳酉丑) → 경(庚)
+  "巳": "庚",
+  "酉": "庚",
+  "丑": "庚",
+  // 인월,오월,술월(寅午戌) → 병(丙)
+  "寅": "丙",
+  "午": "丙",
+  "戌": "丙",
+  // 해월,묘월,미월(亥卯未) → 갑(甲)
+  "亥": "甲",
+  "卯": "甲",
+  "未": "甲"
+};
+
 export interface ShinSalResult {
   yearPillar: string[];
   monthPillar: string[];
@@ -135,6 +171,91 @@ function mergeShinSalResults(result1: ShinSalResult, result2: ShinSalResult): Sh
 }
 
 /**
+ * 천덕귀인(天德貴人) 계산
+ * 월지를 기준으로 천간이나 지지를 찾습니다.
+ */
+export function calculateCheondeokGwiin(
+  yearSky: string,
+  monthSky: string,
+  daySky: string,
+  hourSky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  // 월지에 해당하는 천덕귀인 찾기
+  const cheondeokTarget = CHEONDEOK_GWIIN_MAP[monthEarth];
+  if (!cheondeokTarget) return result;
+
+  // 천간과 지지 모두에서 찾기
+  const allSkies = [yearSky, monthSky, daySky, hourSky];
+  const allEarths = [yearEarth, monthEarth, dayEarth, hourEarth];
+  
+  // 각 주에서 천덕귀인에 해당하는 천간이나 지지가 있는지 확인
+  if (allSkies[0] === cheondeokTarget || allEarths[0] === cheondeokTarget) {
+    result.yearPillar.push("천덕귀인");
+  }
+  if (allSkies[1] === cheondeokTarget || allEarths[1] === cheondeokTarget) {
+    result.monthPillar.push("천덕귀인");
+  }
+  if (allSkies[2] === cheondeokTarget || allEarths[2] === cheondeokTarget) {
+    result.dayPillar.push("천덕귀인");
+  }
+  if (allSkies[3] === cheondeokTarget || allEarths[3] === cheondeokTarget) {
+    result.hourPillar.push("천덕귀인");
+  }
+
+  return result;
+}
+
+/**
+ * 월덕귀인(月德貴人) 계산
+ * 월지를 기준으로 천간을 찾습니다.
+ */
+export function calculateWoldeokGwiin(
+  yearSky: string,
+  monthSky: string,
+  daySky: string,
+  hourSky: string,
+  monthEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  // 월지에 해당하는 월덕귀인 천간 찾기
+  const woldeokTarget = WOLDEOK_GWIIN_MAP[monthEarth];
+  if (!woldeokTarget) return result;
+
+  // 각 주의 천간에서 월덕귀인에 해당하는지 확인
+  if (yearSky === woldeokTarget) {
+    result.yearPillar.push("월덕귀인");
+  }
+  if (monthSky === woldeokTarget) {
+    result.monthPillar.push("월덕귀인");
+  }
+  if (daySky === woldeokTarget) {
+    result.dayPillar.push("월덕귀인");
+  }
+  if (hourSky === woldeokTarget) {
+    result.hourPillar.push("월덕귀인");
+  }
+
+  return result;
+}
+
+/**
  * 모든 신살 계산 (천을귀인, 문창귀인 포함)
  * 여러 신살이 동시에 나타날 수 있습니다.
  */
@@ -153,6 +274,35 @@ export function calculateAllShinSal(
   
   // 두 신살 결과를 합쳐서 반환
   return mergeShinSalResults(cheonulGwiin, munchangGwiin);
+}
+
+/**
+ * 1행 신살 계산 (천덕귀인, 월덕귀인)
+ * 월지를 기준으로 천간을 찾는 신살들
+ */
+export function calculateFirstRowShinSal(
+  yearSky: string,
+  monthSky: string,
+  daySky: string,
+  hourSky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  // 천덕귀인 계산
+  const cheondeokGwiin = calculateCheondeokGwiin(
+    yearSky, monthSky, daySky, hourSky,
+    yearEarth, monthEarth, dayEarth, hourEarth
+  );
+  
+  // 월덕귀인 계산
+  const woldeokGwiin = calculateWoldeokGwiin(
+    yearSky, monthSky, daySky, hourSky, monthEarth
+  );
+  
+  // 두 신살 결과를 합쳐서 반환
+  return mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
 }
 
 /**

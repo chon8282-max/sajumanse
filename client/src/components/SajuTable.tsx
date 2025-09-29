@@ -6,7 +6,7 @@ import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
-import { calculateAllShinSal, formatShinSal } from "@/lib/shinsal-calculator";
+import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal } from "@/lib/shinsal-calculator";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -394,6 +394,35 @@ export default function SajuTable({
       formatShinSal(shinsalResult.yearPillar)   // 년주 (네 번째 컬럼)
     ];
   }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth]);
+
+  // 1행 신살 계산 (천덕귀인, 월덕귀인 - 메모이제이션)
+  const firstRowShinsal = useMemo(() => {
+    if (!saju?.day?.sky) return ['', '', '', ''];
+    
+    // 모든 천간과 지지 정보 수집
+    const yearSky = saju.year.sky;
+    const monthSky = saju.month.sky;
+    const daySky = saju.day.sky;
+    const hourSky = saju.hour.sky;
+    const yearEarth = saju.year.earth;
+    const monthEarth = saju.month.earth;
+    const dayEarth = saju.day.earth;
+    const hourEarth = saju.hour.earth;
+    
+    const firstRowResult = calculateFirstRowShinSal(
+      yearSky, monthSky, daySky, hourSky,
+      yearEarth, monthEarth, dayEarth, hourEarth
+    );
+    
+    // sajuColumns 순서(시주→일주→월주→년주)에 맞춰 1행 신살 배열 재배열
+    return [
+      formatShinSal(firstRowResult.hourPillar),  // 시주 (첫 번째 컬럼)
+      formatShinSal(firstRowResult.dayPillar),   // 일주 (두 번째 컬럼)
+      formatShinSal(firstRowResult.monthPillar), // 월주 (세 번째 컬럼)
+      formatShinSal(firstRowResult.yearPillar)   // 년주 (네 번째 컬럼)
+    ];
+  }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -787,24 +816,38 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 1행: 천간 육친 / 오행 */}
+        {/* 1행: 천간 육친 / 오행 / 1행 신살 */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
-          {heavenlyYukjin.map((yukjin, index) => {
-            const skyCharacter = sajuColumns[index]?.sky;
-            const displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
-            
-            return (
+          {showShinsal ? (
+            // 신살 모드일 때: 1행 신살 (천덕귀인, 월덕귀인) 표시
+            firstRowShinsal.map((shinsal, index) => (
               <div 
-                key={`yukjin-sky-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
-                data-testid={`text-yukjin-sky-${index}`}
+                key={`firstrow-shinsal-${index}`} 
+                className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-red-600 dark:text-red-400 bg-white"
+                data-testid={`text-firstrow-shinsal-${index}`}
               >
-                {displayText}
+                {shinsal}
               </div>
-            );
-          })}
+            ))
+          ) : (
+            // 일반 모드일 때: 천간 육친/오행 표시
+            heavenlyYukjin.map((yukjin, index) => {
+              const skyCharacter = sajuColumns[index]?.sky;
+              const displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
+              
+              return (
+                <div 
+                  key={`yukjin-sky-${index}`} 
+                  className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                  data-testid={`text-yukjin-sky-${index}`}
+                >
+                  {displayText}
+                </div>
+              );
+            })
+          )}
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white"></div>
         </div>
