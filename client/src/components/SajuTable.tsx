@@ -5,7 +5,7 @@ import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/l
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
-import { getCheonganImage, getJijiImage, getGongmangImage, isCheongan, isJiji } from "@/lib/cheongan-images";
+import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -844,12 +844,23 @@ export default function SajuTable({
                   }}
                 >
                   {isGongmangPosition ? (
-                    <img 
-                      src={getGongmangImage()} 
-                      alt={`${col.earth} 공망`} 
-                      className="w-full h-full object-cover"
-                      style={{ margin: '0', padding: '0' }}
-                    />
+                    <div 
+                      className="w-8 h-8 border-2 border-red-500 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center"
+                      style={{ 
+                        margin: 'auto',
+                        position: 'relative'
+                      }}
+                    >
+                      <div 
+                        className="absolute inset-0 rounded-full bg-transparent border-2 border-red-500"
+                        style={{
+                          animation: 'pulse 2s infinite'
+                        }}
+                      ></div>
+                      <span className="text-red-600 dark:text-red-400 font-bold text-xs z-10">
+                        空
+                      </span>
+                    </div>
                   ) : jijiImage ? (
                     <img 
                       src={jijiImage} 
