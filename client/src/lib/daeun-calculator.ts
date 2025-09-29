@@ -264,21 +264,19 @@ function calculateActualGanjiYear(birthYear: number, yearSky?: string, yearEarth
 }
 
 /**
- * 현재 나이 계산 (간지년 기준)
+ * 현재 나이 계산
  * @param birthYear 생년 (양력)
  * @param birthMonth 생월 (사용 안함)
  * @param birthDay 생일 (사용 안함)
  * @param yearSky 년간 (선택사항)
  * @param yearEarth 년지 (선택사항)
- * @returns 간지년 기준 나이 (태어난 해가 1세)
+ * @returns 실제 출생년 기준 나이 (태어난 해가 1세)
  */
 export function calculateCurrentAge(birthYear: number, birthMonth: number, birthDay: number, yearSky?: string, yearEarth?: string): number {
-  // 정확한 간지년 계산
-  const actualGanjiYear = calculateActualGanjiYear(birthYear, yearSky, yearEarth);
-  
-  // 간지년 기준 나이 계산: 태어난 해가 1세
+  // 나이 계산은 항상 실제 출생년도 기준으로 계산
+  // 간지년 조정은 사주 계산용으로만 사용하고, 나이는 실제 출생년도 기준
   const currentYear = new Date().getFullYear();
-  return currentYear - actualGanjiYear + 1;
+  return currentYear - birthYear + 1;
 }
 
 /**
