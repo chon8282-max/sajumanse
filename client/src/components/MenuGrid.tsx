@@ -74,19 +74,22 @@ export default function MenuGrid() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         {menuItems.map((item, index) => (
           <div
             key={index} 
-            className={`hover-elevate cursor-pointer rounded-lg p-4 ${item.backgroundColor} flex flex-col items-center justify-center text-center transition-transform duration-200`}
-            style={{ aspectRatio: '1 / 0.8' }}
+            className={`cursor-pointer rounded-xl p-4 ${item.backgroundColor} flex flex-col items-center justify-center text-center transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 border border-white/50 dark:border-white/10`}
+            style={{ 
+              aspectRatio: '1 / 0.8',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6)'
+            }}
             onClick={item.onClick}
             data-testid={`menu-${item.title.replace(/\s+/g, '-').toLowerCase()}`}
           >
-            <div className={`${item.iconColor} mb-2`}>
+            <div className={`${item.iconColor} mb-2 drop-shadow-sm`}>
               {item.icon}
             </div>
-            <p className="text-sm font-medium leading-tight text-gray-800 dark:text-gray-200">
+            <p className="text-sm font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm">
               {item.title}
             </p>
           </div>
