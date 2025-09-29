@@ -902,7 +902,7 @@ export default function SajuTable({
           {/* 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
           {sajuColumns.map((col, index) => {
-            const cheonganImage = getCheonganImage(col.sky);
+            const cheonganImage = getCheonganImage(col.sky, showKorean);
             return (
               <div 
                 key={`sky-${index}`} 
@@ -1102,7 +1102,7 @@ export default function SajuTable({
         {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10">
           {daeunGanji.skies.map((sky, colIndex) => {
-            const cheonganImage = getCheonganImage(sky);
+            const cheonganImage = getCheonganImage(sky, showKorean);
             return (
               <div 
                 key={`daeun-sky-${colIndex}`}
@@ -1223,7 +1223,7 @@ export default function SajuTable({
         {/* 10행: 歲運 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12">
           {saeunGanji.skies.map((sky, colIndex) => {
-            const cheonganImage = getCheonganImage(sky);
+            const cheonganImage = getCheonganImage(sky, showKorean);
             return (
               <div 
                 key={`saeun-sky-${colIndex}`}
@@ -1336,7 +1336,7 @@ export default function SajuTable({
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
           {wolunGanji.skies.map((sky, colIndex) => {
-            const cheonganImage = getCheonganImage(sky);
+            const cheonganImage = getCheonganImage(sky, showKorean);
             return (
               <div 
                 key={`wolun-sky-${colIndex}`}

@@ -1,16 +1,28 @@
 // 천간, 지지 한자를 이미지로 매핑하는 유틸리티
 
-// 천간 이미지 imports - 사용자 제공 새 이미지
-import gapImage from "@assets/갑_1_1759150993898.jpg";
-import eulImage from "@assets/을_1_1759150993897.jpg";
-import byeongImage from "@assets/병_1_1759150993896.jpg";
-import jeongImage from "@assets/정_1_1759150993897.jpg";
-import muImage from "@assets/묘_1_1759150993896.jpg"; // 무 이미지가 없어서 묘 이미지 사용 (임시)
-import giImage from "@assets/기_1_1759150993896.jpg";
-import gyeongImage from "@assets/경_1_1759150993898.jpg";
-import sinImage from "@assets/辛_1_1759150993896.jpg";
-import imImage from "@assets/임_1_1759150993897.jpg";
-import gyeImage from "@assets/계_1_1759150993895.jpg";
+// 천간 한자 이미지 imports (기존)
+import gapChineseImage from "@assets/갑_1759096342037.jpg";
+import eulChineseImage from "@assets/을_1759096342037.jpg";
+import byeongChineseImage from "@assets/병_1759096342036.jpg";
+import jeongChineseImage from "@assets/정_1759096342036.jpg";
+import muChineseImage from "@assets/무_1759096342037.jpg";
+import giChineseImage from "@assets/기_1759096342037.jpg";
+import gyeongChineseImage from "@assets/경_1759096342038.jpg";
+import sinChineseImage from "@assets/辛_1759096342038.jpg";
+import imChineseImage from "@assets/임_1759096342038.jpg";
+import gyeChineseImage from "@assets/계_1759096342036.jpg";
+
+// 천간 한글 이미지 imports (새로 제공받은)
+import gapKoreanImage from "@assets/갑_1_1759150993898.jpg";
+import eulKoreanImage from "@assets/을_1_1759150993897.jpg";
+import byeongKoreanImage from "@assets/병_1_1759150993896.jpg";
+import jeongKoreanImage from "@assets/정_1_1759150993897.jpg";
+import muKoreanImage from "@assets/묘_1_1759150993896.jpg"; // 무 이미지가 없어서 묘 이미지 사용 (임시)
+import giKoreanImage from "@assets/기_1_1759150993896.jpg";
+import gyeongKoreanImage from "@assets/경_1_1759150993898.jpg";
+import sinKoreanImage from "@assets/辛_1_1759150993896.jpg";
+import imKoreanImage from "@assets/임_1_1759150993897.jpg";
+import gyeKoreanImage from "@assets/계_1_1759150993895.jpg";
 
 // 지지 한자 이미지 imports (기존)
 import jaChineseImage from "@assets/자_1759096365548.jpg";
@@ -40,18 +52,32 @@ import yuKoreanImage from "@assets/유_1_1759151414394.jpg";
 import sulKoreanImage from "@assets/술_1_1759151414393.jpg";
 import haeKoreanImage from "@assets/해_1_1759151414391.jpg";
 
-// 천간 이미지 매핑
-const CHEONGAN_IMAGES: Record<string, string> = {
-  '甲': gapImage,
-  '乙': eulImage,
-  '丙': byeongImage,
-  '丁': jeongImage,
-  '戊': muImage,
-  '己': giImage,
-  '庚': gyeongImage,
-  '辛': sinImage,
-  '壬': imImage,
-  '癸': gyeImage
+// 천간 한자 이미지 매핑 (기본 모드)
+const CHEONGAN_CHINESE_IMAGES: Record<string, string> = {
+  '甲': gapChineseImage,
+  '乙': eulChineseImage,
+  '丙': byeongChineseImage,
+  '丁': jeongChineseImage,
+  '戊': muChineseImage,
+  '己': giChineseImage,
+  '庚': gyeongChineseImage,
+  '辛': sinChineseImage,
+  '壬': imChineseImage,
+  '癸': gyeChineseImage
+};
+
+// 천간 한글 이미지 매핑 (한글 토글 모드)
+const CHEONGAN_KOREAN_IMAGES: Record<string, string> = {
+  '甲': gapKoreanImage,
+  '乙': eulKoreanImage,
+  '丙': byeongKoreanImage,
+  '丁': jeongKoreanImage,
+  '戊': muKoreanImage,
+  '己': giKoreanImage,
+  '庚': gyeongKoreanImage,
+  '辛': sinKoreanImage,
+  '壬': imKoreanImage,
+  '癸': gyeKoreanImage
 };
 
 // 지지 한자 이미지 매핑 (기본 모드)
@@ -89,8 +115,12 @@ const JIJI_KOREAN_IMAGES: Record<string, string> = {
 /**
  * 천간 한자에 해당하는 이미지 경로를 반환
  */
-export function getCheonganImage(character: string): string | null {
-  return CHEONGAN_IMAGES[character] || null;
+export function getCheonganImage(character: string, isKoreanMode: boolean = false): string | null {
+  if (isKoreanMode) {
+    return CHEONGAN_KOREAN_IMAGES[character] || null;
+  } else {
+    return CHEONGAN_CHINESE_IMAGES[character] || null;
+  }
 }
 
 /**
@@ -108,7 +138,7 @@ export function getJijiImage(character: string, isKoreanMode: boolean = false): 
  * 해당 한자가 천간인지 확인
  */
 export function isCheongan(character: string): boolean {
-  return character in CHEONGAN_IMAGES;
+  return character in CHEONGAN_CHINESE_IMAGES;
 }
 
 /**
@@ -122,7 +152,7 @@ export function isJiji(character: string): boolean {
  * 천간 리스트 반환
  */
 export function getCheonganList(): string[] {
-  return Object.keys(CHEONGAN_IMAGES);
+  return Object.keys(CHEONGAN_CHINESE_IMAGES);
 }
 
 /**
