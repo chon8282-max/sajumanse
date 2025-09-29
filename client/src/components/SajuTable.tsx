@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { type SajuInfo, CHEONGAN, JIJI } from "@shared/schema";
+import { type SajuInfo, CHEONGAN, JIJI, CHINESE_TO_KOREAN_MAP, KOREAN_TO_CHINESE_MAP } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
@@ -8,6 +8,7 @@ import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal } from "@/lib/shinsal-calculator";
 import BirthTimeSelector from "@/components/BirthTimeSelector";
+import { Button } from "@/components/ui/button";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -243,6 +244,20 @@ export default function SajuTable({
   
   // 생시 선택 모달 상태 관리
   const [isBirthTimeSelectorOpen, setIsBirthTimeSelectorOpen] = useState(false);
+  
+  // 한글/한자 토글 상태 관리 (기본값: false = 한자 표시)
+  const [showKorean, setShowKorean] = useState(false);
+  
+  // 한글/한자 변환 헬퍼 함수
+  const convertText = (text: string): string => {
+    if (showKorean) {
+      // 한글 모드: 한자 → 한글 변환
+      return CHINESE_TO_KOREAN_MAP[text] || text;
+    } else {
+      // 한자 모드: 한글 → 한자 변환
+      return KOREAN_TO_CHINESE_MAP[text] || text;
+    }
+  };
   
   
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
@@ -818,10 +833,15 @@ export default function SajuTable({
               12신살
             </button>
             <button 
-              className="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 border border-green-300 dark:border-green-700 rounded-md transition-colors"
+              className={`px-3 py-1 text-xs ${
+                showKorean 
+                  ? 'bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700' 
+                  : 'bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800'
+              } border border-green-300 dark:border-green-700 rounded-md transition-colors`}
+              onClick={() => setShowKorean(!showKorean)}
               data-testid="button-hangul"
             >
-              한글
+              {showKorean ? '한자' : '한글'}
             </button>
             <button 
               className="px-3 py-1 text-xs bg-pink-100 hover:bg-pink-200 dark:bg-pink-900 dark:hover:bg-pink-800 border border-pink-300 dark:border-pink-700 rounded-md transition-colors"
@@ -846,14 +866,15 @@ export default function SajuTable({
                 className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-red-600 dark:text-red-400 bg-white"
                 data-testid={`text-firstrow-shinsal-${index}`}
               >
-                {shinsal}
+                {convertText(shinsal)}
               </div>
             ))
           ) : (
             // 일반 모드일 때: 천간 육친/오행 표시
             heavenlyYukjin.map((yukjin, index) => {
               const skyCharacter = sajuColumns[index]?.sky;
-              const displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
+              let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
+              displayText = convertText(displayText);
               
               return (
                 <div 
@@ -897,7 +918,7 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.sky}</span>
+                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{convertText(col.sky)}</span>
                 )}
               </div>
             );
@@ -949,7 +970,7 @@ export default function SajuTable({
                       style={{ margin: '0', padding: '0' }}
                     />
                   ) : (
-                    <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
+                    <span className="text-gray-800" style={{ fontSize: '40px' }}>{convertText(col.earth)}</span>
                   )}
                 </div>
               </div>
@@ -965,7 +986,8 @@ export default function SajuTable({
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
-            const displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
+            let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
+            displayText = convertText(displayText);
             
             return (
               <div 
@@ -993,7 +1015,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
                 data-testid={`text-shinsal-${index}`}
               >
-                {shinsalText}
+                {convertText(shinsalText)}
               </div>
             ))
           ) : (
@@ -1004,7 +1026,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
                 data-testid={`text-jijanggan-${index}`}
               >
-                {stems}
+                {convertText(stems)}
               </div>
             ))
           )}
@@ -1035,7 +1057,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-yellow-50 dark:bg-yellow-900/20"
                 data-testid={`text-sibisinsal-${index}`}
               >
-                {sinsal}
+                {convertText(sinsal)}
               </div>
             ))}
           </div>
