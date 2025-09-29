@@ -26,6 +26,9 @@ import yuImage from "@assets/유_1759099520976.jpg";
 import sulImage from "@assets/술_1759099520974.jpg";
 import haeImage from "@assets/해_1759096365548.jpg";
 
+// 공망 이미지 import
+import gongmangImage from "@assets/gongmang_1759099902237.png";
+
 // 천간 이미지 매핑
 const CHEONGAN_IMAGES: Record<string, string> = {
   '甲': gapImage,
@@ -68,6 +71,13 @@ export function getCheonganImage(character: string): string | null {
  */
 export function getJijiImage(character: string): string | null {
   return JIJI_IMAGES[character] || null;
+}
+
+/**
+ * 공망 이미지 경로를 반환
+ */
+export function getGongmangImage(): string {
+  return gongmangImage;
 }
 
 /**
