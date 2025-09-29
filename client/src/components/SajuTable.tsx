@@ -433,9 +433,11 @@ export default function SajuTable({
 
   // 歲運 데이터 계산 (현재 나이 기준, 기존 규칙 복원)
   const saeunDisplayData = useMemo(() => {
+    const currentYear = new Date().getFullYear(); // 현재 년도 사용
+    
     if (!birthYear || !saju.year.sky || !saju.year.earth) {
       return {
-        years: Array.from({ length: 12 }, (_, i) => 2024 - i),
+        years: Array.from({ length: 12 }, (_, i) => currentYear - i),
         ages: Array.from({ length: 12 }, (_, i) => 12 - i),
         skies: Array(12).fill(''),
         earths: Array(12).fill('')
