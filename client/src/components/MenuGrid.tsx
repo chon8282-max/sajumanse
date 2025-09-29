@@ -19,6 +19,8 @@ export default function MenuGrid() {
       setLocation("/manseryeok");
     } else if (menuName === "사주불러오기") {
       setLocation("/saju-list");
+    } else if (menuName === "역학달력") {
+      setLocation("/calendar");
     } else {
       toast({
         title: menuName,
