@@ -968,7 +968,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {jijiImage ? (
+                  {showKorean && jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
@@ -1158,7 +1158,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {jijiImage ? (
+                  {showKorean && jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={earth} 
@@ -1267,7 +1267,7 @@ export default function SajuTable({
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
               >
-                {jijiImage ? (
+                {showKorean && jijiImage ? (
                   <img 
                     src={jijiImage} 
                     alt={earth} 
@@ -1387,7 +1387,7 @@ export default function SajuTable({
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
               >
-                {jijiImage ? (
+                {showKorean && jijiImage ? (
                   <img 
                     src={jijiImage} 
                     alt={earth} 
