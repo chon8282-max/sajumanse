@@ -136,6 +136,17 @@ export const TRADITIONAL_TIME_PERIODS = [
 
 // 한글/한자 매핑 데이터
 
+// 년간지 계산을 위한 기본 매핑
+export const YEAR_TIANGAN_BASE = ['庚', '辛', '壬', '癸', '甲', '乙', '丙', '丁', '戊', '己']; // 서기 연도를 10으로 나눈 나머지로 계산
+export const YEAR_DIZHI_BASE = ['申', '酉', '戌', '亥', '子', '丑', '寅', '卯', '辰', '巳', '午', '未']; // 서기 연도를 12로 나눈 나머지로 계산
+
+// 월간지 계산을 위한 매핑 (각 절기에 따른 월)
+export const MONTH_DIZHI = ['寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥', '子', '丑']; // 인월(1월)부터 시작
+
+// 일간지 계산을 위한 기준일 (1900년 1월 1일 = 갑자일로 설정)
+export const DAY_GANJI_BASE_DATE = new Date(1900, 0, 1); // 1900년 1월 1일
+export const DAY_GANJI_BASE_INDEX = 0; // 갑자(甲子) = 0번 인덱스
+
 // 한자 → 한글 변환
 export const CHINESE_TO_KOREAN_MAP: Record<string, string> = {
   // 천간
