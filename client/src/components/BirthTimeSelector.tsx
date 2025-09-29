@@ -34,21 +34,29 @@ export default function BirthTimeSelector({
     onClose();
   };
 
-  // 12개 시간대 정의
-  const timeOptions = [
-    { code: "子時", name: "자시", time: "23:00~01:00", jiji: "子" },
-    { code: "丑時", name: "축시", time: "01:00~03:00", jiji: "丑" },
-    { code: "寅時", name: "인시", time: "03:00~05:00", jiji: "寅" },
-    { code: "卯時", name: "묘시", time: "05:00~07:00", jiji: "卯" },
-    { code: "辰時", name: "진시", time: "07:00~09:00", jiji: "辰" },
-    { code: "巳時", name: "사시", time: "09:00~11:00", jiji: "巳" },
-    { code: "午時", name: "오시", time: "11:00~13:00", jiji: "午" },
-    { code: "未時", name: "미시", time: "13:00~15:00", jiji: "未" },
-    { code: "申時", name: "신시", time: "15:00~17:00", jiji: "申" },
-    { code: "酉時", name: "유시", time: "17:00~19:00", jiji: "酉" },
-    { code: "戌時", name: "술시", time: "19:00~21:00", jiji: "戌" },
-    { code: "亥時", name: "해시", time: "21:00~23:00", jiji: "亥" }
-  ];
+  // 한글 시간 이름 매핑
+  const koreanTimeNames: { [key: string]: string } = {
+    "子時": "자시",
+    "丑時": "축시", 
+    "寅時": "인시",
+    "卯時": "묘시",
+    "辰時": "진시", 
+    "巳時": "사시",
+    "午時": "오시",
+    "未時": "미시", 
+    "申時": "신시",
+    "酉時": "유시",
+    "戌時": "술시", 
+    "亥時": "해시"
+  };
+
+  // TRADITIONAL_TIME_PERIODS에서 데이터 가져오기
+  const timeOptions = TRADITIONAL_TIME_PERIODS.map(period => ({
+    code: period.code,
+    name: koreanTimeNames[period.code] || period.name,
+    time: period.range,
+    jiji: period.code.replace("時", "") // "子時" -> "子"
+  }));
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
