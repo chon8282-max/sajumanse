@@ -235,6 +235,9 @@ export default function SajuTable({
   // 12신살 표시 상태 관리
   const [showSibiSinsal, setShowSibiSinsal] = useState(false);
   
+  // 신살 표시 상태 관리 (기본값: false, 지장간 표시)
+  const [showShinsal, setShowShinsal] = useState(false);
+  
   
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
   useEffect(() => {
@@ -362,7 +365,15 @@ export default function SajuTable({
     };
   }, [sajuColumns, saju.day.sky]);
 
-  // 신살 계산 (메모이제이션) - 지장간 대신 신살 표시
+  // 지장간 계산 (메모이제이션)
+  const jijanggan = useMemo(() => {
+    return sajuColumns.map(col => {
+      const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
+      return hiddenStems.join('');
+    });
+  }, [sajuColumns]);
+
+  // 신살 계산 (메모이제이션)
   const shinsal = useMemo(() => {
     if (!saju?.day?.sky) return ['', '', '', ''];
     
@@ -738,7 +749,12 @@ export default function SajuTable({
               오행
             </button>
             <button 
-              className="px-3 py-1 text-xs bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800 border border-purple-300 dark:border-purple-700 rounded-md transition-colors"
+              className={`px-3 py-1 text-xs ${
+                showShinsal 
+                  ? 'bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700' 
+                  : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800'
+              } border border-purple-300 dark:border-purple-700 rounded-md transition-colors`}
+              onClick={() => setShowShinsal(!showShinsal)}
               data-testid="button-sinsal"
             >
               신살
@@ -900,19 +916,33 @@ export default function SajuTable({
           <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white"></div>
         </div>
 
-        {/* 5행: 신살 */}
+        {/* 5행: 지장간 / 신살 (토글) */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
-          {shinsal.map((shinsalText, index) => (
-            <div 
-              key={`shinsal-${index}`} 
-              className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
-              data-testid={`text-shinsal-${index}`}
-            >
-              {shinsalText}
-            </div>
-          ))}
+          {showShinsal ? (
+            // 신살 표시
+            shinsal.map((shinsalText, index) => (
+              <div 
+                key={`shinsal-${index}`} 
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                data-testid={`text-shinsal-${index}`}
+              >
+                {shinsalText}
+              </div>
+            ))
+          ) : (
+            // 지장간 표시 (기본값)
+            jijanggan.map((stems, index) => (
+              <div 
+                key={`jijanggan-${index}`} 
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                data-testid={`text-jijanggan-${index}`}
+              >
+                {stems}
+              </div>
+            ))
+          )}
           {/* 공망 정보 */}
           <div 
             className="py-1 text-center text-sm min-h-[1.5rem] flex items-center justify-center bg-white"
