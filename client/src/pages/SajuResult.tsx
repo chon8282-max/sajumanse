@@ -2,10 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, User, Clock, Save, Edit } from "lucide-react";
+import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/components/ThemeProvider";
 import { calculateSaju } from "@/lib/saju-calculator";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
@@ -141,6 +142,7 @@ export default function SajuResult() {
   const [focusedDaeun, setFocusedDaeun] = useState<DaeunPeriod | null>(null);
   const [saeunOffset, setSaeunOffset] = useState(0);
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
   
   // 사주 데이터 조회 (항상 호출)
   const { data: sajuData, isLoading } = useQuery<{success: boolean, data: SajuResultData}>({
@@ -408,6 +410,15 @@ export default function SajuResult() {
           <h1 className="text-2xl font-bold text-foreground font-tmon">사주명식</h1>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={toggleTheme}
+            data-testid="button-theme-toggle"
+            className="hover-elevate active-elevate-2 h-8 w-8"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           <Button 
             variant="outline" 
             size="sm"
