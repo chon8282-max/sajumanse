@@ -938,7 +938,7 @@ export default function SajuTable({
           {/* 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
           {sajuColumns.map((col, index) => {
-            const jijiImage = getJijiImage(col.earth);
+            const jijiImage = getJijiImage(col.earth, showKorean);
             const isGongmangPosition = isGongmang(col.earth);
             const isHourEarth = index === 0; // 시지(첫 번째 칸)인지 확인
             
@@ -968,7 +968,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {showKorean && jijiImage ? (
+                  {jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
@@ -1133,7 +1133,7 @@ export default function SajuTable({
         {/* 8행: 대운 지지 */}
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
-            const jijiImage = getJijiImage(earth);
+            const jijiImage = getJijiImage(earth, showKorean);
             const isGongmangPosition = isGongmang(earth);
             
             return (
@@ -1158,7 +1158,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {showKorean && jijiImage ? (
+                  {jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={earth} 
@@ -1254,7 +1254,7 @@ export default function SajuTable({
         {/* 11행: 歲運 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => {
-            const jijiImage = getJijiImage(earth);
+            const jijiImage = getJijiImage(earth, showKorean);
             return (
               <div 
                 key={`saeun-earth-${colIndex}`}
@@ -1372,7 +1372,7 @@ export default function SajuTable({
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
           {wolunGanji.earths.map((earth, colIndex) => {
-            const jijiImage = getJijiImage(earth);
+            const jijiImage = getJijiImage(earth, showKorean);
             return (
               <div 
                 key={`wolun-earth-${colIndex}`}
