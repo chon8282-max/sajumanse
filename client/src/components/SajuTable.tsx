@@ -6,6 +6,7 @@ import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
+import { calculateAllShinSal, formatShinSal } from "@/lib/shinsal-calculator";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -361,13 +362,27 @@ export default function SajuTable({
     };
   }, [sajuColumns, saju.day.sky]);
 
-  // 지장간 계산 (메모이제이션)
-  const jijanggan = useMemo(() => {
-    return sajuColumns.map(col => {
-      const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
-      return hiddenStems.join('');
-    });
-  }, [sajuColumns]);
+  // 신살 계산 (메모이제이션) - 지장간 대신 신살 표시
+  const shinsal = useMemo(() => {
+    if (!saju?.day?.sky) return ['', '', '', ''];
+    
+    // 각 주(년월일시)의 지지에서 신살 계산
+    const daySky = saju.day.sky;
+    const yearEarth = saju.year.earth;
+    const monthEarth = saju.month.earth;
+    const dayEarth = saju.day.earth;
+    const hourEarth = saju.hour.earth;
+    
+    const shinsalResult = calculateAllShinSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+    
+    // sajuColumns 순서(시주→일주→월주→년주)에 맞춰 신살 배열 재배열
+    return [
+      formatShinSal(shinsalResult.hourPillar),  // 시주 (첫 번째 컬럼)
+      formatShinSal(shinsalResult.dayPillar),   // 일주 (두 번째 컬럼)
+      formatShinSal(shinsalResult.monthPillar), // 월주 (세 번째 컬럼)
+      formatShinSal(shinsalResult.yearPillar)   // 년주 (네 번째 컬럼)
+    ];
+  }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -885,17 +900,17 @@ export default function SajuTable({
           <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white"></div>
         </div>
 
-        {/* 5행: 지장간 */}
+        {/* 5행: 신살 */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
-          {jijanggan.map((stems, index) => (
+          {shinsal.map((shinsalText, index) => (
             <div 
-              key={`jijanggan-${index}`} 
+              key={`shinsal-${index}`} 
               className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
-              data-testid={`text-jijanggan-${index}`}
+              data-testid={`text-shinsal-${index}`}
             >
-              {stems}
+              {shinsalText}
             </div>
           ))}
           {/* 공망 정보 */}
