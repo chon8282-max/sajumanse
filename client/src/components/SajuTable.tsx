@@ -342,7 +342,7 @@ export default function SajuTable({
     return calculateGongmang(saju.day.sky, saju.day.earth);
   }, [saju?.day?.sky, saju?.day?.earth]);
 
-  // 공망 확인 함수
+  // 공망 확인 함수 (텍스트 정보용으로만 사용)
   const isGongmang = useCallback((earth: string) => {
     return gongmang.includes(earth);
   }, [gongmang]);
@@ -818,7 +818,6 @@ export default function SajuTable({
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth);
-            const isGongmangPosition = isGongmang(col.earth);
             
             return (
               <div 
@@ -843,25 +842,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {isGongmangPosition ? (
-                    <div 
-                      className="w-8 h-8 border-2 border-red-500 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center"
-                      style={{ 
-                        margin: 'auto',
-                        position: 'relative'
-                      }}
-                    >
-                      <div 
-                        className="absolute inset-0 rounded-full bg-transparent border-2 border-red-500"
-                        style={{
-                          animation: 'pulse 2s infinite'
-                        }}
-                      ></div>
-                      <span className="text-red-600 dark:text-red-400 font-bold text-xs z-10">
-                        空
-                      </span>
-                    </div>
-                  ) : jijiImage ? (
+                  {jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
