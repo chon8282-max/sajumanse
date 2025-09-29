@@ -61,19 +61,20 @@ export default function TraditionalCalendar({
     },
   });
 
-  // 절기 데이터 조회
+  // 절기 데이터 조회 - 전체 년도의 24절기 가져오기
   const { data: solarTermsData } = useQuery({
-    queryKey: [`/api/solar-terms`, currentYear, currentMonth],
+    queryKey: [`/api/solar-terms`, currentYear],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/solar-terms/${currentYear}/${currentMonth}`);
+      const response = await apiRequest("GET", `/api/solar-terms/${currentYear}`);
       return response.json();
     },
   });
 
+  // 현재 월의 절기만 필터링하여 표시
   const solarTerms: SolarTermInfo[] = useMemo(() => {
     if (!solarTermsData?.success) return [];
     
-    return solarTermsData.data.map((term: any) => ({
+    const allTerms = solarTermsData.data.map((term: any) => ({
       name: term.name,
       date: new Date(term.date),
       dateString: new Date(term.date).toLocaleDateString('ko-KR', { 
@@ -86,7 +87,13 @@ export default function TraditionalCalendar({
         hour12: false 
       })
     }));
-  }, [solarTermsData]);
+    
+    // 현재 월의 절기만 반환
+    return allTerms.filter(term => {
+      const termMonth = term.date.getMonth() + 1;
+      return termMonth === currentMonth;
+    });
+  }, [solarTermsData, currentMonth]);
 
   // 달력 데이터와 음력 데이터 결합
   const enrichedCalendarData = useMemo(() => {
@@ -205,39 +212,50 @@ export default function TraditionalCalendar({
     <div className="w-full max-w-4xl mx-auto p-4" data-testid="traditional-calendar">
       <Card>
         <CardHeader className="pb-4">
-          {/* 헤더 네비게이션 */}
+          {/* 1열: 년도간지(왼쪽) | 양력달력(가운데) | 월간지(오른쪽) */}
           <div className="flex items-center justify-between mb-4">
-            <Button variant="outline" size="sm" onClick={handlePrevYear} data-testid="button-prev-year">
-              <ChevronLeft className="w-4 h-4" />
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            
-            <Button variant="outline" size="sm" onClick={handlePrevMonth} data-testid="button-prev-month">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            
-            <div className="flex items-center gap-4 text-center">
-              <span className="text-xl font-bold text-blue-800">
-                {CHINESE_TO_KOREAN_MAP[calendarInfo.yearGanji[0]] || calendarInfo.yearGanji[0]}
-                {CHINESE_TO_KOREAN_MAP[calendarInfo.yearGanji[1]] || calendarInfo.yearGanji[1]}년
-              </span>
-              <span className="text-xl font-bold">
-                양력 {currentYear}년 {currentMonth}월
-              </span>
-              <span className="text-xl font-bold text-green-800">
-                {CHINESE_TO_KOREAN_MAP[calendarInfo.monthGanji[0]] || calendarInfo.monthGanji[0]}
-                {CHINESE_TO_KOREAN_MAP[calendarInfo.monthGanji[1]] || calendarInfo.monthGanji[1]}월
-              </span>
+            <div className="text-xl font-bold text-blue-800">
+              {CHINESE_TO_KOREAN_MAP[calendarInfo.yearGanji[0]] || calendarInfo.yearGanji[0]}
+              {CHINESE_TO_KOREAN_MAP[calendarInfo.yearGanji[1]] || calendarInfo.yearGanji[1]}년
             </div>
             
-            <Button variant="outline" size="sm" onClick={handleNextMonth} data-testid="button-next-month">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+            <div className="text-xl font-bold">
+              양력 {currentYear}년 {currentMonth}월
+            </div>
             
-            <Button variant="outline" size="sm" onClick={handleNextYear} data-testid="button-next-year">
-              <ChevronRight className="w-4 h-4" />
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+            <div className="text-xl font-bold text-green-800">
+              {CHINESE_TO_KOREAN_MAP[calendarInfo.monthGanji[0]] || calendarInfo.monthGanji[0]}
+              {CHINESE_TO_KOREAN_MAP[calendarInfo.monthGanji[1]] || calendarInfo.monthGanji[1]}월
+            </div>
+          </div>
+
+          {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handlePrevYear} data-testid="button-prev-year">
+                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4" />
+                <span className="ml-1">년</span>
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={handlePrevMonth} data-testid="button-prev-month">
+                <ChevronLeft className="w-4 h-4" />
+                <span className="ml-1">월</span>
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleNextMonth} data-testid="button-next-month">
+                <span className="mr-1">월</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={handleNextYear} data-testid="button-next-year">
+                <span className="mr-1">년</span>
+                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
 
           {/* 요일 헤더 */}
