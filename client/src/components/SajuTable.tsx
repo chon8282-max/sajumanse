@@ -259,6 +259,12 @@ export default function SajuTable({
     }
   };
   
+  // 특정 행에서만 한글 변환을 적용하는 헬퍼 함수 (1행, 4행, 5행, 6행만)
+  const convertTextForSpecificRows = (text: string): string => {
+    // 1행, 4행, 5행, 6행에서는 기본 convertText 함수와 동일하게 동작
+    return convertText(text);
+  };
+  
   
   // currentAge가 변경되면 selectedSaeunAge를 항상 업데이트 (자동 선택)
   useEffect(() => {
@@ -389,7 +395,7 @@ export default function SajuTable({
     const dayStem = saju.day.sky;
     return {
       heavenlyYukjin: sajuColumns.map(col => {
-        if (col.sky === dayStem) return "일간";
+        // 모든 천간을 동일한 방식으로 계산 (일간은 比肩으로 계산됨)
         return calculateYukjin(dayStem, col.sky);
       }),
       earthlyYukjin: sajuColumns.map(col => {
@@ -866,7 +872,7 @@ export default function SajuTable({
                 className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-red-600 dark:text-red-400 bg-white"
                 data-testid={`text-firstrow-shinsal-${index}`}
               >
-                {convertText(shinsal)}
+                {convertTextForSpecificRows(shinsal)}
               </div>
             ))
           ) : (
@@ -874,7 +880,7 @@ export default function SajuTable({
             heavenlyYukjin.map((yukjin, index) => {
               const skyCharacter = sajuColumns[index]?.sky;
               let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
-              displayText = convertText(displayText);
+              displayText = convertTextForSpecificRows(displayText);
               
               return (
                 <div 
@@ -918,7 +924,7 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{convertText(col.sky)}</span>
+                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.sky}</span>
                 )}
               </div>
             );
@@ -970,7 +976,7 @@ export default function SajuTable({
                       style={{ margin: '0', padding: '0' }}
                     />
                   ) : (
-                    <span className="text-gray-800" style={{ fontSize: '40px' }}>{convertText(col.earth)}</span>
+                    <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
                   )}
                 </div>
               </div>
@@ -1015,7 +1021,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
                 data-testid={`text-shinsal-${index}`}
               >
-                {convertText(shinsalText)}
+                {convertTextForSpecificRows(shinsalText)}
               </div>
             ))
           ) : (
@@ -1026,7 +1032,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
                 data-testid={`text-jijanggan-${index}`}
               >
-                {convertText(stems)}
+                {convertTextForSpecificRows(stems)}
               </div>
             ))
           )}
@@ -1057,7 +1063,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-yellow-50 dark:bg-yellow-900/20"
                 data-testid={`text-sibisinsal-${index}`}
               >
-                {convertText(sinsal)}
+                {convertTextForSpecificRows(sinsal)}
               </div>
             ))}
           </div>
