@@ -8,7 +8,7 @@ import jeongChineseImage from "@assets/정_1759096342036.jpg";
 import muChineseImage from "@assets/무_1759096342037.jpg";
 import giChineseImage from "@assets/기_1759096342037.jpg";
 import gyeongChineseImage from "@assets/경_1759096342038.jpg";
-import sinChineseImage from "@assets/辛_1759096342038.jpg";
+import sinChineseImageCheonan from "@assets/辛_1759096342038.jpg";
 import imChineseImage from "@assets/임_1759096342038.jpg";
 import gyeChineseImage from "@assets/계_1759096342036.jpg";
 
@@ -20,7 +20,7 @@ import jeongKoreanImage from "@assets/정_1_1759150993897.jpg";
 import muKoreanImage from "@assets/묘_1_1759150993896.jpg"; // 무 이미지가 없어서 묘 이미지 사용 (임시)
 import giKoreanImage from "@assets/기_1_1759150993896.jpg";
 import gyeongKoreanImage from "@assets/경_1_1759150993898.jpg";
-import sinKoreanImage from "@assets/辛_1_1759150993896.jpg";
+import sinKoreanImageCheonan from "@assets/辛_1_1759150993896.jpg";
 import imKoreanImage from "@assets/임_1_1759150993897.jpg";
 import gyeKoreanImage from "@assets/계_1_1759150993895.jpg";
 
@@ -61,7 +61,7 @@ const CHEONGAN_CHINESE_IMAGES: Record<string, string> = {
   '戊': muChineseImage,
   '己': giChineseImage,
   '庚': gyeongChineseImage,
-  '辛': sinChineseImage,
+  '辛': sinChineseImageCheonan,
   '壬': imChineseImage,
   '癸': gyeChineseImage
 };
@@ -75,7 +75,7 @@ const CHEONGAN_KOREAN_IMAGES: Record<string, string> = {
   '戊': muKoreanImage,
   '己': giKoreanImage,
   '庚': gyeongKoreanImage,
-  '辛': sinKoreanImage,
+  '辛': sinKoreanImageCheonan,
   '壬': imKoreanImage,
   '癸': gyeKoreanImage
 };
