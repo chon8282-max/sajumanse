@@ -818,13 +818,14 @@ export default function SajuTable({
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth);
+            const isGongmangPosition = isGongmang(col.earth);
             
             return (
               <div 
                 key={`earth-${index}`} 
                 className="text-center font-bold border-r border-border flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: isGongmangPosition ? '#9CA3AF' : 'white',  // 공망은 회색 배경
                   fontFamily: "'ChosunKim', sans-serif",
                   minHeight: '2.8rem',
                   padding: '0',
