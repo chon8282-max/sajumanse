@@ -779,7 +779,7 @@ export default function SajuTable({
         </div>
 
         {/* 2행: 천간 */}
-        <div className="grid grid-cols-6 border-b border-border">
+        <div className="grid grid-cols-6">
           {/* 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
           {sajuColumns.map((col, index) => {
@@ -962,7 +962,7 @@ export default function SajuTable({
         </div>
 
         {/* 7행: 대운 천간 */}
-        <div className="grid grid-cols-10 border-b border-border">
+        <div className="grid grid-cols-10">
           {daeunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky);
             return (
@@ -1083,7 +1083,7 @@ export default function SajuTable({
         </div>
 
         {/* 10행: 歲運 천간 (우측에서 좌측) */}
-        <div className="grid grid-cols-12 border-b border-border">
+        <div className="grid grid-cols-12">
           {saeunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky);
             return (
@@ -1194,7 +1194,7 @@ export default function SajuTable({
         </div>
 
         {/* 14행: 월운 천간 (우측에서 좌측) */}
-        <div className={`grid grid-cols-13 border-b border-border ${
+        <div className={`grid grid-cols-13 ${
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
           {wolunGanji.skies.map((sky, colIndex) => {
