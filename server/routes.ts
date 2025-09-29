@@ -565,6 +565,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 사주 기록 부분 업데이트 (생시 변경 등)
+  app.patch("/api/saju-records/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { birthTime } = req.body;
+      
+      // 생시 검증
+      if (!birthTime || typeof birthTime !== 'string' || birthTime.trim() === '') {
+        return res.status(400).json({ 
+          error: "유효한 생시를 입력해주세요." 
+        });
+      }
+
+      // 전통 시간대 코드 검증
+      const validTimePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+      if (!validTimePeriod) {
+        return res.status(400).json({ 
+          error: "유효하지 않은 시간대 코드입니다." 
+        });
+      }
+      
+      // 기존 레코드 조회
+      const existingRecord = await storage.getSajuRecord(id);
+      if (!existingRecord) {
+        return res.status(404).json({ 
+          error: "해당 사주 기록을 찾을 수 없습니다." 
+        });
+      }
+
+      // 생시만 업데이트하고 사주 재계산
+      const updateData: any = { birthTime };
+
+      if (birthTime && existingRecord.birthYear && existingRecord.birthMonth && existingRecord.birthDay) {
+        try {
+          // 전통 시간대 코드인지 확인 (예: "子時")
+          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+          let hour = 0;
+          
+          if (timePeriod) {
+            hour = timePeriod.hour;
+          } else {
+            // 일반 시간 형식 파싱
+            const timeStr = birthTime;
+            if (timeStr.includes(':')) {
+              hour = parseInt(timeStr.split(':')[0]) || 0;
+            } else {
+              hour = parseInt(timeStr) || 0;
+            }
+          }
+
+          // 기존 생년월일 정보 사용하여 사주 재계산
+          const sajuCalculationYear = existingRecord.lunarYear || existingRecord.birthYear;
+          const sajuCalculationMonth = existingRecord.lunarMonth || existingRecord.birthMonth;
+          const sajuCalculationDay = existingRecord.lunarDay || existingRecord.birthDay;
+          
+          const sajuResult = calculateSaju(
+            sajuCalculationYear,
+            sajuCalculationMonth,
+            sajuCalculationDay,
+            hour,
+            0, // minute
+            !!existingRecord.lunarYear, // isLunar
+            existingRecord.birthYear && existingRecord.birthMonth && existingRecord.birthDay ? {
+              solarYear: existingRecord.birthYear,
+              solarMonth: existingRecord.birthMonth,
+              solarDay: existingRecord.birthDay
+            } : undefined,
+            null // apiData
+          );
+
+          // 사주팔자 정보 추가
+          updateData.yearSky = sajuResult.year.sky;
+          updateData.yearEarth = sajuResult.year.earth;
+          updateData.monthSky = sajuResult.month.sky;
+          updateData.monthEarth = sajuResult.month.earth;
+          updateData.daySky = sajuResult.day.sky;
+          updateData.dayEarth = sajuResult.day.earth;
+          updateData.hourSky = sajuResult.hour.sky;
+          updateData.hourEarth = sajuResult.hour.earth;
+
+        } catch (sajuError) {
+          console.error('Saju calculation error during birth time update:', sajuError);
+        }
+      }
+
+      const updatedRecord = await storage.updateSajuRecord(id, updateData);
+      
+      res.json({
+        success: true,
+        data: updatedRecord,
+        message: "생시가 성공적으로 변경되었습니다."
+      });
+    } catch (error) {
+      console.error('Patch saju record error:', error);
+      res.status(500).json({ 
+        error: "사주 기록 업데이트 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
   // ========================================
   // 만세력 관련 API 라우트 (기존 호환성)
   // ========================================
