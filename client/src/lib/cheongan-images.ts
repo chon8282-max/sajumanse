@@ -12,19 +12,19 @@ import sinImage from "@assets/辛_1_1759150993896.jpg";
 import imImage from "@assets/임_1_1759150993897.jpg";
 import gyeImage from "@assets/계_1_1759150993895.jpg";
 
-// 지지 이미지 imports
-import jaImage from "@assets/자_1759096365548.jpg";
-import chukImage from "@assets/축_1759096365544.jpg";
-import inImage from "@assets/인_1759096365545.jpg";
-import myoImage from "@assets/묘_1759096365545.jpg";
-import jinImage from "@assets/진_1759096365545.jpg";
-import saImage from "@assets/사_1759096365546.jpg";
-import oImage from "@assets/오_1759096365546.jpg";
-import miImage from "@assets/미_1759096365547.jpg";
-import sinJijiImage from "@assets/申_1759099520976.jpg";
-import yuImage from "@assets/유_1759099520976.jpg";
-import sulImage from "@assets/술_1759099520974.jpg";
-import haeImage from "@assets/해_1759096365548.jpg";
+// 지지 이미지 imports - 사용자 제공 새 이미지
+import jaImage from "@assets/자_1_1759151414394.jpg";
+import chukImage from "@assets/축_1_1759151414395.jpg";
+import inImage from "@assets/인_1_1759151414394.jpg";
+import myoImage from "@assets/묘_1_1759151414392.jpg";
+import jinImage from "@assets/진_1_1759151414395.jpg";
+import saImage from "@assets/사_1_1759151414392.jpg";
+import oImage from "@assets/오_1_1759151414393.jpg";
+import miImage from "@assets/미_1_1759151414392.jpg";
+import sinJijiImage from "@assets/申_1_1759151414393.jpg";
+import yuImage from "@assets/유_1_1759151414394.jpg";
+import sulImage from "@assets/술_1_1759151414393.jpg";
+import haeImage from "@assets/해_1_1759151414391.jpg";
 
 // 천간 이미지 매핑
 const CHEONGAN_IMAGES: Record<string, string> = {
