@@ -4,6 +4,7 @@ import {
   YEAR_TIANGAN_BASE, 
   YEAR_DIZHI_BASE,
   MONTH_DIZHI,
+  YEAR_MONTH_SKY_MAP,
   DAY_GANJI_BASE_DATE,
   DAY_GANJI_BASE_INDEX
 } from "@shared/schema";
@@ -30,15 +31,23 @@ export function calculateYearGanji(year: number): { sky: string; earth: string }
  * @returns {sky: string, earth: string} 천간과 지지
  */
 export function calculateMonthGanji(year: number, month: number): { sky: string; earth: string } {
-  // 월지는 고정 (인월부터 시작)
+  // 월지는 양력 기준으로 고정 매핑
   const earthIndex = (month - 1) % 12;
   const earth = MONTH_DIZHI[earthIndex];
   
-  // 월천간은 년천간에 따라 달라짐
-  const yearSkyIndex = CHEONGAN.indexOf(calculateYearGanji(year).sky as any);
-  const baseIndex = Math.floor(yearSkyIndex / 2) * 2; // 갑을, 병정, 무기, 경신, 임계
-  const skyIndex = (baseIndex + (month - 1)) % 10;
-  const sky = CHEONGAN[skyIndex];
+  // 월천간은 년천간에 따라 달라짐 - 정확한 룩업 테이블 사용
+  const yearGanji = calculateYearGanji(year);
+  const yearSky = yearGanji.sky;
+  
+  // 년천간별 월천간 매핑 테이블에서 해당 월의 천간 조회
+  const monthSkyArray = YEAR_MONTH_SKY_MAP[yearSky];
+  if (!monthSkyArray) {
+    console.warn(`Unknown year sky: ${yearSky}, falling back to default`);
+    // 기본값으로 甲년 기준 사용
+    return { sky: YEAR_MONTH_SKY_MAP['甲'][month - 1], earth };
+  }
+  
+  const sky = monthSkyArray[month - 1];
   
   return { sky, earth };
 }
