@@ -335,8 +335,13 @@ export default function SajuTable({
   }, []);
 
   const handleBirthTimeSelect = useCallback((timeCode: string) => {
+    console.log('SajuTable - handleBirthTimeSelect 호출됨:', timeCode);
+    console.log('SajuTable - onBirthTimeChange 함수 존재:', !!onBirthTimeChange);
     if (onBirthTimeChange) {
+      console.log('SajuTable - onBirthTimeChange 실행');
       onBirthTimeChange(timeCode);
+    } else {
+      console.warn('SajuTable - onBirthTimeChange가 없습니다!');
     }
     setIsBirthTimeSelectorOpen(false);
   }, [onBirthTimeChange]);
