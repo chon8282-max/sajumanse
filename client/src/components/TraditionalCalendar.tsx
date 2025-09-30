@@ -164,7 +164,7 @@ export default function TraditionalCalendar({
       <div 
         key={`${dayData.solarDate.getTime()}`}
         className={`
-          relative min-h-[60px] p-1 border border-gray-200 
+          relative min-h-[50px] p-0.5 border border-gray-200 
           ${dayData.isCurrentMonth ? 'bg-white' : 'bg-gray-50 opacity-50'}
           ${isToday ? 'bg-yellow-100 ring-2 ring-yellow-400' : ''}
         `}
@@ -172,7 +172,7 @@ export default function TraditionalCalendar({
       >
         {/* 양력 날짜 */}
         <div className={`
-          text-lg font-bold mb-1
+          text-base font-bold mb-0
           ${isSunday ? 'text-red-500' : ''}
           ${isSaturday ? 'text-blue-500' : ''}
           ${!dayData.isCurrentMonth ? 'text-gray-400' : 'text-gray-800'}
@@ -183,7 +183,7 @@ export default function TraditionalCalendar({
         {/* 음력 날짜 */}
         {dayData.lunarDay && (
           <div className={`
-            text-xs mb-1
+            text-xs mb-0
             ${isLunarFirst ? 'font-bold text-red-600' : 'text-gray-600'}
           `}>
             {dayData.lunarMonth}/{dayData.lunarDay}
@@ -193,8 +193,7 @@ export default function TraditionalCalendar({
         {/* 일간지 */}
         {dayData.lunarDayGanji && (
           <div className="text-xs text-blue-600">
-            {CHINESE_TO_KOREAN_MAP[dayData.lunarDayGanji.sky] || dayData.lunarDayGanji.sky}
-            {CHINESE_TO_KOREAN_MAP[dayData.lunarDayGanji.earth] || dayData.lunarDayGanji.earth}
+            {dayData.lunarDayGanji.sky}{dayData.lunarDayGanji.earth}
           </div>
         )}
         
@@ -211,12 +210,11 @@ export default function TraditionalCalendar({
   return (
     <div className="w-full max-w-4xl mx-auto pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-1">
           {/* 1열: 년도간지(왼쪽) | 양력달력(가운데) | 월간지(오른쪽) */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-1">
             <div className="text-xl font-bold text-blue-800">
-              {CHINESE_TO_KOREAN_MAP[calendarInfo.yearGanji[0]] || calendarInfo.yearGanji[0]}
-              {CHINESE_TO_KOREAN_MAP[calendarInfo.yearGanji[1]] || calendarInfo.yearGanji[1]}년
+              {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
             </div>
             
             <div className="text-xl font-bold">
@@ -224,13 +222,12 @@ export default function TraditionalCalendar({
             </div>
             
             <div className="text-xl font-bold text-green-800">
-              {CHINESE_TO_KOREAN_MAP[calendarInfo.monthGanji[0]] || calendarInfo.monthGanji[0]}
-              {CHINESE_TO_KOREAN_MAP[calendarInfo.monthGanji[1]] || calendarInfo.monthGanji[1]}월
+              {calendarInfo.monthGanji[0]}{calendarInfo.monthGanji[1]}월
             </div>
           </div>
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={handlePrevYear} data-testid="button-prev-year">
                 <ChevronLeft className="w-4 h-4" />
@@ -264,7 +261,7 @@ export default function TraditionalCalendar({
               <div 
                 key={day} 
                 className={`
-                  text-center font-bold py-2 border bg-gray-100
+                  text-center font-bold py-0.5 border bg-gray-100
                   ${index === 0 ? 'text-red-500' : ''}
                   ${index === 6 ? 'text-blue-500' : ''}
                 `}
