@@ -76,7 +76,7 @@ export default function MenuGrid() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-[1px]">
         {menuItems.map((item, index) => (
           <div
             key={index} 
@@ -91,7 +91,7 @@ export default function MenuGrid() {
             <div className={`${item.iconColor} mb-2 drop-shadow-sm`}>
               {item.icon}
             </div>
-            <p className="text-sm font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm">
+            <p className="text-xs font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm whitespace-nowrap">
               {item.title}
             </p>
           </div>
