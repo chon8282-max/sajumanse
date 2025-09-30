@@ -262,7 +262,13 @@ export default function SajuTable({
   
   // 특정 행에서만 한글 변환을 적용하는 헬퍼 함수 (1행, 4행, 5행, 6행만)
   const convertTextForSpecificRows = (text: string): string => {
-    // 문자열의 각 문자를 개별적으로 변환 (지장간 등 복합 문자열 처리)
+    // 먼저 전체 문자열로 변환 시도 (육친 등 2글자 단어)
+    const converted = convertText(text);
+    if (converted !== text) {
+      return converted;
+    }
+    
+    // 변환되지 않았다면 문자열의 각 문자를 개별적으로 변환 (지장간 등 복합 문자열 처리)
     return text.split('').map(char => convertText(char)).join('');
   };
   
