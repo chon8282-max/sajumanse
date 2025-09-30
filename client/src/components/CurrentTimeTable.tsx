@@ -49,15 +49,15 @@ export default function CurrentTimeTable({
 
   return (
     <Card 
-      className="p-2 shadow-md" 
+      className="p-1.5 shadow-md" 
       style={{ backgroundColor: 'hsl(var(--clock-bg))' }}
       data-testid="card-current-time-table"
     >
       {/* 제목 */}
-      <div className="text-center mb-1">
-        <h2 className="text-lg font-bold text-primary mb-1">{title}</h2>
-        <div className="text-xs text-muted-foreground">
-          <p>{solarDate || '양력 정보 없음'}</p>
+      <div className="text-center mb-0.5">
+        <h2 className="text-sm font-bold text-primary mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
+        <div className="text-[10px] text-muted-foreground">
+          <p style={{ letterSpacing: '-0.01em' }}>{solarDate || '양력 정보 없음'}</p>
         </div>
       </div>
       {/* 현재 만세력 간단 테이블 (1-2행만) */}
@@ -69,12 +69,13 @@ export default function CurrentTimeTable({
             return (
               <div 
                 key={`sky-${index}`} 
-                className="text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center"
+                className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  letterSpacing: '-0.03em'
                 }}
                 data-testid={`text-current-sky-${index}`}
               >
@@ -100,12 +101,13 @@ export default function CurrentTimeTable({
             return (
               <div 
                 key={`earth-${index}`} 
-                className="text-center text-xl font-bold border-r border-border last:border-r-0 min-h-[1.8rem] flex items-center justify-center"
+                className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  letterSpacing: '-0.03em'
                 }}
                 data-testid={`text-current-earth-${index}`}
               >
@@ -125,19 +127,19 @@ export default function CurrentTimeTable({
         </div>
       </div>
       {/* 알림 섹션 */}
-      <div className="mt-2 p-2 bg-muted/30 rounded-lg border">
-        <h3 className="text-sm font-semibold text-primary flex items-center mt-[0px] mb-[0px]">
-          <span className="w-2 h-2 bg-primary rounded-full mr-2"></span>
+      <div className="mt-1.5 p-1.5 bg-muted/30 rounded-lg border">
+        <h3 className="text-xs font-semibold text-primary flex items-center mt-[0px] mb-[0px]" style={{ letterSpacing: '-0.02em' }}>
+          <span className="w-1.5 h-1.5 bg-primary rounded-full mr-1.5"></span>
           알림
         </h3>
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-start space-x-2 min-w-0">
-            <span className="text-xs text-primary font-medium flex-shrink-0">•</span>
-            <span className="flex-1 min-w-0 truncate">오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex items-start space-x-1.5 min-w-0">
+            <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
+            <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
           </div>
-          <div className="flex items-start space-x-2 min-w-0">
-            <span className="text-xs text-primary font-medium flex-shrink-0">•</span>
-            <span className="flex-1 min-w-0 truncate">만세력 업데이트: 2025년 음력 절입시간 정보가 업데이트되었습니다.</span>
+          <div className="flex items-start space-x-1.5 min-w-0">
+            <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
+            <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>만세력 업데이트: 2025년 음력 절입시간 정보가 업데이트되었습니다.</span>
           </div>
         </div>
       </div>
