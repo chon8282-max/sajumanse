@@ -407,7 +407,7 @@ export default function SajuResult() {
           <span className="text-sm">뒤로</span>
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="text-xl font-bold text-foreground font-tmon">사주명식</h1>
+          <h1 className="font-bold text-foreground font-tmon text-[20px]">사주명식</h1>
         </div>
         <div className="flex items-center gap-0.5 mr-0">
           <Button 
