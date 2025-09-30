@@ -407,9 +407,9 @@ export default function SajuResult() {
           <span className="text-sm">뒤로</span>
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold text-foreground font-tmon">사주명식</h1>
+          <h1 className="text-xl font-bold text-foreground font-tmon">사주명식</h1>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-0.5 mr-0">
           <Button 
             variant="ghost" 
             size="icon"
@@ -424,10 +424,10 @@ export default function SajuResult() {
             size="sm"
             onClick={handleEdit}
             data-testid="button-edit"
-            className="hover-elevate active-elevate-2 flex items-center gap-1 min-h-6 px-2 py-0.5 text-xs"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
           >
-            <Edit className="h-4 w-4" />
-            <span className="text-sm">수정</span>
+            <Edit className="h-3 w-3" />
+            <span className="text-xs">수정</span>
           </Button>
           <Button 
             variant="default" 
@@ -435,10 +435,10 @@ export default function SajuResult() {
             onClick={handleSave}
             disabled={saveMutation.isPending}
             data-testid="button-save"
-            className="hover-elevate active-elevate-2 flex items-center gap-1 min-h-6 px-2 py-0.5 text-xs"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
           >
-            <Save className="h-4 w-4" />
-            <span className="text-sm">{saveMutation.isPending ? "저장중..." : "저장"}</span>
+            <Save className="h-3 w-3" />
+            <span className="text-xs">{saveMutation.isPending ? "저장중..." : "저장"}</span>
           </Button>
         </div>
       </div>
