@@ -262,8 +262,8 @@ export default function SajuTable({
   
   // 특정 행에서만 한글 변환을 적용하는 헬퍼 함수 (1행, 4행, 5행, 6행만)
   const convertTextForSpecificRows = (text: string): string => {
-    // 1행, 4행, 5행, 6행에서는 기본 convertText 함수와 동일하게 동작
-    return convertText(text);
+    // 문자열의 각 문자를 개별적으로 변환 (지장간 등 복합 문자열 처리)
+    return text.split('').map(char => convertText(char)).join('');
   };
   
   
@@ -997,7 +997,7 @@ export default function SajuTable({
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
             let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
-            displayText = convertText(displayText);
+            displayText = convertTextForSpecificRows(displayText);
             
             return (
               <div 
