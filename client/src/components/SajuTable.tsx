@@ -789,7 +789,7 @@ export default function SajuTable({
               )}
               <span className="text-sm" data-testid="text-gender">{gender}</span>
             </div>
-            <span className="font-medium" data-testid="text-age">{age}</span>
+            <span className="font-medium" data-testid="text-age">{age}세</span>
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
