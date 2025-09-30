@@ -143,8 +143,13 @@ export default function SajuList() {
       return response;
     },
     onSuccess: () => {
-      // 필터링된 뷰도 동기화되도록 정확한 queryKey로 무효화
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
+      // 모든 사주 리스트 쿼리 무효화 (페이지, 검색, 필터 상관없이)
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
+      toast({
+        title: "삭제 완료",
+        description: "사주가 성공적으로 삭제되었습니다.",
+        duration: 700
+      });
     },
     onError: (error) => {
       console.error('Delete error:', error);
