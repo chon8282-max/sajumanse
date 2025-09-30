@@ -16,51 +16,6 @@ import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // ========================================
-  // PWA / APK Support - Static Files (MUST BE FIRST)
-  // ========================================
-  
-  const publicPath = path.join(process.cwd(), 'client', 'public');
-  
-  // Serve manifest.json
-  app.get('/manifest.json', async (req, res) => {
-    try {
-      const filePath = path.join(publicPath, 'manifest.json');
-      const content = await fs.promises.readFile(filePath, 'utf-8');
-      res.setHeader('Content-Type', 'application/json');
-      res.send(content);
-    } catch (error) {
-      console.error('Error serving manifest.json:', error);
-      res.status(404).send('Not found');
-    }
-  });
-  
-  // Serve service-worker.js
-  app.get('/service-worker.js', async (req, res) => {
-    try {
-      const filePath = path.join(publicPath, 'service-worker.js');
-      const content = await fs.promises.readFile(filePath, 'utf-8');
-      res.setHeader('Content-Type', 'application/javascript');
-      res.setHeader('Service-Worker-Allowed', '/');
-      res.send(content);
-    } catch (error) {
-      console.error('Error serving service-worker.js:', error);
-      res.status(404).send('Not found');
-    }
-  });
-  
-  // Serve assetlinks.json
-  app.get('/.well-known/assetlinks.json', async (req, res) => {
-    try {
-      const filePath = path.join(publicPath, '.well-known', 'assetlinks.json');
-      const content = await fs.promises.readFile(filePath, 'utf-8');
-      res.setHeader('Content-Type', 'application/json');
-      res.send(content);
-    } catch (error) {
-      console.error('Error serving assetlinks.json:', error);
-      res.status(404).send('Not found');
-    }
-  });
 
   // ========================================
   // 그룹 관련 API 라우트
@@ -1407,33 +1362,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 년도별 전체 24절기 API
-  app.get("/api/solar-terms/:year", async (req, res) => {
-    try {
-      const year = parseInt(req.params.year);
-      
-      if (!year || year < 1900 || year > 2100) {
-        return res.status(400).json({ 
-          error: "올바른 년도를 입력해주세요 (년도: 1900-2100)" 
-        });
-      }
-
-      console.log(`Fetching all solar terms for ${year}`);
-      const allSolarTerms = await getSolarTermsForYear(year);
-      
-      res.json({
-        success: true,
-        data: allSolarTerms,
-        year: year,
-        count: allSolarTerms.length
-      });
-    } catch (error) {
-      console.error('Yearly solar terms retrieval error:', error);
-      res.status(500).json({ 
-        error: "연도별 절기 정보 조회 중 오류가 발생했습니다." 
-      });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;
