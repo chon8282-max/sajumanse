@@ -33,38 +33,40 @@ export default function MobileHeader({
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-2.5">
         {/* 좌측: 메뉴 버튼 */}
         <Button 
           variant="ghost" 
           size="icon"
           onClick={onMenuClick}
           data-testid="button-menu"
+          className="h-8 w-8"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-4 h-4" />
         </Button>
 
         {/* 중앙: 앱 제목과 날짜 */}
         <div className="flex-1 text-center">
-          <h1 className="text-xl font-bold font-serif flex items-center justify-center gap-2" data-testid="text-app-title">
+          <h1 className="text-base font-bold font-serif flex items-center justify-center gap-1.5" data-testid="text-app-title">
             <img 
               src={logoPath} 
               alt="만세력 로고" 
-              className="w-6 h-6 dark:invert"
+              className="w-4 h-4 dark:invert"
             />
             지천명 만세력
           </h1>
         </div>
 
         {/* 우측: 사용자 메뉴와 테마 토글 */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Button
             variant="ghost"
             size="icon"
             onClick={onThemeToggle}
             data-testid="button-theme-toggle"
+            className="h-8 w-8"
           >
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
 
           <div className="relative">
@@ -73,8 +75,9 @@ export default function MobileHeader({
               size="icon"
               onClick={handleUserClick}
               data-testid="button-user-menu"
+              className="h-8 w-8"
             >
-              <User className="w-5 h-5" />
+              <User className="w-4 h-4" />
             </Button>
             
             {showUserMenu && (
