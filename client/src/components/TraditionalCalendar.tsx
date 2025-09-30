@@ -209,7 +209,7 @@ export default function TraditionalCalendar({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
+    <div className="w-full max-w-4xl mx-auto pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
       <Card>
         <CardHeader className="pb-4">
           {/* 1열: 년도간지(왼쪽) | 양력달력(가운데) | 월간지(오른쪽) */}
