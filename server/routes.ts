@@ -549,14 +549,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/saju-records/:id", async (req, res) => {
     try {
       const { id } = req.params;
+      console.log('삭제 요청 받음 - ID:', id);
       const success = await storage.deleteSajuRecord(id);
+      console.log('삭제 결과:', success);
       
       if (!success) {
+        console.log('삭제 실패 - 기록 찾을 수 없음');
         return res.status(404).json({ 
+          success: false,
           error: "해당 사주 기록을 찾을 수 없습니다." 
         });
       }
 
+      console.log('삭제 성공!');
       res.json({
         success: true,
         message: "사주 기록이 삭제되었습니다."
@@ -564,6 +569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Delete saju record error:', error);
       res.status(500).json({ 
+        success: false,
         error: "사주 기록 삭제 중 오류가 발생했습니다." 
       });
     }
