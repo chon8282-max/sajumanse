@@ -316,6 +316,12 @@ export default function SajuResult() {
   });
 
   const handleBirthTimeChange = useCallback((timeCode: string) => {
+    console.log('SajuResult - handleBirthTimeChange 호출됨:', timeCode);
+    console.log('SajuResult - mutation 상태:', {
+      isPending: birthTimeUpdateMutation.isPending,
+      isSuccess: birthTimeUpdateMutation.isSuccess,
+      isError: birthTimeUpdateMutation.isError
+    });
     birthTimeUpdateMutation.mutate(timeCode);
   }, [birthTimeUpdateMutation]);
 
