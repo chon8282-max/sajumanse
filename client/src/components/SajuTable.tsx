@@ -904,7 +904,7 @@ export default function SajuTable({
         {/* 2행: 천간 */}
         <div className="grid grid-cols-6">
           {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
             return (
@@ -914,7 +914,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: 'white',
                   fontFamily: "'ChosunKim', sans-serif",
-                  minHeight: '2.8rem',
+                  minHeight: '2.5rem',
                   padding: '0',
                   margin: '0'
                 }}
@@ -928,19 +928,19 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.sky}</span>
+                  <span className="text-gray-800" style={{ fontSize: '38px' }}>{col.sky}</span>
                 )}
               </div>
             );
           })}
           {/* 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
+          <div className="text-center font-bold flex items-center justify-center bg-white" style={{ minHeight: '2.5rem' }}></div>
         </div>
 
         {/* 3행: 지지 */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white" style={{ minHeight: '2.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isGongmangPosition = isGongmang(col.earth);
@@ -955,7 +955,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: isGongmangPosition ? '#9CA3AF' : 'white',  // 공망은 회색 배경
                   fontFamily: "'ChosunKim', sans-serif",
-                  minHeight: '2.8rem',
+                  minHeight: '2.5rem',
                   padding: '0',
                   margin: '0',
                   position: 'relative'
@@ -980,14 +980,14 @@ export default function SajuTable({
                       style={{ margin: '0', padding: '0' }}
                     />
                   ) : (
-                    <span className="text-gray-800" style={{ fontSize: '40px' }}>{col.earth}</span>
+                    <span className="text-gray-800" style={{ fontSize: '38px' }}>{col.earth}</span>
                   )}
                 </div>
               </div>
             );
           })}
           {/* 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white" style={{ minHeight: '2.8rem' }}></div>
+          <div className="text-center font-bold flex items-center justify-center bg-white" style={{ minHeight: '2.5rem' }}></div>
         </div>
 
         {/* 4행: 지지 육친 / 오행 */}
