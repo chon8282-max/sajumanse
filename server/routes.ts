@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
+import fs from "fs";
 import { storage } from "./storage";
 import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
@@ -15,10 +17,49 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ========================================
-  // PWA / APK Support - Digital Asset Links
+  // PWA / APK Support - Static Files (MUST BE FIRST)
   // ========================================
-  app.get('/.well-known/assetlinks.json', (req, res) => {
-    res.sendFile('client/public/.well-known/assetlinks.json', { root: process.cwd() });
+  
+  const publicPath = path.join(process.cwd(), 'client', 'public');
+  
+  // Serve manifest.json
+  app.get('/manifest.json', async (req, res) => {
+    try {
+      const filePath = path.join(publicPath, 'manifest.json');
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      res.setHeader('Content-Type', 'application/json');
+      res.send(content);
+    } catch (error) {
+      console.error('Error serving manifest.json:', error);
+      res.status(404).send('Not found');
+    }
+  });
+  
+  // Serve service-worker.js
+  app.get('/service-worker.js', async (req, res) => {
+    try {
+      const filePath = path.join(publicPath, 'service-worker.js');
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      res.setHeader('Content-Type', 'application/javascript');
+      res.setHeader('Service-Worker-Allowed', '/');
+      res.send(content);
+    } catch (error) {
+      console.error('Error serving service-worker.js:', error);
+      res.status(404).send('Not found');
+    }
+  });
+  
+  // Serve assetlinks.json
+  app.get('/.well-known/assetlinks.json', async (req, res) => {
+    try {
+      const filePath = path.join(publicPath, '.well-known', 'assetlinks.json');
+      const content = await fs.promises.readFile(filePath, 'utf-8');
+      res.setHeader('Content-Type', 'application/json');
+      res.send(content);
+    } catch (error) {
+      console.error('Error serving assetlinks.json:', error);
+      res.status(404).send('Not found');
+    }
   });
 
   // ========================================
