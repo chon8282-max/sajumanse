@@ -1282,7 +1282,7 @@ export default function SajuTable({
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
               >
-                {showKorean && jijiImage ? (
+                {jijiImage ? (
                   <img 
                     src={jijiImage} 
                     alt={earth} 
@@ -1402,7 +1402,7 @@ export default function SajuTable({
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
               >
-                {showKorean && jijiImage ? (
+                {jijiImage ? (
                   <img 
                     src={jijiImage} 
                     alt={earth} 
