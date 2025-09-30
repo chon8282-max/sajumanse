@@ -59,6 +59,10 @@ export default function SajuList() {
   const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
   const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
   
+  // 사주 삭제 대화상자 상태
+  const [showDeleteSajuDialog, setShowDeleteSajuDialog] = useState(false);
+  const [deletingSaju, setDeletingSaju] = useState<{ id: string; name: string } | null>(null);
+  
   // 검색 debounce (성능 최적화)
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -315,8 +319,15 @@ export default function SajuList() {
   };
 
   const handleDeleteSaju = (id: string, name: string) => {
-    if (confirm(`"${name}" 사주를 정말 삭제하시겠습니까?`)) {
-      deleteMutation.mutate(id);
+    setDeletingSaju({ id, name });
+    setShowDeleteSajuDialog(true);
+  };
+  
+  const confirmDeleteSaju = () => {
+    if (deletingSaju) {
+      deleteMutation.mutate(deletingSaju.id);
+      setShowDeleteSajuDialog(false);
+      setDeletingSaju(null);
     }
   };
 
@@ -720,6 +731,29 @@ export default function SajuList() {
                 className="bg-destructive hover:bg-destructive/90"
               >
                 {deleteGroupMutation.isPending ? "삭제 중..." : "삭제"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* 사주 삭제 확인 대화상자 */}
+        <AlertDialog open={showDeleteSajuDialog} onOpenChange={setShowDeleteSajuDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle data-testid="text-delete-saju-title">사주 삭제</AlertDialogTitle>
+              <AlertDialogDescription data-testid="text-delete-saju-description">
+                "{deletingSaju?.name}" 사주를 정말 삭제하시겠습니까?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-delete-saju-cancel">취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDeleteSaju}
+                disabled={deleteMutation.isPending}
+                data-testid="button-delete-saju-confirm"
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {deleteMutation.isPending ? "삭제 중..." : "삭제"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
