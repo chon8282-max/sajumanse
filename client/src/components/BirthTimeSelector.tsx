@@ -16,25 +16,26 @@ export default function BirthTimeSelector({
   currentTime 
 }: BirthTimeSelectorProps) {
   const handleValueChange = (value: string) => {
+    console.log('BirthTimeSelector - 생시 선택됨:', value);
     onSelect(value);
     onClose();
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[280px]">
         <DialogHeader>
-          <DialogTitle className="text-center text-lg font-bold">
+          <DialogTitle className="text-center text-base font-bold">
             생시 선택
           </DialogTitle>
         </DialogHeader>
         
-        <div className="py-4">
+        <div className="py-2">
           <Select 
             value={currentTime}
             onValueChange={handleValueChange}
           >
-            <SelectTrigger className="text-base h-10 w-full" data-testid="select-birth-time">
+            <SelectTrigger className="text-sm h-9 w-full" data-testid="select-birth-time">
               <SelectValue placeholder="생시를 선택하세요" />
             </SelectTrigger>
             <SelectContent>
@@ -44,7 +45,7 @@ export default function BirthTimeSelector({
                   value={period.code}
                   data-testid={`select-time-${period.code}`}
                 >
-                  {period.name} ({period.range})
+                  <span className="text-sm">{period.name} ({period.range})</span>
                 </SelectItem>
               ))}
             </SelectContent>
