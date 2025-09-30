@@ -193,6 +193,7 @@ export default function TraditionalCalendar({
         {/* 일간지 */}
         {dayData.lunarDayGanji && (
           <div className="text-xs text-blue-600">
+            {console.log('일간지:', dayData.lunarDayGanji.sky, dayData.lunarDayGanji.earth)}
             {dayData.lunarDayGanji.sky}{dayData.lunarDayGanji.earth}
           </div>
         )}
