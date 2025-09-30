@@ -205,7 +205,13 @@ export default function SajuResult() {
     const daeunData = calculateCompleteDaeun(record);
     
     // 현재 나이 계산 및 현재 대운 찾기
-    const currentAge = calculateCurrentAge(record.birthYear, record.birthMonth, record.birthDay);
+    const currentAge = calculateCurrentAge(
+      record.birthYear, 
+      record.birthMonth, 
+      record.birthDay,
+      record.yearSky || undefined,
+      record.yearEarth || undefined
+    );
     const currentDaeun = findCurrentDaeun(currentAge, daeunData.daeunPeriods);
     
     return {
