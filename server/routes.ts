@@ -15,6 +15,13 @@ import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ========================================
+  // PWA / APK Support - Digital Asset Links
+  // ========================================
+  app.get('/.well-known/assetlinks.json', (req, res) => {
+    res.sendFile('client/public/.well-known/assetlinks.json', { root: process.cwd() });
+  });
+
+  // ========================================
   // 그룹 관련 API 라우트
   // ========================================
 
