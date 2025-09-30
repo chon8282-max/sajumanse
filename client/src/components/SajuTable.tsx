@@ -783,7 +783,7 @@ export default function SajuTable({
     <Card className="shadcn-card rounded-xl border bg-card border-card-border text-card-foreground shadow-sm p-4 pl-[0px] pr-[0px] pt-[1px] pb-[1px]" style={{ backgroundColor: 'hsl(var(--saju-header-bg))' }} data-testid="card-saju-table">
       {/* 개인정보 표시 */}
       {name && (
-        <div className="mb-2 p-3 border border-border rounded-md pt-[0px] pb-[0px]" style={{ backgroundColor: 'hsl(var(--name-card-bg))' }}>
+        <div className="p-3 border border-border rounded-md mt-[0px] mb-[0px] pt-[0px] pb-[0px]" style={{ backgroundColor: 'hsl(var(--name-card-bg))' }}>
           {/* 첫 번째 줄: 이름, 성별, 나이 */}
           <div className="flex items-center justify-center gap-2 mt-[0px] mb-[0px]">
             <span className="font-bold text-lg" data-testid="text-name">{name}</span>
