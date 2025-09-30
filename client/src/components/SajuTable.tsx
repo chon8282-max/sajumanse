@@ -879,7 +879,7 @@ export default function SajuTable({
             firstRowShinsal.map((shinsal, index) => (
               <div 
                 key={`firstrow-shinsal-${index}`} 
-                className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-red-600 dark:text-red-400 bg-white"
+                className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-red-600 dark:text-red-400 bg-white pt-[0px] pb-[0px]"
                 data-testid={`text-firstrow-shinsal-${index}`}
               >
                 {convertTextForSpecificRows(shinsal)}
@@ -895,7 +895,7 @@ export default function SajuTable({
               return (
                 <div 
                   key={`yukjin-sky-${index}`} 
-                  className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                  className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white pt-[0px] pb-[0px]"
                   data-testid={`text-yukjin-sky-${index}`}
                 >
                   {displayText}
