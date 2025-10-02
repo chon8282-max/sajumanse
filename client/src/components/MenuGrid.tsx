@@ -21,6 +21,8 @@ export default function MenuGrid() {
       setLocation("/saju-list");
     } else if (menuName === "역학달력") {
       setLocation("/calendar");
+    } else if (menuName === "지천명 유튜브") {
+      window.open("https://www.youtube.com/@chon8282", "_blank");
     } else {
       toast({
         title: menuName,
