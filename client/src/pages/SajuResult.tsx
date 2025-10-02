@@ -145,6 +145,7 @@ export default function SajuResult() {
   const [saeunOffset, setSaeunOffset] = useState(0);
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
   const [editingName, setEditingName] = useState("");
+  const [currentMemo, setCurrentMemo] = useState<string>("");
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
   
@@ -396,6 +397,13 @@ export default function SajuResult() {
     birthDateUpdateMutation.mutate({ year, month, day });
   }, [birthDateUpdateMutation]);
 
+  // sajuData 로드 시 메모 초기화
+  useEffect(() => {
+    if (sajuData?.data) {
+      setCurrentMemo(sajuData.data.memo || "");
+    }
+  }, [sajuData?.data]);
+
   // 잘못된 경로인 경우 리다이렉트
   useEffect(() => {
     if (!match || !params?.id) {
@@ -404,15 +412,18 @@ export default function SajuResult() {
     }
   }, [match, params?.id, setLocation]);
 
+  // 메모 변경 핸들러
+  const handleMemoChange = useCallback((memo: string) => {
+    setCurrentMemo(memo);
+  }, []);
+
   // 핸들러 함수들
   const handleBack = () => {
     setLocation("/manseryeok");
   };
 
   const handleSave = () => {
-    if (sajuData?.data) {
-      saveMutation.mutate(sajuData.data.memo || "");
-    }
+    saveMutation.mutate(currentMemo);
   };
 
   const handleNameClick = () => {
@@ -628,6 +639,7 @@ export default function SajuResult() {
           onBirthTimeChange={handleBirthTimeChange}
           onBirthDateChange={handleBirthDateChange}
           onNameClick={handleNameClick}
+          onMemoChange={handleMemoChange}
         />
 
         {/* 이름 수정 다이얼로그 */}

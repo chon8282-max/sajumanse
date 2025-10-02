@@ -48,6 +48,7 @@ interface SajuTableProps {
   onBirthTimeChange?: (timeCode: string) => void;
   onBirthDateChange?: (year: number, month: number, day: number) => void;
   onNameClick?: () => void;
+  onMemoChange?: (memo: string) => void;
 }
 
 // 지장간 계산 - 사용자 요청 수정사항 반영
@@ -239,7 +240,8 @@ export default function SajuTable({
   onSaeunScroll,
   onBirthTimeChange,
   onBirthDateChange,
-  onNameClick
+  onNameClick,
+  onMemoChange
 }: SajuTableProps) {
 
   // 나이 계산 (간지년 기준)
@@ -310,6 +312,13 @@ export default function SajuTable({
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
+  
+  // 메모가 변경될 때 부모 컴포넌트에 전달
+  useEffect(() => {
+    if (onMemoChange && memoText !== memo) {
+      onMemoChange(memoText);
+    }
+  }, [memoText, onMemoChange, memo]);
   
   // 선택된 歲運 나이 상태 (초기값: 현재 나이)
   const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
