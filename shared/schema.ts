@@ -21,10 +21,10 @@ export const sajuRecords = pgTable("saju_records", {
   // 기본 정보
   name: text("name").notNull().default("이름없음"), // 성명 (기본값: 이름없음)
   birthYear: integer("birth_year").notNull(),
-  birthMonth: integer("birth_month").notNull(),
-  birthDay: integer("birth_day").notNull(),
+  birthMonth: integer("birth_month"), // 간지 입력 시 null 가능
+  birthDay: integer("birth_day"), // 간지 입력 시 null 가능
   birthTime: text("birth_time"), // 생시 (예: "子時" 또는 "23:31~01:30")
-  calendarType: text("calendar_type").notNull().default("양력"), // "양력" | "음력" | "윤달"
+  calendarType: text("calendar_type").notNull().default("양력"), // "양력" | "음력" | "ganji"
   gender: text("gender").notNull(), // "남자" | "여자"
   groupId: varchar("group_id").references(() => groups.id), // 그룹 ID 참조
   group: text("group"), // 레거시 그룹 (호환성)
@@ -82,20 +82,12 @@ export const insertGroupSchema = createInsertSchema(groups).omit({
 export type InsertGroup = z.infer<typeof insertGroupSchema>;
 export type Group = typeof groups.$inferSelect;
 
-// 사주 기록 스키마
+// 사주 기록 스키마 (간지 입력도 허용)
 export const insertSajuRecordSchema = createInsertSchema(sajuRecords).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-  // 사주팔자 정보는 계산 후 자동 추가되므로 입력에서 제외
-  yearSky: true,
-  yearEarth: true,
-  monthSky: true,
-  monthEarth: true,
-  daySky: true,
-  dayEarth: true,
-  hourSky: true,
-  hourEarth: true,
+  // 간지 입력의 경우 사주팔자 정보를 직접 제공하므로 입력에 포함
 });
 
 export type InsertSajuRecord = z.infer<typeof insertSajuRecordSchema>;
