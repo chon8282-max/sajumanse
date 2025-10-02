@@ -27,13 +27,14 @@ export default function GanjiResult() {
   const hourSky = searchParams.get('hourSky') || '';
   const hourEarth = searchParams.get('hourEarth') || '';
   const gender = searchParams.get('gender') || '남자';
+  const nameFromUrl = searchParams.get('name') || '';
   const fromEdit = searchParams.get('fromEdit') === 'true';
   const recordId = searchParams.get('id') || '';
   
   // 선택된 연도 상태
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   // 이름 상태
-  const [name, setName] = useState<string>('');
+  const [name, setName] = useState<string>(nameFromUrl);
   const isEditMode = fromEdit && recordId;
 
   // 저장 mutation
@@ -44,7 +45,7 @@ export default function GanjiResult() {
       }
 
       const response = await apiRequest('POST', '/api/saju-records', {
-        name: name.trim() || '미상',
+        name: name.trim() || '이름없음',
         birthYear: selectedYear,
         birthMonth: null,
         birthDay: null,
@@ -366,7 +367,7 @@ export default function GanjiResult() {
         <SajuTable
           saju={saju}
           title="사주 명식표"
-          name={name.trim() || '미상'}
+          name={name.trim() || '이름없음'}
           birthYear={selectedYear || undefined}
           birthMonth={selectedYear ? 1 : undefined}
           birthDay={selectedYear ? 1 : undefined}
