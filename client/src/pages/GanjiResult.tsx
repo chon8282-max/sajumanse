@@ -351,9 +351,18 @@ export default function GanjiResult() {
           title="사주 명식표"
           name={name.trim() || '이름없음'}
           birthYear={selectedYear || undefined}
-          birthMonth={selectedYear ? 1 : undefined}
-          birthDay={selectedYear ? 1 : undefined}
+          birthMonth={undefined}
+          birthDay={undefined}
           gender={gender}
+          yearSky={yearSky || undefined}
+          yearEarth={yearEarth || undefined}
+          monthSky={monthSky || undefined}
+          monthEarth={monthEarth || undefined}
+          daySky={daySky || undefined}
+          dayEarth={dayEarth || undefined}
+          hourSky={hourSky || undefined}
+          hourEarth={hourEarth || undefined}
+          calendarType="ganji"
           daeunPeriods={daeunData?.daeunPeriods || []}
           currentAge={currentAge}
         />
