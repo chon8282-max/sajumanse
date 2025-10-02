@@ -79,17 +79,10 @@ function AppContent() {
       case 'saved':
         setLocation('/saju-list');
         break;
-      case 'study':
+      case 'compatibility':
         toast({
-          title: "학습 서비스",
-          description: "학습 페이지는 현재 준비 중입니다.",
-          duration: 2000,
-        });
-        break;
-      case 'profile':
-        toast({
-          title: "내정보 서비스",
-          description: "내정보 페이지는 현재 준비 중입니다.",
+          title: "궁합 서비스",
+          description: "궁합 페이지는 현재 준비 중입니다.",
           duration: 2000,
         });
         break;
