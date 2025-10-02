@@ -5,8 +5,7 @@ import {
   Youtube, 
   BookOpen, 
   GraduationCap, 
-  Star,
-  Info
+  Star 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -24,8 +23,6 @@ export default function MenuGrid() {
       setLocation("/calendar");
     } else if (menuName === "지천명 유튜브") {
       window.open("https://www.youtube.com/@chon8282", "_blank");
-    } else if (menuName === "만세력 소개 사용법") {
-      setLocation("/guide");
     } else {
       toast({
         title: menuName,
@@ -48,13 +45,6 @@ export default function MenuGrid() {
       backgroundColor: "bg-orange-50 dark:bg-orange-900/20",
       iconColor: "text-orange-600 dark:text-orange-400",
       onClick: () => handleMenuClick("사주불러오기")
-    },
-    {
-      title: "만세력 소개 사용법",
-      icon: <Info className="w-8 h-8" />,
-      backgroundColor: "bg-blue-100 dark:bg-blue-900/20",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      onClick: () => handleMenuClick("만세력 소개 사용법")
     },
     {
       title: "지천명 유튜브",

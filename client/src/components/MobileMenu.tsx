@@ -6,9 +6,11 @@ import {
   Upload, 
   Bell, 
   MessageSquare, 
-  X 
+  X,
+  Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface MobileMenuProps {
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleDbBackup = () => {
     toast({
@@ -50,6 +53,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     onClose();
   };
 
+  const handleGuide = () => {
+    setLocation("/guide");
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -79,6 +87,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* 메뉴 항목들 */}
           <div className="flex-1 p-4 space-y-3">
+            <Card className="p-3">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">도움말</h3>
+              <div className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={handleGuide}
+                  data-testid="button-guide"
+                >
+                  <Info className="w-4 h-4 mr-3" />
+                  만세력 소개 사용법
+                </Button>
+              </div>
+            </Card>
+
             <Card className="p-3">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">데이터 관리</h3>
               <div className="space-y-2">
