@@ -74,6 +74,7 @@ export default function GanjiResult() {
         toast({
           title: "저장 완료",
           description: "사주 정보가 성공적으로 저장되었습니다.",
+          duration: 700
         });
       }
     },
