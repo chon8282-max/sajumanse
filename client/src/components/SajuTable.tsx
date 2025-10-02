@@ -256,9 +256,23 @@ export default function SajuTable({
 
   // 간지 레코드인 경우 역산된 생년월일 계산
   const reversedDate = useMemo(() => {
+    console.log('[reversedDate] 조건 체크:', {
+      calendarType,
+      birthMonth,
+      birthDay,
+      birthYear,
+      yearSky,
+      yearEarth,
+      monthSky,
+      monthEarth,
+      daySky,
+      dayEarth
+    });
+    
     // 간지 입력으로 저장된 레코드이고 월/일이 없는 경우에만 역산
     if (calendarType === 'ganji' && (!birthMonth || !birthDay) && birthYear && yearSky && yearEarth && monthSky && monthEarth && daySky && dayEarth) {
-      return reverseCalculateSolarDate({
+      console.log('[reversedDate] 역산 계산 시작');
+      const result = reverseCalculateSolarDate({
         yearSky,
         yearEarth,
         monthSky,
@@ -268,7 +282,10 @@ export default function SajuTable({
         hourSky: hourSky || '',
         hourEarth: hourEarth || ''
       }, birthYear);
+      console.log('[reversedDate] 역산 결과:', result);
+      return result;
     }
+    console.log('[reversedDate] 조건 불만족, null 반환');
     return null;
   }, [calendarType, birthYear, birthMonth, birthDay, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
 
