@@ -328,7 +328,7 @@ export default function SajuResult() {
     mutationFn: async (timeCode: string) => {
       if (!params?.id) throw new Error('No ID provided');
       
-      return apiRequest('PATCH', `/api/saju-records/${params.id}`, { birthTime: timeCode });
+      return apiRequest('PUT', `/api/saju-records/${params.id}`, { birthTime: timeCode });
     },
     onSuccess: (_, timeCode) => {
       // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
@@ -365,7 +365,7 @@ export default function SajuResult() {
     mutationFn: async ({ year, month, day }: { year: number; month: number; day: number }) => {
       if (!params?.id) throw new Error('No ID provided');
       
-      return apiRequest('PATCH', `/api/saju-records/${params.id}`, { 
+      return apiRequest('PUT', `/api/saju-records/${params.id}`, { 
         birthYear: year,
         birthMonth: month,
         birthDay: day
