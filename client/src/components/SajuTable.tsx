@@ -1076,24 +1076,24 @@ export default function SajuTable({
           <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
         </div>
 
-        {/* 3행: 지지 */}
-        <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+        {/* 3행 & 4행: 지지와 지지 육친/오행 (6번째 열 병합) */}
+        <div className="grid grid-cols-6" style={{ gridTemplateRows: 'auto auto' }}>
+          {/* 3행: 지지 */}
+          <div className="text-center font-bold border-r border-border border-b flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isGongmangPosition = isGongmang(col.earth);
-            const isHourEarth = index === 0; // 시지(첫 번째 칸)인지 확인
-            const isDayEarth = index === 2; // 일지(세 번째 칸)인지 확인
+            const isHourEarth = index === 0;
+            const isDayEarth = index === 2;
             
             return (
               <div 
                 key={`earth-${index}`} 
-                className={`text-center font-bold border-r border-border flex items-center justify-center ${
+                className={`text-center font-bold border-r border-border border-b flex items-center justify-center ${
                   isHourEarth || isDayEarth ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
                 }`}
                 style={{ 
-                  backgroundColor: isGongmangPosition ? '#9CA3AF' : 'white',  // 공망은 회색 배경
+                  backgroundColor: isGongmangPosition ? '#9CA3AF' : 'white',
                   fontFamily: "'ChosunKim', sans-serif",
                   minHeight: '2.5rem',
                   padding: '0',
@@ -1126,14 +1126,11 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
-        </div>
+          {/* 3행 & 4행 병합된 빈 칸 */}
+          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900 border-b" style={{ gridRow: 'span 2', minHeight: '4rem' }}></div>
 
-        {/* 4행: 지지 육친 / 오행 */}
-        <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 4행: 지지 육친 / 오행 */}
+          <div className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
             let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
@@ -1142,15 +1139,13 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-earth-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-earth-${index}`}
               >
                 {displayText}
               </div>
             );
           })}
-          {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
         {/* 5행: 지장간 / 신살 (토글) */}
