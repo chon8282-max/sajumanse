@@ -10,6 +10,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 
 export default function GanjiResult() {
   const [, setLocation] = useWouterLocation();
@@ -43,11 +44,23 @@ export default function GanjiResult() {
         throw new Error('연도를 선택해주세요');
       }
 
+      // 간지로부터 양력 날짜 역산
+      const reversedDate = reverseCalculateSolarDate({
+        yearSky,
+        yearEarth,
+        monthSky,
+        monthEarth,
+        daySky,
+        dayEarth,
+        hourSky,
+        hourEarth
+      }, selectedYear);
+
       const response = await apiRequest('POST', '/api/saju-records', {
         name: name.trim() || '이름없음',
         birthYear: selectedYear,
-        birthMonth: null,
-        birthDay: null,
+        birthMonth: reversedDate?.month || null,
+        birthDay: reversedDate?.day || null,
         birthTime: null,
         calendarType: 'ganji',
         gender: gender,
@@ -97,10 +110,22 @@ export default function GanjiResult() {
         throw new Error('레코드 ID가 없습니다');
       }
 
+      // 간지로부터 양력 날짜 역산
+      const reversedDate = reverseCalculateSolarDate({
+        yearSky,
+        yearEarth,
+        monthSky,
+        monthEarth,
+        daySky,
+        dayEarth,
+        hourSky,
+        hourEarth
+      }, selectedYear);
+
       const response = await apiRequest('PUT', `/api/saju-records/${recordId}`, {
         birthYear: selectedYear,
-        birthMonth: null,
-        birthDay: null,
+        birthMonth: reversedDate?.month || null,
+        birthDay: reversedDate?.day || null,
         yearSky,
         yearEarth,
         monthSky,
