@@ -143,6 +143,54 @@ export default function GanjiInput() {
           </div>
         </div>
 
+        {/* 선택된 사주 미리보기 */}
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">선택된 사주</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="border border-border rounded-lg overflow-hidden">
+              {/* 천간 행 */}
+              <div className="grid grid-cols-4 border-b border-border">
+                <div className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.hour?.sky || '-'}</span>
+                </div>
+                <div className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.day?.sky || '-'}</span>
+                </div>
+                <div className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.month?.sky || '-'}</span>
+                </div>
+                <div className="text-center text-base font-bold min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.year?.sky || '-'}</span>
+                </div>
+              </div>
+              {/* 지지 행 */}
+              <div className="grid grid-cols-4">
+                <div className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.hour?.earth || '-'}</span>
+                </div>
+                <div className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.day?.earth || '-'}</span>
+                </div>
+                <div className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.month?.earth || '-'}</span>
+                </div>
+                <div className="text-center text-base font-bold min-h-[2rem] flex items-center justify-center bg-white dark:bg-gray-800">
+                  <span className="text-gray-800 dark:text-gray-200">{selection.year?.earth || '-'}</span>
+                </div>
+              </div>
+              {/* 라벨 행 */}
+              <div className="grid grid-cols-4 border-t border-border bg-muted/30">
+                <div className="text-center text-xs py-1 border-r border-border last:border-r-0 text-muted-foreground">시주</div>
+                <div className="text-center text-xs py-1 border-r border-border last:border-r-0 text-muted-foreground">일주</div>
+                <div className="text-center text-xs py-1 border-r border-border last:border-r-0 text-muted-foreground">월주</div>
+                <div className="text-center text-xs py-1 text-muted-foreground">년주</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 현재 단계 */}
         <Card>
           <CardHeader>
