@@ -77,28 +77,26 @@ export default function Compatibility() {
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
       <div className="w-full h-full relative">
-        {/* 홈 버튼 */}
-        <div className="absolute top-1 left-1 z-50">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleHomeClick}
-            className="gap-1 h-7 text-xs px-2"
-            data-testid="button-home"
-          >
-            <Home className="w-3 h-3" />
-            홈
-          </Button>
-        </div>
-
         {/* 2분할 레이아웃 */}
-        <div className="h-full flex flex-row gap-1 p-0 pt-9">
+        <div className="h-full flex flex-row gap-1 p-0">
         {/* 왼쪽 영역 */}
         <div className="flex-1 flex flex-col min-w-0">
           <Card className="flex-1 overflow-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">사주 1</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleHomeClick}
+                    className="gap-1 h-6 text-xs px-2"
+                    data-testid="button-home"
+                  >
+                    <Home className="w-3 h-3" />
+                    홈
+                  </Button>
+                  <CardTitle className="text-sm">사주 1</CardTitle>
+                </div>
                 <div className="flex gap-1">
                   {leftSajuId && (
                     <Button
