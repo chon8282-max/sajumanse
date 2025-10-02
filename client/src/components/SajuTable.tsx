@@ -1034,13 +1034,13 @@ export default function SajuTable({
         {/* 5행: 지장간 / 신살 (토글) */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white"></div>
+          <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {showShinsal ? (
             // 신살 표시
             shinsal.map((shinsalText, index) => (
               <div 
                 key={`shinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-shinsal-${index}`}
               >
                 {convertTextForSpecificRows(shinsalText)}
@@ -1051,7 +1051,7 @@ export default function SajuTable({
             jijanggan.map((stems, index) => (
               <div 
                 key={`jijanggan-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white"
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-jijanggan-${index}`}
               >
                 {convertTextForSpecificRows(stems)}
@@ -1060,7 +1060,7 @@ export default function SajuTable({
           )}
           {/* 공망 정보 */}
           <div 
-            className="py-1 text-center text-sm min-h-[1.5rem] flex items-center justify-center bg-white"
+            className="py-1 text-center text-sm min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"
             data-testid="text-gongmang-info"
           >
             {gongmang.length > 0 && (
@@ -1227,9 +1227,8 @@ export default function SajuTable({
                 className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
-                    : 'bg-white dark:bg-gray-800'
+                    : 'bg-pink-50 dark:bg-gray-900'
                 }`}
-                style={{ backgroundColor: isSelectedAge ? undefined : '#fde8fa' }}
                 onClick={() => {
                   if (!isDragging.current) {
                     // 1열과 2열(colIndex 0, 1)은 월운 활성화 동작
@@ -1462,7 +1461,7 @@ export default function SajuTable({
           {wolunMonths.map((month, colIndex) => (
             <div 
               key={`wolun-month-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white flex items-center justify-center"
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
               data-testid={`text-wolun-month-${colIndex}`}
             >
               {colIndex === 0 ? 1 : month}
@@ -1473,15 +1472,13 @@ export default function SajuTable({
         {/* 17행: 메모 + 오늘 날짜 */}
         <div className="flex border-b border-border">
           <div 
-            className="flex-1 py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-black border-r border-border"
-            style={{ backgroundColor: '#d4bda5' }}
+            className="flex-1 py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-amber-200 dark:bg-gray-900 border-r border-border"
             data-testid="text-memo-title"
           >
             메모
           </div>
           <button 
-            className="px-3 py-1 text-xs bg-white hover:bg-gray-50 border-l border-border cursor-pointer transition-colors"
-            style={{ color: 'var(--foreground)' }}
+            className="px-3 py-1 text-xs bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-black dark:text-white border-l border-border cursor-pointer transition-colors"
             onClick={insertTodayDate}
             data-testid="button-today-date"
           >
@@ -1491,9 +1488,9 @@ export default function SajuTable({
 
         {/* 18행: 메모 입력 박스 */}
         <div className="border-b border-border">
-          <div className="p-4 bg-white flex justify-center">
+          <div className="p-4 bg-white dark:bg-gray-900 flex justify-center">
             <textarea
-              className="w-full max-w-2xl min-h-[10rem] text-xs border border-gray-300 rounded px-2 py-1 resize-vertical"
+              className="w-full max-w-2xl min-h-[10rem] text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 resize-vertical bg-white dark:bg-gray-800 text-black dark:text-white"
               placeholder="메모를 입력하세요..."
               value={memoText}
               onChange={(e) => setMemoText(e.target.value)}
@@ -1503,15 +1500,6 @@ export default function SajuTable({
         </div>
 
       </div>
-      {/* 메모 */}
-      {memo && (
-        <div className="mt-4 border border-border">
-          <div className="p-2 text-center text-xs font-medium border-b border-border bg-white dark:bg-gray-900 text-black dark:text-white">메모</div>
-          <div className="p-3 text-sm bg-white dark:bg-gray-900 text-black dark:text-white" data-testid="text-memo">
-            {memo}
-          </div>
-        </div>
-      )}
       
       {/* 생시 선택 모달 */}
       <BirthTimeSelector
