@@ -45,11 +45,11 @@ export default function MenuGrid() {
       onClick: () => handleMenuClick("사주불러오기")
     },
     {
-      title: "지선당 유튜브",
+      title: "지천명 유튜브",
       icon: <Youtube className="w-8 h-8" />,
       backgroundColor: "bg-teal-100 dark:bg-teal-900/20",
       iconColor: "text-teal-600 dark:text-teal-400",
-      onClick: () => handleMenuClick("지선당 유튜브")
+      onClick: () => handleMenuClick("지천명 유튜브")
     },
     {
       title: "역학달력",
