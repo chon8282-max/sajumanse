@@ -2,7 +2,6 @@ import { useLocation as useWouterLocation, useSearch } from "wouter";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { ArrowLeft, Save, Edit, Moon, Sun, Heart } from "lucide-react";
 import SajuTable from "@/components/SajuTable";
 import { findGanjiIndex } from "@/lib/ganji-calculator";
@@ -319,23 +318,6 @@ export default function GanjiResult() {
       </div>
 
       <div className="max-w-2xl mx-auto">
-        {/* 이름 입력 카드 */}
-        <Card className="mb-4">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base">선택된 사주</CardTitle>
-              <Input
-                type="text"
-                placeholder="이름 입력"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="flex-1 h-8 text-sm"
-                data-testid="input-name"
-              />
-            </div>
-          </CardHeader>
-        </Card>
-
         {/* 가능한 연도 선택 - 연도가 선택되지 않았을 때만 표시 */}
         {!selectedYear && (
           <Card className="mb-6">
