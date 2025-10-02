@@ -383,11 +383,32 @@ export default function SajuResult() {
   const handleEdit = () => {
     if (sajuData?.data) {
       const record = sajuData.data;
+      
+      // 간지 입력으로 저장된 경우
+      if (record.calendarType === 'ganji') {
+        const params = new URLSearchParams({
+          yearSky: record.yearSky || '',
+          yearEarth: record.yearEarth || '',
+          monthSky: record.monthSky || '',
+          monthEarth: record.monthEarth || '',
+          daySky: record.daySky || '',
+          dayEarth: record.dayEarth || '',
+          hourSky: record.hourSky || '',
+          hourEarth: record.hourEarth || '',
+          gender: record.gender || '',
+          fromEdit: 'true',
+          id: record.id
+        });
+        setLocation(`/ganji-result?${params.toString()}`);
+        return;
+      }
+      
+      // 일반 생년월일 입력으로 저장된 경우
       const queryParams = new URLSearchParams({
         name: record.name || '',
         year: record.birthYear.toString(),
-        month: record.birthMonth.toString(),
-        day: record.birthDay.toString(),
+        month: record.birthMonth?.toString() || '',
+        day: record.birthDay?.toString() || '',
         birthTime: record.birthTime || '',
         calendarType: record.calendarType || '양력',
         gender: record.gender || '남자',

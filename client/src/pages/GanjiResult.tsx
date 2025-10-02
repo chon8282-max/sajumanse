@@ -37,13 +37,13 @@ export default function GanjiResult() {
         throw new Error('연도를 선택해주세요');
       }
 
-      return await apiRequest('POST', '/api/saju-records', {
+      const response = await apiRequest('POST', '/api/saju-records', {
         name: '미상',
         birthYear: selectedYear,
-        birthMonth: 1,
-        birthDay: 1,
+        birthMonth: null, // 간지 입력이므로 정확한 월일은 null
+        birthDay: null,
         birthTime: null,
-        calendarType: 'solar',
+        calendarType: 'ganji', // 간지 입력 표시
         gender: gender,
         memo: `간지 입력: ${yearSky}${yearEarth}년 ${monthSky}${monthEarth}월 ${daySky}${dayEarth}일 ${hourSky}${hourEarth}시`,
         yearSky,
@@ -55,13 +55,22 @@ export default function GanjiResult() {
         hourSky,
         hourEarth,
       });
+      
+      const data = await response.json();
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
-      toast({
-        title: "저장 완료",
-        description: "사주 정보가 성공적으로 저장되었습니다.",
-      });
+      
+      // 저장된 레코드의 ID로 사주 결과 페이지로 이동
+      if (data.data?.id) {
+        setLocation(`/saju-result/${data.data.id}`);
+      } else {
+        toast({
+          title: "저장 완료",
+          description: "사주 정보가 성공적으로 저장되었습니다.",
+        });
+      }
     },
     onError: (error) => {
       toast({
