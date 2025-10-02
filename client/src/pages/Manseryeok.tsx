@@ -61,7 +61,7 @@ export default function Manseryeok() {
         setLocation("/saju-input");
         break;
       case "compatibility":
-        console.log("궁합사주 기능 준비중");
+        setLocation("/compatibility");
         break;
       case "birth-from-saju":
         console.log("팔자로 생일 입력 기능 준비중");
