@@ -384,7 +384,7 @@ export default function SajuList() {
   const handleEditSaju = (saju: SajuRecord, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // 간지 입력으로 저장된 경우
+    // 간지 입력으로 저장된 경우 - 간지 입력 페이지로 이동
     if (saju.calendarType === 'ganji') {
       const params = new URLSearchParams({
         yearSky: saju.yearSky || '',
@@ -396,10 +396,11 @@ export default function SajuList() {
         hourSky: saju.hourSky || '',
         hourEarth: saju.hourEarth || '',
         gender: saju.gender || '',
+        name: saju.name || '',
         fromEdit: 'true',
         id: saju.id
       });
-      setLocation(`/ganji-result?${params.toString()}`);
+      setLocation(`/ganji-input?${params.toString()}`);
       return;
     }
     
