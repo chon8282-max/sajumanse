@@ -28,6 +28,7 @@ import NotFound from "@/pages/not-found";
 import SajuResult from "@/pages/SajuResult";
 import SajuList from "@/pages/SajuList";
 import Guide from "@/pages/Guide";
+import Compatibility from "@/pages/Compatibility";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/saju-result/:id" component={SajuResult} />
       <Route path="/saju-list" component={SajuList} />
       <Route path="/guide" component={Guide} />
+      <Route path="/compatibility" component={Compatibility} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
@@ -80,11 +82,7 @@ function AppContent() {
         setLocation('/saju-list');
         break;
       case 'compatibility':
-        toast({
-          title: "궁합 서비스",
-          description: "궁합 페이지는 현재 준비 중입니다.",
-          duration: 2000,
-        });
+        setLocation('/compatibility');
         break;
       default:
         setLocation('/');
@@ -179,10 +177,13 @@ function AppContent() {
     };
   }, []);
 
+  // 궁합 페이지인지 확인
+  const isCompatibilityPage = location === "/compatibility";
+
   return (
     <div className="min-h-screen bg-background font-sans">
-      {/* 메인 페이지에만 상단 헤더 표시 */}
-      {location === "/" && (
+      {/* 궁합 페이지가 아닌 경우에만 메인 페이지 상단 헤더 표시 */}
+      {!isCompatibilityPage && location === "/" && (
         <MobileHeader
           currentDate={new Date()}
           isDarkMode={theme === "dark"}
@@ -192,17 +193,20 @@ function AppContent() {
         />
       )}
       
-      <main className="pb-20"> {/* 하단 네비게이션 공간 */}
+      <main className={isCompatibilityPage ? "" : "pb-20"}> {/* 궁합 페이지가 아닐 때만 하단 네비게이션 공간 */}
         <Router />
       </main>
 
-      <BottomNavigation 
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
+      {/* 궁합 페이지가 아닐 때만 하단 네비게이션 표시 */}
+      {!isCompatibilityPage && (
+        <BottomNavigation 
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+        />
+      )}
 
-      {/* 메인 페이지에만 모바일 메뉴 표시 */}
-      {location === "/" && (
+      {/* 궁합 페이지가 아니고 메인 페이지일 때만 모바일 메뉴 표시 */}
+      {!isCompatibilityPage && location === "/" && (
         <MobileMenu 
           isOpen={showMobileMenu}
           onClose={handleCloseMenu}
