@@ -1269,10 +1269,9 @@ export default function SajuTable({
         {/* 11행: 歲運 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => {
-            const jijiImage = getJijiImage(earth, showKorean);
-            if (colIndex === 0) {
-              console.log(`[11행 디버깅] earth: "${earth}", showKorean: ${showKorean}, jijiImage: ${jijiImage ? '있음' : '없음'}, charCode: ${earth.charCodeAt(0)}`);
-            }
+            // 이미지 로딩을 위해 한글이면 한자로 변환
+            const chineseEarth = KOREAN_TO_CHINESE_MAP[earth] || earth;
+            const jijiImage = getJijiImage(chineseEarth, showKorean);
             return (
               <div 
                 key={`saeun-earth-${colIndex}`}
@@ -1284,7 +1283,6 @@ export default function SajuTable({
                   margin: '0'
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
-                title={`${earth} (${earth.charCodeAt(0)})`}
               >
                 {jijiImage ? (
                   <img 
@@ -1391,10 +1389,9 @@ export default function SajuTable({
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
           {wolunGanji.earths.map((earth, colIndex) => {
-            const jijiImage = getJijiImage(earth, showKorean);
-            if (colIndex === 0) {
-              console.log(`[15행 디버깅] earth: "${earth}", showKorean: ${showKorean}, jijiImage: ${jijiImage ? '있음' : '없음'}, charCode: ${earth.charCodeAt(0)}`);
-            }
+            // 이미지 로딩을 위해 한글이면 한자로 변환
+            const chineseEarth = KOREAN_TO_CHINESE_MAP[earth] || earth;
+            const jijiImage = getJijiImage(chineseEarth, showKorean);
             return (
               <div 
                 key={`wolun-earth-${colIndex}`}
@@ -1408,7 +1405,6 @@ export default function SajuTable({
                   margin: '0'
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
-                title={`${earth} (${earth.charCodeAt(0)})`}
               >
                 {jijiImage ? (
                   <img 
