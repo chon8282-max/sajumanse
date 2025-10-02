@@ -75,38 +75,38 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden flex items-center justify-center">
-      <div className="w-full h-full md:w-1/2 md:h-screen relative">
+    <div className="fixed inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
+      <div className="w-full h-full relative">
         {/* 홈 버튼 */}
-        <div className="absolute top-4 left-4 z-50">
+        <div className="absolute top-1 left-1 z-50">
           <Button
             variant="outline"
             size="sm"
             onClick={handleHomeClick}
-            className="gap-2"
+            className="gap-1 h-7 text-xs px-2"
             data-testid="button-home"
           >
-            <Home className="w-4 h-4" />
+            <Home className="w-3 h-3" />
             홈
           </Button>
         </div>
 
         {/* 2분할 레이아웃 */}
-        <div className="h-full flex flex-row gap-2 p-2 pt-16">
+        <div className="h-full flex flex-row gap-1 p-0 pt-9">
         {/* 왼쪽 영역 */}
         <div className="flex-1 flex flex-col min-w-0">
-          <Card className="flex-1 overflow-auto">
-            <CardHeader className="pb-2 px-3 pt-3">
+          <Card className="flex-1 overflow-auto rounded-none border-0">
+            <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">사주 1</CardTitle>
-                <div className="flex gap-2">
+                <CardTitle className="text-sm">사주 1</CardTitle>
+                <div className="flex gap-1">
                   {leftSajuId && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setLeftSajuId(null)}
                       data-testid="button-left-change"
-                      className="text-xs h-7"
+                      className="text-xs h-6 px-2"
                     >
                       <RefreshCw className="w-3 h-3 mr-1" />
                       변경
@@ -115,7 +115,7 @@ export default function Compatibility() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-2">
+            <CardContent className="p-1">
               {leftSajuId && leftSaju ? (
                 <div className="scale-[0.7] origin-top-left w-[142.86%]">
                   <SajuTable 
@@ -161,18 +161,18 @@ export default function Compatibility() {
 
         {/* 오른쪽 영역 */}
         <div className="flex-1 flex flex-col min-w-0">
-          <Card className="flex-1 overflow-auto">
-            <CardHeader className="pb-2 px-3 pt-3">
+          <Card className="flex-1 overflow-auto rounded-none border-0">
+            <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">사주 2</CardTitle>
-                <div className="flex gap-2">
+                <CardTitle className="text-sm">사주 2</CardTitle>
+                <div className="flex gap-1">
                   {rightSajuId && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setRightSajuId(null)}
                       data-testid="button-right-change"
-                      className="text-xs h-7"
+                      className="text-xs h-6 px-2"
                     >
                       <RefreshCw className="w-3 h-3 mr-1" />
                       변경
@@ -181,7 +181,7 @@ export default function Compatibility() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-2">
+            <CardContent className="p-1">
               {rightSajuId && rightSaju ? (
                 <div className="scale-[0.7] origin-top-left w-[142.86%]">
                   <SajuTable 
