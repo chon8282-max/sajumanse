@@ -2,14 +2,20 @@ import { useLocation as useWouterLocation, useSearch } from "wouter";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, Edit, Moon, Sun, Heart } from "lucide-react";
 import SajuTable from "@/components/SajuTable";
 import { findGanjiIndex } from "@/lib/ganji-calculator";
 import { calculateCompleteDaeun, calculateCurrentAge } from "@/lib/daeun-calculator";
+import { useTheme } from "@/components/ThemeProvider";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function GanjiResult() {
   const [, setLocation] = useWouterLocation();
   const searchParams = new URLSearchParams(useSearch());
+  const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
   
   const yearSky = searchParams.get('yearSky') || '';
   const yearEarth = searchParams.get('yearEarth') || '';
@@ -23,6 +29,68 @@ export default function GanjiResult() {
   
   // 선택된 연도 상태
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+
+  // 저장 mutation
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedYear) {
+        throw new Error('연도를 선택해주세요');
+      }
+
+      return await apiRequest('POST', '/api/saju-records', {
+        name: '미상',
+        birthYear: selectedYear,
+        birthMonth: 1,
+        birthDay: 1,
+        birthTime: null,
+        calendarType: 'solar',
+        gender: gender,
+        memo: `간지 입력: ${yearSky}${yearEarth}년 ${monthSky}${monthEarth}월 ${daySky}${dayEarth}일 ${hourSky}${hourEarth}시`,
+        yearSky,
+        yearEarth,
+        monthSky,
+        monthEarth,
+        daySky,
+        dayEarth,
+        hourSky,
+        hourEarth,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
+      toast({
+        title: "저장 완료",
+        description: "사주 정보가 성공적으로 저장되었습니다.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "저장 오류",
+        description: error instanceof Error ? error.message : "사주 정보 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSave = () => {
+    if (!selectedYear) {
+      toast({
+        title: "연도 선택 필요",
+        description: "출생 연도를 먼저 선택해주세요.",
+        variant: "destructive",
+      });
+      return;
+    }
+    saveMutation.mutate();
+  };
+
+  const handleEdit = () => {
+    setLocation('/ganji-input');
+  };
+
+  const handleBack = () => {
+    setLocation('/manseryeok');
+  };
 
   // 파라미터 검증
   useEffect(() => {
@@ -119,60 +187,98 @@ export default function GanjiResult() {
   }, [selectedYear, gender, yearSky, monthSky, monthEarth]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
-      <div className="max-w-2xl mx-auto">
-        {/* 헤더 */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLocation("/ganji-input")}
-              data-testid="button-back"
-              className="hover-elevate active-elevate-2 flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="text-sm">뒤로</span>
-            </Button>
-            <h1 className="text-xl font-bold text-foreground">간지 사주 결과</h1>
-            <div className="w-[60px]"></div>
-          </div>
+    <div className="min-h-screen bg-background p-2">
+      {/* 헤더 */}
+      <div className="flex items-center gap-2 mb-2">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={handleBack}
+          data-testid="button-back-manseryeok"
+          className="hover-elevate active-elevate-2 flex items-center gap-2 ml-0 pl-1"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="text-sm">뒤로</span>
+        </Button>
+        <div className="flex-1 text-center">
+          <h1 className="font-bold text-foreground font-tmon text-[20px]">사주명식</h1>
         </div>
+        <div className="flex items-center gap-0.5 mr-0">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={toggleTheme}
+            data-testid="button-theme-toggle"
+            className="hover-elevate active-elevate-2 h-8 w-8"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleEdit}
+            data-testid="button-edit"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
+          >
+            <Edit className="h-3 w-3" />
+            <span className="text-xs">수정</span>
+          </Button>
+          <Button 
+            variant="default" 
+            size="sm"
+            onClick={handleSave}
+            disabled={saveMutation.isPending || !selectedYear}
+            data-testid="button-save"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
+          >
+            <Save className="h-3 w-3" />
+            <span className="text-xs">{saveMutation.isPending ? "저장중..." : "저장"}</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setLocation('/compatibility')}
+            data-testid="button-compatibility"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
+          >
+            <Heart className="h-3 w-3" />
+            <span className="text-xs">궁합</span>
+          </Button>
+        </div>
+      </div>
 
-        {/* 가능한 연도 선택 */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-base">출생 연도 선택</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-3">
-              선택하신 사주는 60년 주기로 반복됩니다. 해당하는 연도를 선택하세요.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {possibleYears.map((year) => (
-                <Button
-                  key={year}
-                  variant={selectedYear === year ? "default" : "outline"}
-                  onClick={() => setSelectedYear(year)}
-                  className="h-auto px-4 py-2"
-                  data-testid={`button-year-${year}`}
-                >
-                  {year}년
-                </Button>
-              ))}
-            </div>
-            {!selectedYear && (
-              <p className="text-xs text-muted-foreground mt-3">
-                * 연도를 선택하시면 나이, 대운 등의 상세 정보를 확인할 수 있습니다.
+      <div className="max-w-2xl mx-auto">
+        {/* 가능한 연도 선택 - 연도가 선택되지 않았을 때만 표시 */}
+        {!selectedYear && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">출생 연도 선택</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-3">
+                선택하신 사주는 60년 주기로 반복됩니다. 해당하는 연도를 선택하세요.
               </p>
-            )}
-          </CardContent>
-        </Card>
+              <div className="flex flex-wrap gap-2">
+                {possibleYears.map((year) => (
+                  <Button
+                    key={year}
+                    variant="outline"
+                    onClick={() => setSelectedYear(year)}
+                    className="h-auto px-4 py-2"
+                    data-testid={`button-year-${year}`}
+                  >
+                    {year}년
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 사주 테이블 */}
         <SajuTable
           saju={saju}
-          title="간지로 입력한 사주"
+          title="사주 명식표"
           name="미상"
           birthYear={selectedYear || undefined}
           birthMonth={selectedYear ? 1 : undefined}
@@ -181,23 +287,6 @@ export default function GanjiResult() {
           daeunPeriods={daeunData?.daeunPeriods || []}
           currentAge={currentAge}
         />
-
-        {/* 안내 메시지 */}
-        <Card className="mt-6">
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground text-center">
-              간지로 입력한 사주입니다. 정확한 생년월일시를 아신다면 
-              <br />
-              <button 
-                className="text-primary underline hover:text-primary/80"
-                onClick={() => setLocation("/saju-input")}
-              >
-                생년월일로 입력하기
-              </button>
-              를 이용해주세요.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
