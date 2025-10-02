@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun } from "lucide-react";
+import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun, Heart } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -487,6 +487,16 @@ export default function SajuResult() {
           >
             <Save className="h-3 w-3" />
             <span className="text-xs">{saveMutation.isPending ? "저장중..." : "저장"}</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setLocation('/compatibility')}
+            data-testid="button-compatibility"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
+          >
+            <Heart className="h-3 w-3" />
+            <span className="text-xs">궁합</span>
           </Button>
         </div>
       </div>
