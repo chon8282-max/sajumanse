@@ -39,20 +39,29 @@ export default function GanjiInput() {
   const [currentStep, setCurrentStep] = useState<Step>("year");
   const [selection, setSelection] = useState<GanjiSelection>({});
   
-  // 수정 모드일 때 초기값 설정
+  // 수정 모드일 때 바로 결과 페이지로 리다이렉트
   useEffect(() => {
-    if (fromEdit && initialYearSky && initialYearEarth) {
-      setSelection({
-        year: initialYearSky && initialYearEarth ? { sky: initialYearSky, earth: initialYearEarth } : undefined,
-        month: initialMonthSky && initialMonthEarth ? { sky: initialMonthSky, earth: initialMonthEarth } : undefined,
-        day: initialDaySky && initialDayEarth ? { sky: initialDaySky, earth: initialDayEarth } : undefined,
-        hour: initialHourSky && initialHourEarth ? { sky: initialHourSky, earth: initialHourEarth } : undefined,
-        gender: initialGender || undefined,
-        name: initialName || undefined
+    if (fromEdit && initialYearSky && initialYearEarth && initialMonthSky && initialMonthEarth && 
+        initialDaySky && initialDayEarth && initialHourSky && initialHourEarth && initialGender) {
+      // 수정 모드일 때는 모든 간지가 이미 선택되어 있으므로 바로 결과 페이지로 이동
+      const params = new URLSearchParams({
+        yearSky: initialYearSky,
+        yearEarth: initialYearEarth,
+        monthSky: initialMonthSky,
+        monthEarth: initialMonthEarth,
+        daySky: initialDaySky,
+        dayEarth: initialDayEarth,
+        hourSky: initialHourSky,
+        hourEarth: initialHourEarth,
+        gender: initialGender,
+        name: initialName || '이름없음',
+        fromEdit: 'true',
+        id: recordId
       });
+      setLocation(`/ganji-result?${params.toString()}`);
     }
-  }, [fromEdit, initialYearSky, initialYearEarth, initialMonthSky, initialMonthEarth, 
-      initialDaySky, initialDayEarth, initialHourSky, initialHourEarth, initialGender, initialName]);
+  }, [fromEdit, recordId, initialYearSky, initialYearEarth, initialMonthSky, initialMonthEarth, 
+      initialDaySky, initialDayEarth, initialHourSky, initialHourEarth, initialGender, initialName, setLocation]);
 
   const ganjiList = useMemo(() => generate60Ganji(), []);
   
