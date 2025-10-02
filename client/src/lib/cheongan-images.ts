@@ -7,8 +7,8 @@ import byeongChineseImage from "@assets/병_1759096342036.jpg";
 import jeongChineseImage from "@assets/정_1759096342036.jpg";
 import muChineseImage from "@assets/무_1759096342037.jpg";
 import giChineseImage from "@assets/기_1759096342037.jpg";
-import gyeongChineseImage from "@assets/경_1759096342038.jpg";
-import sinChineseImageCheonan from "@assets/辛_1759096342038.jpg";
+import gyeongChineseImage from "@assets/경_1759376256910.jpg";
+import sinChineseImageCheonan from "@assets/辛_1759376256909.jpg";
 import imChineseImage from "@assets/임_1759096342038.jpg";
 import gyeChineseImage from "@assets/계_1759096342036.jpg";
 
@@ -33,9 +33,9 @@ import jinChineseImage from "@assets/진_1759096365545.jpg";
 import saChineseImage from "@assets/사_1759096365546.jpg";
 import oChineseImage from "@assets/오_1759096365546.jpg";
 import miChineseImage from "@assets/미_1759096365547.jpg";
-import sinChineseImage from "@assets/申_1759096365547.jpg";
-import yuChineseImage from "@assets/유_1759096365547.jpg";
-import sulChineseImage from "@assets/술_1759096365548.jpg";
+import sinChineseImage from "@assets/申_1759376256909.jpg";
+import yuChineseImage from "@assets/유_1759376256910.jpg";
+import sulChineseImage from "@assets/술_1759376256910.jpg";
 import haeChineseImage from "@assets/해_1759096365548.jpg";
 
 // 지지 한글 이미지 imports (새로 제공받은)
