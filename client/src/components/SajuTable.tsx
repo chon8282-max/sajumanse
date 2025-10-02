@@ -878,7 +878,18 @@ export default function SajuTable({
               {reversedDate ? (
                 // 간지 역산된 날짜 표시
                 <>역산된 양력: {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}</>
+              ) : calendarType === '음력' || calendarType === '윤달' ? (
+                // 음력 입력인 경우: 음력 먼저, 양력 나중
+                <>
+                  {lunarYear && lunarMonth && lunarDay && (
+                    <>음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
+                  )}
+                  {birthYear && birthMonth && birthDay && (
+                    <>  양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
+                  )}
+                </>
               ) : (
+                // 양력 입력인 경우: 양력 먼저, 음력 나중
                 <>
                   {birthYear && birthMonth && birthDay && (
                     <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
