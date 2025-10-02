@@ -610,6 +610,13 @@ export default function SajuResult() {
           dayEarth={record.dayEarth || ''}
           gender={record.gender || '남자'}
           memo={record.memo || ''}
+          yearSky={record.yearSky || undefined}
+          yearEarth={record.yearEarth || undefined}
+          monthSky={record.monthSky || undefined}
+          monthEarth={record.monthEarth || undefined}
+          hourSky={record.hourSky || undefined}
+          hourEarth={record.hourEarth || undefined}
+          calendarType={record.calendarType || undefined}
           daeunPeriods={calculatedData?.daeunData.daeunPeriods || []}
           focusedDaeun={focusedDaeun}
           currentAge={calculatedData?.currentAge || null}
