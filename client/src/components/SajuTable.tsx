@@ -272,6 +272,41 @@ export default function SajuTable({
     return null;
   }, [calendarType, birthYear, birthMonth, birthDay, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
 
+  // 역산된 양력 날짜를 음력으로 변환
+  const [reversedLunarDate, setReversedLunarDate] = useState<{ year: number; month: number; day: number } | null>(null);
+  
+  useEffect(() => {
+    if (reversedDate) {
+      // 양력을 음력으로 변환하는 API 호출
+      const convertToLunar = async () => {
+        try {
+          const response = await fetch('/api/lunar-solar/convert/solar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              year: reversedDate.year,
+              month: reversedDate.month,
+              day: reversedDate.day
+            })
+          });
+          const data = await response.json();
+          if (data.success && data.data) {
+            setReversedLunarDate({
+              year: data.data.lunarYear,
+              month: data.data.lunarMonth,
+              day: data.data.lunarDay
+            });
+          }
+        } catch (error) {
+          console.error('음력 변환 오류:', error);
+        }
+      };
+      convertToLunar();
+    } else {
+      setReversedLunarDate(null);
+    }
+  }, [reversedDate]);
+
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
   
@@ -877,7 +912,12 @@ export default function SajuTable({
             <span data-testid="text-birth-info">
               {reversedDate ? (
                 // 간지 역산된 날짜 표시
-                <>역산된 양력: {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}</>
+                <>
+                  양력 {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}
+                  {reversedLunarDate && (
+                    <>, (음력){reversedLunarDate.year}.{reversedLunarDate.month.toString().padStart(2, '0')}.{reversedLunarDate.day.toString().padStart(2, '0')}</>
+                  )}
+                </>
               ) : calendarType === '음력' || calendarType === '윤달' ? (
                 // 음력 입력인 경우: 음력 먼저, 양력 나중
                 <>
