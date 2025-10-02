@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { generate60Ganji, calculateMonthGanji, calculateHourGanji } from "@/lib/ganji-calculator";
 
-type Step = "year" | "month" | "day" | "hour" | "gender" | "result";
+type Step = "year" | "month" | "day" | "hour" | "gender" | "name" | "result";
 
 interface GanjiSelection {
   year?: { sky: string; earth: string };
@@ -13,6 +15,7 @@ interface GanjiSelection {
   day?: { sky: string; earth: string };
   hour?: { sky: string; earth: string };
   gender?: string;
+  name?: string;
 }
 
 export default function GanjiInput() {
@@ -56,8 +59,14 @@ export default function GanjiInput() {
 
   const handleGenderSelect = (gender: string) => {
     setSelection({ ...selection, gender });
+    setCurrentStep("name");
+  };
+
+  const handleNameSubmit = () => {
     // 간지가 모두 선택되었으면 사주 결과로 이동
-    if (selection.year && selection.month && selection.day && selection.hour) {
+    if (selection.year && selection.month && selection.day && selection.hour && selection.gender) {
+      const nameValue = selection.name?.trim() || "이름없음";
+      
       // 사주 결과 페이지로 이동 (간지 정보를 URL 파라미터로 전달)
       const params = new URLSearchParams({
         yearSky: selection.year.sky,
@@ -68,7 +77,8 @@ export default function GanjiInput() {
         dayEarth: selection.day.earth,
         hourSky: selection.hour.sky,
         hourEarth: selection.hour.earth,
-        gender: gender,
+        gender: selection.gender,
+        name: nameValue,
         fromGanji: 'true'
       });
       setLocation(`/ganji-result?${params.toString()}`);
@@ -86,6 +96,8 @@ export default function GanjiInput() {
       setCurrentStep("day");
     } else if (currentStep === "gender") {
       setCurrentStep("hour");
+    } else if (currentStep === "name") {
+      setCurrentStep("gender");
     }
   };
 
@@ -101,6 +113,8 @@ export default function GanjiInput() {
         return "시주(時柱) 선택";
       case "gender":
         return "성별 선택";
+      case "name":
+        return "이름 입력";
       case "result":
         return "가능한 날짜";
       default:
@@ -251,6 +265,35 @@ export default function GanjiInput() {
                   data-testid="button-gender-female"
                 >
                   여자
+                </Button>
+              </div>
+            )}
+
+            {currentStep === "name" && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    성명
+                  </Label>
+                  <Input
+                    id="name"
+                    value={selection.name || ""}
+                    onChange={(e) => setSelection({ ...selection, name: e.target.value })}
+                    placeholder="이름을 입력하세요 (선택사항)"
+                    data-testid="input-name"
+                    className="text-base h-12"
+                    autoFocus
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    이름을 입력하지 않으면 "이름없음"으로 저장됩니다
+                  </p>
+                </div>
+                <Button
+                  onClick={handleNameSubmit}
+                  className="w-full h-12 text-base"
+                  data-testid="button-submit-name"
+                >
+                  사주 결과 보기
                 </Button>
               </div>
             )}
