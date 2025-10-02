@@ -27,6 +27,7 @@ import SajuInput from "@/pages/SajuInput";
 import NotFound from "@/pages/not-found";
 import SajuResult from "@/pages/SajuResult";
 import SajuList from "@/pages/SajuList";
+import Guide from "@/pages/Guide";
 
 function Router() {
   return (
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/saju-input" component={SajuInput} />
       <Route path="/saju-result/:id" component={SajuResult} />
       <Route path="/saju-list" component={SajuList} />
+      <Route path="/guide" component={Guide} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
