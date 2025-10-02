@@ -11,8 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
+import { TRADITIONAL_TIME_PERIODS, type SajuInfo } from "@shared/schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import CurrentTimeTable from "@/components/CurrentTimeTable";
+import { getCurrentSaju } from "@/lib/saju-calculator";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 interface Group {
   id: string;
@@ -27,6 +31,8 @@ export default function SajuInput() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
+  const [lastUpdated, setLastUpdated] = useState(new Date());
   const [formData, setFormData] = useState({
     name: "",
     calendarType: "양력",
@@ -39,6 +45,16 @@ export default function SajuInput() {
     groupId: "",
     memo: "",
   });
+
+  // 현재 시각 자동 업데이트 (1초마다 실시간)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSaju(getCurrentSaju());
+      setLastUpdated(new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // 엔터키로 다음 입력창 이동 핸들러
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, nextFieldId?: string) => {
@@ -204,6 +220,13 @@ export default function SajuInput() {
     }
   };
 
+  const getCurrentDateInfo = () => {
+    const now = lastUpdated;
+    const dayOfWeek = format(now, 'eeee', { locale: ko });
+    const solarDate = `양력 ${format(now, 'yyyy년 M월 d일', { locale: ko })} ${dayOfWeek}`;
+    return { solarDate };
+  };
+
   return (
     <div className="min-h-screen bg-background px-4 py-2">
       {/* 헤더 */}
@@ -222,6 +245,16 @@ export default function SajuInput() {
           <h1 className="text-xl font-bold text-foreground">사주입력</h1>
           <p className="text-sm text-muted-foreground">정확한 생년월일을 입력하주세요</p>
         </div>
+      </div>
+
+      {/* 현재 만세력 미리보기 */}
+      <div className="max-w-md mx-auto mb-4">
+        <CurrentTimeTable 
+          saju={currentSaju}
+          title="현재 만세력"
+          solarDate={getCurrentDateInfo().solarDate}
+          isOffline={navigator.onLine === false}
+        />
       </div>
 
       {/* 입력 폼 */}
