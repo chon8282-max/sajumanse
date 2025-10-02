@@ -128,6 +128,13 @@ function calculateGongmang(daySky: string, dayEarth: string): string[] {
   return gongmangMap[dayPillar] || [];
 }
 
+// 12신살 한자-한글 변환 매핑
+const SINSAL_KOREAN_MAP: Record<string, string> = {
+  '劫殺': '겁살', '災殺': '재살', '天殺': '천살', '地殺': '지살',
+  '年殺': '연살', '月殺': '월살', '亡身殺': '망신살', '將星殺': '장성살',
+  '攀鞍殺': '반안살', '驛馬殺': '역마살', '六害殺': '육해살', '華蓋殺': '화개살'
+};
+
 // 12신살 계산 함수
 function calculateSibiSinsal(yearEarth: string, sajuColumns: Array<{sky: string, earth: string}>): string[] {
   // 12신살 순서
@@ -1069,18 +1076,32 @@ export default function SajuTable({
           </div>
         </div>
 
-        {/* 6행: 12신살 (조건부 표시) */}
+        {/* 6행: 12신살 (조건부 표시, 6열로 구성) */}
         {showSibiSinsal && (
-          <div className="grid grid-cols-4 border-b border-border">
-            {sibiSinsal.map((sinsal, index) => (
-              <div 
-                key={`sibisinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-yellow-50 dark:bg-yellow-900/20"
-                data-testid={`text-sibisinsal-${index}`}
-              >
-                {convertTextForSpecificRows(sinsal)}
-              </div>
-            ))}
+          <div className="grid grid-cols-6 border-b border-border">
+            {/* 1열: 빈칸 */}
+            <div className="py-1 border-r border-border min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-1" />
+            
+            {/* 2-5열: 12신살 4개 */}
+            {sibiSinsal.map((sinsal, index) => {
+              // 한자-한글 변환
+              const displayText = showKorean && SINSAL_KOREAN_MAP[sinsal] 
+                ? SINSAL_KOREAN_MAP[sinsal] 
+                : sinsal;
+              
+              return (
+                <div 
+                  key={`sibisinsal-${index}`} 
+                  className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-yellow-50 dark:bg-yellow-900/20"
+                  data-testid={`text-sibisinsal-${index}`}
+                >
+                  {displayText}
+                </div>
+              );
+            })}
+            
+            {/* 6열: 빈칸 */}
+            <div className="py-1 min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-6" />
           </div>
         )}
 
