@@ -211,9 +211,9 @@ export default function SajuInput() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-2">
+    <div className="min-h-screen bg-background px-3 py-1">
       {/* 헤더 */}
-      <div className="relative flex items-center mb-4">
+      <div className="relative flex items-center mb-1.5">
         <Button 
           variant="ghost" 
           size="sm"
@@ -222,19 +222,19 @@ export default function SajuInput() {
           className="absolute left-0 hover-elevate active-elevate-2 flex items-center gap-1 px-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="text-sm">뒤로</span>
+          <span className="text-xs">뒤로</span>
         </Button>
         <div className="w-full text-center">
-          <h1 className="text-xl font-bold text-foreground">사주입력</h1>
-          <p className="text-sm text-muted-foreground">정확한 생년월일을 입력하주세요</p>
+          <h1 className="text-lg font-bold text-foreground">사주입력</h1>
+          <p className="text-xs text-muted-foreground">정확한 생년월일을 입력하주세요</p>
         </div>
       </div>
 
       {/* 입력 폼 */}
-      <div className="max-w-md mx-auto space-y-4">
+      <div className="max-w-md mx-auto space-y-2">
         {/* 성명 */}
-        <div className="space-y-1">
-          <Label htmlFor="name" className="text-sm font-medium">성명</Label>
+        <div className="space-y-0.5">
+          <Label htmlFor="name" className="text-xs font-medium">성명</Label>
           <Input
             id="name"
             value={formData.name}
@@ -242,37 +242,37 @@ export default function SajuInput() {
             onKeyDown={(e) => handleKeyDown(e, "year")}
             placeholder="이름을 입력하세요"
             data-testid="input-name"
-            className="text-base h-10"
+            className="text-sm h-8"
           />
         </div>
 
         {/* 음양 */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">음양</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">음양</Label>
           <RadioGroup 
             value={formData.calendarType} 
             onValueChange={(value) => handleInputChange("calendarType", value)}
-            className="flex gap-6"
+            className="flex gap-4"
             data-testid="radio-calendar-type"
           >
             <div className="flex items-center space-x-1">
               <RadioGroupItem value="양력" id="yang" data-testid="radio-calendar-yang" />
-              <Label htmlFor="yang" className="text-sm">양력</Label>
+              <Label htmlFor="yang" className="text-xs">양력</Label>
             </div>
             <div className="flex items-center space-x-1">
               <RadioGroupItem value="음력" id="eum" data-testid="radio-calendar-eum" />
-              <Label htmlFor="eum" className="text-sm">음력</Label>
+              <Label htmlFor="eum" className="text-xs">음력</Label>
             </div>
             <div className="flex items-center space-x-1">
               <RadioGroupItem value="윤달" id="yoon" data-testid="radio-calendar-yoon" />
-              <Label htmlFor="yoon" className="text-sm">윤달</Label>
+              <Label htmlFor="yoon" className="text-xs">윤달</Label>
             </div>
           </RadioGroup>
         </div>
 
         {/* 년월일 */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">생년월일</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">생년월일</Label>
           <div className="flex gap-2 items-center">
             <Input
               id="year"
@@ -284,9 +284,9 @@ export default function SajuInput() {
               placeholder=""
               maxLength={4}
               data-testid="input-year"
-              className="w-20 text-center"
+              className="w-20 text-center h-8"
             />
-            <span className="text-sm">년</span>
+            <span className="text-xs">년</span>
             <Input
               id="month"
               type="number"
@@ -297,9 +297,9 @@ export default function SajuInput() {
               placeholder=""
               maxLength={2}
               data-testid="input-month"
-              className="w-16 text-center"
+              className="w-16 text-center h-8"
             />
-            <span className="text-sm">월</span>
+            <span className="text-xs">월</span>
             <Input
               id="day"
               type="number"
@@ -319,15 +319,15 @@ export default function SajuInput() {
               placeholder=""
               maxLength={2}
               data-testid="input-day"
-              className="w-16 text-center"
+              className="w-16 text-center h-8"
             />
-            <span className="text-sm">일</span>
+            <span className="text-xs">일</span>
           </div>
         </div>
 
         {/* 생시 */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">생시 (전통 십이시)</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">생시 (전통 십이시)</Label>
           <Select 
             value={formData.selectedTimeCode}
             onValueChange={(value) => {
@@ -335,7 +335,7 @@ export default function SajuInput() {
               handleInputChange("birthTime", value);
             }}
           >
-            <SelectTrigger data-testid="select-birth-time" className="text-base h-10">
+            <SelectTrigger data-testid="select-birth-time" className="text-sm h-8">
               <SelectValue placeholder="생시를 선택하세요" />
             </SelectTrigger>
             <SelectContent>
@@ -353,34 +353,34 @@ export default function SajuInput() {
         </div>
 
         {/* 성별 */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">성별</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">성별</Label>
           <RadioGroup 
             value={formData.gender} 
             onValueChange={(value) => handleInputChange("gender", value)}
-            className="flex gap-6"
+            className="flex gap-4"
             data-testid="radio-gender"
           >
             <div className="flex items-center space-x-1">
               <RadioGroupItem value="남자" id="male" data-testid="radio-gender-male" />
-              <Label htmlFor="male" className="text-sm">남자</Label>
+              <Label htmlFor="male" className="text-xs">남자</Label>
             </div>
             <div className="flex items-center space-x-1">
               <RadioGroupItem value="여자" id="female" data-testid="radio-gender-female" />
-              <Label htmlFor="female" className="text-sm">여자</Label>
+              <Label htmlFor="female" className="text-xs">여자</Label>
             </div>
           </RadioGroup>
         </div>
 
         {/* 그룹 */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">그룹</Label>
+        <div className="space-y-1">
+          <Label className="text-xs font-medium">그룹</Label>
           <div className="flex gap-2">
             <Select 
               value={formData.groupId} 
               onValueChange={(value) => handleInputChange("groupId", value)}
             >
-              <SelectTrigger data-testid="select-group" className="text-base flex-1">
+              <SelectTrigger data-testid="select-group" className="text-sm flex-1 h-8">
                 <SelectValue placeholder="그룹 선택" />
               </SelectTrigger>
               <SelectContent>
@@ -398,11 +398,11 @@ export default function SajuInput() {
                   type="button"
                   variant="outline" 
                   size="sm" 
-                  className="whitespace-nowrap"
+                  className="whitespace-nowrap h-8"
                   data-testid="button-create-group"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
-                  그룹생성
+                  <Plus className="w-3 h-3 mr-1" />
+                  <span className="text-xs">그룹생성</span>
                 </Button>
               </DialogTrigger>
               <DialogContent data-testid="dialog-create-group">
@@ -449,29 +449,28 @@ export default function SajuInput() {
         </div>
 
         {/* 메모 */}
-        <div className="space-y-2">
-          <Label htmlFor="memo" className="text-sm font-medium">메모</Label>
+        <div className="space-y-1">
+          <Label htmlFor="memo" className="text-xs font-medium">메모</Label>
           <Card>
-            <CardContent className="p-3">
+            <CardContent className="p-2">
               <Textarea
                 id="memo"
                 value={formData.memo}
                 onChange={(e) => handleInputChange("memo", e.target.value)}
                 placeholder="메모 입력하는 곳"
                 data-testid="textarea-memo"
-                className="min-h-20 resize-none border-0 focus-visible:ring-0"
+                className="min-h-14 resize-none border-0 focus-visible:ring-0 text-xs"
               />
             </CardContent>
           </Card>
         </div>
 
         {/* 제출 버튼 */}
-        <div className="pt-3">
+        <div className="pt-1">
           <Button 
             onClick={handleSubmit}
             disabled={isSubmitting}
-            size="lg"
-            className="w-full text-base"
+            className="w-full text-sm"
             data-testid="button-submit-saju"
           >
             {isSubmitting ? "저장 중..." : "사주 뽑기"}
