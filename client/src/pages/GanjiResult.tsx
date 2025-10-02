@@ -26,9 +26,12 @@ export default function GanjiResult() {
   const hourSky = searchParams.get('hourSky') || '';
   const hourEarth = searchParams.get('hourEarth') || '';
   const gender = searchParams.get('gender') || '남자';
+  const fromEdit = searchParams.get('fromEdit') === 'true';
+  const recordId = searchParams.get('id') || '';
   
   // 선택된 연도 상태
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
+  const isEditMode = fromEdit && recordId;
 
   // 저장 mutation
   const saveMutation = useMutation({
@@ -40,10 +43,10 @@ export default function GanjiResult() {
       const response = await apiRequest('POST', '/api/saju-records', {
         name: '미상',
         birthYear: selectedYear,
-        birthMonth: null, // 간지 입력이므로 정확한 월일은 null
+        birthMonth: null,
         birthDay: null,
         birthTime: null,
-        calendarType: 'ganji', // 간지 입력 표시
+        calendarType: 'ganji',
         gender: gender,
         memo: `간지 입력: ${yearSky}${yearEarth}년 ${monthSky}${monthEarth}월 ${daySky}${dayEarth}일 ${hourSky}${hourEarth}시`,
         yearSky,
@@ -62,7 +65,6 @@ export default function GanjiResult() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
       
-      // 저장된 레코드의 ID로 사주 결과 페이지로 이동
       if (data.data?.id) {
         setLocation(`/saju-result/${data.data.id}`);
       } else {
@@ -81,6 +83,48 @@ export default function GanjiResult() {
     },
   });
 
+  // 업데이트 mutation (수정 모드)
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedYear) {
+        throw new Error('연도를 선택해주세요');
+      }
+      if (!recordId) {
+        throw new Error('레코드 ID가 없습니다');
+      }
+
+      const response = await apiRequest('PUT', `/api/saju-records/${recordId}`, {
+        birthYear: selectedYear,
+        birthMonth: null,
+        birthDay: null,
+        yearSky,
+        yearEarth,
+        monthSky,
+        monthEarth,
+        daySky,
+        dayEarth,
+        hourSky,
+        hourEarth,
+      });
+      
+      const data = await response.json();
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', recordId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
+      
+      setLocation(`/saju-result/${recordId}`);
+    },
+    onError: (error) => {
+      toast({
+        title: "업데이트 오류",
+        description: error instanceof Error ? error.message : "사주 정보 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSave = () => {
     if (!selectedYear) {
       toast({
@@ -90,11 +134,20 @@ export default function GanjiResult() {
       });
       return;
     }
-    saveMutation.mutate();
+    
+    if (isEditMode) {
+      updateMutation.mutate();
+    } else {
+      saveMutation.mutate();
+    }
   };
 
   const handleEdit = () => {
-    setLocation('/ganji-input');
+    if (isEditMode && recordId) {
+      setLocation(`/saju-result/${recordId}`);
+    } else {
+      setLocation('/ganji-input');
+    }
   };
 
   const handleBack = () => {
@@ -236,12 +289,17 @@ export default function GanjiResult() {
             variant="default" 
             size="sm"
             onClick={handleSave}
-            disabled={saveMutation.isPending || !selectedYear}
+            disabled={(isEditMode ? updateMutation.isPending : saveMutation.isPending) || !selectedYear}
             data-testid="button-save"
             className="hover-elevate active-elevate-2 flex items-center gap-0.5 min-h-6 px-2 py-0.5 text-xs"
           >
             <Save className="h-3 w-3" />
-            <span className="text-xs">{saveMutation.isPending ? "저장중..." : "저장"}</span>
+            <span className="text-xs">
+              {isEditMode 
+                ? (updateMutation.isPending ? "업데이트중..." : "업데이트")
+                : (saveMutation.isPending ? "저장중..." : "저장")
+              }
+            </span>
           </Button>
           <Button 
             variant="outline" 
