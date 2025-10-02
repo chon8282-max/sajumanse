@@ -305,15 +305,28 @@ export function calculateFirstRowShinSal(
   return mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
 }
 
+// 신살 한자-한글 변환 매핑
+const SHINSAL_KOREAN_MAP: Record<string, string> = {
+  "天德貴人": "천덕귀인",
+  "月德貴人": "월덕귀인",
+  "천을귀인": "천을귀인",
+  "문창귀인": "문창귀인"
+};
+
 /**
  * 신살 표시용 문자열 생성
  * 신살이 없으면 빈 문자열 반환
  */
-export function formatShinSal(shinSalList: string[]): string {
+export function formatShinSal(shinSalList: string[], isKoreanMode: boolean = false): string {
   if (shinSalList.length === 0) {
     return "";
   }
   
+  // 한글 모드일 때 한자를 한글로 변환
+  const formattedList = isKoreanMode 
+    ? shinSalList.map(shinsal => SHINSAL_KOREAN_MAP[shinsal] || shinsal)
+    : shinSalList;
+  
   // 신살이 여러 개인 경우 쉼표로 구분
-  return shinSalList.join(", ");
+  return formattedList.join(", ");
 }
