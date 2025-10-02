@@ -211,46 +211,46 @@ export default function TraditionalCalendar({
     <div className="w-full max-w-4xl mx-auto pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
       <Card>
         <CardHeader className="pb-1">
-          {/* 1열: 년도간지(왼쪽) | 양력달력(가운데) | 월간지(오른쪽) */}
+          {/* 1열: 년도간지(왼쪽) | 역학달력(가운데) | 월간지(오른쪽) */}
           <div className="flex items-center justify-between mb-1">
-            <div className="text-xl font-bold text-blue-800">
+            <div className="text-base font-bold text-blue-800">
               {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
             </div>
             
-            <div className="text-xl font-bold">
-              양력 {currentYear}년 {currentMonth}월
+            <div className="text-base font-bold">
+              역학달력 {currentYear}년 {currentMonth}월
             </div>
             
-            <div className="text-xl font-bold text-green-800">
+            <div className="text-base font-bold text-green-800">
               {calendarInfo.monthGanji[0]}{calendarInfo.monthGanji[1]}월
             </div>
           </div>
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
           <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handlePrevYear} data-testid="button-prev-year">
-                <ChevronLeft className="w-4 h-4" />
-                <ChevronLeft className="w-4 h-4" />
-                <span className="ml-1">년</span>
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" onClick={handlePrevYear} data-testid="button-prev-year" className="scale-75 px-2 py-0.5 min-h-6">
+                <ChevronLeft className="w-3 h-3" />
+                <ChevronLeft className="w-3 h-3" />
+                <span className="ml-0.5 text-xs">년</span>
               </Button>
               
-              <Button variant="outline" size="sm" onClick={handlePrevMonth} data-testid="button-prev-month">
-                <ChevronLeft className="w-4 h-4" />
-                <span className="ml-1">월</span>
+              <Button variant="outline" size="sm" onClick={handlePrevMonth} data-testid="button-prev-month" className="scale-75 px-2 py-0.5 min-h-6">
+                <ChevronLeft className="w-3 h-3" />
+                <span className="ml-0.5 text-xs">월</span>
               </Button>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleNextMonth} data-testid="button-next-month">
-                <span className="mr-1">월</span>
-                <ChevronRight className="w-4 h-4" />
+            <div className="flex items-center gap-1">
+              <Button variant="outline" size="sm" onClick={handleNextMonth} data-testid="button-next-month" className="scale-75 px-2 py-0.5 min-h-6">
+                <span className="mr-0.5 text-xs">월</span>
+                <ChevronRight className="w-3 h-3" />
               </Button>
               
-              <Button variant="outline" size="sm" onClick={handleNextYear} data-testid="button-next-year">
-                <span className="mr-1">년</span>
-                <ChevronRight className="w-4 h-4" />
-                <ChevronRight className="w-4 h-4" />
+              <Button variant="outline" size="sm" onClick={handleNextYear} data-testid="button-next-year" className="scale-75 px-2 py-0.5 min-h-6">
+                <span className="mr-0.5 text-xs">년</span>
+                <ChevronRight className="w-3 h-3" />
+                <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
           </div>
