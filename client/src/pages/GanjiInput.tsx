@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
-import { useLocation, useSearch } from "wouter";
+import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,43 +20,8 @@ interface GanjiSelection {
 
 export default function GanjiInput() {
   const [, setLocation] = useLocation();
-  const searchParams = new URLSearchParams(useSearch());
-  
-  // URL 파라미터에서 수정 모드 및 초기값 확인
-  const fromEdit = searchParams.get('fromEdit') === 'true';
-  const recordId = searchParams.get('id') || '';
-  const initialYearSky = searchParams.get('yearSky') || '';
-  const initialYearEarth = searchParams.get('yearEarth') || '';
-  const initialMonthSky = searchParams.get('monthSky') || '';
-  const initialMonthEarth = searchParams.get('monthEarth') || '';
-  const initialDaySky = searchParams.get('daySky') || '';
-  const initialDayEarth = searchParams.get('dayEarth') || '';
-  const initialHourSky = searchParams.get('hourSky') || '';
-  const initialHourEarth = searchParams.get('hourEarth') || '';
-  const initialGender = searchParams.get('gender') || '';
-  const initialName = searchParams.get('name') || '';
-  
   const [currentStep, setCurrentStep] = useState<Step>("year");
   const [selection, setSelection] = useState<GanjiSelection>({});
-  
-  // 수정 모드일 때 초기값 설정하고 이름 입력 단계로 이동
-  useEffect(() => {
-    if (fromEdit && initialYearSky && initialYearEarth && initialMonthSky && initialMonthEarth && 
-        initialDaySky && initialDayEarth && initialHourSky && initialHourEarth && initialGender) {
-      // 수정 모드일 때는 모든 간지가 이미 선택되어 있으므로 selection 설정
-      setSelection({
-        year: { sky: initialYearSky, earth: initialYearEarth },
-        month: { sky: initialMonthSky, earth: initialMonthEarth },
-        day: { sky: initialDaySky, earth: initialDayEarth },
-        hour: { sky: initialHourSky, earth: initialHourEarth },
-        gender: initialGender,
-        name: initialName || '이름없음'
-      });
-      // 이름 입력 단계로 바로 이동
-      setCurrentStep("name");
-    }
-  }, [fromEdit, initialYearSky, initialYearEarth, initialMonthSky, initialMonthEarth, 
-      initialDaySky, initialDayEarth, initialHourSky, initialHourEarth, initialGender, initialName]);
 
   const ganjiList = useMemo(() => generate60Ganji(), []);
   
@@ -116,12 +81,6 @@ export default function GanjiInput() {
         name: nameValue,
         fromGanji: 'true'
       });
-      
-      // 수정 모드일 때 fromEdit와 id 파라미터 추가
-      if (fromEdit && recordId) {
-        params.append('fromEdit', 'true');
-        params.append('id', recordId);
-      }
       
       setLocation(`/ganji-result?${params.toString()}`);
     }

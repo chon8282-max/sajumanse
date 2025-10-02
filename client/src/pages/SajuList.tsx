@@ -384,27 +384,7 @@ export default function SajuList() {
   const handleEditSaju = (saju: SajuRecord, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // 간지 입력으로 저장된 경우 - 간지 입력 페이지로 이동
-    if (saju.calendarType === 'ganji') {
-      const params = new URLSearchParams({
-        yearSky: saju.yearSky || '',
-        yearEarth: saju.yearEarth || '',
-        monthSky: saju.monthSky || '',
-        monthEarth: saju.monthEarth || '',
-        daySky: saju.daySky || '',
-        dayEarth: saju.dayEarth || '',
-        hourSky: saju.hourSky || '',
-        hourEarth: saju.hourEarth || '',
-        gender: saju.gender || '',
-        name: saju.name || '',
-        fromEdit: 'true',
-        id: saju.id
-      });
-      setLocation(`/ganji-input?${params.toString()}`);
-      return;
-    }
-    
-    // 일반 생년월일 입력으로 저장된 경우
+    // 모든 사주를 사주입력 페이지로 이동
     const params = new URLSearchParams({
       edit: 'true',
       id: saju.id,
