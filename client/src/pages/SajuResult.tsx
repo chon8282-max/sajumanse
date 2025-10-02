@@ -325,6 +325,42 @@ export default function SajuResult() {
     birthTimeUpdateMutation.mutate(timeCode);
   }, [birthTimeUpdateMutation]);
 
+  // 생년월일 변경 핸들러 (useMutation 사용)
+  const birthDateUpdateMutation = useMutation({
+    mutationFn: async ({ year, month, day }: { year: number; month: number; day: number }) => {
+      if (!params?.id) throw new Error('No ID provided');
+      
+      return apiRequest('PATCH', `/api/saju-records/${params.id}`, { 
+        birthYear: year,
+        birthMonth: month,
+        birthDay: day
+      });
+    },
+    onSuccess: (_, { year, month, day }) => {
+      // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      toast({
+        title: "생년월일 변경됨",
+        description: `생년월일이 ${year}.${month}.${day}로 변경되었습니다.`,
+        duration: 1000
+      });
+    },
+    onError: (error) => {
+      console.error('Birth date update error:', error);
+      toast({
+        title: "변경 오류",
+        description: "생년월일 변경 중 오류가 발생했습니다.",
+        variant: "destructive",
+        duration: 1000
+      });
+    }
+  });
+
+  const handleBirthDateChange = useCallback((year: number, month: number, day: number) => {
+    console.log('SajuResult - handleBirthDateChange 호출됨:', year, month, day);
+    birthDateUpdateMutation.mutate({ year, month, day });
+  }, [birthDateUpdateMutation]);
+
   // 잘못된 경로인 경우 리다이렉트
   useEffect(() => {
     if (!match || !params?.id) {
@@ -504,6 +540,7 @@ export default function SajuResult() {
           onSaeunClick={handleSaeunClick}
           onSaeunScroll={handleSaeunScroll}
           onBirthTimeChange={handleBirthTimeChange}
+          onBirthDateChange={handleBirthDateChange}
         />
 
 
