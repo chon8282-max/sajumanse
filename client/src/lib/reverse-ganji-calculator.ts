@@ -22,19 +22,20 @@ interface CalculatedDate {
 }
 
 // 12절기 날짜 데이터 (월주 계산용)
+// month는 월주 지지 인덱스: 인=0, 묘=1, 진=2, 사=3, 오=4, 미=5, 신=6, 유=7, 술=8, 해=9, 자=10, 축=11
 const TWELVE_SOLAR_TERMS_2024 = [
-  { term: "입춘", month: 0, date: new Date(2024, 1, 4, 16, 27) },
-  { term: "경칩", month: 1, date: new Date(2024, 2, 5, 10, 23) },
-  { term: "청명", month: 2, date: new Date(2024, 3, 4, 15, 2) },
-  { term: "입하", month: 3, date: new Date(2024, 4, 5, 8, 10) },
-  { term: "망종", month: 4, date: new Date(2024, 5, 5, 12, 10) },
-  { term: "소서", month: 5, date: new Date(2024, 6, 6, 22, 20) },
-  { term: "입추", month: 6, date: new Date(2024, 7, 7, 9, 11) },
-  { term: "백로", month: 7, date: new Date(2024, 8, 7, 11, 11) },
-  { term: "한로", month: 8, date: new Date(2024, 9, 8, 3, 56) },
-  { term: "입동", month: 9, date: new Date(2024, 10, 7, 12, 20) },
-  { term: "대설", month: 10, date: new Date(2024, 11, 7, 0, 17) },
-  { term: "소한", month: 11, date: new Date(2025, 0, 5, 23, 49) },
+  { term: "입춘", month: 0, date: new Date(2024, 1, 4, 16, 27) },  // 인월 시작
+  { term: "경칩", month: 1, date: new Date(2024, 2, 5, 10, 23) },  // 묘월 시작
+  { term: "청명", month: 2, date: new Date(2024, 3, 4, 15, 2) },   // 진월 시작
+  { term: "입하", month: 3, date: new Date(2024, 4, 5, 8, 10) },   // 사월 시작
+  { term: "망종", month: 4, date: new Date(2024, 5, 5, 12, 10) },  // 오월 시작
+  { term: "소서", month: 5, date: new Date(2024, 6, 6, 22, 20) },  // 미월 시작
+  { term: "입추", month: 6, date: new Date(2024, 7, 7, 9, 11) },   // 신월 시작
+  { term: "백로", month: 7, date: new Date(2024, 8, 7, 11, 11) },  // 유월 시작
+  { term: "한로", month: 8, date: new Date(2024, 9, 8, 3, 56) },   // 술월 시작
+  { term: "입동", month: 9, date: new Date(2024, 10, 7, 12, 20) }, // 해월 시작
+  { term: "대설", month: 10, date: new Date(2024, 11, 7, 0, 17) }, // 자월 시작
+  { term: "소한", month: 11, date: new Date(2025, 0, 5, 23, 49) }, // 축월 시작
 ];
 
 // 24절기 정보 생성 (특정 연도)
@@ -106,7 +107,7 @@ function getSolarTermDateRange(year: number, monthIndex: number): { start: Date;
 
 // 일주 계산 (특정 날짜의 일주)
 function calculateDayGanji(date: Date): { sky: string; earth: string } {
-  const baseDate = new Date(2025, 7, 23); // 2025년 8월 23일 갑자일
+  const baseDate = new Date(1900, 0, 1); // 1900년 1월 1일 = 갑자일
   const daysDiff = Math.floor((date.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
   const dayIndex = ((daysDiff % 60) + 60) % 60;
   const daySkyIndex = dayIndex % 10;
@@ -120,9 +121,13 @@ function calculateDayGanji(date: Date): { sky: string; earth: string } {
 
 // 간지 정보로부터 양력 날짜 역산
 export function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): { year: number; month: number; day: number } | null {
+  console.log('[reverseCalculate] 입력:', { ganji, birthYear });
+  
   try {
     // 1. 월주의 지지로 절기 월 인덱스 찾기
     const monthIndex = getMonthIndexFromEarth(ganji.monthEarth);
+    console.log('[reverseCalculate] 월 인덱스:', monthIndex);
+    
     if (monthIndex === -1) {
       console.error("Invalid month earth:", ganji.monthEarth);
       return null;
@@ -130,6 +135,10 @@ export function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): 
     
     // 2. 해당 연도, 월의 절기 날짜 범위 찾기
     const { start: termStart, end: termEnd } = getSolarTermDateRange(birthYear, monthIndex);
+    console.log('[reverseCalculate] 절기 범위:', { 
+      termStart: termStart.toISOString().split('T')[0], 
+      termEnd: termEnd.toISOString().split('T')[0] 
+    });
     
     // 3. 절기 범위 내에서 일주가 일치하는 날짜 찾기
     let foundDate: Date | null = null;
@@ -140,9 +149,25 @@ export function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): 
     startDate.setDate(startDate.getDate() - 5);
     endDate.setDate(endDate.getDate() + 5);
     
+    console.log('[reverseCalculate] 검색 범위 (확장):', { 
+      start: startDate.toISOString().split('T')[0], 
+      end: endDate.toISOString().split('T')[0],
+      targetDayGanji: `${ganji.daySky}${ganji.dayEarth}`
+    });
+    
     const currentDate = new Date(startDate);
+    let checkCount = 0;
     while (currentDate <= endDate) {
       const dayGanji = calculateDayGanji(currentDate);
+      checkCount++;
+      
+      if (checkCount <= 3 || (dayGanji.sky === ganji.daySky && dayGanji.earth === ganji.dayEarth)) {
+        console.log('[reverseCalculate] 날짜 체크:', { 
+          date: currentDate.toISOString().split('T')[0], 
+          calculatedGanji: `${dayGanji.sky}${dayGanji.earth}`,
+          match: dayGanji.sky === ganji.daySky && dayGanji.earth === ganji.dayEarth
+        });
+      }
       
       if (dayGanji.sky === ganji.daySky && dayGanji.earth === ganji.dayEarth) {
         foundDate = new Date(currentDate);
@@ -157,12 +182,15 @@ export function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): 
       return null;
     }
     
-    // 양력 날짜 반환
-    return {
+    const result = {
       year: foundDate.getFullYear(),
       month: foundDate.getMonth() + 1,
       day: foundDate.getDate()
     };
+    console.log('[reverseCalculate] 최종 결과:', result);
+    
+    // 양력 날짜 반환
+    return result;
   } catch (error) {
     console.error("Error in reverseCalculateSolarDate:", error);
     return null;
