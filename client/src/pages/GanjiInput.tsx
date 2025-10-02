@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-import { CHEONGAN, JIJI } from "@shared/schema";
+import { generate60Ganji, calculateMonthGanji, calculateHourGanji } from "@/lib/ganji-calculator";
 
 type Step = "year" | "month" | "day" | "hour" | "gender" | "result";
 
@@ -20,18 +20,19 @@ export default function GanjiInput() {
   const [currentStep, setCurrentStep] = useState<Step>("year");
   const [selection, setSelection] = useState<GanjiSelection>({});
 
-  // 60갑자 생성
-  const generate60Ganji = () => {
-    const ganji: { sky: string; earth: string; label: string }[] = [];
-    for (let i = 0; i < 60; i++) {
-      const sky = CHEONGAN[i % 10];
-      const earth = JIJI[i % 12];
-      ganji.push({ sky, earth, label: `${sky}${earth}` });
-    }
-    return ganji;
-  };
-
-  const ganjiList = generate60Ganji();
+  const ganjiList = useMemo(() => generate60Ganji(), []);
+  
+  // 월주 목록 (년주에 따라)
+  const monthGanjiList = useMemo(() => {
+    if (!selection.year) return [];
+    return calculateMonthGanji(selection.year.sky);
+  }, [selection.year]);
+  
+  // 시주 목록 (일주에 따라)
+  const hourGanjiList = useMemo(() => {
+    if (!selection.day) return [];
+    return calculateHourGanji(selection.day.sky);
+  }, [selection.day]);
 
   const handleYearSelect = (sky: string, earth: string) => {
     setSelection({ ...selection, year: { sky, earth } });
@@ -55,7 +56,23 @@ export default function GanjiInput() {
 
   const handleGenderSelect = (gender: string) => {
     setSelection({ ...selection, gender });
-    setCurrentStep("result");
+    // 간지가 모두 선택되었으면 사주 결과로 이동
+    if (selection.year && selection.month && selection.day && selection.hour) {
+      // 사주 결과 페이지로 이동 (간지 정보를 URL 파라미터로 전달)
+      const params = new URLSearchParams({
+        yearSky: selection.year.sky,
+        yearEarth: selection.year.earth,
+        monthSky: selection.month.sky,
+        monthEarth: selection.month.earth,
+        daySky: selection.day.sky,
+        dayEarth: selection.day.earth,
+        hourSky: selection.hour.sky,
+        hourEarth: selection.hour.earth,
+        gender: gender,
+        fromGanji: 'true'
+      });
+      setLocation(`/ganji-result?${params.toString()}`);
+    }
   };
 
   const handleBack = () => {
@@ -170,8 +187,18 @@ export default function GanjiInput() {
             )}
 
             {currentStep === "month" && (
-              <div className="text-center p-8">
-                <p className="text-muted-foreground">월주 계산 로직 구현 예정</p>
+              <div className="grid grid-cols-6 gap-2">
+                {monthGanjiList.map((ganji, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    onClick={() => handleMonthSelect(ganji.sky, ganji.earth)}
+                    className="h-12"
+                    data-testid={`button-month-${ganji.label}`}
+                  >
+                    {ganji.label}
+                  </Button>
+                ))}
               </div>
             )}
 
@@ -192,8 +219,18 @@ export default function GanjiInput() {
             )}
 
             {currentStep === "hour" && (
-              <div className="text-center p-8">
-                <p className="text-muted-foreground">시주 계산 로직 구현 예정</p>
+              <div className="grid grid-cols-6 gap-2">
+                {hourGanjiList.map((ganji, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    onClick={() => handleHourSelect(ganji.sky, ganji.earth)}
+                    className="h-12"
+                    data-testid={`button-hour-${ganji.label}`}
+                  >
+                    {ganji.label}
+                  </Button>
+                ))}
               </div>
             )}
 
