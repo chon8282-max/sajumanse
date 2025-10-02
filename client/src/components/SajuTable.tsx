@@ -1270,6 +1270,9 @@ export default function SajuTable({
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth, showKorean);
+            if (colIndex === 0) {
+              console.log(`[11행 디버깅] earth: "${earth}", showKorean: ${showKorean}, jijiImage: ${jijiImage ? '있음' : '없음'}, charCode: ${earth.charCodeAt(0)}`);
+            }
             return (
               <div 
                 key={`saeun-earth-${colIndex}`}
@@ -1281,6 +1284,7 @@ export default function SajuTable({
                   margin: '0'
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
+                title={`${earth} (${earth.charCodeAt(0)})`}
               >
                 {jijiImage ? (
                   <img 
@@ -1388,6 +1392,9 @@ export default function SajuTable({
         }`}>
           {wolunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth, showKorean);
+            if (colIndex === 0) {
+              console.log(`[15행 디버깅] earth: "${earth}", showKorean: ${showKorean}, jijiImage: ${jijiImage ? '있음' : '없음'}, charCode: ${earth.charCodeAt(0)}`);
+            }
             return (
               <div 
                 key={`wolun-earth-${colIndex}`}
@@ -1401,6 +1408,7 @@ export default function SajuTable({
                   margin: '0'
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
+                title={`${earth} (${earth.charCodeAt(0)})`}
               >
                 {jijiImage ? (
                   <img 
