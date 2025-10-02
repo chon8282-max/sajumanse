@@ -1269,9 +1269,17 @@ export default function SajuTable({
         {/* 11행: 歲運 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => {
-            // 이미지 로딩을 위해 한글이면 한자로 변환
-            const chineseEarth = KOREAN_TO_CHINESE_MAP[earth] || earth;
-            const jijiImage = getJijiImage(chineseEarth, showKorean);
+            // 한자로 확실히 변환
+            let chineseChar = earth;
+            if (isJiji(earth)) {
+              chineseChar = earth; // 이미 한자
+            } else {
+              chineseChar = KOREAN_TO_CHINESE_MAP[earth] || KOREAN_TO_CHINESE_MAP[earth.replace('신', '신지')] || earth;
+            }
+            
+            // 이미지 가져오기
+            const jijiImg = getJijiImage(chineseChar, showKorean);
+            
             return (
               <div 
                 key={`saeun-earth-${colIndex}`}
@@ -1284,15 +1292,15 @@ export default function SajuTable({
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
               >
-                {jijiImage ? (
+                {jijiImg ? (
                   <img 
-                    src={jijiImage} 
-                    alt={earth} 
+                    src={jijiImg} 
+                    alt={chineseChar} 
                     className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{earth}</span>
+                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{chineseChar}</span>
                 )}
               </div>
             );
@@ -1389,9 +1397,17 @@ export default function SajuTable({
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
           {wolunGanji.earths.map((earth, colIndex) => {
-            // 이미지 로딩을 위해 한글이면 한자로 변환
-            const chineseEarth = KOREAN_TO_CHINESE_MAP[earth] || earth;
-            const jijiImage = getJijiImage(chineseEarth, showKorean);
+            // 한자로 확실히 변환
+            let chineseChar = earth;
+            if (isJiji(earth)) {
+              chineseChar = earth; // 이미 한자
+            } else {
+              chineseChar = KOREAN_TO_CHINESE_MAP[earth] || KOREAN_TO_CHINESE_MAP[earth.replace('신', '신지')] || earth;
+            }
+            
+            // 이미지 가져오기
+            const jijiImg = getJijiImage(chineseChar, showKorean);
+            
             return (
               <div 
                 key={`wolun-earth-${colIndex}`}
@@ -1406,15 +1422,15 @@ export default function SajuTable({
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
               >
-                {jijiImage ? (
+                {jijiImg ? (
                   <img 
-                    src={jijiImage} 
-                    alt={earth} 
+                    src={jijiImg} 
+                    alt={chineseChar} 
                     className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{earth}</span>
+                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{chineseChar}</span>
                 )}
               </div>
             );
