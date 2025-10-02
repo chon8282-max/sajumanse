@@ -575,26 +575,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // 사주 기록 부분 업데이트 (생시 변경 등)
+  // 사주 기록 부분 업데이트 (생시, 생년월일 변경 등)
   app.patch("/api/saju-records/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      const { birthTime } = req.body;
-      
-      // 생시 검증
-      if (!birthTime || typeof birthTime !== 'string' || birthTime.trim() === '') {
-        return res.status(400).json({ 
-          error: "유효한 생시를 입력해주세요." 
-        });
-      }
-
-      // 전통 시간대 코드 검증
-      const validTimePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
-      if (!validTimePeriod) {
-        return res.status(400).json({ 
-          error: "유효하지 않은 시간대 코드입니다." 
-        });
-      }
+      const { birthTime, birthYear, birthMonth, birthDay } = req.body;
       
       // 기존 레코드 조회
       const existingRecord = await storage.getSajuRecord(id);
@@ -604,31 +589,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // 생시만 업데이트하고 사주 재계산
-      const updateData: any = { birthTime };
+      // 업데이트할 데이터 준비
+      const updateData: any = {};
+      
+      // 생시 업데이트인 경우
+      if (birthTime !== undefined) {
+        // 생시 검증
+        if (typeof birthTime !== 'string' || birthTime.trim() === '') {
+          return res.status(400).json({ 
+            error: "유효한 생시를 입력해주세요." 
+          });
+        }
 
-      if (birthTime && existingRecord.birthYear && existingRecord.birthMonth && existingRecord.birthDay) {
+        // 전통 시간대 코드 검증
+        const validTimePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+        if (!validTimePeriod) {
+          return res.status(400).json({ 
+            error: "유효하지 않은 시간대 코드입니다." 
+          });
+        }
+        
+        updateData.birthTime = birthTime;
+      }
+      
+      // 생년월일 업데이트인 경우
+      if (birthYear !== undefined || birthMonth !== undefined || birthDay !== undefined) {
+        // 년월일 검증
+        if (birthYear !== undefined) {
+          if (typeof birthYear !== 'number' || birthYear < 1900 || birthYear > 2100) {
+            return res.status(400).json({ 
+              error: "유효한 생년을 입력해주세요 (1900-2100)." 
+            });
+          }
+          updateData.birthYear = birthYear;
+        }
+        
+        if (birthMonth !== undefined) {
+          if (typeof birthMonth !== 'number' || birthMonth < 1 || birthMonth > 12) {
+            return res.status(400).json({ 
+              error: "유효한 월을 입력해주세요 (1-12)." 
+            });
+          }
+          updateData.birthMonth = birthMonth;
+        }
+        
+        if (birthDay !== undefined) {
+          if (typeof birthDay !== 'number' || birthDay < 1 || birthDay > 31) {
+            return res.status(400).json({ 
+              error: "유효한 일을 입력해주세요 (1-31)." 
+            });
+          }
+          updateData.birthDay = birthDay;
+        }
+      }
+      
+      // 업데이트할 데이터가 없으면 에러
+      if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ 
+          error: "업데이트할 데이터가 없습니다." 
+        });
+      }
+
+      // 사주 재계산이 필요한 경우 (생시 또는 생년월일 변경)
+      const finalBirthYear = updateData.birthYear || existingRecord.birthYear;
+      const finalBirthMonth = updateData.birthMonth || existingRecord.birthMonth;
+      const finalBirthDay = updateData.birthDay || existingRecord.birthDay;
+      const finalBirthTime = updateData.birthTime || existingRecord.birthTime;
+      
+      if (finalBirthYear && finalBirthMonth && finalBirthDay) {
         try {
-          // 전통 시간대 코드인지 확인 (예: "子時")
-          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+          // 시간 계산
           let hour = 0;
-          
-          if (timePeriod) {
-            hour = timePeriod.hour;
-          } else {
-            // 일반 시간 형식 파싱
-            const timeStr = birthTime;
-            if (timeStr.includes(':')) {
-              hour = parseInt(timeStr.split(':')[0]) || 0;
+          if (finalBirthTime) {
+            const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === finalBirthTime);
+            if (timePeriod) {
+              hour = timePeriod.hour;
             } else {
-              hour = parseInt(timeStr) || 0;
+              const timeStr = finalBirthTime;
+              if (timeStr.includes(':')) {
+                hour = parseInt(timeStr.split(':')[0]) || 0;
+              } else {
+                hour = parseInt(timeStr) || 0;
+              }
             }
           }
 
-          // 기존 생년월일 정보 사용하여 사주 재계산
-          const sajuCalculationYear = existingRecord.lunarYear || existingRecord.birthYear;
-          const sajuCalculationMonth = existingRecord.lunarMonth || existingRecord.birthMonth;
-          const sajuCalculationDay = existingRecord.lunarDay || existingRecord.birthDay;
+          // 음력 변환이 필요한 경우 처리
+          let sajuCalculationYear = finalBirthYear;
+          let sajuCalculationMonth = finalBirthMonth;
+          let sajuCalculationDay = finalBirthDay;
+          let isLunar = false;
+          
+          // 기존에 음력 정보가 있거나, 새로 생년월일이 업데이트된 경우 양력→음력 변환
+          if (existingRecord.calendarType === 'lunar' || (birthYear !== undefined || birthMonth !== undefined || birthDay !== undefined)) {
+            if (existingRecord.calendarType === 'lunar') {
+              // 기존이 음력인 경우
+              isLunar = true;
+              sajuCalculationYear = existingRecord.lunarYear || finalBirthYear;
+              sajuCalculationMonth = existingRecord.lunarMonth || finalBirthMonth;
+              sajuCalculationDay = existingRecord.lunarDay || finalBirthDay;
+            } else {
+              // 양력인 경우 음력으로 변환
+              const Solar = require('lunar-javascript').Solar;
+              const solar = Solar.fromYmd(finalBirthYear, finalBirthMonth, finalBirthDay);
+              const lunar = solar.getLunar();
+              
+              updateData.lunarYear = lunar.getYear();
+              updateData.lunarMonth = lunar.getMonth();
+              updateData.lunarDay = lunar.getDay();
+              
+              sajuCalculationYear = lunar.getYear();
+              sajuCalculationMonth = lunar.getMonth();
+              sajuCalculationDay = lunar.getDay();
+              isLunar = true;
+            }
+          }
           
           const sajuResult = calculateSaju(
             sajuCalculationYear,
@@ -636,12 +711,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             sajuCalculationDay,
             hour,
             0, // minute
-            !!existingRecord.lunarYear, // isLunar
-            existingRecord.birthYear && existingRecord.birthMonth && existingRecord.birthDay ? {
-              solarYear: existingRecord.birthYear,
-              solarMonth: existingRecord.birthMonth,
-              solarDay: existingRecord.birthDay
-            } : undefined,
+            isLunar,
+            {
+              solarYear: finalBirthYear,
+              solarMonth: finalBirthMonth,
+              solarDay: finalBirthDay
+            },
             null // apiData
           );
 
@@ -656,16 +731,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updateData.hourEarth = sajuResult.hour.earth;
 
         } catch (sajuError) {
-          console.error('Saju calculation error during birth time update:', sajuError);
+          console.error('Saju calculation error during update:', sajuError);
         }
       }
 
       const updatedRecord = await storage.updateSajuRecord(id, updateData);
       
+      const message = birthTime !== undefined && (birthYear !== undefined || birthMonth !== undefined || birthDay !== undefined)
+        ? "생시와 생년월일이 성공적으로 변경되었습니다."
+        : birthTime !== undefined
+        ? "생시가 성공적으로 변경되었습니다."
+        : "생년월일이 성공적으로 변경되었습니다.";
+      
       res.json({
         success: true,
         data: updatedRecord,
-        message: "생시가 성공적으로 변경되었습니다."
+        message
       });
     } catch (error) {
       console.error('Patch saju record error:', error);
