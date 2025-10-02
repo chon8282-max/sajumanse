@@ -74,7 +74,7 @@ export default function TraditionalCalendar({
   const solarTerms: SolarTermInfo[] = useMemo(() => {
     if (!solarTermsData?.success) return [];
     
-    const allTerms = solarTermsData.data.map((term: any) => ({
+    const allTerms: SolarTermInfo[] = solarTermsData.data.map((term: { name: string; date: string }) => ({
       name: term.name,
       date: new Date(term.date),
       dateString: new Date(term.date).toLocaleDateString('ko-KR', { 
@@ -89,7 +89,7 @@ export default function TraditionalCalendar({
     }));
     
     // 현재 월의 절기만 반환
-    return allTerms.filter(term => {
+    return allTerms.filter((term: SolarTermInfo) => {
       const termMonth = term.date.getMonth() + 1;
       return termMonth === currentMonth;
     });
@@ -192,7 +192,7 @@ export default function TraditionalCalendar({
         
         {/* 일간지 */}
         {dayData.lunarDayGanji && (
-          <div className="text-xs text-blue-600" title={`${dayData.lunarDayGanji.sky}${dayData.lunarDayGanji.earth} (${dayData.lunarDayGanji.sky.charCodeAt(0)},${dayData.lunarDayGanji.earth.charCodeAt(0)})`}>
+          <div className="text-xs text-blue-600">
             {dayData.lunarDayGanji.sky}{dayData.lunarDayGanji.earth}
           </div>
         )}

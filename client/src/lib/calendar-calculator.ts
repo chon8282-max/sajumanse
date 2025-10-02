@@ -79,18 +79,10 @@ export function calculateDayGanji(date: Date): { sky: string; earth: string } {
   const skyIndex = ganjiIndex % 10;
   const earthIndex = ganjiIndex % 12;
   
-  const result = {
+  return {
     sky: CHEONGAN[skyIndex],
     earth: JIJI[earthIndex]
   };
-  
-  // 디버깅: 실제 값 확인
-  if (date.getDate() === 1 || date.getDate() === 30) {
-    console.log(`[${date.getDate()}일] 일간지:`, result.sky, result.earth, 
-      `(charCodes: ${result.sky.charCodeAt(0)}, ${result.earth.charCodeAt(0)})`);
-  }
-  
-  return result;
 }
 
 /**
