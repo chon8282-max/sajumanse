@@ -38,6 +38,7 @@ interface SajuTableProps {
   onSaeunScroll?: (direction: 'left' | 'right') => void;
   onBirthTimeChange?: (timeCode: string) => void;
   onBirthDateChange?: (year: number, month: number, day: number) => void;
+  onNameClick?: () => void;
 }
 
 // 지장간 계산 - 사용자 요청 수정사항 반영
@@ -220,7 +221,8 @@ export default function SajuTable({
   onSaeunClick,
   onSaeunScroll,
   onBirthTimeChange,
-  onBirthDateChange
+  onBirthDateChange,
+  onNameClick
 }: SajuTableProps) {
 
   // 나이 계산 (간지년 기준)
@@ -817,7 +819,13 @@ export default function SajuTable({
         <div className="p-3 border border-border rounded-md mt-[0px] mb-[0px] pt-[0px] pb-[0px]" style={{ backgroundColor: 'hsl(var(--name-card-bg))' }}>
           {/* 첫 번째 줄: 이름, 성별, 나이 */}
           <div className="flex items-center justify-center gap-2 mt-[0px] mb-[0px]">
-            <span className="font-bold text-lg" data-testid="text-name">{name}</span>
+            <button 
+              onClick={onNameClick}
+              className="font-bold text-lg hover:text-primary transition-colors cursor-pointer"
+              data-testid="text-name"
+            >
+              {name}
+            </button>
             <div className="flex items-center gap-1">
               {gender === '남자' ? (
                 <User className="w-4 h-4 text-blue-600" data-testid="icon-male" />

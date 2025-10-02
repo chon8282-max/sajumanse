@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun, Heart } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -141,6 +143,8 @@ export default function SajuResult() {
   const [match, params] = useRoute("/saju-result/:id");
   const [focusedDaeun, setFocusedDaeun] = useState<DaeunPeriod | null>(null);
   const [saeunOffset, setSaeunOffset] = useState(0);
+  const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
+  const [editingName, setEditingName] = useState("");
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
   
@@ -181,6 +185,37 @@ export default function SajuResult() {
       toast({
         title: "저장 오류",
         description: "사주 정보 저장 중 오류가 발생했습니다.",
+        variant: "destructive",
+        duration: 700
+      });
+    }
+  });
+
+  // 이름 업데이트 mutation
+  const updateNameMutation = useMutation({
+    mutationFn: async (newName: string) => {
+      if (!params?.id) {
+        throw new Error("No ID provided");
+      }
+      const response = await apiRequest("PUT", `/api/saju-records/${params.id}`, {
+        name: newName
+      });
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "이름 변경 완료",
+        description: "이름이 성공적으로 변경되었습니다.",
+        duration: 700
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      setIsNameDialogOpen(false);
+    },
+    onError: (error) => {
+      console.error('Name update error:', error);
+      toast({
+        title: "이름 변경 오류",
+        description: "이름 변경 중 오류가 발생했습니다.",
         variant: "destructive",
         duration: 700
       });
@@ -380,6 +415,19 @@ export default function SajuResult() {
     }
   };
 
+  const handleNameClick = () => {
+    if (sajuData?.data) {
+      setEditingName(sajuData.data.name || '');
+      setIsNameDialogOpen(true);
+    }
+  };
+
+  const handleNameSave = () => {
+    if (editingName.trim()) {
+      updateNameMutation.mutate(editingName.trim());
+    }
+  };
+
   const handleEdit = () => {
     if (sajuData?.data) {
       const record = sajuData.data;
@@ -572,9 +620,46 @@ export default function SajuResult() {
           onSaeunScroll={handleSaeunScroll}
           onBirthTimeChange={handleBirthTimeChange}
           onBirthDateChange={handleBirthDateChange}
+          onNameClick={handleNameClick}
         />
 
-
+        {/* 이름 수정 다이얼로그 */}
+        <Dialog open={isNameDialogOpen} onOpenChange={setIsNameDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>이름 수정</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <Input
+                value={editingName}
+                onChange={(e) => setEditingName(e.target.value)}
+                placeholder="이름을 입력하세요"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleNameSave();
+                  }
+                }}
+                data-testid="input-name"
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsNameDialogOpen(false)}
+                data-testid="button-cancel"
+              >
+                취소
+              </Button>
+              <Button
+                onClick={handleNameSave}
+                disabled={updateNameMutation.isPending || !editingName.trim()}
+                data-testid="button-save-name"
+              >
+                {updateNameMutation.isPending ? "저장중..." : "저장"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
