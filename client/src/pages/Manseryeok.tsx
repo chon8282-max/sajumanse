@@ -64,7 +64,7 @@ export default function Manseryeok() {
         setLocation("/compatibility");
         break;
       case "birth-from-saju":
-        console.log("팔자로 생일 입력 기능 준비중");
+        setLocation("/ganji-input");
         break;
       case "saved-saju":
         setLocation("/saju-list");

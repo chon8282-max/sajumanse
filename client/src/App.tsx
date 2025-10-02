@@ -29,6 +29,7 @@ import SajuResult from "@/pages/SajuResult";
 import SajuList from "@/pages/SajuList";
 import Guide from "@/pages/Guide";
 import Compatibility from "@/pages/Compatibility";
+import GanjiInput from "@/pages/GanjiInput";
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/saju-list" component={SajuList} />
       <Route path="/guide" component={Guide} />
       <Route path="/compatibility" component={Compatibility} />
+      <Route path="/ganji-input" component={GanjiInput} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
