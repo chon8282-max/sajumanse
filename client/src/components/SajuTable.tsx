@@ -547,12 +547,12 @@ export default function SajuTable({
     
     // sajuColumns 순서(시주→일주→월주→년주)에 맞춰 신살 배열 재배열
     return [
-      formatShinSal(shinsalResult.hourPillar),  // 시주 (첫 번째 컬럼)
-      formatShinSal(shinsalResult.dayPillar),   // 일주 (두 번째 컬럼)
-      formatShinSal(shinsalResult.monthPillar), // 월주 (세 번째 컬럼)
-      formatShinSal(shinsalResult.yearPillar)   // 년주 (네 번째 컬럼)
+      formatShinSal(shinsalResult.hourPillar, showKorean),  // 시주 (첫 번째 컬럼)
+      formatShinSal(shinsalResult.dayPillar, showKorean),   // 일주 (두 번째 컬럼)
+      formatShinSal(shinsalResult.monthPillar, showKorean), // 월주 (세 번째 컬럼)
+      formatShinSal(shinsalResult.yearPillar, showKorean)   // 년주 (네 번째 컬럼)
     ];
-  }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth]);
+  }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean]);
 
   // 1행 신살 계산 (천덕귀인, 월덕귀인 - 메모이제이션)
   const firstRowShinsal = useMemo(() => {
@@ -575,13 +575,13 @@ export default function SajuTable({
     
     // sajuColumns 순서(시주→일주→월주→년주)에 맞춰 1행 신살 배열 재배열
     return [
-      formatShinSal(firstRowResult.hourPillar),  // 시주 (첫 번째 컬럼)
-      formatShinSal(firstRowResult.dayPillar),   // 일주 (두 번째 컬럼)
-      formatShinSal(firstRowResult.monthPillar), // 월주 (세 번째 컬럼)
-      formatShinSal(firstRowResult.yearPillar)   // 년주 (네 번째 컬럼)
+      formatShinSal(firstRowResult.hourPillar, showKorean),  // 시주 (첫 번째 컬럼)
+      formatShinSal(firstRowResult.dayPillar, showKorean),   // 일주 (두 번째 컬럼)
+      formatShinSal(firstRowResult.monthPillar, showKorean), // 월주 (세 번째 컬럼)
+      formatShinSal(firstRowResult.yearPillar, showKorean)   // 년주 (네 번째 컬럼)
     ];
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
-      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth]);
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -1021,7 +1021,7 @@ export default function SajuTable({
             firstRowShinsal.map((shinsal, index) => (
               <div 
                 key={`firstrow-shinsal-${index}`} 
-                className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-red-600 dark:text-red-400 bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
+                className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
                 data-testid={`text-firstrow-shinsal-${index}`}
               >
                 {convertTextForSpecificRows(shinsal)}
