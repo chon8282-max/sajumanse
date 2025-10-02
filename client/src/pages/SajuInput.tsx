@@ -33,6 +33,11 @@ export default function SajuInput() {
   const [newGroupName, setNewGroupName] = useState("");
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  
+  // 편집 모드 확인 (URL 파라미터로 edit=true와 id 존재 여부)
+  const urlParams = new URLSearchParams(window.location.search);
+  const isEditMode = urlParams.get('edit') === 'true' && urlParams.has('id');
+  
   const [formData, setFormData] = useState({
     name: "",
     calendarType: "양력",
@@ -70,7 +75,8 @@ export default function SajuInput() {
   // 쿼리 파라미터에서 초기 데이터 로드 (수정 모드)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('edit')) {
+    // edit=true이고 id가 있을 때만 편집 모드로 데이터 로드
+    if (urlParams.get('edit') === 'true' && urlParams.has('id')) {
       const queryData = {
         name: urlParams.get('name') || "",
         calendarType: urlParams.get('calendarType') || "양력",
@@ -154,7 +160,7 @@ export default function SajuInput() {
     try {
       // 편집 모드 확인
       const urlParams = new URLSearchParams(window.location.search);
-      const isEditMode = urlParams.has('edit');
+      const submitIsEditMode = urlParams.get('edit') === 'true' && urlParams.has('id');
       const editId = urlParams.get('id');
 
       // API 요청 데이터 준비 (이름이 비어있으면 "이름없음" 사용)
@@ -174,7 +180,7 @@ export default function SajuInput() {
 
       // API 호출 - 편집 모드면 PUT, 아니면 POST
       let response;
-      if (isEditMode && editId) {
+      if (submitIsEditMode && editId) {
         response = await apiRequest("PUT", `/api/saju-records/${editId}`, requestData);
       } else {
         response = await apiRequest("POST", "/api/saju-records", requestData);
@@ -186,7 +192,7 @@ export default function SajuInput() {
         queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
         
         // 성공시 사주 결과 페이지로 이동
-        if (isEditMode && editId) {
+        if (submitIsEditMode && editId) {
           // 편집 모드에서는 편집한 사주의 결과 페이지로 이동
           setLocation(`/saju-result/${editId}`);
         } else if (result.data?.record?.id) {
@@ -247,15 +253,17 @@ export default function SajuInput() {
         </div>
       </div>
 
-      {/* 현재 만세력 미리보기 */}
-      <div className="max-w-md mx-auto mb-4">
-        <CurrentTimeTable 
-          saju={currentSaju}
-          title="현재 만세력"
-          solarDate={getCurrentDateInfo().solarDate}
-          isOffline={navigator.onLine === false}
-        />
-      </div>
+      {/* 현재 만세력 미리보기 - 새 입력 모드에만 표시 */}
+      {!isEditMode && (
+        <div className="max-w-md mx-auto mb-4">
+          <CurrentTimeTable 
+            saju={currentSaju}
+            title="현재 만세력"
+            solarDate={getCurrentDateInfo().solarDate}
+            isOffline={navigator.onLine === false}
+          />
+        </div>
+      )}
 
       {/* 입력 폼 */}
       <div className="max-w-md mx-auto space-y-4">
