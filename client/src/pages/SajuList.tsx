@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
@@ -62,6 +63,10 @@ export default function SajuList() {
   // 사주 삭제 대화상자 상태
   const [showDeleteSajuDialog, setShowDeleteSajuDialog] = useState(false);
   const [deletingSaju, setDeletingSaju] = useState<{ id: string; name: string } | null>(null);
+  
+  // 다중 선택 상태
+  const [selectedSajuIds, setSelectedSajuIds] = useState<string[]>([]);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   
   // 검색 debounce (성능 최적화)
   useEffect(() => {
@@ -161,6 +166,46 @@ export default function SajuList() {
       });
     }
   });
+
+  // 다중 삭제 mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      const deletePromises = ids.map(id => 
+        apiRequest("DELETE", `/api/saju-records/${id}`).then(res => res.json())
+      );
+      const results = await Promise.all(deletePromises);
+      const failedCount = results.filter(r => !r.success).length;
+      
+      if (failedCount > 0) {
+        throw new Error(`${failedCount}개의 삭제에 실패했습니다.`);
+      }
+      
+      return results;
+    },
+    onSuccess: (_, ids) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
+      setSelectedSajuIds([]);
+      toast({
+        title: "삭제 완료",
+        description: `${ids.length}개의 사주가 성공적으로 삭제되었습니다.`,
+        duration: 700
+      });
+    },
+    onError: (error) => {
+      console.error('Bulk delete error:', error);
+      toast({
+        title: "삭제 오류",
+        description: error instanceof Error ? error.message : "다중 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+        duration: 700
+      });
+    }
+  });
+  
+  // 검색/필터 변경 시 선택 초기화 (숨겨진 선택 항목 방지)
+  useEffect(() => {
+    setSelectedSajuIds([]);
+  }, [searchQuery, selectedGroupId, page]);
   
   // Form 초기화
   const groupForm = useForm<GroupFormData>({
@@ -380,6 +425,32 @@ export default function SajuList() {
     return currentYear - birthYear + 1; // 한국 나이
   };
 
+  // 다중 선택 관련 핸들러
+  const toggleSelectSaju = (id: string) => {
+    setSelectedSajuIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedSajuIds.length === sajuList.length) {
+      setSelectedSajuIds([]);
+    } else {
+      setSelectedSajuIds(sajuList.map(s => s.id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedSajuIds.length > 0) {
+      setShowBulkDeleteDialog(true);
+    }
+  };
+
+  const confirmBulkDelete = () => {
+    bulkDeleteMutation.mutate(selectedSajuIds);
+    setShowBulkDeleteDialog(false);
+  };
+
   // 서버 사이드 검색으로 변경하여 filteredSajuList 제거
   // sajuList가 이미 필터링된 결과이므로 더 이상 필터링 불필요
 
@@ -566,54 +637,92 @@ export default function SajuList() {
               </Card>
               )
             ) : (
-              <div className="border rounded-md overflow-hidden">
-                <Table>
-                  <TableBody>
-                    {sajuList.map((saju) => {
-                      const groupName = groupsList?.find(g => g.id === saju.groupId)?.name;
-                      return (
-                        <TableRow 
-                          key={saju.id}
-                          className="cursor-pointer hover-elevate border-b last:border-b-0"
-                          onClick={() => handleViewSaju(saju.id)}
-                          data-testid={`saju-item-${saju.id}`}
-                        >
-                          <TableCell className="py-2 px-3">
-                            {/* 첫 번째 줄: 이름, 나이, 수정/삭제 버튼 */}
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm" data-testid={`text-name-${saju.id}`}>
-                                  {saju.name || "이름없음"}
-                                </span>
-                                <span className="text-xs text-muted-foreground" data-testid={`text-age-${saju.id}`}>
-                                  {calculateAge(saju.birthYear)}세
-                                </span>
+              <>
+                {/* 다중 선택 컨트롤 */}
+                {sajuList.length > 0 && (
+                  <div className="flex items-center justify-between mb-3 p-2 bg-muted/50 rounded-md">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedSajuIds.length === sajuList.length && sajuList.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                        data-testid="checkbox-select-all"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {selectedSajuIds.length > 0 ? `${selectedSajuIds.length}개 선택됨` : '전체 선택'}
+                      </span>
+                    </div>
+                    {selectedSajuIds.length > 0 && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkDelete}
+                        disabled={bulkDeleteMutation.isPending}
+                        data-testid="button-bulk-delete"
+                        className="h-7"
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        선택 삭제
+                      </Button>
+                    )}
+                  </div>
+                )}
+                
+                <div className="border rounded-md overflow-hidden">
+                  <Table>
+                    <TableBody>
+                      {sajuList.map((saju) => {
+                        const groupName = groupsList?.find(g => g.id === saju.groupId)?.name;
+                        const isSelected = selectedSajuIds.includes(saju.id);
+                        return (
+                          <TableRow 
+                            key={saju.id}
+                            className="cursor-pointer hover-elevate border-b last:border-b-0"
+                            onClick={() => handleViewSaju(saju.id)}
+                            data-testid={`saju-item-${saju.id}`}
+                          >
+                            <TableCell className="py-2 px-3">
+                              {/* 첫 번째 줄: 체크박스, 이름, 나이, 수정/삭제 버튼 */}
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                  <div onClick={(e) => e.stopPropagation()}>
+                                    <Checkbox
+                                      checked={isSelected}
+                                      onCheckedChange={() => toggleSelectSaju(saju.id)}
+                                      data-testid={`checkbox-${saju.id}`}
+                                    />
+                                  </div>
+                                  <span className="font-medium text-sm" data-testid={`text-name-${saju.id}`}>
+                                    {saju.name || "이름없음"}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground" data-testid={`text-age-${saju.id}`}>
+                                    {calculateAge(saju.birthYear)}세
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-primary h-6 w-6"
+                                    onClick={(e) => handleEditSaju(saju, e)}
+                                    data-testid={`button-edit-${saju.id}`}
+                                  >
+                                    <Edit className="w-3 h-3" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-destructive h-6 w-6"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteSaju(saju.id, saju.name || "이름없음");
+                                    }}
+                                    disabled={deleteMutation.isPending}
+                                    data-testid={`button-delete-${saju.id}`}
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-muted-foreground hover:text-primary h-6 w-6"
-                                  onClick={(e) => handleEditSaju(saju, e)}
-                                  data-testid={`button-edit-${saju.id}`}
-                                >
-                                  <Edit className="w-3 h-3" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-muted-foreground hover:text-destructive h-6 w-6"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteSaju(saju.id, saju.name || "이름없음");
-                                  }}
-                                  disabled={deleteMutation.isPending}
-                                  data-testid={`button-delete-${saju.id}`}
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </Button>
-                              </div>
-                            </div>
                             
                             {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
                             <div className="text-xs mb-1" data-testid={`text-birth-${saju.id}`}>
@@ -666,6 +775,7 @@ export default function SajuList() {
                   </div>
                 )}
               </div>
+              </>
             )}
           </>
         )}
@@ -780,6 +890,31 @@ export default function SajuList() {
                 className="bg-destructive hover:bg-destructive/90"
               >
                 {deleteMutation.isPending ? "삭제 중..." : "삭제"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* 다중 삭제 확인 대화상자 */}
+        <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle data-testid="text-bulk-delete-title">다중 삭제</AlertDialogTitle>
+              <AlertDialogDescription data-testid="text-bulk-delete-description">
+                선택한 {selectedSajuIds.length}개의 사주를 정말 삭제하시겠습니까?
+                <br />
+                <span className="text-destructive font-medium">삭제된 사주는 복구할 수 없습니다.</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-bulk-delete-cancel">취소</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmBulkDelete}
+                disabled={bulkDeleteMutation.isPending}
+                data-testid="button-bulk-delete-confirm"
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {bulkDeleteMutation.isPending ? "삭제 중..." : "삭제"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
