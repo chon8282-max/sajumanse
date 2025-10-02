@@ -11,6 +11,7 @@ import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal } from "@/
 import BirthTimeSelector from "@/components/BirthTimeSelector";
 import BirthDateSelector from "@/components/BirthDateSelector";
 import { Button } from "@/components/ui/button";
+import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -27,6 +28,14 @@ interface SajuTableProps {
   dayEarth?: string;
   gender?: string;
   memo?: string;
+  // 간지 정보 (역산용)
+  yearSky?: string;
+  yearEarth?: string;
+  monthSky?: string;
+  monthEarth?: string;
+  hourSky?: string;
+  hourEarth?: string;
+  calendarType?: string;
   // 대운/歲運 상호작용 props
   currentAge?: number | null;
   focusedDaeun?: DaeunPeriod | null;
@@ -211,6 +220,14 @@ export default function SajuTable({
   dayEarth,
   gender = '남자',
   memo,
+  // 간지 정보
+  yearSky,
+  yearEarth,
+  monthSky,
+  monthEarth,
+  hourSky,
+  hourEarth,
+  calendarType,
   // 대운/歲運 상호작용 props
   currentAge,
   focusedDaeun,
@@ -236,6 +253,24 @@ export default function SajuTable({
     // calculateCurrentAge 함수 사용하여 정확한 간지년 기준 나이 계산
     return calculateCurrentAge(birthYear, birthMonth || 1, birthDay || 1, yearSky, yearEarth);
   }, [birthYear, birthMonth, birthDay, saju?.year?.sky, saju?.year?.earth]);
+
+  // 간지 레코드인 경우 역산된 생년월일 계산
+  const reversedDate = useMemo(() => {
+    // 간지 입력으로 저장된 레코드이고 월/일이 없는 경우에만 역산
+    if (calendarType === 'ganji' && (!birthMonth || !birthDay) && birthYear && yearSky && yearEarth && monthSky && monthEarth && daySky && dayEarth) {
+      return reverseCalculateSolarDate({
+        yearSky,
+        yearEarth,
+        monthSky,
+        monthEarth,
+        daySky,
+        dayEarth,
+        hourSky: hourSky || '',
+        hourEarth: hourEarth || ''
+      }, birthYear);
+    }
+    return null;
+  }, [calendarType, birthYear, birthMonth, birthDay, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
@@ -840,11 +875,18 @@ export default function SajuTable({
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
           <div className="text-center text-xs text-muted-foreground mb-3">
             <span data-testid="text-birth-info">
-              {birthYear && birthMonth && birthDay && (
-                <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
-              )}
-              {lunarYear && lunarMonth && lunarDay && (
-                <>  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
+              {reversedDate ? (
+                // 간지 역산된 날짜 표시
+                <>역산된 양력: {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}</>
+              ) : (
+                <>
+                  {birthYear && birthMonth && birthDay && (
+                    <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
+                  )}
+                  {lunarYear && lunarMonth && lunarDay && (
+                    <>  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
+                  )}
+                </>
               )}
               {birthHour && (
                 <>  ({formatBirthHour(birthHour)})</>
