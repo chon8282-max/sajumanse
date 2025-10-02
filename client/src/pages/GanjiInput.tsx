@@ -122,11 +122,32 @@ export default function GanjiInput() {
     }
   };
 
+  // 10개 단위로 색상 구분 (0-9, 10-19, 20-29, 30-39, 40-49, 50-59)
+  const getGanjiColorClass = (index: number) => {
+    const group = Math.floor(index / 10);
+    switch (group) {
+      case 0: // 0-9: 그린톤
+        return "bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-800/40 border-green-300 dark:border-green-700 text-green-900 dark:text-green-100";
+      case 1: // 10-19: 블루톤
+        return "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/40 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-100";
+      case 2: // 20-29: 옐로우톤
+        return "bg-yellow-100 dark:bg-yellow-900/30 hover:bg-yellow-200 dark:hover:bg-yellow-800/40 border-yellow-300 dark:border-yellow-700 text-yellow-900 dark:text-yellow-100";
+      case 3: // 30-39: 퍼플톤
+        return "bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-800/40 border-purple-300 dark:border-purple-700 text-purple-900 dark:text-purple-100";
+      case 4: // 40-49: 핑크톤
+        return "bg-pink-100 dark:bg-pink-900/30 hover:bg-pink-200 dark:hover:bg-pink-800/40 border-pink-300 dark:border-pink-700 text-pink-900 dark:text-pink-100";
+      case 5: // 50-59: 오렌지톤
+        return "bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-800/40 border-orange-300 dark:border-orange-700 text-orange-900 dark:text-orange-100";
+      default:
+        return "";
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
-        <div className="mb-6">
+        <div className="mb-3">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -138,17 +159,17 @@ export default function GanjiInput() {
               <ArrowLeft className="h-4 w-4" />
               <span className="text-sm">뒤로</span>
             </Button>
-            <h1 className="text-xl font-bold text-foreground">팔자로 생일 입력</h1>
+            <h1 className="text-lg font-bold text-foreground">팔자로 생일 입력</h1>
             <div className="w-[60px]"></div>
           </div>
         </div>
 
         {/* 선택된 사주 미리보기 */}
-        <Card className="mb-4">
-          <CardHeader className="pb-3">
+        <Card className="mb-2">
+          <CardHeader className="pb-2 pt-3">
             <CardTitle className="text-sm">선택된 사주</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-3">
             <div className="border border-border rounded-lg overflow-hidden">
               {/* 천간 행 */}
               <div className="grid grid-cols-4 border-b border-border">
@@ -193,18 +214,18 @@ export default function GanjiInput() {
 
         {/* 현재 단계 */}
         <Card>
-          <CardHeader>
-            <CardTitle>{renderStepTitle()}</CardTitle>
+          <CardHeader className="pb-2 pt-3">
+            <CardTitle className="text-base">{renderStepTitle()}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-3">
             {currentStep === "year" && (
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-5 gap-1">
                 {ganjiList.map((ganji, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     onClick={() => handleYearSelect(ganji.sky, ganji.earth)}
-                    className="h-7"
+                    className={`h-7 px-2 text-xs ${getGanjiColorClass(index)}`}
                     data-testid={`button-year-${ganji.label}`}
                   >
                     {ganji.label}
@@ -214,29 +235,33 @@ export default function GanjiInput() {
             )}
 
             {currentStep === "month" && (
-              <div className="grid grid-cols-6 gap-2">
-                {monthGanjiList.map((ganji, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    onClick={() => handleMonthSelect(ganji.sky, ganji.earth)}
-                    className="h-7"
-                    data-testid={`button-month-${ganji.label}`}
-                  >
-                    {ganji.label}
-                  </Button>
-                ))}
+              <div className="grid grid-cols-5 gap-1">
+                {monthGanjiList.map((ganji, index) => {
+                  // 월주는 12개이므로, 전체 60간지에서의 인덱스를 찾아서 색상 적용
+                  const fullGanjiIndex = ganjiList.findIndex(g => g.sky === ganji.sky && g.earth === ganji.earth);
+                  return (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      onClick={() => handleMonthSelect(ganji.sky, ganji.earth)}
+                      className={`h-7 px-2 text-xs ${getGanjiColorClass(fullGanjiIndex)}`}
+                      data-testid={`button-month-${ganji.label}`}
+                    >
+                      {ganji.label}
+                    </Button>
+                  );
+                })}
               </div>
             )}
 
             {currentStep === "day" && (
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-5 gap-1">
                 {ganjiList.map((ganji, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     onClick={() => handleDaySelect(ganji.sky, ganji.earth)}
-                    className="h-7"
+                    className={`h-7 px-2 text-xs ${getGanjiColorClass(index)}`}
                     data-testid={`button-day-${ganji.label}`}
                   >
                     {ganji.label}
@@ -246,18 +271,22 @@ export default function GanjiInput() {
             )}
 
             {currentStep === "hour" && (
-              <div className="grid grid-cols-6 gap-2">
-                {hourGanjiList.map((ganji, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    onClick={() => handleHourSelect(ganji.sky, ganji.earth)}
-                    className="h-7"
-                    data-testid={`button-hour-${ganji.label}`}
-                  >
-                    {ganji.label}
-                  </Button>
-                ))}
+              <div className="grid grid-cols-5 gap-1">
+                {hourGanjiList.map((ganji, index) => {
+                  // 시주는 12개이므로, 전체 60간지에서의 인덱스를 찾아서 색상 적용
+                  const fullGanjiIndex = ganjiList.findIndex(g => g.sky === ganji.sky && g.earth === ganji.earth);
+                  return (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      onClick={() => handleHourSelect(ganji.sky, ganji.earth)}
+                      className={`h-7 px-2 text-xs ${getGanjiColorClass(fullGanjiIndex)}`}
+                      data-testid={`button-hour-${ganji.label}`}
+                    >
+                      {ganji.label}
+                    </Button>
+                  );
+                })}
               </div>
             )}
 
