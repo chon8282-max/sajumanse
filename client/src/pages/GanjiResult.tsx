@@ -33,7 +33,7 @@ export default function GanjiResult() {
   // 선택된 연도 상태
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   // 이름 상태
-  const [name, setName] = useState<string>(nameFromUrl);
+  const name = nameFromUrl || '이름없음';
   const isEditMode = fromEdit && recordId;
 
   // 저장 mutation
