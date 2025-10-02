@@ -1341,11 +1341,12 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-year-${colIndex}`}
-                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
+                className={`py-1 text-center font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-pink-50 dark:bg-gray-900'
                 }`}
+                style={{ fontSize: '9px' }}
                 onClick={() => {
                   if (!isDragging.current) {
                     // 1열과 2열(colIndex 0, 1)은 월운 활성화 동작
