@@ -1076,10 +1076,10 @@ export default function SajuTable({
           <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
         </div>
 
-        {/* 3행 & 4행: 지지와 지지 육친/오행 (6번째 열 병합) */}
-        <div className="grid grid-cols-6" style={{ gridTemplateRows: 'auto auto' }}>
-          {/* 3행: 지지 */}
-          <div className="text-center font-bold border-r border-border border-b flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+        {/* 3행: 지지 */}
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isGongmangPosition = isGongmang(col.earth);
@@ -1089,7 +1089,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`earth-${index}`} 
-                className={`text-center font-bold border-r border-border border-b flex items-center justify-center ${
+                className={`text-center font-bold border-r border-border flex items-center justify-center ${
                   isHourEarth || isDayEarth ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
                 }`}
                 style={{ 
@@ -1126,9 +1126,12 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 3행 & 4행 병합된 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900 border-b" style={{ gridRow: 'span 2', minHeight: '4rem' }}></div>
+          {/* 빈 칸 */}
+          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+        </div>
 
+        {/* 4행 & 5행: 지지 육친/오행과 지장간/신살 (6번째 열 병합) */}
+        <div className="grid grid-cols-6" style={{ gridTemplateRows: 'auto auto' }}>
           {/* 4행: 지지 육친 / 오행 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {earthlyYukjin.map((yukjin, index) => {
@@ -1146,38 +1149,10 @@ export default function SajuTable({
               </div>
             );
           })}
-        </div>
-
-        {/* 5행: 지장간 / 신살 (토글) */}
-        <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {showShinsal ? (
-            // 신살 표시
-            shinsal.map((shinsalText, index) => (
-              <div 
-                key={`shinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
-                data-testid={`text-shinsal-${index}`}
-              >
-                {convertTextForSpecificRows(shinsalText)}
-              </div>
-            ))
-          ) : (
-            // 지장간 표시 (기본값)
-            jijanggan.map((stems, index) => (
-              <div 
-                key={`jijanggan-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
-                data-testid={`text-jijanggan-${index}`}
-              >
-                {convertTextForSpecificRows(stems)}
-              </div>
-            ))
-          )}
-          {/* 공망 정보 */}
+          {/* 4행 & 5행 병합된 공망 정보 */}
           <div 
-            className="py-1 text-center text-sm min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"
+            className="py-1 text-center text-sm flex items-center justify-center bg-white dark:bg-gray-900 border-b"
+            style={{ gridRow: 'span 2', minHeight: '3rem' }}
             data-testid="text-gongmang-info"
           >
             {gongmang.length > 0 && (
@@ -1191,6 +1166,32 @@ export default function SajuTable({
               </div>
             )}
           </div>
+
+          {/* 5행: 지장간 / 신살 (토글) */}
+          <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {showShinsal ? (
+            // 신살 표시
+            shinsal.map((shinsalText, index) => (
+              <div 
+                key={`shinsal-${index}`} 
+                className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-shinsal-${index}`}
+              >
+                {convertTextForSpecificRows(shinsalText)}
+              </div>
+            ))
+          ) : (
+            // 지장간 표시 (기본값)
+            jijanggan.map((stems, index) => (
+              <div 
+                key={`jijanggan-${index}`} 
+                className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-jijanggan-${index}`}
+              >
+                {convertTextForSpecificRows(stems)}
+              </div>
+            ))
+          )}
         </div>
 
         {/* 6행: 12신살 (조건부 표시, 6열로 구성) */}
