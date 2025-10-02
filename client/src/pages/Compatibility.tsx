@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Home, UserPlus, FolderOpen, RefreshCw } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -25,8 +26,10 @@ interface SajuResultData {
 
 export default function Compatibility() {
   const [, setLocation] = useLocation();
-  const [leftSajuId, setLeftSajuId] = useState<number | null>(null);
-  const [rightSajuId, setRightSajuId] = useState<number | null>(null);
+  const [leftSajuId, setLeftSajuId] = useState<string | null>(null);
+  const [rightSajuId, setRightSajuId] = useState<string | null>(null);
+  const [showLeftDialog, setShowLeftDialog] = useState(false);
+  const [showRightDialog, setShowRightDialog] = useState(false);
 
   // 가로 모드 강제 전환
   useEffect(() => {
@@ -64,24 +67,32 @@ export default function Compatibility() {
     setLocation('/');
   };
 
-  return (
-    <div className="fixed inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
-      {/* 홈 버튼 */}
-      <div className="absolute top-4 left-4 z-50">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleHomeClick}
-          className="gap-2"
-          data-testid="button-home"
-        >
-          <Home className="w-4 h-4" />
-          홈
-        </Button>
-      </div>
+  // 사주 목록 조회
+  const { data: sajuListResponse } = useQuery<{success: boolean, data: SajuResultData[]}>({
+    queryKey: ['/api/saju-records'],
+  });
+  
+  const sajuList = sajuListResponse?.data || [];
 
-      {/* 2분할 레이아웃 */}
-      <div className="h-full flex flex-col landscape:flex-row gap-2 p-2 pt-16">
+  return (
+    <div className="fixed inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden flex items-center justify-center">
+      <div className="w-full h-full md:w-1/2 md:h-screen relative">
+        {/* 홈 버튼 */}
+        <div className="absolute top-4 left-4 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleHomeClick}
+            className="gap-2"
+            data-testid="button-home"
+          >
+            <Home className="w-4 h-4" />
+            홈
+          </Button>
+        </div>
+
+        {/* 2분할 레이아웃 */}
+        <div className="h-full flex flex-col landscape:flex-row gap-2 p-2 pt-16">
         {/* 왼쪽 영역 */}
         <div className="flex-1 flex flex-col min-w-0">
           <Card className="flex-1 overflow-auto">
@@ -133,17 +144,8 @@ export default function Compatibility() {
                   </p>
                   <div className="flex gap-3">
                     <Button
-                      variant="default"
-                      onClick={() => setLocation('/saju-input')}
-                      data-testid="button-left-new"
-                      className="text-sm"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      새로 입력
-                    </Button>
-                    <Button
                       variant="outline"
-                      onClick={() => setLocation('/saju-list')}
+                      onClick={() => setShowLeftDialog(true)}
                       data-testid="button-left-load"
                       className="text-sm"
                     >
@@ -208,17 +210,8 @@ export default function Compatibility() {
                   </p>
                   <div className="flex gap-3">
                     <Button
-                      variant="default"
-                      onClick={() => setLocation('/saju-input')}
-                      data-testid="button-right-new"
-                      className="text-sm"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      새로 입력
-                    </Button>
-                    <Button
                       variant="outline"
-                      onClick={() => setLocation('/saju-list')}
+                      onClick={() => setShowRightDialog(true)}
                       data-testid="button-right-load"
                       className="text-sm"
                     >
@@ -231,6 +224,69 @@ export default function Compatibility() {
             </CardContent>
           </Card>
         </div>
+        </div>
+
+        {/* 왼쪽 사주 선택 다이얼로그 */}
+        <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>사주 1 선택</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {sajuList.map((saju) => (
+              <Card
+                key={saju.id}
+                className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                onClick={() => {
+                  setLeftSajuId(saju.id);
+                  setShowLeftDialog(false);
+                }}
+                data-testid={`saju-item-${saju.id}`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold">{saju.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+        </Dialog>
+
+        {/* 오른쪽 사주 선택 다이얼로그 */}
+        <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>사주 2 선택</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {sajuList.map((saju) => (
+              <Card
+                key={saju.id}
+                className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                onClick={() => {
+                  setRightSajuId(saju.id);
+                  setShowRightDialog(false);
+                }}
+                data-testid={`saju-item-${saju.id}`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold">{saju.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
