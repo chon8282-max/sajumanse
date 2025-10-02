@@ -1,10 +1,11 @@
 import { useLocation as useWouterLocation, useSearch } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import SajuTable from "@/components/SajuTable";
 import { findGanjiIndex } from "@/lib/ganji-calculator";
+import { calculateCompleteDaeun, calculateCurrentAge } from "@/lib/daeun-calculator";
 
 export default function GanjiResult() {
   const [, setLocation] = useWouterLocation();
@@ -19,6 +20,9 @@ export default function GanjiResult() {
   const hourSky = searchParams.get('hourSky') || '';
   const hourEarth = searchParams.get('hourEarth') || '';
   const gender = searchParams.get('gender') || '남자';
+  
+  // 선택된 연도 상태
+  const [selectedYear, setSelectedYear] = useState<number | null>(null);
 
   // 파라미터 검증
   useEffect(() => {
@@ -93,6 +97,27 @@ export default function GanjiResult() {
 
   const possibleYears = calculatePossibleYears();
 
+  // 선택된 연도가 있을 때 나이 계산
+  const currentAge = useMemo(() => {
+    if (!selectedYear) return undefined;
+    return calculateCurrentAge(selectedYear, 1, 1); // 월일은 1월 1일로 가정
+  }, [selectedYear]);
+
+  // 선택된 연도가 있을 때 대운 계산
+  const daeunData = useMemo(() => {
+    if (!selectedYear) return null;
+    
+    return calculateCompleteDaeun({
+      gender: gender,
+      yearSky: yearSky,
+      monthSky: monthSky,
+      monthEarth: monthEarth,
+      birthYear: selectedYear,
+      birthMonth: 1, // 월일은 가정값
+      birthDay: 1
+    });
+  }, [selectedYear, gender, yearSky, monthSky, monthEarth]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
       <div className="max-w-2xl mx-auto">
@@ -114,25 +139,33 @@ export default function GanjiResult() {
           </div>
         </div>
 
-        {/* 가능한 연도 표시 */}
+        {/* 가능한 연도 선택 */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-base">가능한 출생 연도</CardTitle>
+            <CardTitle className="text-base">출생 연도 선택</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground mb-2">
-              선택하신 사주는 60년 주기로 반복됩니다.
+            <p className="text-sm text-muted-foreground mb-3">
+              선택하신 사주는 60년 주기로 반복됩니다. 해당하는 연도를 선택하세요.
             </p>
             <div className="flex flex-wrap gap-2">
               {possibleYears.map((year) => (
-                <span key={year} className="px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium">
+                <Button
+                  key={year}
+                  variant={selectedYear === year ? "default" : "outline"}
+                  onClick={() => setSelectedYear(year)}
+                  className="h-auto px-4 py-2"
+                  data-testid={`button-year-${year}`}
+                >
                   {year}년
-                </span>
+                </Button>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground mt-3">
-              * 정확한 월일 정보는 절기와 음력을 고려해야 하므로, 위 연도 중 하나를 기준으로 사주를 확인하세요.
-            </p>
+            {!selectedYear && (
+              <p className="text-xs text-muted-foreground mt-3">
+                * 연도를 선택하시면 나이, 대운 등의 상세 정보를 확인할 수 있습니다.
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -141,7 +174,12 @@ export default function GanjiResult() {
           saju={saju}
           title="간지로 입력한 사주"
           name="미상"
+          birthYear={selectedYear || undefined}
+          birthMonth={selectedYear ? 1 : undefined}
+          birthDay={selectedYear ? 1 : undefined}
           gender={gender}
+          daeunPeriods={daeunData?.daeunPeriods || []}
+          currentAge={currentAge}
         />
 
         {/* 안내 메시지 */}
