@@ -143,41 +143,6 @@ export default function GanjiInput() {
           </div>
         </div>
 
-        {/* 선택된 정보 표시 */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-base">선택된 사주</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">년주</p>
-                <p className="font-bold text-lg">
-                  {selection.year ? `${selection.year.sky}${selection.year.earth}` : "-"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">월주</p>
-                <p className="font-bold text-lg">
-                  {selection.month ? `${selection.month.sky}${selection.month.earth}` : "-"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">일주</p>
-                <p className="font-bold text-lg">
-                  {selection.day ? `${selection.day.sky}${selection.day.earth}` : "-"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">시주</p>
-                <p className="font-bold text-lg">
-                  {selection.hour ? `${selection.hour.sky}${selection.hour.earth}` : "-"}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* 현재 단계 */}
         <Card>
           <CardHeader>
