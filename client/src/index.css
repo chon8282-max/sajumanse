@@ -5,11 +5,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 조선 궁서체 폰트 정의 - 사주 간지용 */
+/* 조선체 폰트 정의 - 사주 간지용 (로컬 파일 사용) */
 @font-face {
   font-family: 'ChosunGs';
-  src: url('https://cdn.jsdelivr.net/gh/webfontworld/chosun/ChosunGs.woff2') format('woff2'),
-       url('https://cdn.jsdelivr.net/gh/webfontworld/chosun/ChosunGs.woff') format('woff');
+  src: url('/fonts/ChosunKim.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
