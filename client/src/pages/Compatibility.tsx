@@ -92,7 +92,7 @@ export default function Compatibility() {
         </div>
 
         {/* 2분할 레이아웃 */}
-        <div className="h-full flex flex-col landscape:flex-row gap-2 p-2 pt-16">
+        <div className="h-full flex flex-row gap-2 p-2 pt-16">
         {/* 왼쪽 영역 */}
         <div className="flex-1 flex flex-col min-w-0">
           <Card className="flex-1 overflow-auto">
