@@ -191,7 +191,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleYearSelect(ganji.sky, ganji.earth)}
-                    className="h-12"
+                    className="h-7"
                     data-testid={`button-year-${ganji.label}`}
                   >
                     {ganji.label}
@@ -207,7 +207,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleMonthSelect(ganji.sky, ganji.earth)}
-                    className="h-12"
+                    className="h-7"
                     data-testid={`button-month-${ganji.label}`}
                   >
                     {ganji.label}
@@ -223,7 +223,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleDaySelect(ganji.sky, ganji.earth)}
-                    className="h-12"
+                    className="h-7"
                     data-testid={`button-day-${ganji.label}`}
                   >
                     {ganji.label}
@@ -239,7 +239,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleHourSelect(ganji.sky, ganji.earth)}
-                    className="h-12"
+                    className="h-7"
                     data-testid={`button-hour-${ganji.label}`}
                   >
                     {ganji.label}
