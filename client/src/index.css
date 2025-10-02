@@ -5,10 +5,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ChosunKim 폰트 정의 - 사주 간지용 */
+/* 조선 궁서체 폰트 정의 - 사주 간지용 */
 @font-face {
-  font-family: 'ChosunKim';
-  src: url('/fonts/ChosunKim.ttf') format('truetype');
+  font-family: 'ChosunGs';
+  src: url('https://cdn.jsdelivr.net/gh/webfontworld/chosun/ChosunGs.woff2') format('woff2'),
+       url('https://cdn.jsdelivr.net/gh/webfontworld/chosun/ChosunGs.woff') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
