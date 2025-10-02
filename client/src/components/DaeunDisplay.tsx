@@ -78,7 +78,7 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
                     backgroundColor: isCurrentDaeun 
                       ? 'rgba(239, 68, 68, 0.2)' 
                       : getWuxingColor(sky),
-                    fontFamily: "'ChosunKim', sans-serif"
+                    fontFamily: "'ChosunGs', sans-serif"
                   }}
                   onClick={() => onDaeunSelect && onDaeunSelect(period)}
                   data-testid={`button-daeun-sky-${sky}`}
@@ -105,7 +105,7 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
                     backgroundColor: isCurrentDaeun 
                       ? 'rgba(239, 68, 68, 0.2)' 
                       : getWuxingColor(earth),
-                    fontFamily: "'ChosunKim', sans-serif"
+                    fontFamily: "'ChosunGs', sans-serif"
                   }}
                   onClick={() => onDaeunSelect && onDaeunSelect(period)}
                   data-testid={`button-daeun-earth-${earth}`}

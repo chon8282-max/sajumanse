@@ -72,7 +72,7 @@ export default function CurrentTimeTable({
                 className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
-                  fontFamily: "'ChosunKim', sans-serif",
+                  fontFamily: "'ChosunGs', sans-serif",
                   padding: '0',
                   margin: '0',
                   letterSpacing: '-0.03em'
@@ -104,7 +104,7 @@ export default function CurrentTimeTable({
                 className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: 'white',
-                  fontFamily: "'ChosunKim', sans-serif",
+                  fontFamily: "'ChosunGs', sans-serif",
                   padding: '0',
                   margin: '0',
                   letterSpacing: '-0.03em'
