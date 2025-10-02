@@ -1,4 +1,5 @@
 import { useLocation as useWouterLocation, useSearch } from "wouter";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -18,6 +19,14 @@ export default function GanjiResult() {
   const hourSky = searchParams.get('hourSky') || '';
   const hourEarth = searchParams.get('hourEarth') || '';
   const gender = searchParams.get('gender') || '남자';
+
+  // 파라미터 검증
+  useEffect(() => {
+    if (!yearSky || !yearEarth || !monthSky || !monthEarth || !daySky || !dayEarth || !hourSky || !hourEarth) {
+      // 필수 파라미터가 없으면 입력 페이지로 리다이렉트
+      setLocation('/ganji-input');
+    }
+  }, [yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth, setLocation]);
 
   // 간지 인덱스 계산 (60갑자 주기)
   const yearIndex = findGanjiIndex(yearSky, yearEarth);
