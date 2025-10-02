@@ -56,11 +56,42 @@ export default function GanjiResult() {
         hourEarth
       }, selectedYear);
 
+      if (!reversedDate) {
+        throw new Error('날짜 역산에 실패했습니다');
+      }
+
+      // 양력을 음력으로 변환
+      let lunarData = null;
+      try {
+        const lunarResponse = await apiRequest('POST', '/api/lunar-solar/convert/lunar', {
+          solYear: reversedDate.year,
+          solMonth: reversedDate.month,
+          solDay: reversedDate.day
+        });
+        const lunarResult = await lunarResponse.json();
+        if (lunarResult.success && lunarResult.data) {
+          lunarData = {
+            lunarYear: lunarResult.data.lunYear,
+            lunarMonth: lunarResult.data.lunMonth,
+            lunarDay: lunarResult.data.lunDay
+          };
+        } else {
+          console.warn('음력 변환 결과 없음:', lunarResult);
+        }
+      } catch (error) {
+        console.error('음력 변환 실패:', error);
+        toast({
+          title: "음력 변환 실패",
+          description: "음력 정보를 가져올 수 없습니다. 양력 정보만 저장됩니다.",
+          variant: "destructive",
+        });
+      }
+
       const response = await apiRequest('POST', '/api/saju-records', {
         name: name.trim() || '이름없음',
-        birthYear: selectedYear,
-        birthMonth: reversedDate?.month || null,
-        birthDay: reversedDate?.day || null,
+        birthYear: reversedDate.year,
+        birthMonth: reversedDate.month,
+        birthDay: reversedDate.day,
         birthTime: null,
         calendarType: 'ganji',
         gender: gender,
@@ -73,6 +104,9 @@ export default function GanjiResult() {
         dayEarth,
         hourSky,
         hourEarth,
+        lunarYear: lunarData?.lunarYear || null,
+        lunarMonth: lunarData?.lunarMonth || null,
+        lunarDay: lunarData?.lunarDay || null,
       });
       
       const data = await response.json();
@@ -122,10 +156,41 @@ export default function GanjiResult() {
         hourEarth
       }, selectedYear);
 
+      if (!reversedDate) {
+        throw new Error('날짜 역산에 실패했습니다');
+      }
+
+      // 양력을 음력으로 변환
+      let lunarData = null;
+      try {
+        const lunarResponse = await apiRequest('POST', '/api/lunar-solar/convert/lunar', {
+          solYear: reversedDate.year,
+          solMonth: reversedDate.month,
+          solDay: reversedDate.day
+        });
+        const lunarResult = await lunarResponse.json();
+        if (lunarResult.success && lunarResult.data) {
+          lunarData = {
+            lunarYear: lunarResult.data.lunYear,
+            lunarMonth: lunarResult.data.lunMonth,
+            lunarDay: lunarResult.data.lunDay
+          };
+        } else {
+          console.warn('음력 변환 결과 없음:', lunarResult);
+        }
+      } catch (error) {
+        console.error('음력 변환 실패:', error);
+        toast({
+          title: "음력 변환 실패",
+          description: "음력 정보를 가져올 수 없습니다. 양력 정보만 저장됩니다.",
+          variant: "destructive",
+        });
+      }
+
       const response = await apiRequest('PUT', `/api/saju-records/${recordId}`, {
-        birthYear: selectedYear,
-        birthMonth: reversedDate?.month || null,
-        birthDay: reversedDate?.day || null,
+        birthYear: reversedDate.year,
+        birthMonth: reversedDate.month,
+        birthDay: reversedDate.day,
         yearSky,
         yearEarth,
         monthSky,
@@ -134,6 +199,9 @@ export default function GanjiResult() {
         dayEarth,
         hourSky,
         hourEarth,
+        lunarYear: lunarData?.lunarYear || null,
+        lunarMonth: lunarData?.lunarMonth || null,
+        lunarDay: lunarData?.lunarDay || null,
       });
       
       const data = await response.json();

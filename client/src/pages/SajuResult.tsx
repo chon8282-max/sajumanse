@@ -566,6 +566,47 @@ export default function SajuResult() {
         {/* 사주명식 테이블 */}
         <SajuTable 
           saju={(() => {
+            // 간지로 입력된 사주는 저장된 간지 정보를 직접 사용
+            if (record.calendarType === 'ganji' && record.yearSky && record.monthSky && record.daySky) {
+              const getWuxing = (sky: string): '목' | '화' | '토' | '금' | '수' => {
+                const wuxingMap: { [key: string]: '목' | '화' | '토' | '금' | '수' } = {
+                  '甲': '목', '乙': '목',
+                  '丙': '화', '丁': '화',
+                  '戊': '토', '己': '토',
+                  '庚': '금', '辛': '금',
+                  '壬': '수', '癸': '수',
+                };
+                return wuxingMap[sky] || '목';
+              };
+              
+              const getEarthWuxing = (earth: string): '목' | '화' | '토' | '금' | '수' => {
+                const wuxingMap: { [key: string]: '목' | '화' | '토' | '금' | '수' } = {
+                  '子': '수', '丑': '토', '寅': '목', '卯': '목',
+                  '辰': '토', '巳': '화', '午': '화', '未': '토',
+                  '申': '금', '酉': '금', '戌': '토', '亥': '수',
+                };
+                return wuxingMap[earth] || '수';
+              };
+              
+              return {
+                hour: { sky: record.hourSky || '甲', earth: record.hourEarth || '子' },
+                day: { sky: record.daySky, earth: record.dayEarth || '子' },
+                month: { sky: record.monthSky, earth: record.monthEarth || '子' },
+                year: { sky: record.yearSky, earth: record.yearEarth || '子' },
+                wuxing: {
+                  hourSky: getWuxing(record.hourSky || '甲'),
+                  hourEarth: getEarthWuxing(record.hourEarth || '子'),
+                  daySky: getWuxing(record.daySky),
+                  dayEarth: getEarthWuxing(record.dayEarth || '子'),
+                  monthSky: getWuxing(record.monthSky),
+                  monthEarth: getEarthWuxing(record.monthEarth || '子'),
+                  yearSky: getWuxing(record.yearSky),
+                  yearEarth: getEarthWuxing(record.yearEarth || '子'),
+                }
+              };
+            }
+            
+            // 일반 생년월일 입력은 계산
             try {
               return calculateSaju(
                 record.birthYear, 
