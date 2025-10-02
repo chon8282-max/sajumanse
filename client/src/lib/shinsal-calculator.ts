@@ -201,16 +201,16 @@ export function calculateCheondeokGwiin(
   
   // 각 주에서 천덕귀인에 해당하는 천간이나 지지가 있는지 확인
   if (allSkies[0] === cheondeokTarget || allEarths[0] === cheondeokTarget) {
-    result.yearPillar.push("천덕귀인");
+    result.yearPillar.push("天德貴人");
   }
   if (allSkies[1] === cheondeokTarget || allEarths[1] === cheondeokTarget) {
-    result.monthPillar.push("천덕귀인");
+    result.monthPillar.push("天德貴人");
   }
   if (allSkies[2] === cheondeokTarget || allEarths[2] === cheondeokTarget) {
-    result.dayPillar.push("천덕귀인");
+    result.dayPillar.push("天德貴人");
   }
   if (allSkies[3] === cheondeokTarget || allEarths[3] === cheondeokTarget) {
-    result.hourPillar.push("천덕귀인");
+    result.hourPillar.push("天德貴人");
   }
 
   return result;
@@ -240,16 +240,16 @@ export function calculateWoldeokGwiin(
 
   // 각 주의 천간에서 월덕귀인에 해당하는지 확인
   if (yearSky === woldeokTarget) {
-    result.yearPillar.push("월덕귀인");
+    result.yearPillar.push("月德貴人");
   }
   if (monthSky === woldeokTarget) {
-    result.monthPillar.push("월덕귀인");
+    result.monthPillar.push("月德貴人");
   }
   if (daySky === woldeokTarget) {
-    result.dayPillar.push("월덕귀인");
+    result.dayPillar.push("月德貴人");
   }
   if (hourSky === woldeokTarget) {
-    result.hourPillar.push("월덕귀인");
+    result.hourPillar.push("月德貴人");
   }
 
   return result;
