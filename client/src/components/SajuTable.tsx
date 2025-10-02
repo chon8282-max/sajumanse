@@ -280,21 +280,22 @@ export default function SajuTable({
       // 양력을 음력으로 변환하는 API 호출
       const convertToLunar = async () => {
         try {
-          const response = await fetch('/api/lunar-solar/convert/solar', {
+          const response = await fetch('/api/lunar-solar/convert/lunar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              year: reversedDate.year,
-              month: reversedDate.month,
-              day: reversedDate.day
+              solYear: reversedDate.year,
+              solMonth: reversedDate.month,
+              solDay: reversedDate.day
             })
           });
           const data = await response.json();
+          
           if (data.success && data.data) {
             setReversedLunarDate({
-              year: data.data.lunarYear,
-              month: data.data.lunarMonth,
-              day: data.data.lunarDay
+              year: data.data.lunYear,
+              month: data.data.lunMonth,
+              day: data.data.lunDay
             });
           }
         } catch (error) {
@@ -914,7 +915,7 @@ export default function SajuTable({
                 // 간지 역산된 날짜 표시
                 <>
                   양력 {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}
-                  {reversedLunarDate && (
+                  {reversedLunarDate && reversedLunarDate.year && reversedLunarDate.month && reversedLunarDate.day && (
                     <>, (음력){reversedLunarDate.year}.{reversedLunarDate.month.toString().padStart(2, '0')}.{reversedLunarDate.day.toString().padStart(2, '0')}</>
                   )}
                 </>
