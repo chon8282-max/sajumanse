@@ -228,22 +228,19 @@ export function calculateSaju(
     monthEarthIndex = sajuMonth;
   }
   
-  // 절입일 간지 적용 (usePreviousMonthPillar는 실제로 "절입 후 간지" 의미)
+  // 절입일 간지 적용
   let adjustedYearSkyIndex = yearSkyIndex;
   let adjustedYearEarthIndex = yearEarthIndex;
   
-  if (usePreviousMonthPillar) {
-    // "절입 후 간지" 선택: 년주/월주를 다음으로 진행
-    // 월주를 먼저 변경
-    const nextMonthEarthIndex = (monthEarthIndex + 1) % 12;
-    
-    // 다음 월이 인월(0)이 되는 경우 = 입춘이므로 년주도 함께 변경
-    if (nextMonthEarthIndex === 0) {
+  if (usePreviousMonthPillar !== undefined) {
+    if (usePreviousMonthPillar) {
+      // "전월 간지" 선택: 월주만 -1 (절입 전 월주 사용)
+      monthEarthIndex = (monthEarthIndex - 1 + 12) % 12;
+    } else {
+      // "절입 후 간지" 선택: 년주 +1 (절입 후 년주 사용)
       adjustedYearSkyIndex = (yearSkyIndex + 1) % 10;
       adjustedYearEarthIndex = (yearEarthIndex + 1) % 12;
     }
-    
-    monthEarthIndex = nextMonthEarthIndex;
   }
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)
