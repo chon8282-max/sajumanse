@@ -645,8 +645,8 @@ export default function SajuInput() {
               </p>
             </div>
             <div className="space-y-2 text-sm text-muted-foreground px-2">
-              <p><strong>예:</strong> 전월의 간지적용</p>
-              <p><strong>아니오:</strong> 절입후 간지적용</p>
+              <p><strong>아니오:</strong> 전월 간지 적용 (월주 바뀌지 않음)</p>
+              <p><strong>예:</strong> 절입 후 간지 적용 (새 월주)</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -655,7 +655,7 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(false); // 아니오: 절입 후 간지 적용
+                handleSubmit(true); // 아니오: 전월 간지 적용 (월주 바뀌지 않음)
               }}
               data-testid="button-solar-term-no"
             >
@@ -665,7 +665,7 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(true); // 예: 전월 간지 적용
+                handleSubmit(false); // 예: 절입 후 간지 적용 (새 월주)
               }}
               data-testid="button-solar-term-yes"
             >
