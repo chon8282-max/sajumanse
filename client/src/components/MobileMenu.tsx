@@ -49,10 +49,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleFeedback = () => {
-    toast({
-      title: "의견·오류신고",
-      description: "소중한 의견을 보내주셔서 감사합니다.",
-    });
+    window.open("https://open.kakao.com/o/pnk7MdVh", "_blank");
     onClose();
   };
 
