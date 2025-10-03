@@ -1105,7 +1105,7 @@ export default function SajuTable({
               <div 
                 key={`earth-${index}`} 
                 className={`text-center font-bold border-r border-border flex items-center justify-center ${
-                  isHourEarth || isDayEarth ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
+                  isHourEarth || (isDayEarth && calendarType !== 'ganji') ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
                 }`}
                 style={{ 
                   backgroundColor: (isGongmangPosition && !isYearEarth) ? '#9CA3AF' : getWuxingColor(col.earth),
@@ -1116,7 +1116,7 @@ export default function SajuTable({
                   position: 'relative'
                 }}
                 data-testid={`text-earth-${index}`}
-                onClick={isHourEarth ? handleHourEarthClick : isDayEarth ? handleDayEarthClick : undefined}
+                onClick={isHourEarth ? handleHourEarthClick : (isDayEarth && calendarType !== 'ganji' ? handleDayEarthClick : undefined)}
               >
                 <div 
                   style={{

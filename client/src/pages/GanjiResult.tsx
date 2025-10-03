@@ -11,6 +11,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
+import { calculateHourGanji } from "@/lib/ganji-calculator";
 
 export default function GanjiResult() {
   const [, setLocation] = useWouterLocation();
@@ -251,6 +252,26 @@ export default function GanjiResult() {
     setLocation('/manseryeok');
   };
 
+  // 생시 변경 핸들러
+  const handleBirthTimeChange = (timeCode: string) => {
+    // timeCode: "寅時" 형식
+    // 지지 추출: "寅時" → "寅"
+    const hourEarth = timeCode.replace('時', '');
+    
+    // 일간으로부터 가능한 시주 계산
+    const possibleHours = calculateHourGanji(daySky);
+    
+    // 지지가 일치하는 시주 찾기
+    const matchedHour = possibleHours.find(h => h.earth === hourEarth);
+    
+    if (matchedHour) {
+      const params = new URLSearchParams(searchParams);
+      params.set('hourSky', matchedHour.sky);
+      params.set('hourEarth', matchedHour.earth);
+      setLocation(`/ganji-result?${params.toString()}`);
+    }
+  };
+
   // 파라미터 검증
   useEffect(() => {
     if (!yearSky || !yearEarth || !monthSky || !monthEarth || !daySky || !dayEarth || !hourSky || !hourEarth) {
@@ -459,6 +480,7 @@ export default function GanjiResult() {
           calendarType="ganji"
           daeunPeriods={daeunData?.daeunPeriods || []}
           currentAge={currentAge}
+          onBirthTimeChange={handleBirthTimeChange}
         />
       </div>
     </div>
