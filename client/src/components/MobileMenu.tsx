@@ -7,10 +7,12 @@ import {
   Bell, 
   MessageSquare, 
   X,
-  Info
+  Info,
+  Type
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useFont } from "@/contexts/FontContext";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ interface MobileMenuProps {
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { font, setFont } = useFont();
 
   const handleDbBackup = () => {
     toast({
@@ -86,7 +89,40 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
 
           {/* 메뉴 항목들 */}
-          <div className="flex-1 p-4 space-y-3">
+          <div className="flex-1 p-4 space-y-3 overflow-y-auto">
+            <Card className="p-3">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">폰트 설정</h3>
+              <div className="space-y-2">
+                <Button
+                  variant={font === 'togebara' ? 'default' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setFont('togebara')}
+                  data-testid="button-font-togebara"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  토가보라체
+                </Button>
+                <Button
+                  variant={font === 'taiwan' ? 'default' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setFont('taiwan')}
+                  data-testid="button-font-taiwan"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  타이완체
+                </Button>
+                <Button
+                  variant={font === 'mingti' ? 'default' : 'ghost'}
+                  className="w-full justify-start"
+                  onClick={() => setFont('mingti')}
+                  data-testid="button-font-mingti"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  특별 명나라체
+                </Button>
+              </div>
+            </Card>
+
             <Card className="p-3">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">도움말</h3>
               <div className="space-y-2">
