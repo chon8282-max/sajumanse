@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
               const sajuResult = calculateSaju(
                 sajuCalculationYear,      // 년월주는 음력
                 sajuCalculationMonth,
@@ -235,7 +235,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 minute,
                 validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
                 solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-                null  // apiData - 로컬 계산만 사용하므로 null
+                null,  // apiData - 로컬 계산만 사용하므로 null
+                validatedData.usePreviousMonthPillar // 절입일 전월 간지 적용 여부
               );
               console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
@@ -462,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
               const sajuResult = calculateSaju(
                 sajuCalculationYear,      // 년월주는 음력
                 sajuCalculationMonth,
@@ -471,7 +472,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 minute,
                 validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
                 solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-                null  // apiData - 로컬 계산만 사용하므로 null
+                null,  // apiData - 로컬 계산만 사용하므로 null
+                validatedData.usePreviousMonthPillar // 절입일 전월 간지 적용 여부
               );
               console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 

@@ -57,6 +57,49 @@ function checkDSTPeriod(year: number, month: number, day: number): { isDST: bool
   return { isDST: false };
 }
 
+// 12절기 데이터 (2024년 기준)
+const TWELVE_SOLAR_TERMS_2024 = [
+  { term: "입춘", month: 2, day: 4, hour: 16, minute: 27 },
+  { term: "경칩", month: 3, day: 5, hour: 10, minute: 23 },
+  { term: "청명", month: 4, day: 4, hour: 15, minute: 2 },
+  { term: "입하", month: 5, day: 5, hour: 8, minute: 10 },
+  { term: "망종", month: 6, day: 5, hour: 12, minute: 10 },
+  { term: "소서", month: 7, day: 6, hour: 22, minute: 20 },
+  { term: "입추", month: 8, day: 7, hour: 9, minute: 11 },
+  { term: "백로", month: 9, day: 7, hour: 11, minute: 11 },
+  { term: "한로", month: 10, day: 8, hour: 3, minute: 56 },
+  { term: "입동", month: 11, day: 7, hour: 12, minute: 20 },
+  { term: "대설", month: 12, day: 7, hour: 0, minute: 17 },
+  { term: "소한", month: 1, day: 5, hour: 23, minute: 49 },
+];
+
+// 절입일 체크 함수
+function checkSolarTermDay(year: number, month: number, day: number): { isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } } {
+  const yearDiff = year - 2024;
+  const dayOffset = Math.round(yearDiff / 4);
+  
+  for (const term of TWELVE_SOLAR_TERMS_2024) {
+    const adjustedDay = term.day + dayOffset;
+    const termDate = new Date(year, term.month - 1, adjustedDay);
+    const inputDate = new Date(year, month - 1, day);
+    
+    if (termDate.getFullYear() === inputDate.getFullYear() &&
+        termDate.getMonth() === inputDate.getMonth() &&
+        termDate.getDate() === inputDate.getDate()) {
+      return {
+        isSolarTerm: true,
+        termInfo: {
+          name: term.term,
+          hour: term.hour,
+          minute: term.minute
+        }
+      };
+    }
+  }
+  
+  return { isSolarTerm: false };
+}
+
 export default function SajuInput() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -64,6 +107,8 @@ export default function SajuInput() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [showSolarTermDialog, setShowSolarTermDialog] = useState(false);
+  const [solarTermInfo, setSolarTermInfo] = useState<{ name: string; hour: number; minute: number } | null>(null);
   
   // 편집 모드 확인 (URL 파라미터로 edit=true와 id 존재 여부)
   const urlParams = new URLSearchParams(window.location.search);
@@ -163,7 +208,7 @@ export default function SajuInput() {
     parseInt(formData.day) || 0
   );
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (usePreviousMonthPillar?: boolean) => {
     // 생년월일 필수 검증
     const yearNum = parseInt(formData.year);
     const monthNum = parseInt(formData.month);
@@ -183,6 +228,16 @@ export default function SajuInput() {
       return;
     }
 
+    // 양력인 경우 절입일 체크 (대화상자가 아직 표시되지 않았을 때만)
+    if (formData.calendarType === "양력" && usePreviousMonthPillar === undefined) {
+      const solarTermCheck = checkSolarTermDay(yearNum, monthNum, dayNum);
+      if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
+        setSolarTermInfo(solarTermCheck.termInfo);
+        setShowSolarTermDialog(true);
+        return; // 대화상자 표시 후 여기서 멈춤
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -192,7 +247,7 @@ export default function SajuInput() {
       const editId = urlParams.get('id');
 
       // API 요청 데이터 준비 (이름이 비어있으면 "이름없음" 사용)
-      const requestData = {
+      const requestData: any = {
         name: formData.name.trim() || "이름없음",
         birthYear: yearNum,
         birthMonth: monthNum,
@@ -203,6 +258,11 @@ export default function SajuInput() {
         groupId: formData.groupId === "none" ? null : formData.groupId || null,
         memo: formData.memo.trim() || null,
       };
+
+      // 절입일 전월 간지 적용 여부 추가
+      if (usePreviousMonthPillar !== undefined) {
+        requestData.usePreviousMonthPillar = usePreviousMonthPillar;
+      }
 
       console.log("사주 정보 저장 요청:", requestData);
 
@@ -532,7 +592,7 @@ export default function SajuInput() {
         {/* 제출 버튼 */}
         <div className="pt-1">
           <Button 
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             disabled={isSubmitting}
             className="w-full text-sm"
             data-testid="button-submit-saju"
@@ -541,6 +601,52 @@ export default function SajuInput() {
           </Button>
         </div>
       </div>
+
+      {/* 절입일 확인 대화상자 */}
+      <Dialog open={showSolarTermDialog} onOpenChange={setShowSolarTermDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-center text-lg font-bold">절입일 안내</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="text-center space-y-2">
+              <p className="text-base font-semibold">
+                {solarTermInfo?.name} 절입시간 ({solarTermInfo?.hour}:{String(solarTermInfo?.minute).padStart(2, '0')})입니다.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                전월간지를 적용하시겠습니까?
+              </p>
+            </div>
+            <div className="space-y-2 text-sm text-muted-foreground px-2">
+              <p><strong>예:</strong> 전월의 간지적용</p>
+              <p><strong>아니오:</strong> 절입후 간지적용</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setShowSolarTermDialog(false);
+                handleSubmit(false); // 아니오: 절입 후 간지 적용
+              }}
+              data-testid="button-solar-term-no"
+            >
+              아니오
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={() => {
+                setShowSolarTermDialog(false);
+                handleSubmit(true); // 예: 전월 간지 적용
+              }}
+              data-testid="button-solar-term-yes"
+            >
+              예
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

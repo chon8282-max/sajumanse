@@ -143,7 +143,8 @@ export function calculateSaju(
   minute: number = 0,
   isLunar: boolean = false,
   solarDate?: { solarYear: number; solarMonth: number; solarDay: number },
-  apiData?: any // data.go.kr API 응답 데이터
+  apiData?: any, // data.go.kr API 응답 데이터
+  usePreviousMonthPillar?: boolean // 절입일 전월 간지 적용 여부
 ): SajuInfo {
   let calcDate: Date;
   const timeInMinutes = hour * 60 + minute;
@@ -210,6 +211,11 @@ export function calculateSaju(
     }
     const sajuMonth = calculateSajuMonth(monthCalcDate);
     monthEarthIndex = sajuMonth;
+  }
+  
+  // 절입일 전월 간지 적용
+  if (usePreviousMonthPillar) {
+    monthEarthIndex = ((monthEarthIndex - 1) + 12) % 12;
   }
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)

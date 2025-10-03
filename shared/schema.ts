@@ -88,6 +88,9 @@ export const insertSajuRecordSchema = createInsertSchema(sajuRecords).omit({
   createdAt: true,
   updatedAt: true,
   // 간지 입력의 경우 사주팔자 정보를 직접 제공하므로 입력에 포함
+}).extend({
+  // 절입일 전월 간지 적용 여부 (계산 시에만 사용, DB 저장 안 함)
+  usePreviousMonthPillar: z.boolean().optional(),
 });
 
 export type InsertSajuRecord = z.infer<typeof insertSajuRecordSchema>;
