@@ -1229,7 +1229,7 @@ export default function SajuTable({
                   <div 
                     key={`shinsal-${index}-${idx}`}
                     className="leading-tight"
-                    style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
+                    style={{ marginBottom: idx < shinsalArray.length - 1 ? '1px' : '0' }}
                   >
                     {convertTextForSpecificRows(shinsal)}
                   </div>
