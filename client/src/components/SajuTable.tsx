@@ -1050,15 +1050,15 @@ export default function SajuTable({
         </div>
 
         {/* 2행: 천간 */}
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-6 mb-[1px]">
           {/* 빈 칸 */}
-          <div className="text-center font-bold border border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
             return (
               <div 
                 key={`sky-${index}`} 
-                className="text-center font-bold border border-border flex items-center justify-center"
+                className="text-center font-bold border-r border-border flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
@@ -1087,13 +1087,13 @@ export default function SajuTable({
             );
           })}
           {/* 빈 칸 */}
-          <div className="text-center font-bold border border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
         </div>
 
         {/* 3행: 지지 */}
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-6 border-b border-border mt-[1px]">
           {/* 빈 칸 */}
-          <div className="text-center font-bold border border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isGongmangPosition = isGongmang(col.earth);
@@ -1104,7 +1104,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`earth-${index}`} 
-                className={`text-center font-bold border border-border flex items-center justify-center ${
+                className={`text-center font-bold border-r border-border flex items-center justify-center ${
                   isHourEarth || isDayEarth ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
                 }`}
                 style={{ 
