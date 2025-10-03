@@ -296,9 +296,16 @@ export default function SajuResult() {
     }
   }, [sajuData, params?.id]);
 
-  // 대운 클릭 핸들러
+  // 대운 클릭 핸들러 (토글 기능)
   const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
-    setFocusedDaeun(daeunPeriod);
+    setFocusedDaeun(prev => {
+      // 이미 포커스된 대운을 다시 클릭하면 해제
+      if (prev && prev.startAge === daeunPeriod.startAge) {
+        return null;
+      }
+      // 새로운 대운 포커스
+      return daeunPeriod;
+    });
     setSaeunOffset(0); // 歲運 오프셋 초기화
   }, []);
 
