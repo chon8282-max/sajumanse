@@ -185,12 +185,21 @@ export function calculateSaju(
   let baseYear = solarDate ? solarDate.solarYear : year;
   const lichunDate = getLichunDate(baseYear);
   let sajuYear = year; // 년주는 음력 년도 기준
+  let isLichunAdjusted = false; // 입춘 조정 여부 추적
+  
+  // 음력 변환 시 년도가 바뀐 경우 이미 조정된 것으로 간주
+  if (year !== baseYear) {
+    isLichunAdjusted = true;
+  }
   
   // 입춘 조정: 음력 변환이 이미 된 경우 추가 조정하지 않음
   const checkDate = solarDate ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay) : calcDate;
   // 음력 변환이 이미 되어 year가 baseYear와 다르면 이미 조정된 것으로 간주
   if (checkDate < lichunDate && year === baseYear) {
     sajuYear = year - 1;
+    isLichunAdjusted = true;
+  } else {
+    sajuYear = year;
   }
   
   // 년주 계산 (갑자 시작년 1924년 기준)
@@ -224,8 +233,8 @@ export function calculateSaju(
   let adjustedYearEarthIndex = yearEarthIndex;
   
   if (usePreviousMonthPillar) {
-    // 입춘(인월 0)의 경우 년주도 함께 변경
-    if (monthEarthIndex === 0) {
+    // 입춘(인월 0)의 경우 년주도 함께 변경 (단, 이미 입춘 조정이 되지 않은 경우만)
+    if (monthEarthIndex === 0 && !isLichunAdjusted) {
       adjustedYearSkyIndex = (yearSkyIndex - 1 + 10) % 10;
       adjustedYearEarthIndex = (yearEarthIndex - 1 + 12) % 12;
     }
