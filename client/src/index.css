@@ -90,6 +90,23 @@
   font-display: swap;
 }
 
+/* 중국 필기체2 폰트 정의 */
+@font-face {
+  font-family: 'ChineseCalligraphy2Font';
+  src: url('/fonts/ChineseCalligraphy2.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ChineseCalligraphy2Font';
+  src: url('/fonts/ChineseCalligraphy2.otf') format('opentype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* 기본 간지 폰트 (CSS 변수 사용) */
 @font-face {
   font-family: 'ChosunGanjiFont';
