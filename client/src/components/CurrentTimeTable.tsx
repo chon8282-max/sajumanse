@@ -70,7 +70,7 @@ export default function CurrentTimeTable({
             return (
               <div 
                 key={`sky-${index}`} 
-                className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
+                className="text-center text-[26px] font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
@@ -106,7 +106,7 @@ export default function CurrentTimeTable({
             return (
               <div 
                 key={`earth-${index}`} 
-                className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
+                className="text-center text-[26px] font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(col.earth),
                   fontFamily: "var(--ganji-font-family)",
