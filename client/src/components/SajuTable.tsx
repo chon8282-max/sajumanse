@@ -923,32 +923,31 @@ export default function SajuTable({
             <span data-testid="text-birth-info">
               {reversedDate ? (
                 // 간지 역산된 날짜 표시
-                <>
-                  양력 {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}
+                (<>양력 {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}
                   {reversedLunarDate && reversedLunarDate.year && reversedLunarDate.month && reversedLunarDate.day && (
                     <>, (음력){reversedLunarDate.year}.{reversedLunarDate.month.toString().padStart(2, '0')}.{reversedLunarDate.day.toString().padStart(2, '0')}</>
                   )}
-                </>
+                </>)
               ) : calendarType === '음력' || calendarType === '윤달' ? (
                 // 음력 입력인 경우: 음력 먼저, 양력 나중
-                <>
+                (<>
                   {lunarYear && lunarMonth && lunarDay && (
                     <>음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
                   )}
                   {birthYear && birthMonth && birthDay && (
                     <>  양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
                   )}
-                </>
+                </>)
               ) : (
                 // 양력 입력인 경우: 양력 먼저, 음력 나중
-                <>
+                (<>
                   {birthYear && birthMonth && birthDay && (
                     <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
                   )}
                   {lunarYear && lunarMonth && lunarDay && (
                     <>  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
                   )}
-                </>
+                </>)
               )}
               {birthHour && (
                 <>  ({formatBirthHour(birthHour)})</>
@@ -1019,7 +1018,7 @@ export default function SajuTable({
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {showShinsal ? (
             // 신살 모드일 때: 1행 신살 (천덕귀인, 월덕귀인) 표시
-            firstRowShinsal.map((shinsal, index) => (
+            (firstRowShinsal.map((shinsal, index) => (
               <div 
                 key={`firstrow-shinsal-${index}`} 
                 className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
@@ -1027,10 +1026,10 @@ export default function SajuTable({
               >
                 {convertTextForSpecificRows(shinsal)}
               </div>
-            ))
+            )))
           ) : (
             // 일반 모드일 때: 천간 육친/오행 표시
-            heavenlyYukjin.map((yukjin, index) => {
+            (heavenlyYukjin.map((yukjin, index) => {
               const skyCharacter = sajuColumns[index]?.sky;
               let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
               displayText = convertTextForSpecificRows(displayText);
@@ -1044,7 +1043,7 @@ export default function SajuTable({
                   {displayText}
                 </div>
               );
-            })
+            }))
           )}
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
@@ -1191,7 +1190,7 @@ export default function SajuTable({
           <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {showShinsal ? (
             // 신살 표시
-            shinsal.map((shinsalText, index) => (
+            (shinsal.map((shinsalText, index) => (
               <div 
                 key={`shinsal-${index}`} 
                 className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
@@ -1199,10 +1198,10 @@ export default function SajuTable({
               >
                 {convertTextForSpecificRows(shinsalText)}
               </div>
-            ))
+            )))
           ) : (
             // 지장간 표시 (기본값)
-            jijanggan.map((stems, index) => (
+            (jijanggan.map((stems, index) => (
               <div 
                 key={`jijanggan-${index}`} 
                 className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
@@ -1210,7 +1209,7 @@ export default function SajuTable({
               >
                 {convertTextForSpecificRows(stems)}
               </div>
-            ))
+            )))
           )}
         </div>
 
@@ -1254,11 +1253,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-age-${colIndex}`}
-                className={`py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white ${
-                  isHighlighted 
-                    ? 'bg-yellow-200 dark:bg-yellow-800/50 font-bold border-2 border-yellow-600' 
-                    : 'bg-blue-50 dark:bg-blue-950/30'
-                }`}
+                className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white bg-blue-50 dark:bg-blue-950/30 pt-[0px] pb-[0px]"
                 onClick={() => {
                   const targetDaeun = daeunPeriods.find(p => p.startAge === age);
                   if (targetDaeun && onDaeunClick) {
@@ -1657,7 +1652,6 @@ export default function SajuTable({
         </div>
 
       </div>
-      
       {/* 생시 선택 모달 */}
       <BirthTimeSelector
         isOpen={isBirthTimeSelectorOpen}
@@ -1665,7 +1659,6 @@ export default function SajuTable({
         onSelect={handleBirthTimeSelect}
         currentTime={birthHour}
       />
-      
       {/* 생년월일 선택 모달 */}
       <BirthDateSelector
         isOpen={isBirthDateSelectorOpen}
