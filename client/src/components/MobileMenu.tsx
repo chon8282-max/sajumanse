@@ -157,6 +157,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <h3 className="text-sm font-medium text-muted-foreground mb-2">폰트 설정</h3>
               <div className="space-y-1">
                 <Button
+                  variant={font === 'chosunkm' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('chosunkm')}
+                  data-testid="button-font-chosunkm"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  조선굵은명조체
+                </Button>
+                <Button
+                  variant={font === 'chosungs' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('chosungs')}
+                  data-testid="button-font-chosungs"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  조선궁서체
+                </Button>
+                <Button
                   variant={font === 'togebara' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8"
                   onClick={() => setFont('togebara')}
@@ -164,15 +182,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <Type className="w-4 h-4 mr-3" />
                   토가보라체
-                </Button>
-                <Button
-                  variant={font === 'taiwan' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('taiwan')}
-                  data-testid="button-font-taiwan"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  타이완체
                 </Button>
                 <Button
                   variant={font === 'mingti' ? 'default' : 'ghost'}
@@ -209,24 +218,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <Type className="w-4 h-4 mr-3" />
                   중국 필기체2
-                </Button>
-                <Button
-                  variant={font === 'chosungs' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('chosungs')}
-                  data-testid="button-font-chosungs"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  조선궁서체
-                </Button>
-                <Button
-                  variant={font === 'chosunkm' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('chosunkm')}
-                  data-testid="button-font-chosunkm"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  조선굵은명조체
                 </Button>
               </div>
             </Card>
