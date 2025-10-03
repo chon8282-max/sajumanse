@@ -84,6 +84,23 @@ const YANGIN_SAL_MAP: Record<string, string> = {
   "壬": "子"
 };
 
+// 낙정관살 매핑 테이블 (일간 → 낙정관살 지지)
+const NAKJEONG_GWANSAL_MAP: Record<string, string> = {
+  "甲": "巳",
+  "己": "巳",
+  "乙": "子",
+  "庚": "子",
+  "丙": "申",
+  "辛": "申",
+  "丁": "戌",
+  "壬": "戌",
+  "戊": "卯",
+  "癸": "卯"
+};
+
+// 효신살 간지 목록 (甲子, 乙亥, 丙寅, 丁卯, 戊午, 己巳, 庚辰, 庚戌, 辛丑, 辛未, 壬申, 癸酉)
+const HYOSIN_SAL_GANJI = ["甲子", "乙亥", "丙寅", "丁卯", "戊午", "己巳", "庚辰", "庚戌", "辛丑", "辛未", "壬申", "癸酉"];
+
 export interface ShinSalResult {
   yearPillar: string[];
   monthPillar: string[];
@@ -394,6 +411,87 @@ export function calculateYanginSal(
 }
 
 /**
+ * 낙정관살(落井關殺) 계산
+ * 일간을 기준으로 년월일시의 지지에서 낙정관살을 찾습니다.
+ */
+export function calculateNakjeongGwansal(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  // 일간에 해당하는 낙정관살 지지 찾기
+  const nakjeongTarget = NAKJEONG_GWANSAL_MAP[daySky];
+  if (!nakjeongTarget) return result;
+
+  // 각 주의 지지에서 낙정관살에 해당하는지 확인
+  if (yearEarth === nakjeongTarget) {
+    result.yearPillar.push("落井關殺");
+  }
+  if (monthEarth === nakjeongTarget) {
+    result.monthPillar.push("落井關殺");
+  }
+  if (dayEarth === nakjeongTarget) {
+    result.dayPillar.push("落井關殺");
+  }
+  if (hourEarth === nakjeongTarget) {
+    result.hourPillar.push("落井關殺");
+  }
+
+  return result;
+}
+
+/**
+ * 효신살(梟神殺) 계산
+ * 년월일시 어느 주든 특정 일주 간지가 있을 때
+ */
+export function calculateHyosinSal(
+  yearSky: string,
+  monthSky: string,
+  daySky: string,
+  hourSky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const yearGanji = yearSky + yearEarth;
+  const monthGanji = monthSky + monthEarth;
+  const dayGanji = daySky + dayEarth;
+  const hourGanji = hourSky + hourEarth;
+
+  if (HYOSIN_SAL_GANJI.includes(yearGanji)) {
+    result.yearPillar.push("梟神殺");
+  }
+  if (HYOSIN_SAL_GANJI.includes(monthGanji)) {
+    result.monthPillar.push("梟神殺");
+  }
+  if (HYOSIN_SAL_GANJI.includes(dayGanji)) {
+    result.dayPillar.push("梟神殺");
+  }
+  if (HYOSIN_SAL_GANJI.includes(hourGanji)) {
+    result.hourPillar.push("梟神殺");
+  }
+
+  return result;
+}
+
+/**
  * 모든 신살 계산 (천을귀인, 문창귀인 포함)
  * 여러 신살이 동시에 나타날 수 있습니다.
  */
@@ -415,7 +513,7 @@ export function calculateAllShinSal(
 }
 
 /**
- * 1행 신살 계산 (천덕귀인, 월덕귀인, 괴강살, 백호대살, 양인살)
+ * 1행 신살 계산 (천덕귀인, 월덕귀인, 괴강살, 백호대살, 양인살, 낙정관살, 효신살)
  * 월지를 기준으로 천간을 찾는 신살들
  */
 export function calculateFirstRowShinSal(
@@ -454,11 +552,22 @@ export function calculateFirstRowShinSal(
   // 양인살 계산
   const yanginSal = calculateYanginSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
   
+  // 낙정관살 계산
+  const nakjeongGwansal = calculateNakjeongGwansal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 효신살 계산
+  const hyosinSal = calculateHyosinSal(
+    yearSky, monthSky, daySky, hourSky,
+    yearEarth, monthEarth, dayEarth, hourEarth
+  );
+  
   // 모든 신살 결과를 합쳐서 반환
   let result = mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
   result = mergeShinSalResults(result, goegangSal);
   result = mergeShinSalResults(result, baekhoDaesal);
   result = mergeShinSalResults(result, yanginSal);
+  result = mergeShinSalResults(result, nakjeongGwansal);
+  result = mergeShinSalResults(result, hyosinSal);
   
   return result;
 }
@@ -471,7 +580,9 @@ const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "문창귀인": "문창귀인",
   "魁罡煞": "괴강살",
   "白虎大煞": "백호대살",
-  "羊刃煞": "양인살"
+  "羊刃煞": "양인살",
+  "落井關殺": "낙정관살",
+  "梟神殺": "효신살"
 };
 
 /**

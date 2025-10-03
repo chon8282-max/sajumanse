@@ -41,6 +41,16 @@ Preferred communication style: Simple, everyday language.
 - **Five Elements Analysis**: Wu Xing (오행) balance analysis for fortune interpretation
 - **Calendar Conversion**: Solar to lunar calendar conversion with 24 solar terms consideration
 - **Fortune Analysis**: Comprehensive fortune scoring system covering overall, love, and career aspects
+- **Shinsal (神殺) System**: Comprehensive calculation of 9 traditional astrological indicators across all four pillars:
+  - 천을귀인 (天乙貴人) - Noble Person star
+  - 문창귀인 (文昌貴人) - Literary Excellence star
+  - 천덕귀인 (天德貴人) - Heavenly Virtue star
+  - 월덕귀인 (月德貴人) - Monthly Virtue star
+  - 괴강살 (魁罡煞) - Authority & Power star (간지: 庚戌, 庚辰, 壬辰, 戊戌, 壬戌)
+  - 백호대살 (白虎大煞) - White Tiger star (간지: 甲辰, 乙未, 丙戌, 戊辰, 丁丑, 壬戌, 癸丑)
+  - 양인살 (羊刃煞) - Sheep Blade star (일간 기준: 甲→卯, 丙→午, 戊→午, 庚→酉, 壬→子)
+  - 낙정관살 (落井關殺) - Well-falling star (일간 기준: 甲己→巳, 乙庚→子, 丙辛→申, 丁壬→戌, 戊癸→卯)
+  - 효신살 (梟神殺) - Owl God star (간지: 甲子, 乙亥, 丙寅, 丁卯, 戊午, 己巳, 庚辰, 庚戌, 辛丑, 辛未, 壬申, 癸酉)
 - **Solar Term Transition Day (절입일) Handling**: Special dialog for births on solar term dates (e.g., 입춘, 경칩)
   - "전월 간지" button (usePreviousMonthPillar=true): Uses previous month pillar by decrementing monthEarthIndex
   - "절입 후 간지" button (usePreviousMonthPillar=false): 
