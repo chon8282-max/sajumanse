@@ -1193,7 +1193,7 @@ export default function SajuTable({
           })}
           {/* 공망 정보 (우측 셀) */}
           <div 
-            className="py-1 text-center text-sm flex items-center justify-center bg-white dark:bg-gray-900 row-span-2"
+            className="py-1 text-center text-sm flex items-start justify-center bg-white dark:bg-gray-900 row-span-2"
             data-testid="text-gongmang-info"
           >
             {gongmang.length > 0 && (
