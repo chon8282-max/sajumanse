@@ -91,48 +91,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {/* 메뉴 항목들 */}
           <div className="flex-1 p-4 space-y-3 overflow-y-auto">
             <Card className="p-3">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">폰트 설정</h3>
-              <div className="space-y-1">
-                <Button
-                  variant={font === 'togebara' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('togebara')}
-                  data-testid="button-font-togebara"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  토가보라체
-                </Button>
-                <Button
-                  variant={font === 'taiwan' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('taiwan')}
-                  data-testid="button-font-taiwan"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  타이완체
-                </Button>
-                <Button
-                  variant={font === 'mingti' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('mingti')}
-                  data-testid="button-font-mingti"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  특별 명나라체
-                </Button>
-                <Button
-                  variant={font === 'chinesemingti' ? 'default' : 'ghost'}
-                  className="w-full justify-start h-8"
-                  onClick={() => setFont('chinesemingti')}
-                  data-testid="button-font-chinesemingti"
-                >
-                  <Type className="w-4 h-4 mr-3" />
-                  중국테밍체
-                </Button>
-              </div>
-            </Card>
-
-            <Card className="p-3">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">도움말</h3>
               <div className="space-y-2">
                 <Button
@@ -191,6 +149,48 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <MessageSquare className="w-4 h-4 mr-3" />
                   의견·오류신고
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-3">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">폰트 설정</h3>
+              <div className="space-y-1">
+                <Button
+                  variant={font === 'togebara' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('togebara')}
+                  data-testid="button-font-togebara"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  토가보라체
+                </Button>
+                <Button
+                  variant={font === 'taiwan' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('taiwan')}
+                  data-testid="button-font-taiwan"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  타이완체
+                </Button>
+                <Button
+                  variant={font === 'mingti' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('mingti')}
+                  data-testid="button-font-mingti"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  특별 명나라체
+                </Button>
+                <Button
+                  variant={font === 'chinesemingti' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('chinesemingti')}
+                  data-testid="button-font-chinesemingti"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  중국테밍체
                 </Button>
               </div>
             </Card>
