@@ -8,16 +8,53 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, Plus, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Group {
   id: string;
   name: string;
   isDefault: boolean;
+}
+
+// 한국 서머타임 적용 기간 데이터
+const KOREA_DST_PERIODS = [
+  { year: 1948, startMonth: 6, startDay: 1, endMonth: 9, endDay: 13 },
+  { year: 1949, startMonth: 4, startDay: 3, endMonth: 9, endDay: 11 },
+  { year: 1950, startMonth: 4, startDay: 1, endMonth: 9, endDay: 10 },
+  { year: 1951, startMonth: 5, startDay: 6, endMonth: 9, endDay: 9 },
+  { year: 1955, startMonth: 5, startDay: 5, endMonth: 9, endDay: 9 },
+  { year: 1956, startMonth: 5, startDay: 20, endMonth: 9, endDay: 30 },
+  { year: 1957, startMonth: 5, startDay: 5, endMonth: 9, endDay: 22 },
+  { year: 1958, startMonth: 5, startDay: 4, endMonth: 9, endDay: 21 },
+  { year: 1959, startMonth: 5, startDay: 3, endMonth: 9, endDay: 20 },
+  { year: 1960, startMonth: 5, startDay: 1, endMonth: 9, endDay: 18 },
+  { year: 1987, startMonth: 5, startDay: 10, endMonth: 10, endDay: 11 },
+  { year: 1988, startMonth: 5, startDay: 8, endMonth: 10, endDay: 9 },
+];
+
+// 서머타임 기간 체크 함수
+function checkDSTPeriod(year: number, month: number, day: number): { isDST: boolean; period?: typeof KOREA_DST_PERIODS[0] } {
+  const dstPeriod = KOREA_DST_PERIODS.find(p => p.year === year);
+  
+  if (!dstPeriod) {
+    return { isDST: false };
+  }
+  
+  // 시작일과 종료일 사이인지 확인
+  const inputDate = new Date(year, month - 1, day);
+  const startDate = new Date(year, dstPeriod.startMonth - 1, dstPeriod.startDay);
+  const endDate = new Date(year, dstPeriod.endMonth - 1, dstPeriod.endDay);
+  
+  if (inputDate >= startDate && inputDate < endDate) {
+    return { isDST: true, period: dstPeriod };
+  }
+  
+  return { isDST: false };
 }
 
 export default function SajuInput() {
@@ -118,6 +155,13 @@ export default function SajuInput() {
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // 서머타임 체크
+  const dstCheck = checkDSTPeriod(
+    parseInt(formData.year) || 0,
+    parseInt(formData.month) || 0,
+    parseInt(formData.day) || 0
+  );
 
   const handleSubmit = async () => {
     // 생년월일 필수 검증
@@ -324,6 +368,26 @@ export default function SajuInput() {
             <span className="text-xs">일</span>
           </div>
         </div>
+
+        {/* 서머타임 안내 문구 */}
+        {dstCheck.isDST && dstCheck.period && formData.calendarType === "양력" && (
+          <Alert className="bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertDescription className="text-xs text-amber-900 dark:text-amber-200 space-y-1">
+              <div className="font-bold">⚠️ 서머타임 적용 기간 안내</div>
+              <div>
+                양력 {dstCheck.period.year}년 {dstCheck.period.startMonth}월 {dstCheck.period.startDay}일부터<br />
+                양력 {dstCheck.period.year}년 {dstCheck.period.endMonth}월 {dstCheck.period.endDay}일까지 서머타임을 실시하였습니다.
+              </div>
+              <div className="pt-1">
+                이 시간은 서머타임 적용기간입니다. 알고 계신 시간에서 <span className="font-bold text-amber-700 dark:text-amber-300">1시간을 빼고</span> 계산하여야 맞습니다.
+              </div>
+              <div className="text-amber-800 dark:text-amber-300 pt-0.5">
+                (예: 출생시간 5시 10분 → 실제적용시간 4시 10분)
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* 생시 */}
         <div className="space-y-1">
