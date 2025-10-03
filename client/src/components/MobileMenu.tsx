@@ -210,6 +210,15 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <Type className="w-4 h-4 mr-3" />
                   중국 필기체2
                 </Button>
+                <Button
+                  variant={font === 'chosungs' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('chosungs')}
+                  data-testid="button-font-chosungs"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  조선궁서체
+                </Button>
               </div>
             </Card>
           </div>
