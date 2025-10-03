@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type FontType = 'taiwan' | 'togebara' | 'mingti' | 'chinesemingti' | 'chinesecalligraphy' | 'chinesecalligraphy2' | 'chosungs' | 'chosunkm';
+type FontType = 'chosunkm' | 'chosungs' | 'togebara' | 'mingti' | 'chinesemingti' | 'chinesecalligraphy' | 'chinesecalligraphy2';
 
 interface FontContextType {
   font: FontType;
@@ -12,16 +12,18 @@ const FontContext = createContext<FontContextType | undefined>(undefined);
 export function FontProvider({ children }: { children: ReactNode }) {
   const [font, setFontState] = useState<FontType>(() => {
     const saved = localStorage.getItem('ganji-font');
-    return (saved as FontType) || 'taiwan';
+    return (saved as FontType) || 'chosunkm';
   });
 
   useEffect(() => {
     localStorage.setItem('ganji-font', font);
     
     // CSS 변수 업데이트 (한글 폴백 폰트 추가)
-    let fontFamily = "'TogebaraFont', Pretendard, -apple-system, sans-serif";
-    if (font === 'taiwan') {
-      fontFamily = "'TaiwanFont', Pretendard, -apple-system, sans-serif";
+    let fontFamily = "'ChosunKmFont', Pretendard, -apple-system, sans-serif";
+    if (font === 'chosungs') {
+      fontFamily = "'ChosunGsFont', Pretendard, -apple-system, sans-serif";
+    } else if (font === 'togebara') {
+      fontFamily = "'TogebaraFont', Pretendard, -apple-system, sans-serif";
     } else if (font === 'mingti') {
       fontFamily = "'MingTiFont', Pretendard, -apple-system, sans-serif";
     } else if (font === 'chinesemingti') {
@@ -30,10 +32,6 @@ export function FontProvider({ children }: { children: ReactNode }) {
       fontFamily = "'ChineseCalligraphyFont', Pretendard, -apple-system, sans-serif";
     } else if (font === 'chinesecalligraphy2') {
       fontFamily = "'ChineseCalligraphy2Font', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'chosungs') {
-      fontFamily = "'ChosunGsFont', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'chosunkm') {
-      fontFamily = "'ChosunKmFont', Pretendard, -apple-system, sans-serif";
     }
     
     document.documentElement.style.setProperty('--ganji-font-family', fontFamily);
