@@ -256,6 +256,67 @@ export function calculateWoldeokGwiin(
 }
 
 /**
+ * 괴강살(魁罡煞) 계산
+ * 일주가 庚戌, 庚辰, 壬辰, 戊戌 중 하나일 때
+ */
+export function calculateGoegangSal(
+  daySky: string,
+  dayEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const dayGanji = daySky + dayEarth;
+  if (GOEGANG_SAL_DAYGANJI.includes(dayGanji)) {
+    result.dayPillar.push("魁罡煞");
+  }
+
+  return result;
+}
+
+/**
+ * 백호대살(白虎大煞) 계산
+ * 연지를 기준으로 특정 지지를 찾습니다.
+ */
+export function calculateBaekhoDaesal(
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  // 연지에 해당하는 백호대살 지지 찾기
+  const baekhoTarget = BAEKHO_DAESAL_MAP[yearEarth];
+  if (!baekhoTarget) return result;
+
+  // 각 주의 지지에서 백호대살에 해당하는지 확인
+  if (yearEarth === baekhoTarget) {
+    result.yearPillar.push("白虎大煞");
+  }
+  if (monthEarth === baekhoTarget) {
+    result.monthPillar.push("白虎大煞");
+  }
+  if (dayEarth === baekhoTarget) {
+    result.dayPillar.push("白虎大煞");
+  }
+  if (hourEarth === baekhoTarget) {
+    result.hourPillar.push("白虎大煞");
+  }
+
+  return result;
+}
+
+/**
  * 모든 신살 계산 (천을귀인, 문창귀인 포함)
  * 여러 신살이 동시에 나타날 수 있습니다.
  */
@@ -277,7 +338,7 @@ export function calculateAllShinSal(
 }
 
 /**
- * 1행 신살 계산 (천덕귀인, 월덕귀인)
+ * 1행 신살 계산 (천덕귀인, 월덕귀인, 괴강살, 백호대살)
  * 월지를 기준으로 천간을 찾는 신살들
  */
 export function calculateFirstRowShinSal(
@@ -301,16 +362,47 @@ export function calculateFirstRowShinSal(
     yearSky, monthSky, daySky, hourSky, monthEarth
   );
   
-  // 두 신살 결과를 합쳐서 반환
-  return mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
+  // 괴강살 계산
+  const goegangSal = calculateGoegangSal(daySky, dayEarth);
+  
+  // 백호대살 계산
+  const baekhoDaesal = calculateBaekhoDaesal(yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 모든 신살 결과를 합쳐서 반환
+  let result = mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
+  result = mergeShinSalResults(result, goegangSal);
+  result = mergeShinSalResults(result, baekhoDaesal);
+  
+  return result;
 }
+
+// 괴강살 일주 목록 (庚戌, 庚辰, 壬辰, 戊戌)
+const GOEGANG_SAL_DAYGANJI = ["庚戌", "庚辰", "壬辰", "戊戌"];
+
+// 백호대살 매핑 테이블 (연지 → 백호대살 지지)
+const BAEKHO_DAESAL_MAP: Record<string, string> = {
+  "子": "酉",
+  "丑": "午",
+  "寅": "卯",
+  "卯": "子",
+  "辰": "酉",
+  "巳": "午",
+  "午": "卯",
+  "未": "子",
+  "申": "酉",
+  "酉": "午",
+  "戌": "卯",
+  "亥": "子"
+};
 
 // 신살 한자-한글 변환 매핑
 const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "天德貴人": "천덕귀인",
   "月德貴人": "월덕귀인",
   "천을귀인": "천을귀인",
-  "문창귀인": "문창귀인"
+  "문창귀인": "문창귀인",
+  "魁罡煞": "괴강살",
+  "白虎大煞": "백호대살"
 };
 
 /**
