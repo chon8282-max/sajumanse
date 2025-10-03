@@ -35,16 +35,6 @@ export default function Manseryeok() {
       descriptionColor: "text-blue-800/70 dark:text-blue-200/70",
     },
     {
-      id: "compatibility",
-      title: "궁합사주 입력",
-      description: "두 사람의 사주 궁합을 확인해보세요",
-      icon: Users,
-      color: "bg-pink-100 dark:bg-pink-900/50",
-      borderColor: "border-pink-300 dark:border-pink-700",
-      textColor: "text-pink-800 dark:text-pink-200",
-      descriptionColor: "text-pink-800/70 dark:text-pink-200/70",
-    },
-    {
       id: "birth-from-saju",
       title: "팔자로 생일 입력",
       description: "사주 팔자로부터 생일을 역산해보세요",
@@ -53,6 +43,16 @@ export default function Manseryeok() {
       borderColor: "border-green-300 dark:border-green-700",
       textColor: "text-green-800 dark:text-green-200",
       descriptionColor: "text-green-800/70 dark:text-green-200/70",
+    },
+    {
+      id: "compatibility",
+      title: "궁합사주 입력",
+      description: "두 사람의 사주 궁합을 확인해보세요",
+      icon: Users,
+      color: "bg-pink-100 dark:bg-pink-900/50",
+      borderColor: "border-pink-300 dark:border-pink-700",
+      textColor: "text-pink-800 dark:text-pink-200",
+      descriptionColor: "text-pink-800/70 dark:text-pink-200/70",
     },
     {
       id: "saved-saju",
@@ -129,30 +129,6 @@ export default function Manseryeok() {
 
         {/* 메뉴 그리드 */}
         <div className="grid grid-cols-1 gap-4">
-        {/* 감정중인 사주 (있을 경우 최상단 표시) */}
-        {currentSajuItem && (
-          <Card 
-            key={currentSajuItem.id}
-            className={`${currentSajuItem.color} ${currentSajuItem.borderColor} border-2 hover-elevate active-elevate-2 cursor-pointer transition-all duration-200`}
-            onClick={() => handleMenuClick(currentSajuItem.id)}
-            data-testid={`card-manseryeok-${currentSajuItem.id}`}
-          >
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
-              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center min-h-[48px]">
-                <currentSajuItem.icon className={`h-6 w-6 ${currentSajuItem.textColor}`} />
-              </div>
-              <div className="flex-1 flex flex-col justify-center min-h-[48px]">
-                <CardTitle className={`text-lg font-semibold ${currentSajuItem.textColor} leading-6`}>
-                  {currentSajuItem.title}
-                </CardTitle>
-                <CardDescription className={`text-sm ${currentSajuItem.descriptionColor} leading-5`}>
-                  {currentSajuItem.description}
-                </CardDescription>
-              </div>
-            </CardHeader>
-          </Card>
-        )}
-
         {/* 기본 메뉴 아이템들 */}
         {menuItems.map((item) => (
           <Card 
@@ -176,6 +152,30 @@ export default function Manseryeok() {
             </CardHeader>
           </Card>
         ))}
+
+        {/* 감정중인 사주 (있을 경우 맨 마지막 표시) */}
+        {currentSajuItem && (
+          <Card 
+            key={currentSajuItem.id}
+            className={`${currentSajuItem.color} ${currentSajuItem.borderColor} border-2 hover-elevate active-elevate-2 cursor-pointer transition-all duration-200`}
+            onClick={() => handleMenuClick(currentSajuItem.id)}
+            data-testid={`card-manseryeok-${currentSajuItem.id}`}
+          >
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
+              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center min-h-[48px]">
+                <currentSajuItem.icon className={`h-6 w-6 ${currentSajuItem.textColor}`} />
+              </div>
+              <div className="flex-1 flex flex-col justify-center min-h-[48px]">
+                <CardTitle className={`text-lg font-semibold ${currentSajuItem.textColor} leading-6`}>
+                  {currentSajuItem.title}
+                </CardTitle>
+                <CardDescription className={`text-sm ${currentSajuItem.descriptionColor} leading-5`}>
+                  {currentSajuItem.description}
+                </CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        )}
         </div>
       </div>
     </div>
