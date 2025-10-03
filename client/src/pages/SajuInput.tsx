@@ -658,7 +658,7 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(true); // 전월 간지 적용 (정축)
+                handleSubmit(false); // 전월 간지: 그대로 유지 (정묘, 계축)
               }}
               data-testid="button-solar-term-previous"
             >
@@ -668,7 +668,7 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(false); // 절입 후 간지 적용 (무인)
+                handleSubmit(true); // 절입 후 간지: 년주/월주 다음으로 (무진, 갑인)
               }}
               data-testid="button-solar-term-after"
             >
