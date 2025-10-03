@@ -347,11 +347,16 @@ export default function SajuResult() {
       setFocusedSaeun({ age, sky, earth });
       setDisplayMode('saeun');
     } else if (displayMode === 'saeun') {
-      // C → B: 세운 다시 클릭 시 대운만 표시
-      setDisplayMode('daeun');
-      setFocusedSaeun(null);
+      // C → B: 같은 세운 클릭 시 대운만 표시
+      if (focusedSaeun?.age === age) {
+        setDisplayMode('daeun');
+        setFocusedSaeun(null);
+      } else {
+        // 다른 세운 클릭 시 세운 변경
+        setFocusedSaeun({ age, sky, earth });
+      }
     }
-  }, [calculatedData, displayMode]);
+  }, [calculatedData, displayMode, focusedSaeun]);
 
   // 歲運 드래그/스크롤 핸들러
   const handleSaeunScroll = useCallback((direction: 'left' | 'right') => {
