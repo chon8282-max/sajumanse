@@ -1178,10 +1178,10 @@ export default function SajuTable({
             {gongmang.length > 0 && (
               <div className="flex items-center gap-1">
                 <span className="text-black dark:text-white font-medium">
-                  {gongmang.join('')}
+                  {gongmang.map(earth => convertText(earth)).join('')}
                 </span>
                 <span className="text-blue-600 dark:text-blue-400 font-medium">
-                  空亡
+                  {convertText('空亡')}
                 </span>
               </div>
             )}
