@@ -131,7 +131,14 @@ function AppContent() {
 
   // 종료 처리 함수
   const handleExit = () => {
-    window.location.href = '/exit';
+    // 브라우저 탭/윈도우 닫기 시도
+    window.close();
+    
+    // window.close()가 작동하지 않을 경우 (보안 제한)
+    // 빈 페이지로 이동하여 앱 종료 상태 표시
+    setTimeout(() => {
+      window.location.href = 'about:blank';
+    }, 100);
   };
 
   // 뒤로가기 이벤트 처리
