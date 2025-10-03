@@ -139,13 +139,19 @@ interface SajuResultData {
 
 type DisplayMode = 'base' | 'daeun' | 'saeun';
 
+interface SaeunInfo {
+  age: number;
+  sky: string;
+  earth: string;
+}
+
 export default function SajuResult() {
   // 모든 hooks를 최상단에 선언
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/saju-result/:id");
   const [displayMode, setDisplayMode] = useState<DisplayMode>('base');
   const [focusedDaeun, setFocusedDaeun] = useState<DaeunPeriod | null>(null);
-  const [focusedSaeun, setFocusedSaeun] = useState<number | null>(null);
+  const [focusedSaeun, setFocusedSaeun] = useState<SaeunInfo | null>(null);
   const [saeunOffset, setSaeunOffset] = useState(0);
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
   const [editingName, setEditingName] = useState("");
@@ -333,12 +339,12 @@ export default function SajuResult() {
   }, [displayMode, focusedDaeun]);
 
   // 歲運 클릭 핸들러 
-  const handleSaeunClick = useCallback((age: number) => {
+  const handleSaeunClick = useCallback((age: number, sky: string, earth: string) => {
     if (!calculatedData?.daeunData.daeunPeriods) return;
     
     if (displayMode === 'daeun') {
       // B → C: 세운 선택 및 세운 모드로 전환
-      setFocusedSaeun(age);
+      setFocusedSaeun({ age, sky, earth });
       setDisplayMode('saeun');
     } else if (displayMode === 'saeun') {
       // C → B: 세운 다시 클릭 시 대운만 표시
