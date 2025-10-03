@@ -511,22 +511,24 @@ export default function SajuTable({
     return columns;
   }, [saju]);
 
-  // activeColumns - 대운 클릭 시 2열에 대운 삽입
+  // activeColumns - 대운 클릭 시 2열에 대운 삽입, 년주 제거 (최대 5열 유지)
   const activeColumns = useMemo(() => {
     if (!focusedDaeun) {
       // 대운이 없으면 기존 sajuColumns 그대로
       return sajuColumns;
     }
     
-    // 대운이 있으면 2열(생시있음) 또는 3열(생시모름)에 삽입
+    // 대운이 있으면 2열에 삽입
     const daeunColumn = {
       label: "대운",
       sky: focusedDaeun.sky,
       earth: focusedDaeun.earth
     };
     
-    // 기존 sajuColumns 앞에 대운 추가
-    return [daeunColumn, ...sajuColumns];
+    // 기존 sajuColumns에서 년주(마지막) 제거하고 앞에 대운 추가
+    // [시주, 일주, 월주, 년주] → [대운, 시주, 일주, 월주]
+    const withoutYear = sajuColumns.slice(0, -1); // 년주 제거
+    return [daeunColumn, ...withoutYear];
   }, [focusedDaeun, sajuColumns]);
 
   // 12신살 계산 (년지 기준) - activeColumns 기반
@@ -1061,8 +1063,8 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 1행: 천간 육친 / 오행 - 7열 그리드 */}
-        <div className="grid grid-cols-7 border-b border-border">
+        {/* 1행: 천간 육친 / 오행 - 6열 그리드 */}
+        <div className="grid grid-cols-6 border-b border-border">
           {/* 1열: 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {/* 천간 육친/오행 표시 - activeColumns 기반 */}
@@ -1081,12 +1083,10 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 7열: 빈 칸 (공망 위치) */}
-          <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 2행: 천간 - 7열 그리드 */}
-        <div className="grid grid-cols-7">
+        {/* 2행: 천간 - 6열 그리드 */}
+        <div className="grid grid-cols-6">
           {/* 1열: 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {/* activeColumns 기반 천간 표시 */}
@@ -1124,12 +1124,10 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 7열: 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 3행: 지지 - 7열 그리드 */}
-        <div className="grid grid-cols-7 border-b border-border">
+        {/* 3행: 지지 - 6열 그리드 */}
+        <div className="grid grid-cols-6 border-b border-border">
           {/* 1열: 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {/* activeColumns 기반 지지 표시 */}
@@ -1186,12 +1184,10 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 7열: 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 4행: 지지 육친 / 오행 - 7열 그리드 */}
-        <div className="grid grid-cols-7 border-b border-border">
+        {/* 4행: 지지 육친 / 오행 - 6열 그리드 */}
+        <div className="grid grid-cols-6 border-b border-border">
           {/* 1열: 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {/* activeColumns 기반 지지 육친 표시 */}
@@ -1210,18 +1206,13 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 7열: 빈 칸 */}
-          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 5행: 지장간 / 신살 (토글) */}
+        {/* 5행: 지장간 / 신살 (토글) - 6열 그리드 */}
         <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
+          {/* 1열: 빈 칸 */}
           <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          )}
+          {/* activeColumns 기반 지장간/신살 표시 */}
           {showShinsal ? (
             // 신살 표시 (세로 나열)
             (allShinsalArrays.map((shinsalArray, index) => (
@@ -1253,22 +1244,16 @@ export default function SajuTable({
               </div>
             )))
           )}
-          {/* 빈 칸 */}
-          <div className="bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 6행: 12신살 (조건부 표시, 6열로 구성) */}
+        {/* 6행: 12신살 - 6열 그리드, activeColumns 기반 */}
         {showSibiSinsal && (
           <div className="grid grid-cols-6 border-b border-border">
             {/* 1열: 빈칸 */}
             <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-1" />
-            {/* 생시모름일 때 추가 빈칸 (2열) */}
-            {sajuColumns.length === 3 && (
-              <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-2" />
-            )}
             
-            {/* 3-5열(생시모름) 또는 2-4열(생시있음): 12신살 */}
-            {sibiSinsal.map((sinsal, index) => {
+            {/* 2-5열: activeColumns 기반 12신살 (최대 4개) */}
+            {sibiSinsal.slice(0, 4).map((sinsal, index) => {
               // 한자-한글 변환
               const displayText = showKorean && SINSAL_KOREAN_MAP[sinsal] 
                 ? SINSAL_KOREAN_MAP[sinsal] 
@@ -1285,8 +1270,14 @@ export default function SajuTable({
               );
             })}
             
-            {/* 5열: 빈칸 */}
-            <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-5" />
+            {/* 남은 열 빈칸 채우기 (activeColumns가 4개 미만일 때) */}
+            {Array.from({ length: Math.max(0, 4 - sibiSinsal.length) }).map((_, index) => (
+              <div 
+                key={`sibisinsal-empty-${index + 2}`} 
+                className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" 
+                data-testid={`text-sibisinsal-empty-${index + 2}`} 
+              />
+            ))}
             
             {/* 6열: 공망 정보 */}
             <div 
