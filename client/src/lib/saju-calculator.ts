@@ -237,9 +237,12 @@ export function calculateSaju(
       // "전월 간지" 선택: 월주만 -1 (절입 전 월주 사용)
       monthEarthIndex = (monthEarthIndex - 1 + 12) % 12;
     } else {
-      // "절입 후 간지" 선택: 년주 +1 (절입 후 년주 사용)
-      adjustedYearSkyIndex = (yearSkyIndex + 1) % 10;
-      adjustedYearEarthIndex = (yearEarthIndex + 1) % 12;
+      // "절입 후 간지" 선택: 입춘(인월=0)만 년주를 바꿈
+      if (monthEarthIndex === 0) {
+        adjustedYearSkyIndex = (yearSkyIndex + 1) % 10;
+        adjustedYearEarthIndex = (yearEarthIndex + 1) % 12;
+      }
+      // 다른 절기는 기본 계산 그대로 (아무것도 하지 않음)
     }
   }
   

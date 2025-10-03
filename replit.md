@@ -41,10 +41,13 @@ Preferred communication style: Simple, everyday language.
 - **Five Elements Analysis**: Wu Xing (오행) balance analysis for fortune interpretation
 - **Calendar Conversion**: Solar to lunar calendar conversion with 24 solar terms consideration
 - **Fortune Analysis**: Comprehensive fortune scoring system covering overall, love, and career aspects
-- **Solar Term Transition Day (절입일) Handling**: Special dialog for births on solar term dates (e.g., 입춘)
+- **Solar Term Transition Day (절입일) Handling**: Special dialog for births on solar term dates (e.g., 입춘, 경칩)
   - "전월 간지" button (usePreviousMonthPillar=true): Uses previous month pillar by decrementing monthEarthIndex
-  - "절입 후 간지" button (usePreviousMonthPillar=false): Uses next year pillar by incrementing yearSkyIndex/yearEarthIndex
+  - "절입 후 간지" button (usePreviousMonthPillar=false): 
+    - For 입춘 (Lichun, monthEarthIndex=0): Increments year pillar (yearSkyIndex/yearEarthIndex +1)
+    - For other solar terms: Uses default calculation (no year change)
   - Example for 1988-02-04 (입춘): "전월 간지" → 정묘년 계축월, "절입 후 간지" → 무진년 갑인월
+  - Example for 1988-03-05 (경칩): "전월 간지" → 정묘년 갑인월, "절입 후 간지" → 무진년 을묘월
   - SajuResult page prioritizes server-calculated pillars (saved in database) over client-side recalculation
   - isLichunAdjusted flag tracks whether year adjustment already occurred during lunar conversion to prevent double adjustments
 - **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
