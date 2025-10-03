@@ -1039,6 +1039,10 @@ export default function SajuTable({
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 생시모름일 때 추가 빈칸 (2열) */}
+          {sajuColumns.length === 3 && (
+            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
           {showShinsal ? (
             // 신살 모드일 때: 1행 신살 (천덕귀인, 월덕귀인) 표시
             (firstRowShinsal.map((shinsal, index) => (
@@ -1076,6 +1080,10 @@ export default function SajuTable({
         <div className="grid grid-cols-6">
           {/* 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 생시모름일 때 추가 빈칸 (2열) */}
+          {sajuColumns.length === 3 && (
+            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
             return (
@@ -1118,6 +1126,10 @@ export default function SajuTable({
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 생시모름일 때 추가 빈칸 (2열) */}
+          {sajuColumns.length === 3 && (
+            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isHourEarth = index === 0;
@@ -1177,6 +1189,10 @@ export default function SajuTable({
         <div className="grid grid-cols-6" style={{ gridTemplateRows: 'auto auto' }}>
           {/* 4행: 지지 육친 / 오행 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 생시모름일 때 추가 빈칸 (2열) */}
+          {sajuColumns.length === 3 && (
+            <div className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
             let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
@@ -1212,6 +1228,10 @@ export default function SajuTable({
 
           {/* 5행: 지장간 / 신살 (토글) */}
           <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 생시모름일 때 추가 빈칸 (2열) */}
+          {sajuColumns.length === 3 && (
+            <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
           {showShinsal ? (
             // 신살 표시
             (shinsal.map((shinsalText, index) => (
@@ -1242,8 +1262,12 @@ export default function SajuTable({
           <div className="grid grid-cols-6 border-b border-border">
             {/* 1열: 빈칸 */}
             <div className="py-1 border-r border-border min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-1" />
+            {/* 생시모름일 때 추가 빈칸 (2열) */}
+            {sajuColumns.length === 3 && (
+              <div className="py-1 border-r border-border min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-2" />
+            )}
             
-            {/* 2-5열: 12신살 4개 */}
+            {/* 3-5열(생시모름) 또는 2-5열(생시있음): 12신살 */}
             {sibiSinsal.map((sinsal, index) => {
               // 한자-한글 변환
               const displayText = showKorean && SINSAL_KOREAN_MAP[sinsal] 
