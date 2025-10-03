@@ -246,8 +246,8 @@ export interface SajuInfo {
     monthEarth: WuXing;
     daySky: WuXing;
     dayEarth: WuXing;
-    hourSky: WuXing;
-    hourEarth: WuXing;
+    hourSky: WuXing | '';
+    hourEarth: WuXing | '';
   };
 }
 

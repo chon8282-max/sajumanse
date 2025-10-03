@@ -579,13 +579,13 @@ export default function SajuResult() {
               };
               
               return {
-                hour: { sky: record.hourSky || '甲', earth: record.hourEarth || '子' },
+                hour: { sky: record.hourSky || '', earth: record.hourEarth || '' },
                 day: { sky: record.daySky, earth: record.dayEarth || '子' },
                 month: { sky: record.monthSky, earth: record.monthEarth || '子' },
                 year: { sky: record.yearSky, earth: record.yearEarth || '子' },
                 wuxing: {
-                  hourSky: getWuxing(record.hourSky || '甲'),
-                  hourEarth: getEarthWuxing(record.hourEarth || '子'),
+                  hourSky: record.hourSky ? getWuxing(record.hourSky) : '',
+                  hourEarth: record.hourEarth ? getEarthWuxing(record.hourEarth) : '',
                   daySky: getWuxing(record.daySky),
                   dayEarth: getEarthWuxing(record.dayEarth || '子'),
                   monthSky: getWuxing(record.monthSky),
@@ -602,17 +602,18 @@ export default function SajuResult() {
                 record.birthYear, 
                 record.birthMonth, 
                 record.birthDay, 
-                timePeriod?.hour || 0
+                timePeriod?.hour as any  // undefined일 수 있음 (생시 미상)
               );
             } catch (error) {
               console.warn('Failed to calculate saju:', error);
               return {
-                hour: { sky: record.hourSky || '甲', earth: record.hourEarth || '子' },
+                hour: { sky: record.hourSky || '', earth: record.hourEarth || '' },
                 day: { sky: record.daySky || '甲', earth: record.dayEarth || '子' },
                 month: { sky: record.monthSky || '甲', earth: record.monthEarth || '子' },
                 year: { sky: record.yearSky || '甲', earth: record.yearEarth || '子' },
                 wuxing: {
-                  hourSky: '목', hourEarth: '수', 
+                  hourSky: record.hourSky ? '목' : '', 
+                  hourEarth: record.hourEarth ? '목' : '', 
                   daySky: '목', dayEarth: '수',
                   monthSky: '목', monthEarth: '수',
                   yearSky: '목', yearEarth: '수'
