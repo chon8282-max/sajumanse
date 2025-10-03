@@ -87,7 +87,10 @@ export default function CurrentTimeTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800">{col.sky}</span>
+                  <span className="text-gray-800" style={{ 
+                    fontWeight: '900',
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                  }}>{col.sky}</span>
                 )}
               </div>
             );
@@ -119,7 +122,10 @@ export default function CurrentTimeTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800">{col.earth}</span>
+                  <span className="text-gray-800" style={{ 
+                    fontWeight: '900',
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                  }}>{col.earth}</span>
                 )}
               </div>
             );
