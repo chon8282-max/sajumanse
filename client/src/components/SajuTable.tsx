@@ -1160,13 +1160,13 @@ export default function SajuTable({
           <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 4행 & 5행: 지지 육친/오행과 지장간/신살 (6번째 열 병합) */}
-        <div className="grid grid-cols-6" style={{ gridTemplateRows: 'auto auto' }}>
-          {/* 4행: 지지 육친 / 오행 */}
-          <div className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+        {/* 4행: 지지 육친 / 오행 */}
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {/* 생시모름일 때 추가 빈칸 (2열) */}
           {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
@@ -1176,17 +1176,16 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-earth-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-earth-${index}`}
               >
                 {displayText}
               </div>
             );
           })}
-          {/* 4행 & 5행 병합된 공망 정보 */}
+          {/* 공망 정보 (우측 셀) */}
           <div 
-            className="py-1 text-center text-sm flex items-center justify-center bg-white dark:bg-gray-900 border-b"
-            style={{ gridRow: 'span 2', minHeight: '3rem' }}
+            className="py-1 text-center text-sm flex items-center justify-center bg-white dark:bg-gray-900 row-span-2"
             data-testid="text-gongmang-info"
           >
             {gongmang.length > 0 && (
@@ -1200,19 +1199,22 @@ export default function SajuTable({
               </div>
             )}
           </div>
+        </div>
 
-          {/* 5행: 지장간 / 신살 (토글) */}
-          <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+        {/* 5행: 지장간 / 신살 (토글) */}
+        <div className="grid grid-cols-6 border-b border-border">
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {/* 생시모름일 때 추가 빈칸 (2열) */}
           {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+            <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
           {showShinsal ? (
             // 신살 표시 (세로 나열)
             (allShinsalArrays.map((shinsalArray, index) => (
               <div 
                 key={`shinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex flex-col items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-shinsal-${index}`}
               >
                 {shinsalArray.map((shinsal, idx) => (
@@ -1231,13 +1233,15 @@ export default function SajuTable({
             (jijanggan.map((stems, index) => (
               <div 
                 key={`jijanggan-${index}`} 
-                className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-jijanggan-${index}`}
               >
                 {convertTextForSpecificRows(stems)}
               </div>
             )))
           )}
+          {/* 빈 칸 (공망 셀과 정렬) */}
+          <div className="bg-white dark:bg-gray-900"></div>
         </div>
 
         {/* 6행: 12신살 (조건부 표시, 6열로 구성) */}
