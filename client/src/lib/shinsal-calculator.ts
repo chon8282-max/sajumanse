@@ -602,3 +602,18 @@ export function formatShinSal(shinSalList: string[], isKoreanMode: boolean = fal
   // 신살이 여러 개인 경우 쉼표로 구분
   return formattedList.join(", ");
 }
+
+/**
+ * 신살 배열 반환 (UI에서 개별 렌더링용)
+ * 한글/한자 변환만 처리
+ */
+export function formatShinSalArray(shinSalList: string[], isKoreanMode: boolean = false): string[] {
+  if (shinSalList.length === 0) {
+    return [];
+  }
+  
+  // 한글 모드일 때 한자를 한글로 변환
+  return isKoreanMode 
+    ? shinSalList.map(shinsal => SHINSAL_KOREAN_MAP[shinsal] || shinsal)
+    : shinSalList;
+}
