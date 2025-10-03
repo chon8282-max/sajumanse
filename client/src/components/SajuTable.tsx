@@ -1073,6 +1073,33 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
+        {/* 0행: 컬럼 헤더 (대운/세운 모드에서만 표시) */}
+        {displayMode !== 'base' && (
+          <div className="grid grid-cols-6 border-b border-border bg-gray-100 dark:bg-gray-800">
+            {displayMode === 'saeun' ? (
+              <div className="py-2 text-center text-sm font-bold border-r border-border">세운</div>
+            ) : (
+              <div className="py-2 text-center text-sm font-bold border-r border-border"></div>
+            )}
+            <div className="py-2 text-center text-sm font-bold border-r border-border">대운</div>
+            {sajuColumns.length === 4 ? (
+              <>
+                <div className="py-2 text-center text-sm font-bold border-r border-border">시주</div>
+                <div className="py-2 text-center text-sm font-bold border-r border-border">일주</div>
+                <div className="py-2 text-center text-sm font-bold border-r border-border">월주</div>
+                <div className="py-2 text-center text-sm font-bold">년주</div>
+              </>
+            ) : (
+              <>
+                <div className="py-2 text-center text-sm font-bold border-r border-border">일주</div>
+                <div className="py-2 text-center text-sm font-bold border-r border-border">월주</div>
+                <div className="py-2 text-center text-sm font-bold border-r border-border">년주</div>
+                <div className="py-2 text-center text-sm font-bold"></div>
+              </>
+            )}
+          </div>
+        )}
+        
         {/* 1행: 천간 육친 / 오행 */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 첫 2개 컬럼: displayMode에 따라 변경 */}
