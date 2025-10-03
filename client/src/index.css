@@ -5,10 +5,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 조선 폰트 정의 - 사주 간지용 (로컬 파일 사용) */
+/* TaiWan2 폰트 정의 - 사주 간지용 */
 @font-face {
   font-family: 'ChosunGanjiFont';
-  src: url('/fonts/ChosunKim.ttf') format('truetype');
+  src: url('/fonts/TaiWan2.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
   font-family: 'ChosunGanjiFont';
-  src: url('/fonts/ChosunKim.ttf') format('truetype');
+  src: url('/fonts/TaiWan2.ttf') format('truetype');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
