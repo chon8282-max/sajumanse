@@ -1050,9 +1050,9 @@ export default function SajuTable({
         </div>
 
         {/* 2행: 천간 */}
-        <div className="grid grid-cols-6 mb-[1px]">
+        <div className="grid grid-cols-6">
           {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
             return (
@@ -1062,9 +1062,9 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
-                  minHeight: '2.5rem',
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-sky-${index}`}
               >
@@ -1080,20 +1080,21 @@ export default function SajuTable({
                     fontSize: '42px',
                     fontWeight: '900',
                     textShadow: '0 0 1px rgba(0,0,0,0.5)',
-                    color: getWuxingTextColor(col.sky)
+                    color: getWuxingTextColor(col.sky),
+                    lineHeight: '1'
                   }}>{convertText(col.sky)}</span>
                 )}
               </div>
             );
           })}
           {/* 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
         {/* 3행: 지지 */}
-        <div className="grid grid-cols-6 border-b border-border mt-[1px]">
+        <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isGongmangPosition = isGongmang(col.earth);
@@ -1110,10 +1111,10 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: (isGongmangPosition && !isYearEarth) ? '#9CA3AF' : getWuxingColor(col.earth),
                   fontFamily: "var(--ganji-font-family)",
-                  minHeight: '2.5rem',
                   padding: '0',
                   margin: '0',
-                  position: 'relative'
+                  position: 'relative',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-earth-${index}`}
                 onClick={isHourEarth ? handleHourEarthClick : (isDayEarth && calendarType !== 'ganji' ? handleDayEarthClick : undefined)}
@@ -1139,7 +1140,8 @@ export default function SajuTable({
                       fontSize: '42px',
                       fontWeight: '900',
                       textShadow: '0 0 1px rgba(0,0,0,0.5)',
-                      color: getWuxingTextColor(col.earth)
+                      color: getWuxingTextColor(col.earth),
+                      lineHeight: '1'
                     }}>{convertText(col.earth)}</span>
                   )}
                 </div>
@@ -1147,7 +1149,7 @@ export default function SajuTable({
             );
           })}
           {/* 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900" style={{ minHeight: '2.5rem' }}></div>
+          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
         {/* 4행 & 5행: 지지 육친/오행과 지장간/신살 (6번째 열 병합) */}
@@ -1276,12 +1278,13 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-sky-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-daeun-sky-${colIndex}`}
               >
@@ -1295,7 +1298,8 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '26px',
-                    color: getWuxingTextColor(sky)
+                    color: getWuxingTextColor(sky),
+                    lineHeight: '1'
                   }}>{convertText(sky)}</span>
                 )}
               </div>
@@ -1312,13 +1316,14 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-earth-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(earth),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
-                  position: 'relative'
+                  position: 'relative',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-daeun-earth-${colIndex}`}
               >
@@ -1341,7 +1346,8 @@ export default function SajuTable({
                   ) : (
                     <span style={{ 
                       fontSize: '26px',
-                      color: getWuxingTextColor(earth)
+                      color: getWuxingTextColor(earth),
+                      lineHeight: '1'
                     }}>{convertText(earth)}</span>
                   )}
                 </div>
@@ -1403,12 +1409,13 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-sky-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-saeun-sky-${colIndex}`}
               >
@@ -1422,7 +1429,8 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '23px',
-                    color: getWuxingTextColor(sky)
+                    color: getWuxingTextColor(sky),
+                    lineHeight: '1'
                   }}>{convertText(sky)}</span>
                 )}
               </div>
@@ -1447,12 +1455,13 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-earth-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
               >
@@ -1466,7 +1475,8 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '23px',
-                    color: getWuxingTextColor(chineseChar)
+                    color: getWuxingTextColor(chineseChar),
+                    lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
                 )}
               </div>
@@ -1531,7 +1541,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`wolun-sky-${colIndex}`}
-                className={`text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center ${
+                className={`text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center ${
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
                 style={{ 
@@ -1539,7 +1549,8 @@ export default function SajuTable({
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
-                  transition: 'all 0.3s ease'
+                  transition: 'all 0.3s ease',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-wolun-sky-${colIndex}`}
               >
@@ -1553,7 +1564,8 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '23px',
-                    color: isWolunActive ? undefined : getWuxingTextColor(sky)
+                    color: isWolunActive ? undefined : getWuxingTextColor(sky),
+                    lineHeight: '1'
                   }}>{convertText(sky)}</span>
                 )}
               </div>
@@ -1580,14 +1592,15 @@ export default function SajuTable({
             return (
               <div 
                 key={`wolun-earth-${colIndex}`}
-                className={`text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center ${
+                className={`text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center ${
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
                 style={{ 
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
-                  margin: '0'
+                  margin: '0',
+                  lineHeight: '1'
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
               >
@@ -1601,7 +1614,8 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '23px',
-                    color: isWolunActive ? undefined : getWuxingTextColor(chineseChar)
+                    color: isWolunActive ? undefined : getWuxingTextColor(chineseChar),
+                    lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
                 )}
               </div>
