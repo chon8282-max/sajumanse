@@ -219,6 +219,15 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <Type className="w-4 h-4 mr-3" />
                   조선궁서체
                 </Button>
+                <Button
+                  variant={font === 'chosunkm' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('chosunkm')}
+                  data-testid="button-font-chosunkm"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  조선굵은명조체
+                </Button>
               </div>
             </Card>
           </div>
