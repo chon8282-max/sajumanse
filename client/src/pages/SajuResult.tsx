@@ -268,14 +268,14 @@ export default function SajuResult() {
 
   // 歲運 계산
   const saeunData = useMemo(() => {
-    if (!calculatedData?.record.daySky || !calculatedData?.record.dayEarth || !focusedDaeun) {
+    if (!calculatedData?.record.yearSky || !calculatedData?.record.yearEarth || !focusedDaeun) {
       return null;
     }
     
     return calculateSaeun(
       calculatedData.record.birthYear, 
-      calculatedData.record.daySky, 
-      calculatedData.record.dayEarth, 
+      calculatedData.record.yearSky, 
+      calculatedData.record.yearEarth, 
       12,
       focusedDaeun.startAge - 1 + saeunOffset
     );
