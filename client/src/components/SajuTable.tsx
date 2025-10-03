@@ -1353,47 +1353,32 @@ export default function SajuTable({
           })}
         </div>
 
-        {/* 9행: 歲運 년도 (우측에서 좌측) */}
+        {/* 9행: 歲運 나이 (우측에서 좌측) */}
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {saeunYears.map((year, colIndex) => {
-            const correspondingAge = saeunAges[colIndex];
-            const isSelectedAge = selectedSaeunAge === correspondingAge;
+          {saeunAges.map((age, colIndex) => {
+            const isSelectedAge = selectedSaeunAge === age;
             
             return (
               <div 
-                key={`saeun-year-${colIndex}`}
-                className={`py-1 text-center font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
+                key={`saeun-age-${colIndex}`}
+                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
-                    : 'bg-pink-50 dark:bg-gray-900'
+                    : 'bg-white dark:bg-gray-800'
                 }`}
-                style={{ fontSize: '10px' }}
                 onClick={() => {
                   if (!isDragging.current) {
-                    // 1열과 2열(colIndex 0, 1)은 월운 활성화 동작
-                    if (colIndex === 0 || colIndex === 1) {
-                      // 월운 모드 토글
-                      setIsWolunActive(!isWolunActive);
-                      // 선택된 나이도 설정 (월운 계산용)
-                      setSelectedSaeunAge(correspondingAge);
-                      if (onSaeunClick) {
-                        onSaeunClick(correspondingAge);
-                      }
-                    } else {
-                      // 나머지 열은 세운 모드로 전환하고 기존 처리
-                      setIsWolunActive(false);
-                      handleSaeunAgeClick(correspondingAge);
-                    }
+                    handleSaeunAgeClick(age);
                   }
                 }}
-                data-testid={`text-saeun-year-${colIndex}`}
+                data-testid={`text-saeun-age-${colIndex}`}
               >
-                {year}
+                {age}
               </div>
             );
           })}
@@ -1481,32 +1466,47 @@ export default function SajuTable({
           })}
         </div>
 
-        {/* 12행: 歲運 나이 (우측에서 좌측) */}
+        {/* 12행: 歲運 년도 (우측에서 좌측) */}
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {saeunAges.map((age, colIndex) => {
-            const isSelectedAge = selectedSaeunAge === age;
+          {saeunYears.map((year, colIndex) => {
+            const correspondingAge = saeunAges[colIndex];
+            const isSelectedAge = selectedSaeunAge === correspondingAge;
             
             return (
               <div 
-                key={`saeun-age-${colIndex}`}
-                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                key={`saeun-year-${colIndex}`}
+                className={`py-1 text-center font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
-                    : 'bg-white dark:bg-gray-800'
+                    : 'bg-pink-50 dark:bg-gray-900'
                 }`}
+                style={{ fontSize: '10px' }}
                 onClick={() => {
                   if (!isDragging.current) {
-                    handleSaeunAgeClick(age);
+                    // 1열과 2열(colIndex 0, 1)은 월운 활성화 동작
+                    if (colIndex === 0 || colIndex === 1) {
+                      // 월운 모드 토글
+                      setIsWolunActive(!isWolunActive);
+                      // 선택된 나이도 설정 (월운 계산용)
+                      setSelectedSaeunAge(correspondingAge);
+                      if (onSaeunClick) {
+                        onSaeunClick(correspondingAge);
+                      }
+                    } else {
+                      // 나머지 열은 세운 모드로 전환하고 기존 처리
+                      setIsWolunActive(false);
+                      handleSaeunAgeClick(correspondingAge);
+                    }
                   }
                 }}
-                data-testid={`text-saeun-age-${colIndex}`}
+                data-testid={`text-saeun-year-${colIndex}`}
               >
-                {age}
+                {year}
               </div>
             );
           })}
