@@ -192,6 +192,15 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <Type className="w-4 h-4 mr-3" />
                   중국테밍체
                 </Button>
+                <Button
+                  variant={font === 'chinesecalligraphy' ? 'default' : 'ghost'}
+                  className="w-full justify-start h-8"
+                  onClick={() => setFont('chinesecalligraphy')}
+                  data-testid="button-font-chinesecalligraphy"
+                >
+                  <Type className="w-4 h-4 mr-3" />
+                  중국 필기체
+                </Button>
               </div>
             </Card>
           </div>
