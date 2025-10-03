@@ -40,6 +40,8 @@ interface SajuTableProps {
   // 대운/歲運 상호작용 props
   currentAge?: number | null;
   focusedDaeun?: DaeunPeriod | null;
+  focusedSaeun?: number | null;
+  displayMode?: 'base' | 'daeun' | 'saeun';
   daeunPeriods?: DaeunPeriod[];
   saeunOffset?: number;
   saeunData?: any;
@@ -233,6 +235,8 @@ export default function SajuTable({
   // 대운/歲運 상호작용 props
   currentAge,
   focusedDaeun,
+  focusedSaeun,
+  displayMode = 'base',
   daeunPeriods = [],
   saeunOffset = 0,
   saeunData,

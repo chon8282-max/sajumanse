@@ -137,11 +137,15 @@ interface SajuResultData {
   hourEarth: string | null;
 }
 
+type DisplayMode = 'base' | 'daeun' | 'saeun';
+
 export default function SajuResult() {
   // 모든 hooks를 최상단에 선언
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/saju-result/:id");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('base');
   const [focusedDaeun, setFocusedDaeun] = useState<DaeunPeriod | null>(null);
+  const [focusedSaeun, setFocusedSaeun] = useState<number | null>(null);
   const [saeunOffset, setSaeunOffset] = useState(0);
   const [isNameDialogOpen, setIsNameDialogOpen] = useState(false);
   const [editingName, setEditingName] = useState("");
@@ -298,24 +302,50 @@ export default function SajuResult() {
 
   // 대운 클릭 핸들러
   const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
-    setFocusedDaeun(daeunPeriod);
-    setSaeunOffset(0); // 歲運 오프셋 초기화
-  }, []);
+    if (displayMode === 'base') {
+      // A → B: 대운 선택 및 대운 모드로 전환
+      setFocusedDaeun(daeunPeriod);
+      setDisplayMode('daeun');
+      setSaeunOffset(0);
+    } else if (displayMode === 'daeun') {
+      // B → A: 같은 대운 클릭 시 기본 모드로 복귀
+      if (focusedDaeun?.startAge === daeunPeriod.startAge) {
+        setDisplayMode('base');
+        setFocusedDaeun(null);
+      } else {
+        // 다른 대운 클릭 시 대운만 변경
+        setFocusedDaeun(daeunPeriod);
+        setSaeunOffset(0);
+      }
+    } else if (displayMode === 'saeun') {
+      // C → B: 같은 대운 클릭 시 세운 숨김 (대운만 표시)
+      if (focusedDaeun?.startAge === daeunPeriod.startAge) {
+        setDisplayMode('daeun');
+        setFocusedSaeun(null);
+      } else {
+        // C → B: 다른 대운 클릭 시 대운 변경 및 세운 숨김
+        setFocusedDaeun(daeunPeriod);
+        setDisplayMode('daeun');
+        setFocusedSaeun(null);
+        setSaeunOffset(0);
+      }
+    }
+  }, [displayMode, focusedDaeun]);
 
   // 歲運 클릭 핸들러 
   const handleSaeunClick = useCallback((age: number) => {
     if (!calculatedData?.daeunData.daeunPeriods) return;
     
-    // 해당 나이에 맞는 대운 찾기
-    const targetDaeun = calculatedData.daeunData.daeunPeriods.find(
-      period => age >= period.startAge && age <= period.endAge
-    );
-    
-    if (targetDaeun) {
-      setFocusedDaeun(targetDaeun);
-      // 오프셋 변경하지 않음 - 클릭한 자리에서 선택되도록 유지
+    if (displayMode === 'daeun') {
+      // B → C: 세운 선택 및 세운 모드로 전환
+      setFocusedSaeun(age);
+      setDisplayMode('saeun');
+    } else if (displayMode === 'saeun') {
+      // C → B: 세운 다시 클릭 시 대운만 표시
+      setDisplayMode('daeun');
+      setFocusedSaeun(null);
     }
-  }, [calculatedData]);
+  }, [calculatedData, displayMode]);
 
   // 歲運 드래그/스크롤 핸들러
   const handleSaeunScroll = useCallback((direction: 'left' | 'right') => {
@@ -652,6 +682,8 @@ export default function SajuResult() {
           calendarType={record.calendarType || undefined}
           daeunPeriods={calculatedData?.daeunData.daeunPeriods || []}
           focusedDaeun={focusedDaeun}
+          focusedSaeun={focusedSaeun}
+          displayMode={displayMode}
           currentAge={calculatedData?.currentAge || null}
           saeunOffset={saeunOffset}
           saeunData={saeunData}
