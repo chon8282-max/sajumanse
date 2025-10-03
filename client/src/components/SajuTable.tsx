@@ -556,6 +556,44 @@ export default function SajuTable({
     });
   }, [sajuColumns]);
 
+  // 대운 컬럼 데이터 (displayMode === 'daeun' 또는 'saeun'일 때)
+  const daeunColumnData = useMemo(() => {
+    if (!focusedDaeun) return null;
+    
+    const dayStem = saju.day.sky;
+    const daeunSky = focusedDaeun.sky;
+    const daeunEarth = focusedDaeun.earth;
+    
+    return {
+      sky: daeunSky,
+      earth: daeunEarth,
+      heavenlyYukjin: calculateYukjin(dayStem, daeunSky),
+      earthlyYukjin: calculateEarthlyBranchYukjin(dayStem, daeunEarth),
+      jijanggan: (EARTHLY_BRANCH_HIDDEN_STEMS[daeunEarth] || []).join('')
+    };
+  }, [focusedDaeun, saju.day.sky]);
+
+  // 세운 컬럼 데이터 (displayMode === 'saeun'일 때)
+  const saeunColumnData = useMemo(() => {
+    if (!focusedSaeun || !saeunData) return null;
+    
+    // saeunData에서 focusedSaeun 나이에 해당하는 간지 찾기
+    const saeunIndex = saeunData.ages.findIndex((age: number) => age === focusedSaeun);
+    if (saeunIndex === -1) return null;
+    
+    const dayStem = saju.day.sky;
+    const saeunSky = saeunData.skyStems[saeunIndex];
+    const saeunEarth = saeunData.earthBranches[saeunIndex];
+    
+    return {
+      sky: saeunSky,
+      earth: saeunEarth,
+      heavenlyYukjin: calculateYukjin(dayStem, saeunSky),
+      earthlyYukjin: calculateEarthlyBranchYukjin(dayStem, saeunEarth),
+      jijanggan: (EARTHLY_BRANCH_HIDDEN_STEMS[saeunEarth] || []).join('')
+    };
+  }, [focusedSaeun, saeunData, saju.day.sky]);
+
   // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 - 메모이제이션)
   // 각 주별로 신살 배열을 반환
   const allShinsalArrays = useMemo(() => {
@@ -1037,11 +1075,32 @@ export default function SajuTable({
       <div className="border border-border">
         {/* 1행: 천간 육친 / 오행 */}
         <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 첫 2개 컬럼: displayMode에 따라 변경 */}
+          {displayMode === 'base' && (
+            <>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              {sajuColumns.length === 3 && (
+                <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              )}
+            </>
+          )}
+          {displayMode === 'daeun' && daeunColumnData && (
+            <>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]">
+                {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForSpecificRows(daeunColumnData.heavenlyYukjin)}
+              </div>
+            </>
+          )}
+          {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
+            <>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]">
+                {showWuxing ? getWuxingElement(saeunColumnData.sky) : convertTextForSpecificRows(saeunColumnData.heavenlyYukjin)}
+              </div>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]">
+                {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForSpecificRows(daeunColumnData.heavenlyYukjin)}
+              </div>
+            </>
           )}
           {/* 천간 육친/오행 표시 */}
           {heavenlyYukjin.map((yukjin, index) => {
@@ -1065,11 +1124,44 @@ export default function SajuTable({
 
         {/* 2행: 천간 */}
         <div className="grid grid-cols-6">
-          {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 첫 2개 컬럼: displayMode에 따라 변경 */}
+          {displayMode === 'base' && (
+            <>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              {sajuColumns.length === 3 && (
+                <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              )}
+            </>
+          )}
+          {displayMode === 'daeun' && daeunColumnData && (
+            <>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+                {getCheonganImage(daeunColumnData.sky, showKorean) || undefined ? (
+                  <img src={getCheonganImage(daeunColumnData.sky, showKorean) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                )}
+              </div>
+            </>
+          )}
+          {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
+            <>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+                {getCheonganImage(saeunColumnData.sky, showKorean) || undefined ? (
+                  <img src={getCheonganImage(saeunColumnData.sky, showKorean) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
+                )}
+              </div>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+                {getCheonganImage(daeunColumnData.sky, showKorean) || undefined ? (
+                  <img src={getCheonganImage(daeunColumnData.sky, showKorean) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                )}
+              </div>
+            </>
           )}
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
@@ -1111,11 +1203,44 @@ export default function SajuTable({
 
         {/* 3행: 지지 */}
         <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 첫 2개 컬럼: displayMode에 따라 변경 */}
+          {displayMode === 'base' && (
+            <>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              {sajuColumns.length === 3 && (
+                <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              )}
+            </>
+          )}
+          {displayMode === 'daeun' && daeunColumnData && (
+            <>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+                {getJijiImage(daeunColumnData.earth, showKorean) || undefined ? (
+                  <img src={getJijiImage(daeunColumnData.earth, showKorean) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                )}
+              </div>
+            </>
+          )}
+          {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
+            <>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+                {getJijiImage(saeunColumnData.earth, showKorean) || undefined ? (
+                  <img src={getJijiImage(saeunColumnData.earth, showKorean) || undefined} alt={saeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
+                )}
+              </div>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+                {getJijiImage(daeunColumnData.earth, showKorean) || undefined ? (
+                  <img src={getJijiImage(daeunColumnData.earth, showKorean) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                ) : (
+                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                )}
+              </div>
+            </>
           )}
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
@@ -1174,11 +1299,32 @@ export default function SajuTable({
 
         {/* 4행: 지지 육친 / 오행 */}
         <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 첫 2개 컬럼: displayMode에 따라 변경 */}
+          {displayMode === 'base' && (
+            <>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              {sajuColumns.length === 3 && (
+                <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              )}
+            </>
+          )}
+          {displayMode === 'daeun' && daeunColumnData && (
+            <>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+                {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForSpecificRows(daeunColumnData.earthlyYukjin)}
+              </div>
+            </>
+          )}
+          {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
+            <>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+                {showWuxing ? getWuxingElement(saeunColumnData.earth) : convertTextForSpecificRows(saeunColumnData.earthlyYukjin)}
+              </div>
+              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+                {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForSpecificRows(daeunColumnData.earthlyYukjin)}
+              </div>
+            </>
           )}
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
@@ -1201,11 +1347,32 @@ export default function SajuTable({
 
         {/* 5행: 지장간 / 신살 (토글) */}
         <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
-          <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {/* 첫 2개 컬럼: displayMode에 따라 변경 */}
+          {displayMode === 'base' && (
+            <>
+              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              {sajuColumns.length === 3 && (
+                <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              )}
+            </>
+          )}
+          {displayMode === 'daeun' && daeunColumnData && (
+            <>
+              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
+              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+                {convertTextForSpecificRows(daeunColumnData.jijanggan)}
+              </div>
+            </>
+          )}
+          {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
+            <>
+              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+                {convertTextForSpecificRows(saeunColumnData.jijanggan)}
+              </div>
+              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+                {convertTextForSpecificRows(daeunColumnData.jijanggan)}
+              </div>
+            </>
           )}
           {showShinsal ? (
             // 신살 표시 (세로 나열)
@@ -1242,8 +1409,8 @@ export default function SajuTable({
           <div className="bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 6행: 12신살 (조건부 표시, 6열로 구성) */}
-        {showSibiSinsal && (
+        {/* 6행: 12신살 (조건부 표시, 6열로 구성) - base 모드에서만 표시 */}
+        {showSibiSinsal && displayMode === 'base' && (
           <div className="grid grid-cols-6 border-b border-border">
             {/* 1열: 빈칸 */}
             <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-1" />
