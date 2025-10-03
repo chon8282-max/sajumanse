@@ -37,33 +37,50 @@ function generate60Ganji(): string[] {
 
 const GANJI_60 = generate60Ganji();
 
-// 기준 월간지 (2000년 1월 = 정축월로 설정)
-const BASE_YEAR = 2000;
-const BASE_MONTH = 1;
-const BASE_MONTH_GANJI_INDEX = 13; // 정축(丁丑) = 14번째 (0부터 시작이므로 13)
+/**
+ * 연간(年干)에 따른 월간(月干) 시작 규칙 - 오행포국법
+ * 갑기년(甲己): 인월부터 병(丙)
+ * 을경년(乙庚): 인월부터 무(戊)
+ * 병신년(丙辛): 인월부터 경(庚)
+ * 정임년(丁壬): 인월부터 임(壬)
+ * 무계년(戊癸): 인월부터 갑(甲)
+ */
+const MONTH_SKY_START_MAP: { [key: string]: string } = {
+  "甲": "丙", "己": "丙", // 갑기년 = 병인월부터
+  "乙": "戊", "庚": "戊", // 을경년 = 무인월부터
+  "丙": "庚", "辛": "庚", // 병신년 = 경인월부터
+  "丁": "壬", "壬": "壬", // 정임년 = 임인월부터
+  "戊": "甲", "癸": "甲"  // 무계년 = 갑인월부터
+};
 
 /**
- * 월간지 계산 (월의 간지) - 60갑자 순환 방식
+ * 월지(月支) 순서 - 절기 기준 (인월부터 시작)
+ */
+const MONTH_EARTH_SEQUENCE = ["寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥", "子", "丑"];
+
+/**
+ * 월간지 계산 (월의 간지) - 오행포국법
  * @param year 서기 연도
  * @param month 서기 월 (1-12)
  * @returns {sky: string, earth: string} 천간과 지지
  */
 export function calculateMonthGanji(year: number, month: number): { sky: string; earth: string } {
-  // 기준년월로부터 총 개월수 차이 계산
-  const totalMonths = (year - BASE_YEAR) * 12 + (month - BASE_MONTH);
+  // 1. 연간지 계산
+  const yearGanji = calculateYearGanji(year);
+  const yearSky = yearGanji.sky;
   
-  // 60갑자 순환에서 해당 월간지 인덱스 계산
-  const ganjiIndex = (BASE_MONTH_GANJI_INDEX + totalMonths) % 60;
+  // 2. 연간에 따른 인월(1월) 월간 결정
+  const inWolSky = MONTH_SKY_START_MAP[yearSky] || "丙";
+  const inWolSkyIndex = CHEONGAN.indexOf(inWolSky);
   
-  // 음수 방지
-  const adjustedIndex = ganjiIndex < 0 ? ganjiIndex + 60 : ganjiIndex;
+  // 3. 월지 결정 (1월=인, 2월=묘, ..., 12월=축)
+  const monthEarth = MONTH_EARTH_SEQUENCE[month - 1];
   
-  // 60갑자에서 해당 월간지 가져오기
-  const monthGanji = GANJI_60[adjustedIndex];
-  const sky = monthGanji[0]; // 첫 번째 글자는 천간
-  const earth = monthGanji[1]; // 두 번째 글자는 지지
+  // 4. 월간 계산 (1월부터 순환)
+  const monthSkyIndex = (inWolSkyIndex + (month - 1)) % 10;
+  const monthSky = CHEONGAN[monthSkyIndex];
   
-  return { sky, earth };
+  return { sky: monthSky, earth: monthEarth };
 }
 
 /**

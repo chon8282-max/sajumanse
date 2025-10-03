@@ -140,14 +140,14 @@ export function calculateEarthlyBranchYukjin(dayHeavenlyStem: string, targetEart
     return '육친';
   }
   
-  // 지지의 주기(첫 번째 장간) 찾기
+  // 지지의 본기(마지막 장간) 찾기
   const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[targetEarthlyBranch];
   if (!hiddenStems || hiddenStems.length === 0) {
     return '육친';
   }
   
-  // 주기(첫 번째 장간)를 이용하여 육친 계산
-  const primaryHiddenStem = hiddenStems[0];
+  // 본기(마지막 장간)를 이용하여 육친 계산
+  const primaryHiddenStem = hiddenStems[hiddenStems.length - 1];
   return calculateYukjin(dayHeavenlyStem, primaryHiddenStem);
 }
 

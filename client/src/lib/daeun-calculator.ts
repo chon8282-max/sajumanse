@@ -334,12 +334,15 @@ export function calculateCompleteDaeun(sajuData: any) {
     birthDay: sajuData.birthDay
   });
   
+  // 간지년 기준으로 정확한 출생 연도 계산
+  const actualGanjiYear = calculateActualGanjiYear(sajuData.birthYear, sajuData.yearSky, sajuData.yearEarth);
+  
   // 방어적 코딩: 필수 데이터 체크
   if (!sajuData.gender || !sajuData.yearSky) {
     console.warn('calculateCompleteDaeun: 필수 데이터가 없습니다');
     const defaultAges = [7, 17, 27, 37, 47, 57, 67, 77, 87, 97];
     const defaultGapja = ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'];
-    const defaultPeriods = calculateDaeunPeriods(sajuData.birthYear || 1990, defaultAges, defaultGapja);
+    const defaultPeriods = calculateDaeunPeriods(actualGanjiYear, defaultAges, defaultGapja);
     
     return {
       isForward: true,
@@ -359,7 +362,7 @@ export function calculateCompleteDaeun(sajuData: any) {
     
     const specialAges = [7, 17, 27, 37, 47, 57, 67, 77, 87, 97];
     const specialGapja = ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'];
-    const specialPeriods = calculateDaeunPeriods(sajuData.birthYear, specialAges, specialGapja);
+    const specialPeriods = calculateDaeunPeriods(actualGanjiYear, specialAges, specialGapja);
     
     return {
       isForward: true, // 순행으로 표시
@@ -371,7 +374,7 @@ export function calculateCompleteDaeun(sajuData: any) {
     };
   }
   
-  // 기존 계산 로직 유지
+  // 기존 계산 로직 유지 (간지년 기준으로 계산)
   const daeunGapja = generateDaeunGapja(sajuData.monthSky, sajuData.monthEarth, isForward);
   const daeunNumber = calculateDaeunNumber(
     sajuData.birthYear,
@@ -381,7 +384,7 @@ export function calculateCompleteDaeun(sajuData: any) {
     sajuData.yearSky
   );
   const daeunAges = calculateDaeunAges(daeunNumber);
-  const daeunPeriods = calculateDaeunPeriods(sajuData.birthYear, daeunAges, daeunGapja);
+  const daeunPeriods = calculateDaeunPeriods(actualGanjiYear, daeunAges, daeunGapja);
   
   return {
     isForward,
