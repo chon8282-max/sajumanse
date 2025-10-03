@@ -128,7 +128,7 @@ export default function Manseryeok() {
         </div>
 
         {/* 메뉴 그리드 */}
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-2">
         {/* 기본 메뉴 아이템들 */}
         {menuItems.map((item) => (
           <Card 
@@ -137,15 +137,15 @@ export default function Manseryeok() {
             onClick={() => handleMenuClick(item.id)}
             data-testid={`card-manseryeok-${item.id}`}
           >
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-3">
               <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center min-h-[48px]">
                 <item.icon className={`h-6 w-6 ${item.textColor}`} />
               </div>
               <div className="flex-1 flex flex-col justify-center min-h-[48px]">
-                <CardTitle className={`text-lg font-semibold ${item.textColor} leading-6`}>
+                <CardTitle className={`text-lg font-semibold ${item.textColor} leading-tight py-0.5`}>
                   {item.title}
                 </CardTitle>
-                <CardDescription className={`text-sm ${item.descriptionColor} leading-5`}>
+                <CardDescription className={`text-sm ${item.descriptionColor} leading-tight py-0.5`}>
                   {item.description}
                 </CardDescription>
               </div>
@@ -153,7 +153,7 @@ export default function Manseryeok() {
           </Card>
         ))}
 
-        {/* 감정중인 사주 (있을 경우 맨 마지막 표시) */}
+        {/* 감정중인 사주 (있을 경우 5번째로 표시) */}
         {currentSajuItem && (
           <Card 
             key={currentSajuItem.id}
@@ -161,15 +161,15 @@ export default function Manseryeok() {
             onClick={() => handleMenuClick(currentSajuItem.id)}
             data-testid={`card-manseryeok-${currentSajuItem.id}`}
           >
-            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-3">
               <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center min-h-[48px]">
                 <currentSajuItem.icon className={`h-6 w-6 ${currentSajuItem.textColor}`} />
               </div>
               <div className="flex-1 flex flex-col justify-center min-h-[48px]">
-                <CardTitle className={`text-lg font-semibold ${currentSajuItem.textColor} leading-6`}>
+                <CardTitle className={`text-lg font-semibold ${currentSajuItem.textColor} leading-tight py-0.5`}>
                   {currentSajuItem.title}
                 </CardTitle>
-                <CardDescription className={`text-sm ${currentSajuItem.descriptionColor} leading-5`}>
+                <CardDescription className={`text-sm ${currentSajuItem.descriptionColor} leading-tight py-0.5`}>
                   {currentSajuItem.description}
                 </CardDescription>
               </div>
