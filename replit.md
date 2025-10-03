@@ -41,7 +41,7 @@ Preferred communication style: Simple, everyday language.
 - **Five Elements Analysis**: Wu Xing (오행) balance analysis for fortune interpretation
 - **Calendar Conversion**: Solar to lunar calendar conversion with 24 solar terms consideration
 - **Fortune Analysis**: Comprehensive fortune scoring system covering overall, love, and career aspects
-- **Shinsal (神殺) System**: Comprehensive calculation of 9 traditional astrological indicators across all four pillars:
+- **Shinsal (神殺) System**: Comprehensive calculation of 15 traditional astrological indicators across all four pillars:
   - 천을귀인 (天乙貴人) - Noble Person star
   - 문창귀인 (文昌貴人) - Literary Excellence star
   - 천덕귀인 (天德貴人) - Heavenly Virtue star
@@ -51,6 +51,13 @@ Preferred communication style: Simple, everyday language.
   - 양인살 (羊刃煞) - Sheep Blade star (일간 기준: 甲→卯, 丙→午, 戊→午, 庚→酉, 壬→子)
   - 낙정관살 (落井關殺) - Well-falling star (일간 기준: 甲己→巳, 乙庚→子, 丙辛→申, 丁壬→戌, 戊癸→卯)
   - 효신살 (梟神殺) - Owl God star (간지: 甲子, 乙亥, 丙寅, 丁卯, 戊午, 己巳, 庚辰, 庚戌, 辛丑, 辛未, 壬申, 癸酉)
+  - 수액살 (水厄殺) - Water Calamity star (월지 기준: 인묘진→인, 사오미→진, 신유술→유, 해자축→축)
+  - 이별살 (離別殺) - Separation star (일주 간지: 甲寅, 乙卯, 乙未, 丙午, 戊辰, 戊申, 戊戌, 己丑, 庚申, 辛酉, 壬子)
+  - 농아살 (聾兒殺) - Deaf-Mute star (년지→시지: 인오술→묘, 신자진→유, 해묘미→자, 사유축→오)
+  - 고란살 (孤鸞殺) - Lonely Phoenix star (일주 간지: 甲寅, 乙巳, 丁巳, 戊申, 辛亥)
+  - 홍염살 (紅艶殺) - Red Beauty star (일간→지지: 甲丙→午, 丁→未, 戊→辰, 庚→申/戌, 辛→酉, 壬→子)
+  - 부벽살 (釜劈殺) - Cauldron Split star (월지 기준: 자오묘유→해, 인신사해→유, 진술축미→축)
+  - Display: Shinsal displayed vertically within each pillar column with 2px spacing between items
 - **Solar Term Transition Day (절입일) Handling**: Special dialog for births on solar term dates (e.g., 입춘, 경칩)
   - "전월 간지" button (usePreviousMonthPillar=true): Uses previous month pillar by decrementing monthEarthIndex
   - "절입 후 간지" button (usePreviousMonthPillar=false): 

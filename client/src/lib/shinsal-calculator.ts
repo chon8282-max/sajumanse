@@ -101,6 +101,46 @@ const NAKJEONG_GWANSAL_MAP: Record<string, string> = {
 // 효신살 간지 목록 (甲子, 乙亥, 丙寅, 丁卯, 戊午, 己巳, 庚辰, 庚戌, 辛丑, 辛未, 壬申, 癸酉)
 const HYOSIN_SAL_GANJI = ["甲子", "乙亥", "丙寅", "丁卯", "戊午", "己巳", "庚辰", "庚戌", "辛丑", "辛未", "壬申", "癸酉"];
 
+// 수액살 매핑 테이블 (월지 → 수액살 지지)
+const SUAEK_SAL_MAP: Record<string, string> = {
+  "寅": "寅", "卯": "寅", "辰": "寅",  // 인묘진 월생 = 인
+  "巳": "辰", "午": "辰", "未": "辰",  // 사오미 월생 = 진
+  "申": "酉", "酉": "酉", "戌": "酉",  // 신유술 월생 = 유
+  "亥": "丑", "子": "丑", "丑": "丑"   // 해자축 월생 = 축
+};
+
+// 이별살 간지 목록 (갑인, 을묘, 을미, 병오, 무진, 무신, 무술, 기축, 경신, 신유, 임자)
+const IBYEOL_SAL_GANJI = ["甲寅", "乙卯", "乙未", "丙午", "戊辰", "戊申", "戊戌", "己丑", "庚申", "辛酉", "壬子"];
+
+// 농아살 매핑 테이블 (년지 → 농아살 시지)
+const NONGA_SAL_MAP: Record<string, string> = {
+  "寅": "卯", "午": "卯", "戌": "卯",  // 인오술 년생 = 묘시
+  "申": "酉", "子": "酉", "辰": "酉",  // 신자진 년생 = 유시
+  "亥": "子", "卯": "子", "未": "子",  // 해묘미 년생 = 자시
+  "巳": "午", "酉": "午", "丑": "午"   // 사유축 년생 = 오시
+};
+
+// 고란살 간지 목록 (갑인, 을사, 정사, 무신, 신해)
+const GORAN_SAL_GANJI = ["甲寅", "乙巳", "丁巳", "戊申", "辛亥"];
+
+// 홍염살 매핑 테이블 (일간 → 홍염살 지지)
+const HONGYEOM_SAL_MAP: Record<string, string[]> = {
+  "甲": ["午"],
+  "丙": ["午"],
+  "丁": ["未"],
+  "戊": ["辰"],
+  "庚": ["申", "戌"],
+  "辛": ["酉"],
+  "壬": ["子"]
+};
+
+// 부벽살 매핑 테이블 (월지 → 부벽살 지지)
+const BUBYEOK_SAL_MAP: Record<string, string> = {
+  "子": "亥", "午": "亥", "卯": "亥", "酉": "亥",  // 자오묘유 월지 = 해
+  "寅": "酉", "申": "酉", "巳": "酉", "亥": "酉",  // 인신사해 월지 = 유
+  "辰": "丑", "戌": "丑", "丑": "丑", "未": "丑"   // 진술축미 월지 = 축
+};
+
 export interface ShinSalResult {
   yearPillar: string[];
   monthPillar: string[];
@@ -492,6 +532,190 @@ export function calculateHyosinSal(
 }
 
 /**
+ * 수액살(水厄殺) 계산
+ * 월지를 기준으로 수액살을 찾습니다
+ */
+export function calculateSuaekSal(
+  monthEarth: string,
+  yearEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const suaekTarget = SUAEK_SAL_MAP[monthEarth];
+  if (!suaekTarget) return result;
+
+  // 각 주의 지지에서 수액살에 해당하는지 확인
+  if (yearEarth === suaekTarget) {
+    result.yearPillar.push("水厄殺");
+  }
+  if (monthEarth === suaekTarget) {
+    result.monthPillar.push("水厄殺");
+  }
+  if (dayEarth === suaekTarget) {
+    result.dayPillar.push("水厄殺");
+  }
+  if (hourEarth === suaekTarget) {
+    result.hourPillar.push("水厄殺");
+  }
+
+  return result;
+}
+
+/**
+ * 이별살(離別殺) 계산
+ * 일주 간지를 확인합니다
+ */
+export function calculateIbyeolSal(
+  daySky: string,
+  dayEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const dayGanji = daySky + dayEarth;
+  if (IBYEOL_SAL_GANJI.includes(dayGanji)) {
+    result.dayPillar.push("離別殺");
+  }
+
+  return result;
+}
+
+/**
+ * 농아살(聾兒殺) 계산
+ * 년지를 기준으로 시지를 확인합니다
+ */
+export function calculateNongaSal(
+  yearEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const nongaTarget = NONGA_SAL_MAP[yearEarth];
+  if (!nongaTarget) return result;
+
+  // 시지가 농아살에 해당하는지 확인
+  if (hourEarth === nongaTarget) {
+    result.hourPillar.push("聾兒殺");
+  }
+
+  return result;
+}
+
+/**
+ * 고란살(孤鸞殺) 계산
+ * 일주 간지를 확인합니다
+ */
+export function calculateGoranSal(
+  daySky: string,
+  dayEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const dayGanji = daySky + dayEarth;
+  if (GORAN_SAL_GANJI.includes(dayGanji)) {
+    result.dayPillar.push("孤鸞殺");
+  }
+
+  return result;
+}
+
+/**
+ * 홍염살(紅艶殺) 계산
+ * 일간을 기준으로 년월일시의 지지에서 홍염살을 찾습니다
+ */
+export function calculateHongyeomSal(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const hongyeomTargets = HONGYEOM_SAL_MAP[daySky];
+  if (!hongyeomTargets) return result;
+
+  // 각 주의 지지에서 홍염살에 해당하는지 확인
+  if (hongyeomTargets.includes(yearEarth)) {
+    result.yearPillar.push("紅艶殺");
+  }
+  if (hongyeomTargets.includes(monthEarth)) {
+    result.monthPillar.push("紅艶殺");
+  }
+  if (hongyeomTargets.includes(dayEarth)) {
+    result.dayPillar.push("紅艶殺");
+  }
+  if (hongyeomTargets.includes(hourEarth)) {
+    result.hourPillar.push("紅艶殺");
+  }
+
+  return result;
+}
+
+/**
+ * 부벽살(釜劈殺) 계산
+ * 월지를 기준으로 부벽살을 찾습니다
+ */
+export function calculateBubyeokSal(
+  monthEarth: string,
+  yearEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const bubyeokTarget = BUBYEOK_SAL_MAP[monthEarth];
+  if (!bubyeokTarget) return result;
+
+  // 각 주의 지지에서 부벽살에 해당하는지 확인
+  if (yearEarth === bubyeokTarget) {
+    result.yearPillar.push("釜劈殺");
+  }
+  if (monthEarth === bubyeokTarget) {
+    result.monthPillar.push("釜劈殺");
+  }
+  if (dayEarth === bubyeokTarget) {
+    result.dayPillar.push("釜劈殺");
+  }
+  if (hourEarth === bubyeokTarget) {
+    result.hourPillar.push("釜劈殺");
+  }
+
+  return result;
+}
+
+/**
  * 모든 신살 계산 (천을귀인, 문창귀인 포함)
  * 여러 신살이 동시에 나타날 수 있습니다.
  */
@@ -561,6 +785,24 @@ export function calculateFirstRowShinSal(
     yearEarth, monthEarth, dayEarth, hourEarth
   );
   
+  // 수액살 계산
+  const suaekSal = calculateSuaekSal(monthEarth, yearEarth, dayEarth, hourEarth);
+  
+  // 이별살 계산
+  const ibyeolSal = calculateIbyeolSal(daySky, dayEarth);
+  
+  // 농아살 계산
+  const nongaSal = calculateNongaSal(yearEarth, hourEarth);
+  
+  // 고란살 계산
+  const goranSal = calculateGoranSal(daySky, dayEarth);
+  
+  // 홍염살 계산
+  const hongyeomSal = calculateHongyeomSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 부벽살 계산
+  const bubyeokSal = calculateBubyeokSal(monthEarth, yearEarth, dayEarth, hourEarth);
+  
   // 모든 신살 결과를 합쳐서 반환
   let result = mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
   result = mergeShinSalResults(result, goegangSal);
@@ -568,6 +810,12 @@ export function calculateFirstRowShinSal(
   result = mergeShinSalResults(result, yanginSal);
   result = mergeShinSalResults(result, nakjeongGwansal);
   result = mergeShinSalResults(result, hyosinSal);
+  result = mergeShinSalResults(result, suaekSal);
+  result = mergeShinSalResults(result, ibyeolSal);
+  result = mergeShinSalResults(result, nongaSal);
+  result = mergeShinSalResults(result, goranSal);
+  result = mergeShinSalResults(result, hongyeomSal);
+  result = mergeShinSalResults(result, bubyeokSal);
   
   return result;
 }
@@ -582,7 +830,13 @@ const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "白虎大煞": "백호대살",
   "羊刃煞": "양인살",
   "落井關殺": "낙정관살",
-  "梟神殺": "효신살"
+  "梟神殺": "효신살",
+  "水厄殺": "수액살",
+  "離別殺": "이별살",
+  "聾兒殺": "농아살",
+  "孤鸞殺": "고란살",
+  "紅艶殺": "홍염살",
+  "釜劈殺": "부벽살"
 };
 
 /**
