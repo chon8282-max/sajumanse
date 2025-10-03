@@ -459,31 +459,39 @@ export default function SajuTable({
   const formatBirthHour = (hour?: string): string => {
     if (!hour) return '';
     
-    // 이미 한자 형태인 경우 그대로 반환 (예: "亥時")
-    if (hour.includes('時')) {
-      return hour;
-    }
+    let timeText = hour;
     
     // 숫자 형태인 경우 한자로 변환 (예: "22" -> "戌時")
-    const hourNum = parseInt(hour);
-    if (isNaN(hourNum)) return '未詳';
-    
-    const timeHanja = {
-      23: '子時', 1: '子時', 3: '丑時', 5: '寅時', 7: '卯時',
-      9: '辰時', 11: '巳時', 13: '午時', 15: '未時', 17: '申時',
-      19: '酉時', 21: '戌時'
-    };
-    
-    // 가장 가까운 시간대 찾기
-    const timeKeys = Object.keys(timeHanja).map(Number).sort((a, b) => a - b);
-    let closestTime = timeKeys[0];
-    for (const time of timeKeys) {
-      if (hourNum >= time) {
-        closestTime = time;
+    if (!hour.includes('時')) {
+      const hourNum = parseInt(hour);
+      if (isNaN(hourNum)) return '未詳';
+      
+      const timeHanja = {
+        23: '子時', 1: '子時', 3: '丑時', 5: '寅時', 7: '卯時',
+        9: '辰時', 11: '巳時', 13: '午時', 15: '未時', 17: '申時',
+        19: '酉時', 21: '戌時'
+      };
+      
+      // 가장 가까운 시간대 찾기
+      const timeKeys = Object.keys(timeHanja).map(Number).sort((a, b) => a - b);
+      let closestTime = timeKeys[0];
+      for (const time of timeKeys) {
+        if (hourNum >= time) {
+          closestTime = time;
+        }
       }
+      
+      timeText = timeHanja[closestTime as keyof typeof timeHanja] || '未詳';
     }
     
-    return timeHanja[closestTime as keyof typeof timeHanja] || '未詳';
+    // 한글 모드일 때 한자를 한글로 변환
+    if (showKorean && timeText.includes('時')) {
+      const earthBranch = timeText.replace('時', '');
+      const koreanEarth = CHINESE_TO_KOREAN_MAP[earthBranch] || earthBranch;
+      return `${koreanEarth}시`;
+    }
+    
+    return timeText;
   };
 
   // 사주 데이터 구성 (메모이제이션)
