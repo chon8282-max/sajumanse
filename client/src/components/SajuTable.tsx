@@ -1107,16 +1107,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]">
+            <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
               {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForSpecificRows(daeunColumnData.heavenlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]">
+              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
                 {showWuxing ? getWuxingElement(saeunColumnData.sky) : convertTextForSpecificRows(saeunColumnData.heavenlyYukjin)}
               </div>
-              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]">
+              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
                 {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForSpecificRows(daeunColumnData.heavenlyYukjin)}
               </div>
             </>
@@ -1352,16 +1352,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+            <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
               {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForSpecificRows(daeunColumnData.earthlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
                 {showWuxing ? getWuxingElement(saeunColumnData.earth) : convertTextForSpecificRows(saeunColumnData.earthlyYukjin)}
               </div>
-              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
                 {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForSpecificRows(daeunColumnData.earthlyYukjin)}
               </div>
             </>
