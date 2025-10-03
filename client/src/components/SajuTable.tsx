@@ -7,7 +7,7 @@ import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
-import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal } from "@/lib/shinsal-calculator";
+import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal, formatShinSalArray } from "@/lib/shinsal-calculator";
 import BirthTimeSelector from "@/components/BirthTimeSelector";
 import BirthDateSelector from "@/components/BirthDateSelector";
 import { Button } from "@/components/ui/button";
@@ -544,38 +544,11 @@ export default function SajuTable({
     });
   }, [sajuColumns]);
 
-  // 신살 계산 (메모이제이션)
-  const shinsal = useMemo(() => {
+  // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 - 메모이제이션)
+  // 각 주별로 신살 배열을 반환
+  const allShinsalArrays = useMemo(() => {
     const hasHourPillar = saju.hour.sky && saju.hour.earth;
-    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
-    
-    if (!saju?.day?.sky) return defaultArray;
-    
-    // 각 주(년월일시)의 지지에서 신살 계산
-    const daySky = saju.day.sky;
-    const yearEarth = saju.year.earth;
-    const monthEarth = saju.month.earth;
-    const dayEarth = saju.day.earth;
-    const hourEarth = saju.hour.earth;
-    
-    const shinsalResult = calculateAllShinSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
-    
-    // sajuColumns 순서에 맞춰 신살 배열 재배열
-    const result = [];
-    if (hasHourPillar) {
-      result.push(formatShinSal(shinsalResult.hourPillar, showKorean));  // 시주
-    }
-    result.push(formatShinSal(shinsalResult.dayPillar, showKorean));   // 일주
-    result.push(formatShinSal(shinsalResult.monthPillar, showKorean)); // 월주
-    result.push(formatShinSal(shinsalResult.yearPillar, showKorean));  // 년주
-    
-    return result;
-  }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.sky, saju?.hour?.earth, showKorean]);
-
-  // 1행 신살 계산 (천덕귀인, 월덕귀인 - 메모이제이션)
-  const firstRowShinsal = useMemo(() => {
-    const hasHourPillar = saju.hour.sky && saju.hour.earth;
-    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
+    const defaultArray = hasHourPillar ? [[], [], [], []] : [[], [], []];
     
     if (!saju?.day?.sky) return defaultArray;
     
@@ -589,19 +562,35 @@ export default function SajuTable({
     const dayEarth = saju.day.earth;
     const hourEarth = saju.hour.earth;
     
+    // 천을귀인, 문창귀인 계산
+    const secondRowResult = calculateAllShinSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+    
+    // 나머지 신살 계산
     const firstRowResult = calculateFirstRowShinSal(
       yearSky, monthSky, daySky, hourSky,
       yearEarth, monthEarth, dayEarth, hourEarth
     );
     
-    // sajuColumns 순서에 맞춰 1행 신살 배열 재배열
-    const result = [];
+    // 각 주별로 두 결과를 합침
+    const result: string[][] = [];
     if (hasHourPillar) {
-      result.push(formatShinSal(firstRowResult.hourPillar, showKorean));  // 시주
+      result.push([
+        ...formatShinSalArray(secondRowResult.hourPillar, showKorean),
+        ...formatShinSalArray(firstRowResult.hourPillar, showKorean)
+      ]);
     }
-    result.push(formatShinSal(firstRowResult.dayPillar, showKorean));   // 일주
-    result.push(formatShinSal(firstRowResult.monthPillar, showKorean)); // 월주
-    result.push(formatShinSal(firstRowResult.yearPillar, showKorean));  // 년주
+    result.push([
+      ...formatShinSalArray(secondRowResult.dayPillar, showKorean),
+      ...formatShinSalArray(firstRowResult.dayPillar, showKorean)
+    ]);
+    result.push([
+      ...formatShinSalArray(secondRowResult.monthPillar, showKorean),
+      ...formatShinSalArray(firstRowResult.monthPillar, showKorean)
+    ]);
+    result.push([
+      ...formatShinSalArray(secondRowResult.yearPillar, showKorean),
+      ...formatShinSalArray(firstRowResult.yearPillar, showKorean)
+    ]);
     
     return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
@@ -1034,7 +1023,7 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 1행: 천간 육친 / 오행 / 1행 신살 */}
+        {/* 1행: 천간 육친 / 오행 */}
         <div className="grid grid-cols-6 border-b border-border">
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
@@ -1042,35 +1031,22 @@ export default function SajuTable({
           {sajuColumns.length === 3 && (
             <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {showShinsal ? (
-            // 신살 모드일 때: 1행 신살 (천덕귀인, 월덕귀인) 표시
-            (firstRowShinsal.map((shinsal, index) => (
+          {/* 천간 육친/오행 표시 */}
+          {heavenlyYukjin.map((yukjin, index) => {
+            const skyCharacter = sajuColumns[index]?.sky;
+            let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
+            displayText = convertTextForSpecificRows(displayText);
+            
+            return (
               <div 
-                key={`firstrow-shinsal-${index}`} 
-                className="py-1 text-center text-xs font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
-                data-testid={`text-firstrow-shinsal-${index}`}
+                key={`yukjin-sky-${index}`} 
+                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
+                data-testid={`text-yukjin-sky-${index}`}
               >
-                {convertTextForSpecificRows(shinsal)}
+                {displayText}
               </div>
-            )))
-          ) : (
-            // 일반 모드일 때: 천간 육친/오행 표시
-            (heavenlyYukjin.map((yukjin, index) => {
-              const skyCharacter = sajuColumns[index]?.sky;
-              let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
-              displayText = convertTextForSpecificRows(displayText);
-              
-              return (
-                <div 
-                  key={`yukjin-sky-${index}`} 
-                  className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
-                  data-testid={`text-yukjin-sky-${index}`}
-                >
-                  {displayText}
-                </div>
-              );
-            }))
-          )}
+            );
+          })}
           {/* 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
@@ -1232,14 +1208,22 @@ export default function SajuTable({
             <div className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
           {showShinsal ? (
-            // 신살 표시
-            (shinsal.map((shinsalText, index) => (
+            // 신살 표시 (세로 나열)
+            (allShinsalArrays.map((shinsalArray, index) => (
               <div 
                 key={`shinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-1 text-center text-sm border-r border-border border-b min-h-[1.5rem] flex flex-col items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-shinsal-${index}`}
               >
-                {convertTextForSpecificRows(shinsalText)}
+                {shinsalArray.map((shinsal, idx) => (
+                  <div 
+                    key={`shinsal-${index}-${idx}`}
+                    className="leading-tight"
+                    style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
+                  >
+                    {convertTextForSpecificRows(shinsal)}
+                  </div>
+                ))}
               </div>
             )))
           ) : (
