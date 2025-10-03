@@ -1062,7 +1062,7 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   minHeight: '2.5rem',
                   padding: '0',
                   margin: '0'
@@ -1109,7 +1109,7 @@ export default function SajuTable({
                 }`}
                 style={{ 
                   backgroundColor: isGongmangPosition ? '#9CA3AF' : getWuxingColor(col.earth),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   minHeight: '2.5rem',
                   padding: '0',
                   margin: '0',
@@ -1283,7 +1283,7 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0'
                 }}
@@ -1319,7 +1319,7 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(earth),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
                   position: 'relative'
@@ -1410,7 +1410,7 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0'
                 }}
@@ -1454,7 +1454,7 @@ export default function SajuTable({
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(chineseChar),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0'
                 }}
@@ -1540,7 +1540,7 @@ export default function SajuTable({
                 }`}
                 style={{ 
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(sky),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
                   transition: 'all 0.3s ease'
@@ -1589,7 +1589,7 @@ export default function SajuTable({
                 }`}
                 style={{ 
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(chineseChar),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0'
                 }}

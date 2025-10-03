@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
+import { FontProvider } from "@/contexts/FontContext";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -254,7 +255,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="light">
-          <AppContent />
+          <FontProvider>
+            <AppContent />
+          </FontProvider>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>

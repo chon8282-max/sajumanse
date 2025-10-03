@@ -73,7 +73,7 @@ export default function CurrentTimeTable({
                 className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
                   letterSpacing: '-0.03em'
@@ -109,7 +109,7 @@ export default function CurrentTimeTable({
                 className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
                   backgroundColor: getWuxingColor(col.earth),
-                  fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
+                  fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
                   letterSpacing: '-0.03em'
