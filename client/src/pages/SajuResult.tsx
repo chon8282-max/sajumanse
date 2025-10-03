@@ -287,6 +287,15 @@ export default function SajuResult() {
     }
   }, [calculatedData?.currentDaeun]); // focusedDaeun 의존성 제거하여 항상 설정되도록
 
+  // 감정중인 사주로 sessionStorage에 저장
+  useEffect(() => {
+    if (sajuData?.success && sajuData.data && params?.id) {
+      sessionStorage.setItem('currentSajuId', params.id);
+      sessionStorage.setItem('currentSajuName', sajuData.data.name);
+      sessionStorage.setItem('currentSajuTimestamp', new Date().toISOString());
+    }
+  }, [sajuData, params?.id]);
+
   // 대운 클릭 핸들러
   const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
     setFocusedDaeun(daeunPeriod);
