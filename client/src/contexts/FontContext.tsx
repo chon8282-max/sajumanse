@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type FontType = 'taiwan' | 'togebara' | 'mingti' | 'chinesemingti' | 'chinesecalligraphy' | 'chinesecalligraphy2' | 'chosungs';
+type FontType = 'taiwan' | 'togebara' | 'mingti' | 'chinesemingti' | 'chinesecalligraphy' | 'chinesecalligraphy2' | 'chosungs' | 'chosunkm';
 
 interface FontContextType {
   font: FontType;
@@ -32,6 +32,8 @@ export function FontProvider({ children }: { children: ReactNode }) {
       fontFamily = "'ChineseCalligraphy2Font', Pretendard, -apple-system, sans-serif";
     } else if (font === 'chosungs') {
       fontFamily = "'ChosunGsFont', Pretendard, -apple-system, sans-serif";
+    } else if (font === 'chosunkm') {
+      fontFamily = "'ChosunKmFont', Pretendard, -apple-system, sans-serif";
     }
     
     document.documentElement.style.setProperty('--ganji-font-family', fontFamily);

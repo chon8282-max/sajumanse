@@ -124,6 +124,23 @@
   font-display: swap;
 }
 
+/* 조선굵은명조체 폰트 정의 (절대경로) */
+@font-face {
+  font-family: 'ChosunKmFont';
+  src: url('/fonts/ChosunKm.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'ChosunKmFont';
+  src: url('/fonts/ChosunKm.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* 간지 폰트 CSS 변수 */
   --ganji-font-family: 'TaiwanFont', serif;
