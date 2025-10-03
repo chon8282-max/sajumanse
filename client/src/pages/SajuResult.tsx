@@ -565,8 +565,8 @@ export default function SajuResult() {
         {/* 사주명식 테이블 */}
         <SajuTable 
           saju={(() => {
-            // 간지로 입력된 사주는 저장된 간지 정보를 직접 사용
-            if (record.calendarType === 'ganji' && record.yearSky && record.monthSky && record.daySky) {
+            // 저장된 pillar 데이터가 있으면 우선 사용 (절입일 선택 반영)
+            if (record.yearSky && record.monthSky && record.daySky) {
               const getWuxing = (sky: string): '목' | '화' | '토' | '금' | '수' => {
                 const wuxingMap: { [key: string]: '목' | '화' | '토' | '금' | '수' } = {
                   '甲': '목', '乙': '목',
@@ -605,7 +605,7 @@ export default function SajuResult() {
               };
             }
             
-            // 일반 생년월일 입력은 계산
+            // pillar 데이터가 없으면 계산
             try {
               return calculateSaju(
                 record.birthYear, 
