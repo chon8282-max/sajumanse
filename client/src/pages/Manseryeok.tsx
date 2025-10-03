@@ -1,10 +1,23 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Calculator, Database, ArrowLeft } from "lucide-react";
+import { Calendar, Users, Calculator, Database, ArrowLeft, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Manseryeok() {
   const [, setLocation] = useLocation();
+  const [currentSaju, setCurrentSaju] = useState<{ id: string; name: string; timestamp: string } | null>(null);
+
+  // sessionStorage에서 감정중인 사주 확인
+  useEffect(() => {
+    const sajuId = sessionStorage.getItem('currentSajuId');
+    const sajuName = sessionStorage.getItem('currentSajuName');
+    const sajuTimestamp = sessionStorage.getItem('currentSajuTimestamp');
+    
+    if (sajuId && sajuName && sajuTimestamp) {
+      setCurrentSaju({ id: sajuId, name: sajuName, timestamp: sajuTimestamp });
+    }
+  }, []);
 
   const handleBackToHome = () => {
     setLocation("/");
@@ -53,6 +66,18 @@ export default function Manseryeok() {
     },
   ];
 
+  // 감정중인 사주 메뉴 아이템 (조건부 표시)
+  const currentSajuItem = currentSaju ? {
+    id: "current-saju",
+    title: "감정중인 사주",
+    description: `${currentSaju.name} - 최근 감정`,
+    icon: Sparkles,
+    color: "bg-amber-100 dark:bg-amber-900/50",
+    borderColor: "border-amber-300 dark:border-amber-700",
+    textColor: "text-amber-800 dark:text-amber-200",
+    descriptionColor: "text-amber-800/70 dark:text-amber-200/70",
+  } : null;
+
   const handleMenuClick = (menuId: string) => {
     console.log(`만세력 메뉴 클릭: ${menuId}`);
     
@@ -68,6 +93,11 @@ export default function Manseryeok() {
         break;
       case "saved-saju":
         setLocation("/saju-list");
+        break;
+      case "current-saju":
+        if (currentSaju) {
+          setLocation(`/saju-result/${currentSaju.id}`);
+        }
         break;
       default:
         console.log("알 수 없는 메뉴:", menuId);
@@ -99,6 +129,31 @@ export default function Manseryeok() {
 
         {/* 메뉴 그리드 */}
         <div className="grid grid-cols-1 gap-4">
+        {/* 감정중인 사주 (있을 경우 최상단 표시) */}
+        {currentSajuItem && (
+          <Card 
+            key={currentSajuItem.id}
+            className={`${currentSajuItem.color} ${currentSajuItem.borderColor} border-2 hover-elevate active-elevate-2 cursor-pointer transition-all duration-200`}
+            onClick={() => handleMenuClick(currentSajuItem.id)}
+            data-testid={`card-manseryeok-${currentSajuItem.id}`}
+          >
+            <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">
+              <div className="p-3 rounded-lg bg-white/80 dark:bg-black/20 flex items-center justify-center min-h-[48px]">
+                <currentSajuItem.icon className={`h-6 w-6 ${currentSajuItem.textColor}`} />
+              </div>
+              <div className="flex-1 flex flex-col justify-center min-h-[48px]">
+                <CardTitle className={`text-lg font-semibold ${currentSajuItem.textColor} leading-6`}>
+                  {currentSajuItem.title}
+                </CardTitle>
+                <CardDescription className={`text-sm ${currentSajuItem.descriptionColor} leading-5`}>
+                  {currentSajuItem.description}
+                </CardDescription>
+              </div>
+            </CardHeader>
+          </Card>
+        )}
+
+        {/* 기본 메뉴 아이템들 */}
         {menuItems.map((item) => (
           <Card 
             key={item.id}
