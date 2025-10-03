@@ -1082,7 +1082,6 @@ export default function SajuTable({
                 <div className="py-2 text-center text-sm font-bold border-r border-border">일주</div>
                 <div className="py-2 text-center text-sm font-bold border-r border-border">월주</div>
                 <div className="py-2 text-center text-sm font-bold border-r border-border">년주</div>
-                <div className="py-2 text-center text-sm font-bold"></div>
               </>
             ) : (
               <>
@@ -1141,10 +1140,10 @@ export default function SajuTable({
           {displayMode === 'base' && (
             <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 4 && (
+          {displayMode === 'daeun' && sajuColumns.length === 4 && (
             <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 3 && (
+          {displayMode === 'daeun' && sajuColumns.length === 3 && (
             <>
               <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
               <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
