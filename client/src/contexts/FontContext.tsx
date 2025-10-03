@@ -18,18 +18,18 @@ export function FontProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('ganji-font', font);
     
-    // CSS 변수 업데이트
-    let fontFamily = "'TogebaraFont', serif";
+    // CSS 변수 업데이트 (한글 폴백 폰트 추가)
+    let fontFamily = "'TogebaraFont', 'Pretendard', serif";
     if (font === 'taiwan') {
-      fontFamily = "'TaiwanFont', serif";
+      fontFamily = "'TaiwanFont', 'Pretendard', serif";
     } else if (font === 'mingti') {
-      fontFamily = "'MingTiFont', serif";
+      fontFamily = "'MingTiFont', 'Pretendard', serif";
     } else if (font === 'chinesemingti') {
-      fontFamily = "'ChineseMingTiFont', serif";
+      fontFamily = "'ChineseMingTiFont', 'Pretendard', serif";
     } else if (font === 'chinesecalligraphy') {
-      fontFamily = "'ChineseCalligraphyFont', serif";
+      fontFamily = "'ChineseCalligraphyFont', 'Pretendard', serif";
     } else if (font === 'chinesecalligraphy2') {
-      fontFamily = "'ChineseCalligraphy2Font', serif";
+      fontFamily = "'ChineseCalligraphy2Font', 'Pretendard', serif";
     }
     
     document.documentElement.style.setProperty('--ganji-font-family', fontFamily);
