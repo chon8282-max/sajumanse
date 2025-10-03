@@ -12,7 +12,7 @@ const FontContext = createContext<FontContextType | undefined>(undefined);
 export function FontProvider({ children }: { children: ReactNode }) {
   const [font, setFontState] = useState<FontType>(() => {
     const saved = localStorage.getItem('ganji-font');
-    return (saved as FontType) || 'togebara';
+    return (saved as FontType) || 'taiwan';
   });
 
   useEffect(() => {
