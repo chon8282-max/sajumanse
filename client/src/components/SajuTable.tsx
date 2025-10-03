@@ -1224,8 +1224,12 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 빈 칸 */}
-          <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          {displayMode === 'base' && (
+            <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
+          {displayMode !== 'base' && sajuColumns.length === 3 && (
+            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
+          )}
         </div>
 
         {/* 3행: 지지 */}
@@ -1432,8 +1436,12 @@ export default function SajuTable({
               </div>
             )))
           )}
-          {/* 빈 칸 */}
-          <div className="bg-white dark:bg-gray-900"></div>
+          {displayMode === 'base' && (
+            <div className="bg-white dark:bg-gray-900"></div>
+          )}
+          {displayMode !== 'base' && sajuColumns.length === 3 && (
+            <div className="border-r border-border bg-white dark:bg-gray-900"></div>
+          )}
         </div>
 
         {/* 6행: 12신살 (조건부 표시, 6열로 구성) - base 모드에서만 표시 */}
