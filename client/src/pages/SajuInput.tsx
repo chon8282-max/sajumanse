@@ -74,27 +74,26 @@ const TWELVE_SOLAR_TERMS_2024 = [
   { term: "소한", month: 1, day: 5, hour: 23, minute: 49 },
 ];
 
-// 절입일 체크 함수
+// 절입일 체크 함수 (범위 기반 체크로 모든 연도 지원)
 function checkSolarTermDay(year: number, month: number, day: number): { isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } } {
-  const yearDiff = year - 2024;
-  const dayOffset = Math.round(yearDiff / 4);
-  
+  // 각 절기가 발생할 수 있는 날짜 범위 (±2일 허용)
   for (const term of TWELVE_SOLAR_TERMS_2024) {
-    const adjustedDay = term.day + dayOffset;
-    const termDate = new Date(year, term.month - 1, adjustedDay);
-    const inputDate = new Date(year, month - 1, day);
-    
-    if (termDate.getFullYear() === inputDate.getFullYear() &&
-        termDate.getMonth() === inputDate.getMonth() &&
-        termDate.getDate() === inputDate.getDate()) {
-      return {
-        isSolarTerm: true,
-        termInfo: {
-          name: term.term,
-          hour: term.hour,
-          minute: term.minute
-        }
-      };
+    // 입력한 월과 절기의 월이 같은지 확인
+    if (month === term.month) {
+      // 절기 날짜 ±2일 범위 내에 있는지 확인
+      const minDay = term.day - 2;
+      const maxDay = term.day + 2;
+      
+      if (day >= minDay && day <= maxDay) {
+        return {
+          isSolarTerm: true,
+          termInfo: {
+            name: term.term,
+            hour: term.hour,
+            minute: term.minute
+          }
+        };
+      }
     }
   }
   
