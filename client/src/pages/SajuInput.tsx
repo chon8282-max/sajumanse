@@ -638,15 +638,18 @@ export default function SajuInput() {
           <div className="space-y-4 py-4">
             <div className="text-center space-y-2">
               <p className="text-base font-semibold">
-                {solarTermInfo?.name} 절입시간 ({solarTermInfo?.hour}:{String(solarTermInfo?.minute).padStart(2, '0')})입니다.
+                {solarTermInfo?.name} 절입일입니다
               </p>
               <p className="text-sm text-muted-foreground">
-                전월간지를 적용하시겠습니까?
+                절입시간: {solarTermInfo?.hour}시 {String(solarTermInfo?.minute).padStart(2, '0')}분
+              </p>
+              <p className="text-sm font-medium mt-3">
+                어떤 월주를 사용하시겠습니까?
               </p>
             </div>
             <div className="space-y-2 text-sm text-muted-foreground px-2">
-              <p><strong>아니오:</strong> 전월 간지 적용 (월주 바뀌지 않음)</p>
-              <p><strong>예:</strong> 절입 후 간지 적용 (새 월주)</p>
+              <p><strong>전월 간지:</strong> 절입 전 월주 (정축)</p>
+              <p><strong>절입 후 간지:</strong> 절입 후 새 월주 (무인)</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -655,21 +658,21 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(true); // 아니오: 전월 간지 적용 (월주 바뀌지 않음)
+                handleSubmit(true); // 전월 간지 적용 (정축)
               }}
-              data-testid="button-solar-term-no"
+              data-testid="button-solar-term-previous"
             >
-              아니오
+              전월 간지
             </Button>
             <Button
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(false); // 예: 절입 후 간지 적용 (새 월주)
+                handleSubmit(false); // 절입 후 간지 적용 (무인)
               }}
-              data-testid="button-solar-term-yes"
+              data-testid="button-solar-term-after"
             >
-              예
+              절입 후 간지
             </Button>
           </div>
         </DialogContent>
