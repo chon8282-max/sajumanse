@@ -40,13 +40,13 @@ interface SajuTableProps {
   // 대운/歲運 상호작용 props
   currentAge?: number | null;
   focusedDaeun?: DaeunPeriod | null;
-  focusedSaeun?: number | null;
+  focusedSaeun?: { age: number; sky: string; earth: string } | null;
   displayMode?: 'base' | 'daeun' | 'saeun';
   daeunPeriods?: DaeunPeriod[];
   saeunOffset?: number;
   saeunData?: any;
   onDaeunClick?: (period: DaeunPeriod) => void;
-  onSaeunClick?: (age: number) => void;
+  onSaeunClick?: (age: number, sky: string, earth: string) => void;
   onSaeunScroll?: (direction: 'left' | 'right') => void;
   onBirthTimeChange?: (timeCode: string) => void;
   onBirthDateChange?: (year: number, month: number, day: number) => void;
@@ -379,10 +379,10 @@ export default function SajuTable({
   }, [currentAge]); // selectedSaeunAge 의존성 제거하여 항상 업데이트되도록
   
   // 歲運 클릭 핸들러 (내부용)
-  const handleSaeunAgeClick = useCallback((age: number) => {
+  const handleSaeunAgeClick = useCallback((age: number, sky: string, earth: string) => {
     setSelectedSaeunAge(age);
     if (onSaeunClick) {
-      onSaeunClick(age);
+      onSaeunClick(age, sky, earth);
     }
   }, [onSaeunClick]);
   
@@ -575,15 +575,11 @@ export default function SajuTable({
 
   // 세운 컬럼 데이터 (displayMode === 'saeun'일 때)
   const saeunColumnData = useMemo(() => {
-    if (!focusedSaeun || !saeunData) return null;
-    
-    // saeunData에서 focusedSaeun 나이에 해당하는 간지 찾기
-    const saeunIndex = saeunData.ages.findIndex((age: number) => age === focusedSaeun);
-    if (saeunIndex === -1) return null;
+    if (!focusedSaeun) return null;
     
     const dayStem = saju.day.sky;
-    const saeunSky = saeunData.skyStems[saeunIndex];
-    const saeunEarth = saeunData.earthBranches[saeunIndex];
+    const saeunSky = focusedSaeun.sky;
+    const saeunEarth = focusedSaeun.earth;
     
     return {
       sky: saeunSky,
@@ -592,7 +588,7 @@ export default function SajuTable({
       earthlyYukjin: calculateEarthlyBranchYukjin(dayStem, saeunEarth),
       jijanggan: (EARTHLY_BRANCH_HIDDEN_STEMS[saeunEarth] || []).join('')
     };
-  }, [focusedSaeun, saeunData, saju.day.sky]);
+  }, [focusedSaeun, saju.day.sky]);
 
   // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 - 메모이제이션)
   // 각 주별로 신살 배열을 반환
@@ -1655,7 +1651,9 @@ export default function SajuTable({
                 }`}
                 onClick={() => {
                   if (!isDragging.current) {
-                    handleSaeunAgeClick(age);
+                    const sky = saeunGanji.skies[colIndex];
+                    const earth = saeunGanji.earths[colIndex];
+                    handleSaeunAgeClick(age, sky, earth);
                   }
                 }}
                 data-testid={`text-saeun-age-${colIndex}`}
@@ -1777,12 +1775,18 @@ export default function SajuTable({
                       // 선택된 나이도 설정 (월운 계산용)
                       setSelectedSaeunAge(correspondingAge);
                       if (onSaeunClick) {
-                        onSaeunClick(correspondingAge);
+                        const ageIndex = saeunAges.indexOf(correspondingAge);
+                        const sky = saeunGanji.skies[ageIndex];
+                        const earth = saeunGanji.earths[ageIndex];
+                        onSaeunClick(correspondingAge, sky, earth);
                       }
                     } else {
                       // 나머지 열은 세운 모드로 전환하고 기존 처리
                       setIsWolunActive(false);
-                      handleSaeunAgeClick(correspondingAge);
+                      const ageIndex = saeunAges.indexOf(correspondingAge);
+                      const sky = saeunGanji.skies[ageIndex];
+                      const earth = saeunGanji.earths[ageIndex];
+                      handleSaeunAgeClick(correspondingAge, sky, earth);
                     }
                   }
                 }}
