@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DaeunPeriod } from "@/lib/daeun-calculator";
-import { getWuxingColor } from "@/lib/wuxing-colors";
+import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 
 interface DaeunData {
   isForward: boolean;
@@ -80,7 +80,8 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
                       : getWuxingColor(sky),
                     fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                     fontWeight: '900',
-                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)',
+                    color: isCurrentDaeun ? 'red' : getWuxingTextColor(sky)
                   }}
                   onClick={() => onDaeunSelect && onDaeunSelect(period)}
                   data-testid={`button-daeun-sky-${sky}`}
@@ -109,7 +110,8 @@ export default function DaeunDisplay({ daeunData, focusedDaeun, onDaeunSelect }:
                       : getWuxingColor(earth),
                     fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                     fontWeight: '900',
-                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)',
+                    color: isCurrentDaeun ? 'red' : getWuxingTextColor(earth)
                   }}
                   onClick={() => onDaeunSelect && onDaeunSelect(period)}
                   data-testid={`button-daeun-earth-${earth}`}

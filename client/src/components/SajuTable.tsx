@@ -12,6 +12,7 @@ import BirthTimeSelector from "@/components/BirthTimeSelector";
 import BirthDateSelector from "@/components/BirthDateSelector";
 import { Button } from "@/components/ui/button";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
+import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -1060,7 +1061,7 @@ export default function SajuTable({
                 key={`sky-${index}`} 
                 className="text-center font-bold border-r border-border flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   minHeight: '2.5rem',
                   padding: '0',
@@ -1076,10 +1077,11 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ 
+                  <span style={{ 
                     fontSize: '38px',
                     fontWeight: '900',
-                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)',
+                    color: getWuxingTextColor(col.sky)
                   }}>{col.sky}</span>
                 )}
               </div>
@@ -1106,7 +1108,7 @@ export default function SajuTable({
                   isHourEarth || isDayEarth ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
                 }`}
                 style={{ 
-                  backgroundColor: isGongmangPosition ? '#9CA3AF' : 'white',
+                  backgroundColor: isGongmangPosition ? '#9CA3AF' : getWuxingColor(col.earth),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   minHeight: '2.5rem',
                   padding: '0',
@@ -1133,10 +1135,11 @@ export default function SajuTable({
                       style={{ margin: '0', padding: '0' }}
                     />
                   ) : (
-                    <span className="text-gray-800" style={{ 
+                    <span style={{ 
                       fontSize: '38px',
                       fontWeight: '900',
-                      textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                      textShadow: '0 0 1px rgba(0,0,0,0.5)',
+                      color: getWuxingTextColor(col.earth)
                     }}>{col.earth}</span>
                   )}
                 </div>
@@ -1279,7 +1282,7 @@ export default function SajuTable({
                 key={`daeun-sky-${colIndex}`}
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(sky),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0'
@@ -1294,7 +1297,10 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '22px' }}>{sky}</span>
+                  <span style={{ 
+                    fontSize: '22px',
+                    color: getWuxingTextColor(sky)
+                  }}>{sky}</span>
                 )}
               </div>
             );
@@ -1312,7 +1318,7 @@ export default function SajuTable({
                 key={`daeun-earth-${colIndex}`}
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(earth),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0',
@@ -1337,7 +1343,10 @@ export default function SajuTable({
                       style={{ margin: '0', padding: '0' }}
                     />
                   ) : (
-                    <span className="text-gray-800" style={{ fontSize: '22px' }}>{earth}</span>
+                    <span style={{ 
+                      fontSize: '22px',
+                      color: getWuxingTextColor(earth)
+                    }}>{earth}</span>
                   )}
                 </div>
               </div>
@@ -1400,7 +1409,7 @@ export default function SajuTable({
                 key={`saeun-sky-${colIndex}`}
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(sky),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0'
@@ -1415,7 +1424,10 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{sky}</span>
+                  <span style={{ 
+                    fontSize: '19px',
+                    color: getWuxingTextColor(sky)
+                  }}>{sky}</span>
                 )}
               </div>
             );
@@ -1441,7 +1453,7 @@ export default function SajuTable({
                 key={`saeun-earth-${colIndex}`}
                 className="text-center font-bold border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(chineseChar),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0'
@@ -1456,7 +1468,10 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{chineseChar}</span>
+                  <span style={{ 
+                    fontSize: '19px',
+                    color: getWuxingTextColor(chineseChar)
+                  }}>{chineseChar}</span>
                 )}
               </div>
             );
@@ -1524,7 +1539,7 @@ export default function SajuTable({
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
                 style={{ 
-                  backgroundColor: isWolunActive ? undefined : 'white',
+                  backgroundColor: isWolunActive ? undefined : getWuxingColor(sky),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0',
@@ -1540,7 +1555,10 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{sky}</span>
+                  <span style={{ 
+                    fontSize: '19px',
+                    color: isWolunActive ? undefined : getWuxingTextColor(sky)
+                  }}>{sky}</span>
                 )}
               </div>
             );
@@ -1570,7 +1588,7 @@ export default function SajuTable({
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
                 style={{ 
-                  backgroundColor: isWolunActive ? undefined : 'white',
+                  backgroundColor: isWolunActive ? undefined : getWuxingColor(chineseChar),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0'
@@ -1585,7 +1603,10 @@ export default function SajuTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ fontSize: '19px' }}>{chineseChar}</span>
+                  <span style={{ 
+                    fontSize: '19px',
+                    color: isWolunActive ? undefined : getWuxingTextColor(chineseChar)
+                  }}>{chineseChar}</span>
                 )}
               </div>
             );
