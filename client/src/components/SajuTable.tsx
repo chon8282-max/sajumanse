@@ -1191,22 +1191,8 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 공망 정보 (우측 셀) */}
-          <div 
-            className="py-1 text-center text-sm flex items-start justify-center bg-white dark:bg-gray-900 row-span-2"
-            data-testid="text-gongmang-info"
-          >
-            {gongmang.length > 0 && (
-              <div className="flex items-center gap-1">
-                <span className="text-black dark:text-white font-medium">
-                  {gongmang.map(earth => convertText(earth)).join('')}
-                </span>
-                <span className="text-blue-600 dark:text-blue-400 font-medium">
-                  {convertText('空亡')}
-                </span>
-              </div>
-            )}
-          </div>
+          {/* 빈 칸 */}
+          <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
         {/* 5행: 지장간 / 신살 (토글) */}
@@ -1248,7 +1234,7 @@ export default function SajuTable({
               </div>
             )))
           )}
-          {/* 빈 칸 (공망 셀과 정렬) */}
+          {/* 빈 칸 */}
           <div className="bg-white dark:bg-gray-900"></div>
         </div>
 
@@ -1256,14 +1242,14 @@ export default function SajuTable({
         {showSibiSinsal && (
           <div className="grid grid-cols-6 border-b border-border">
             {/* 1열: 빈칸 */}
-            <div className="py-1 border-r border-border min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-1" />
+            <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-1" />
             {/* 생시모름일 때 추가 빈칸 (2열) */}
             {sajuColumns.length === 3 && (
-              <div className="py-1 border-r border-border min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-2" />
+              <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-2" />
             )}
             
-            {/* 3-5열(생시모름) 또는 2-5열(생시있음): 12신살 */}
-            {sibiSinsal.map((sinsal, index) => {
+            {/* 2-4열(생시있음) 또는 3-4열(생시모름): 12신살 */}
+            {sibiSinsal.slice(0, 2).map((sinsal, index) => {
               // 한자-한글 변환
               const displayText = showKorean && SINSAL_KOREAN_MAP[sinsal] 
                 ? SINSAL_KOREAN_MAP[sinsal] 
@@ -1280,8 +1266,25 @@ export default function SajuTable({
               );
             })}
             
+            {/* 5열: 공망 정보 */}
+            <div 
+              className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"
+              data-testid="text-gongmang-info"
+            >
+              {gongmang.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <span className="text-black dark:text-white font-medium">
+                    {gongmang.map(earth => convertText(earth)).join('')}
+                  </span>
+                  <span className="text-blue-600 dark:text-blue-400 font-medium">
+                    {convertText('空亡')}
+                  </span>
+                </div>
+              )}
+            </div>
+            
             {/* 6열: 빈칸 */}
-            <div className="py-1 min-h-[1.5rem] bg-white" data-testid="text-sibisinsal-empty-6" />
+            <div className="py-1 min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-6" />
           </div>
         )}
 
