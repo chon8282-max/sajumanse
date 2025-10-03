@@ -1248,8 +1248,8 @@ export default function SajuTable({
               <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-2" />
             )}
             
-            {/* 2-4열(생시있음) 또는 3-4열(생시모름): 12신살 */}
-            {sibiSinsal.slice(0, 2).map((sinsal, index) => {
+            {/* 3-5열(생시모름) 또는 2-4열(생시있음): 12신살 */}
+            {sibiSinsal.map((sinsal, index) => {
               // 한자-한글 변환
               const displayText = showKorean && SINSAL_KOREAN_MAP[sinsal] 
                 ? SINSAL_KOREAN_MAP[sinsal] 
@@ -1266,9 +1266,12 @@ export default function SajuTable({
               );
             })}
             
-            {/* 5열: 공망 정보 */}
+            {/* 5열: 빈칸 */}
+            <div className="py-1 border-r border-border min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-5" />
+            
+            {/* 6열: 공망 정보 */}
             <div 
-              className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"
+              className="py-1 text-center text-sm min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"
               data-testid="text-gongmang-info"
             >
               {gongmang.length > 0 && (
@@ -1282,9 +1285,6 @@ export default function SajuTable({
                 </div>
               )}
             </div>
-            
-            {/* 6열: 빈칸 */}
-            <div className="py-1 min-h-[1.5rem] bg-white dark:bg-gray-900" data-testid="text-sibisinsal-empty-6" />
           </div>
         )}
 
