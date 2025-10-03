@@ -165,20 +165,19 @@ export function calculateSaju(
     calcDate = new Date(year, month - 1, day, defaultHour, defaultMinute);
   }
   
+  // 야자시 체크 (23:31~00:30)
+  const isNightZiShi = timeInMinutes >= 1411; // 23:31 이후
+  
   // 일주 계산을 위한 날짜 준비
   let sajuDate: Date;
   if (solarDate) {
     // 서버에서 일시주용 양력 날짜를 제공한 경우 사용
     sajuDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay);
-    if (timeInMinutes >= 1411) { // 23시 31분부터 다음날 (자시 시작)
-      sajuDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay + 1);
-    }
+    // 야자시는 일간이 바뀌지 않으므로 다음날로 넘기지 않음
   } else {
     // 기존 방식 (일주 계산을 위한 날짜 조정)
     sajuDate = new Date(calcDate);
-    if (timeInMinutes >= 1411) { // 23시 31분부터 다음날 (자시 시작)
-      sajuDate = new Date(year, month - 1, day + 1);
-    }
+    // 야자시는 일간이 바뀌지 않으므로 다음날로 넘기지 않음
   }
   
   // 입춘 기준으로 년도 조정 (이중 조정 방지)
@@ -308,8 +307,8 @@ export function calculateSaju(
   // 시주 계산 (전통 시간 구간 기준 - 31분부터 시간 변경)
   let hourIndex: number;
   
-  // 23:31-01:30 자시, 01:31-03:30 축시, ... 순서대로 정확한 시간 구분
-  if ((timeInMinutes >= 1411) || (timeInMinutes >= 0 && timeInMinutes <= 90)) { // 23:31-01:30 (자시)
+  // 00:31-01:30 자시, 01:31-03:30 축시, ... 순서대로 정확한 시간 구분
+  if (timeInMinutes >= 0 && timeInMinutes <= 90) { // 00:31-01:30 (자시)
     hourIndex = 0; // 子時
   } else if (timeInMinutes >= 91 && timeInMinutes <= 210) { // 01:31-03:30 (축시)
     hourIndex = 1; // 丑時
@@ -333,6 +332,8 @@ export function calculateSaju(
     hourIndex = 10; // 戌時
   } else if (timeInMinutes >= 1291 && timeInMinutes <= 1410) { // 21:31-23:30 (해시)
     hourIndex = 11; // 亥時
+  } else if (timeInMinutes >= 1411) { // 23:31-00:30 (야자시)
+    hourIndex = 12; // 夜子時 (특별 처리)
   } else {
     hourIndex = 0; // 기본값: 자시
   }
@@ -353,8 +354,17 @@ export function calculateSaju(
     hourSkyStartIndex = 8; // 壬子時부터 시작
   }
   
-  const hourSkyIndex = (hourSkyStartIndex + hourIndex) % 10;
-  const hourEarthIndex = hourIndex;
+  // 야자시 특별 처리: 해시 천간 + 1, 지지는 子
+  let hourSkyIndex: number;
+  let hourEarthIndex: number;
+  
+  if (hourIndex === 12) { // 야자시
+    hourSkyIndex = (hourSkyStartIndex + 12) % 10; // 해시(11) 천간 + 1
+    hourEarthIndex = 0; // 子
+  } else {
+    hourSkyIndex = (hourSkyStartIndex + hourIndex) % 10;
+    hourEarthIndex = hourIndex;
+  }
   
   // 절입일 전월 간지 적용 시 조정된 년주 사용
   const yearSky = CHEONGAN[adjustedYearSkyIndex];

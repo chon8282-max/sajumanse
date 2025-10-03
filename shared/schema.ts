@@ -115,7 +115,7 @@ export const JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "�
 
 // 전통 시간대 (십이시)
 export const TRADITIONAL_TIME_PERIODS = [
-  { code: "子時", name: "子時", range: "23:31~01:30", hour: 0 },
+  { code: "子時", name: "子時", range: "00:31~01:30", hour: 0 },
   { code: "丑時", name: "丑時", range: "01:31~03:30", hour: 2 },
   { code: "寅時", name: "寅時", range: "03:31~05:30", hour: 4 },
   { code: "卯時", name: "卯時", range: "05:31~07:30", hour: 6 },
@@ -127,6 +127,7 @@ export const TRADITIONAL_TIME_PERIODS = [
   { code: "酉時", name: "酉時", range: "17:31~19:30", hour: 18 },
   { code: "戌時", name: "戌時", range: "19:31~21:30", hour: 20 },
   { code: "亥時", name: "亥時", range: "21:31~23:30", hour: 22 },
+  { code: "夜子時", name: "夜子時", range: "23:31~00:30", hour: 23 },
 ] as const;
 
 // 한글/한자 매핑 데이터
