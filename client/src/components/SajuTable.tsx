@@ -511,13 +511,31 @@ export default function SajuTable({
     return columns;
   }, [saju]);
 
-  // 12신살 계산 (년지 기준)
+  // activeColumns - 대운 클릭 시 2열에 대운 삽입
+  const activeColumns = useMemo(() => {
+    if (!focusedDaeun) {
+      // 대운이 없으면 기존 sajuColumns 그대로
+      return sajuColumns;
+    }
+    
+    // 대운이 있으면 2열(생시있음) 또는 3열(생시모름)에 삽입
+    const daeunColumn = {
+      label: "대운",
+      sky: focusedDaeun.sky,
+      earth: focusedDaeun.earth
+    };
+    
+    // 기존 sajuColumns 앞에 대운 추가
+    return [daeunColumn, ...sajuColumns];
+  }, [focusedDaeun, sajuColumns]);
+
+  // 12신살 계산 (년지 기준) - activeColumns 기반
   const sibiSinsal = useMemo(() => {
-    const hasHourPillar = saju.hour.sky && saju.hour.earth;
-    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
+    // activeColumns 길이만큼 빈 배열 생성
+    const defaultArray = activeColumns.map(() => '');
     if (!saju?.year?.earth) return defaultArray;
-    return calculateSibiSinsal(saju.year.earth, sajuColumns);
-  }, [saju?.year?.earth, saju?.hour?.sky, saju?.hour?.earth, sajuColumns]);
+    return calculateSibiSinsal(saju.year.earth, activeColumns);
+  }, [saju?.year?.earth, activeColumns]);
 
   // 공망 계산 (일주 기준)
   const gongmang = useMemo(() => {
@@ -530,35 +548,35 @@ export default function SajuTable({
     return gongmang.includes(earth);
   }, [gongmang]);
 
-  // 육친 계산 (메모이제이션)
+  // 육친 계산 (메모이제이션) - activeColumns 기반
   const { heavenlyYukjin, earthlyYukjin } = useMemo(() => {
     const dayStem = saju.day.sky;
     return {
-      heavenlyYukjin: sajuColumns.map(col => {
+      heavenlyYukjin: activeColumns.map(col => {
         // 모든 천간을 동일한 방식으로 계산 (일간은 比肩으로 계산됨)
         return calculateYukjin(dayStem, col.sky);
       }),
-      earthlyYukjin: sajuColumns.map(col => {
+      earthlyYukjin: activeColumns.map(col => {
         return calculateEarthlyBranchYukjin(dayStem, col.earth);
       })
     };
-  }, [sajuColumns, saju.day.sky]);
+  }, [activeColumns, saju.day.sky]);
 
-  // 지장간 계산 (메모이제이션)
+  // 지장간 계산 (메모이제이션) - activeColumns 기반
   const jijanggan = useMemo(() => {
-    return sajuColumns.map(col => {
+    return activeColumns.map(col => {
       const hiddenStems = EARTHLY_BRANCH_HIDDEN_STEMS[col.earth] || [];
       return hiddenStems.join('');
     });
-  }, [sajuColumns]);
+  }, [activeColumns]);
 
   // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 - 메모이제이션)
-  // 각 주별로 신살 배열을 반환
+  // activeColumns 기반으로 신살 배열을 반환
   const allShinsalArrays = useMemo(() => {
-    const hasHourPillar = saju.hour.sky && saju.hour.earth;
-    const defaultArray = hasHourPillar ? [[], [], [], []] : [[], [], []];
-    
-    if (!saju?.day?.sky) return defaultArray;
+    if (!saju?.day?.sky) {
+      // 대운 포함 길이만큼 빈 배열 반환
+      return activeColumns.map(() => []);
+    }
     
     // 모든 천간과 지지 정보 수집
     const yearSky = saju.year.sky;
@@ -579,30 +597,42 @@ export default function SajuTable({
       yearEarth, monthEarth, dayEarth, hourEarth
     );
     
-    // 각 주별로 두 결과를 합침
-    const result: string[][] = [];
-    if (hasHourPillar) {
-      result.push([
-        ...formatShinSalArray(secondRowResult.hourPillar, showKorean),
-        ...formatShinSalArray(firstRowResult.hourPillar, showKorean)
-      ]);
-    }
-    result.push([
-      ...formatShinSalArray(secondRowResult.dayPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.dayPillar, showKorean)
-    ]);
-    result.push([
-      ...formatShinSalArray(secondRowResult.monthPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.monthPillar, showKorean)
-    ]);
-    result.push([
-      ...formatShinSalArray(secondRowResult.yearPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.yearPillar, showKorean)
-    ]);
+    // activeColumns 순서대로 신살 배열 생성
+    const result: string[][] = activeColumns.map((col) => {
+      // 대운인 경우 대운 신살 계산 (일단 빈 배열)
+      if (col.label === "대운" && focusedDaeun) {
+        // TODO: 대운 신살 계산 로직 추가
+        return [];
+      }
+      
+      // 기존 pillar 신살 계산
+      if (col.label === "시주") {
+        return [
+          ...formatShinSalArray(secondRowResult.hourPillar, showKorean),
+          ...formatShinSalArray(firstRowResult.hourPillar, showKorean)
+        ];
+      } else if (col.label === "일주") {
+        return [
+          ...formatShinSalArray(secondRowResult.dayPillar, showKorean),
+          ...formatShinSalArray(firstRowResult.dayPillar, showKorean)
+        ];
+      } else if (col.label === "월주") {
+        return [
+          ...formatShinSalArray(secondRowResult.monthPillar, showKorean),
+          ...formatShinSalArray(firstRowResult.monthPillar, showKorean)
+        ];
+      } else if (col.label === "년주") {
+        return [
+          ...formatShinSalArray(secondRowResult.yearPillar, showKorean),
+          ...formatShinSalArray(firstRowResult.yearPillar, showKorean)
+        ];
+      }
+      return [];
+    });
     
     return result;
-  }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
-      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean]);
+  }, [activeColumns, saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean, focusedDaeun]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -1031,17 +1061,13 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 1행: 천간 육친 / 오행 */}
-        <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
+        {/* 1행: 천간 육친 / 오행 - 7열 그리드 */}
+        <div className="grid grid-cols-7 border-b border-border">
+          {/* 1열: 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          )}
-          {/* 천간 육친/오행 표시 */}
+          {/* 천간 육친/오행 표시 - activeColumns 기반 */}
           {heavenlyYukjin.map((yukjin, index) => {
-            const skyCharacter = sajuColumns[index]?.sky;
+            const skyCharacter = activeColumns[index]?.sky;
             let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
             displayText = convertTextForSpecificRows(displayText);
             
@@ -1055,19 +1081,16 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 빈 칸 */}
+          {/* 7열: 빈 칸 (공망 위치) */}
           <div className="py-1 text-center text-sm font-medium min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 2행: 천간 */}
-        <div className="grid grid-cols-6">
-          {/* 빈 칸 */}
+        {/* 2행: 천간 - 7열 그리드 */}
+        <div className="grid grid-cols-7">
+          {/* 1열: 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          )}
-          {sajuColumns.map((col, index) => {
+          {/* activeColumns 기반 천간 표시 */}
+          {activeColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
             return (
               <div 
@@ -1101,22 +1124,21 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 빈 칸 */}
+          {/* 7열: 빈 칸 */}
           <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 3행: 지지 */}
-        <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
+        {/* 3행: 지지 - 7열 그리드 */}
+        <div className="grid grid-cols-7 border-b border-border">
+          {/* 1열: 빈 칸 */}
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          )}
-          {sajuColumns.map((col, index) => {
+          {/* activeColumns 기반 지지 표시 */}
+          {activeColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
-            const isHourEarth = index === 0;
-            const isDayEarth = index === 2;
+            // 시주 찾기: label이 "시주"인 경우
+            const isHourEarth = col.label === "시주";
+            // 일주 찾기: label이 "일주"인 경우
+            const isDayEarth = col.label === "일주";
             
             return (
               <div 
@@ -1164,20 +1186,17 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 빈 칸 */}
+          {/* 7열: 빈 칸 */}
           <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
-        {/* 4행: 지지 육친 / 오행 */}
-        <div className="grid grid-cols-6 border-b border-border">
-          {/* 빈 칸 */}
+        {/* 4행: 지지 육친 / 오행 - 7열 그리드 */}
+        <div className="grid grid-cols-7 border-b border-border">
+          {/* 1열: 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          {/* 생시모름일 때 추가 빈칸 (2열) */}
-          {sajuColumns.length === 3 && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
-          )}
+          {/* activeColumns 기반 지지 육친 표시 */}
           {earthlyYukjin.map((yukjin, index) => {
-            const earthCharacter = sajuColumns[index]?.earth;
+            const earthCharacter = activeColumns[index]?.earth;
             let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
             displayText = convertTextForSpecificRows(displayText);
             
@@ -1191,7 +1210,7 @@ export default function SajuTable({
               </div>
             );
           })}
-          {/* 빈 칸 */}
+          {/* 7열: 빈 칸 */}
           <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
         </div>
 
