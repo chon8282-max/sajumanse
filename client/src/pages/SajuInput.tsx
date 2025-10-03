@@ -282,6 +282,13 @@ export default function SajuInput() {
         // 사주 목록 캐시 새로고침 (저장된 사주가 리스트에 나타나도록)
         queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
         
+        // 감정중인 사주로 sessionStorage에 저장 (앱 종료 전까지 유지)
+        if (result.data?.record?.id) {
+          sessionStorage.setItem('currentSajuId', result.data.record.id);
+          sessionStorage.setItem('currentSajuName', formData.name);
+          sessionStorage.setItem('currentSajuTimestamp', new Date().toISOString());
+        }
+        
         // 성공시 사주 결과 페이지로 이동
         if (submitIsEditMode && editId) {
           // 편집 모드에서는 편집한 사주의 결과 페이지로 이동
