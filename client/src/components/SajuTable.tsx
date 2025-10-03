@@ -1078,7 +1078,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '38px',
+                    fontSize: '42px',
                     fontWeight: '900',
                     textShadow: '0 0 1px rgba(0,0,0,0.5)',
                     color: getWuxingTextColor(col.sky)
@@ -1136,7 +1136,7 @@ export default function SajuTable({
                     />
                   ) : (
                     <span style={{ 
-                      fontSize: '38px',
+                      fontSize: '42px',
                       fontWeight: '900',
                       textShadow: '0 0 1px rgba(0,0,0,0.5)',
                       color: getWuxingTextColor(col.earth)
@@ -1298,7 +1298,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '22px',
+                    fontSize: '26px',
                     color: getWuxingTextColor(sky)
                   }}>{sky}</span>
                 )}
@@ -1344,7 +1344,7 @@ export default function SajuTable({
                     />
                   ) : (
                     <span style={{ 
-                      fontSize: '22px',
+                      fontSize: '26px',
                       color: getWuxingTextColor(earth)
                     }}>{earth}</span>
                   )}
@@ -1425,7 +1425,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '19px',
+                    fontSize: '23px',
                     color: getWuxingTextColor(sky)
                   }}>{sky}</span>
                 )}
@@ -1469,7 +1469,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '19px',
+                    fontSize: '23px',
                     color: getWuxingTextColor(chineseChar)
                   }}>{chineseChar}</span>
                 )}
@@ -1556,7 +1556,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '19px',
+                    fontSize: '23px',
                     color: isWolunActive ? undefined : getWuxingTextColor(sky)
                   }}>{sky}</span>
                 )}
@@ -1604,7 +1604,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '19px',
+                    fontSize: '23px',
                     color: isWolunActive ? undefined : getWuxingTextColor(chineseChar)
                   }}>{chineseChar}</span>
                 )}
