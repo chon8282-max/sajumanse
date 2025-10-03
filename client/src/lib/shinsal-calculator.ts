@@ -69,6 +69,21 @@ const WOLDEOK_GWIIN_MAP: Record<string, string> = {
   "未": "甲"
 };
 
+// 괴강살 간지 목록 (庚戌, 庚辰, 壬辰, 戊戌, 壬戌)
+const GOEGANG_SAL_GANJI = ["庚戌", "庚辰", "壬辰", "戊戌", "壬戌"];
+
+// 백호대살 간지 목록 (甲辰, 乙未, 丙戌, 戊辰, 丁丑, 壬戌, 癸丑)
+const BAEKHO_DAESAL_GANJI = ["甲辰", "乙未", "丙戌", "戊辰", "丁丑", "壬戌", "癸丑"];
+
+// 양인살 매핑 테이블 (일간 → 양인살 지지)
+const YANGIN_SAL_MAP: Record<string, string> = {
+  "甲": "卯",
+  "丙": "午",
+  "戊": "午",
+  "庚": "酉",
+  "壬": "子"
+};
+
 export interface ShinSalResult {
   yearPillar: string[];
   monthPillar: string[];
@@ -257,32 +272,13 @@ export function calculateWoldeokGwiin(
 
 /**
  * 괴강살(魁罡煞) 계산
- * 일주가 庚戌, 庚辰, 壬辰, 戊戌 중 하나일 때
+ * 년월일시 어느 주든 庚戌, 庚辰, 壬辰, 戊戌, 壬戌 간지가 있을 때
  */
 export function calculateGoegangSal(
+  yearSky: string,
+  monthSky: string,
   daySky: string,
-  dayEarth: string
-): ShinSalResult {
-  const result: ShinSalResult = {
-    yearPillar: [],
-    monthPillar: [],
-    dayPillar: [],
-    hourPillar: []
-  };
-
-  const dayGanji = daySky + dayEarth;
-  if (GOEGANG_SAL_DAYGANJI.includes(dayGanji)) {
-    result.dayPillar.push("魁罡煞");
-  }
-
-  return result;
-}
-
-/**
- * 백호대살(白虎大煞) 계산
- * 연지를 기준으로 특정 지지를 찾습니다.
- */
-export function calculateBaekhoDaesal(
+  hourSky: string,
   yearEarth: string,
   monthEarth: string,
   dayEarth: string,
@@ -295,22 +291,103 @@ export function calculateBaekhoDaesal(
     hourPillar: []
   };
 
-  // 연지에 해당하는 백호대살 지지 찾기
-  const baekhoTarget = BAEKHO_DAESAL_MAP[yearEarth];
-  if (!baekhoTarget) return result;
+  const yearGanji = yearSky + yearEarth;
+  const monthGanji = monthSky + monthEarth;
+  const dayGanji = daySky + dayEarth;
+  const hourGanji = hourSky + hourEarth;
 
-  // 각 주의 지지에서 백호대살에 해당하는지 확인
-  if (yearEarth === baekhoTarget) {
+  if (GOEGANG_SAL_GANJI.includes(yearGanji)) {
+    result.yearPillar.push("魁罡煞");
+  }
+  if (GOEGANG_SAL_GANJI.includes(monthGanji)) {
+    result.monthPillar.push("魁罡煞");
+  }
+  if (GOEGANG_SAL_GANJI.includes(dayGanji)) {
+    result.dayPillar.push("魁罡煞");
+  }
+  if (GOEGANG_SAL_GANJI.includes(hourGanji)) {
+    result.hourPillar.push("魁罡煞");
+  }
+
+  return result;
+}
+
+/**
+ * 백호대살(白虎大煞) 계산
+ * 년월일시 어느 주든 甲辰, 乙未, 丙戌, 戊辰, 丁丑, 壬戌, 癸丑 간지가 있을 때
+ */
+export function calculateBaekhoDaesal(
+  yearSky: string,
+  monthSky: string,
+  daySky: string,
+  hourSky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const yearGanji = yearSky + yearEarth;
+  const monthGanji = monthSky + monthEarth;
+  const dayGanji = daySky + dayEarth;
+  const hourGanji = hourSky + hourEarth;
+
+  if (BAEKHO_DAESAL_GANJI.includes(yearGanji)) {
     result.yearPillar.push("白虎大煞");
   }
-  if (monthEarth === baekhoTarget) {
+  if (BAEKHO_DAESAL_GANJI.includes(monthGanji)) {
     result.monthPillar.push("白虎大煞");
   }
-  if (dayEarth === baekhoTarget) {
+  if (BAEKHO_DAESAL_GANJI.includes(dayGanji)) {
     result.dayPillar.push("白虎大煞");
   }
-  if (hourEarth === baekhoTarget) {
+  if (BAEKHO_DAESAL_GANJI.includes(hourGanji)) {
     result.hourPillar.push("白虎大煞");
+  }
+
+  return result;
+}
+
+/**
+ * 양인살(羊刃煞) 계산
+ * 일간을 기준으로 년월일시의 지지에서 양인살을 찾습니다.
+ */
+export function calculateYanginSal(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  // 일간에 해당하는 양인살 지지 찾기
+  const yanginTarget = YANGIN_SAL_MAP[daySky];
+  if (!yanginTarget) return result;
+
+  // 각 주의 지지에서 양인살에 해당하는지 확인
+  if (yearEarth === yanginTarget) {
+    result.yearPillar.push("羊刃煞");
+  }
+  if (monthEarth === yanginTarget) {
+    result.monthPillar.push("羊刃煞");
+  }
+  if (dayEarth === yanginTarget) {
+    result.dayPillar.push("羊刃煞");
+  }
+  if (hourEarth === yanginTarget) {
+    result.hourPillar.push("羊刃煞");
   }
 
   return result;
@@ -338,7 +415,7 @@ export function calculateAllShinSal(
 }
 
 /**
- * 1행 신살 계산 (천덕귀인, 월덕귀인, 괴강살, 백호대살)
+ * 1행 신살 계산 (천덕귀인, 월덕귀인, 괴강살, 백호대살, 양인살)
  * 월지를 기준으로 천간을 찾는 신살들
  */
 export function calculateFirstRowShinSal(
@@ -363,37 +440,28 @@ export function calculateFirstRowShinSal(
   );
   
   // 괴강살 계산
-  const goegangSal = calculateGoegangSal(daySky, dayEarth);
+  const goegangSal = calculateGoegangSal(
+    yearSky, monthSky, daySky, hourSky,
+    yearEarth, monthEarth, dayEarth, hourEarth
+  );
   
   // 백호대살 계산
-  const baekhoDaesal = calculateBaekhoDaesal(yearEarth, monthEarth, dayEarth, hourEarth);
+  const baekhoDaesal = calculateBaekhoDaesal(
+    yearSky, monthSky, daySky, hourSky,
+    yearEarth, monthEarth, dayEarth, hourEarth
+  );
+  
+  // 양인살 계산
+  const yanginSal = calculateYanginSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
   
   // 모든 신살 결과를 합쳐서 반환
   let result = mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
   result = mergeShinSalResults(result, goegangSal);
   result = mergeShinSalResults(result, baekhoDaesal);
+  result = mergeShinSalResults(result, yanginSal);
   
   return result;
 }
-
-// 괴강살 일주 목록 (庚戌, 庚辰, 壬辰, 戊戌)
-const GOEGANG_SAL_DAYGANJI = ["庚戌", "庚辰", "壬辰", "戊戌"];
-
-// 백호대살 매핑 테이블 (연지 → 백호대살 지지)
-const BAEKHO_DAESAL_MAP: Record<string, string> = {
-  "子": "酉",
-  "丑": "午",
-  "寅": "卯",
-  "卯": "子",
-  "辰": "酉",
-  "巳": "午",
-  "午": "卯",
-  "未": "子",
-  "申": "酉",
-  "酉": "午",
-  "戌": "卯",
-  "亥": "子"
-};
 
 // 신살 한자-한글 변환 매핑
 const SHINSAL_KOREAN_MAP: Record<string, string> = {
@@ -402,7 +470,8 @@ const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "천을귀인": "천을귀인",
   "문창귀인": "문창귀인",
   "魁罡煞": "괴강살",
-  "白虎大煞": "백호대살"
+  "白虎大煞": "백호대살",
+  "羊刃煞": "양인살"
 };
 
 /**
