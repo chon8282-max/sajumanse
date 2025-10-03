@@ -1301,7 +1301,11 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-age-${colIndex}`}
-                className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white bg-blue-50 dark:bg-blue-950/30 pt-[0px] pb-[0px]"
+                className={`py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer pt-[0px] pb-[0px] ${
+                  isHighlighted 
+                    ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-bold' 
+                    : 'hover-elevate active-elevate-2 text-black dark:text-white bg-blue-50 dark:bg-blue-950/30'
+                }`}
                 onClick={() => {
                   const targetDaeun = daeunPeriods.find(p => p.startAge === age);
                   if (targetDaeun && onDaeunClick) {
@@ -1320,16 +1324,27 @@ export default function SajuTable({
         <div className="grid grid-cols-10">
           {daeunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky, showKorean);
+            const age = daeunAges[colIndex];
+            const isFocusedDaeun = focusedDaeun && focusedDaeun.startAge === age;
+            const isCurrentDaeun = currentAge && age <= currentAge && currentAge < age + 10;
+            const isHighlighted = isFocusedDaeun || (isCurrentDaeun && !focusedDaeun);
+            
             return (
               <div 
                 key={`daeun-sky-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer"
                 style={{ 
-                  backgroundColor: getWuxingColor(sky),
+                  backgroundColor: isHighlighted ? 'rgba(239, 68, 68, 0.2)' : getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
+                }}
+                onClick={() => {
+                  const targetDaeun = daeunPeriods.find(p => p.startAge === age);
+                  if (targetDaeun && onDaeunClick) {
+                    onDaeunClick(targetDaeun);
+                  }
                 }}
                 data-testid={`text-daeun-sky-${colIndex}`}
               >
@@ -1343,8 +1358,10 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '26px',
-                    color: getWuxingTextColor(sky),
-                    lineHeight: '1'
+                    color: isHighlighted ? '#dc2626' : getWuxingTextColor(sky),
+                    lineHeight: '1',
+                    fontWeight: isHighlighted ? 'bold' : '900',
+                    textShadow: isHighlighted ? '0 0 2px rgba(220, 38, 38, 0.5)' : '0 0 1px rgba(0,0,0,0.5)'
                   }}>{convertText(sky)}</span>
                 )}
               </div>
@@ -1356,18 +1373,28 @@ export default function SajuTable({
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth, showKorean);
+            const age = daeunAges[colIndex];
+            const isFocusedDaeun = focusedDaeun && focusedDaeun.startAge === age;
+            const isCurrentDaeun = currentAge && age <= currentAge && currentAge < age + 10;
+            const isHighlighted = isFocusedDaeun || (isCurrentDaeun && !focusedDaeun);
             
             return (
               <div 
                 key={`daeun-earth-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer"
                 style={{ 
-                  backgroundColor: getWuxingColor(earth),
+                  backgroundColor: isHighlighted ? 'rgba(239, 68, 68, 0.2)' : getWuxingColor(earth),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
                   position: 'relative',
                   lineHeight: '1'
+                }}
+                onClick={() => {
+                  const targetDaeun = daeunPeriods.find(p => p.startAge === age);
+                  if (targetDaeun && onDaeunClick) {
+                    onDaeunClick(targetDaeun);
+                  }
                 }}
                 data-testid={`text-daeun-earth-${colIndex}`}
               >
@@ -1390,8 +1417,10 @@ export default function SajuTable({
                   ) : (
                     <span style={{ 
                       fontSize: '26px',
-                      color: getWuxingTextColor(earth),
-                      lineHeight: '1'
+                      color: isHighlighted ? '#dc2626' : getWuxingTextColor(earth),
+                      lineHeight: '1',
+                      fontWeight: isHighlighted ? 'bold' : '900',
+                      textShadow: isHighlighted ? '0 0 2px rgba(220, 38, 38, 0.5)' : '0 0 1px rgba(0,0,0,0.5)'
                     }}>{convertText(earth)}</span>
                   )}
                 </div>
