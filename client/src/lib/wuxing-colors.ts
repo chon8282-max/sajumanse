@@ -2,28 +2,56 @@
 export function getWuxingColor(character: string | null): string {
   if (!character) return "#ffffff";
   
-  // 갑을인묘=8cf8a0 (목 - Wood)
-  if (["甲", "乙", "寅", "卯"].includes(character)) {
-    return "#8cf8a0";
+  // 甲乙寅卯辰 = #5ea01c (목 - Wood)
+  if (["甲", "乙", "寅", "卯", "辰"].includes(character)) {
+    return "#5ea01c";
   }
-  // 병정사오=f8c0c9 (화 - Fire)
-  if (["丙", "丁", "巳", "午"].includes(character)) {
-    return "#f8c0c9";
+  // 丙丁巳午未 = #c13533 (화 - Fire)
+  if (["丙", "丁", "巳", "午", "未"].includes(character)) {
+    return "#c13533";
   }
-  // 무기진미술축=fbf5b3 (토 - Earth)
-  if (["戊", "己", "辰", "未", "戌", "丑"].includes(character)) {
-    return "#fbf5b3";
+  // 戊己 = #e6ca0f (토 - Earth)
+  if (["戊", "己"].includes(character)) {
+    return "#e6ca0f";
   }
-  // 경신신유=ffffff (금 - Metal)
-  if (["庚", "辛", "申", "酉"].includes(character)) {
-    return "#ffffff";
+  // 庚辛申酉戌 = #fefcfd (금 - Metal)
+  if (["庚", "辛", "申", "酉", "戌"].includes(character)) {
+    return "#fefcfd";
   }
-  // 임계해자=cbcbca (수 - Water)
-  if (["壬", "癸", "亥", "子"].includes(character)) {
-    return "#cbcbca";
+  // 壬癸亥子丑 = #555555 (수 - Water)
+  if (["壬", "癸", "亥", "子", "丑"].includes(character)) {
+    return "#555555";
   }
   
   return "#ffffff"; // 기본값
+}
+
+// 오행별 글자 색상 반환
+export function getWuxingTextColor(character: string | null): string {
+  if (!character) return "#000000";
+  
+  // 甲乙寅卯辰 = 글자색 #ffffff
+  if (["甲", "乙", "寅", "卯", "辰"].includes(character)) {
+    return "#ffffff";
+  }
+  // 丙丁巳午未 = 글자색 #ffffff
+  if (["丙", "丁", "巳", "午", "未"].includes(character)) {
+    return "#ffffff";
+  }
+  // 戊己 = 글자색 #ffffff
+  if (["戊", "己"].includes(character)) {
+    return "#ffffff";
+  }
+  // 庚辛申酉戌 = 글자색 #141312
+  if (["庚", "辛", "申", "酉", "戌"].includes(character)) {
+    return "#141312";
+  }
+  // 壬癸亥子丑 = 글자색 #ffffff
+  if (["壬", "癸", "亥", "子", "丑"].includes(character)) {
+    return "#ffffff";
+  }
+  
+  return "#000000"; // 기본값
 }
 
 // 시간대별 십이지 매핑 (31분 기준)

@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { type SajuInfo } from "@shared/schema";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
+import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 
 interface CurrentTimeTableProps {
   saju: SajuInfo;
@@ -71,7 +72,7 @@ export default function CurrentTimeTable({
                 key={`sky-${index}`} 
                 className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0',
@@ -87,9 +88,10 @@ export default function CurrentTimeTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ 
+                  <span style={{ 
                     fontWeight: '900',
-                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)',
+                    color: getWuxingTextColor(col.sky)
                   }}>{col.sky}</span>
                 )}
               </div>
@@ -106,7 +108,7 @@ export default function CurrentTimeTable({
                 key={`earth-${index}`} 
                 className="text-center text-base font-bold border-r border-border last:border-r-0 min-h-[1.3rem] flex items-center justify-center"
                 style={{ 
-                  backgroundColor: 'white',
+                  backgroundColor: getWuxingColor(col.earth),
                   fontFamily: "'ChosunGanjiFont', 'ChosunKim', serif",
                   padding: '0',
                   margin: '0',
@@ -122,9 +124,10 @@ export default function CurrentTimeTable({
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span className="text-gray-800" style={{ 
+                  <span style={{ 
                     fontWeight: '900',
-                    textShadow: '0 0 1px rgba(0,0,0,0.5)'
+                    textShadow: '0 0 1px rgba(0,0,0,0.5)',
+                    color: getWuxingTextColor(col.earth)
                   }}>{col.earth}</span>
                 )}
               </div>
