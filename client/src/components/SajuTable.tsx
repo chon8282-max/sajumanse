@@ -1097,8 +1097,6 @@ export default function SajuTable({
           <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
-            const isGongmangPosition = isGongmang(col.earth);
-            const isYearEarth = index === 3;
             const isHourEarth = index === 0;
             const isDayEarth = index === 2;
             
@@ -1109,7 +1107,7 @@ export default function SajuTable({
                   isHourEarth || (isDayEarth && calendarType !== 'ganji') ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
                 }`}
                 style={{ 
-                  backgroundColor: (isGongmangPosition && !isYearEarth) ? '#9CA3AF' : getWuxingColor(col.earth),
+                  backgroundColor: getWuxingColor(col.earth),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '0',
                   margin: '0',
@@ -1311,7 +1309,6 @@ export default function SajuTable({
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth, showKorean);
-            const isGongmangPosition = isGongmang(earth);
             
             return (
               <div 
