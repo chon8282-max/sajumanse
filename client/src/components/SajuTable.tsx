@@ -1062,7 +1062,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
                 }}
@@ -1109,7 +1109,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(col.earth),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   position: 'relative',
                   lineHeight: '1'
@@ -1280,7 +1280,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
                 }}
@@ -1317,7 +1317,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(earth),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   position: 'relative',
                   lineHeight: '1'
@@ -1395,7 +1395,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
                 }}
@@ -1441,7 +1441,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: getWuxingColor(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
                 }}
@@ -1544,7 +1544,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   transition: 'all 0.3s ease',
                   lineHeight: '1'
@@ -1595,7 +1595,7 @@ export default function SajuTable({
                 style={{ 
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
-                  padding: '0',
+                  padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
                 }}
