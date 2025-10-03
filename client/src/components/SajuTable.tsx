@@ -1081,7 +1081,7 @@ export default function SajuTable({
                     fontWeight: '900',
                     textShadow: '0 0 1px rgba(0,0,0,0.5)',
                     color: getWuxingTextColor(col.sky)
-                  }}>{col.sky}</span>
+                  }}>{convertText(col.sky)}</span>
                 )}
               </div>
             );
@@ -1140,7 +1140,7 @@ export default function SajuTable({
                       fontWeight: '900',
                       textShadow: '0 0 1px rgba(0,0,0,0.5)',
                       color: getWuxingTextColor(col.earth)
-                    }}>{col.earth}</span>
+                    }}>{convertText(col.earth)}</span>
                   )}
                 </div>
               </div>
@@ -1296,7 +1296,7 @@ export default function SajuTable({
                   <span style={{ 
                     fontSize: '26px',
                     color: getWuxingTextColor(sky)
-                  }}>{sky}</span>
+                  }}>{convertText(sky)}</span>
                 )}
               </div>
             );
@@ -1342,7 +1342,7 @@ export default function SajuTable({
                     <span style={{ 
                       fontSize: '26px',
                       color: getWuxingTextColor(earth)
-                    }}>{earth}</span>
+                    }}>{convertText(earth)}</span>
                   )}
                 </div>
               </div>
@@ -1423,7 +1423,7 @@ export default function SajuTable({
                   <span style={{ 
                     fontSize: '23px',
                     color: getWuxingTextColor(sky)
-                  }}>{sky}</span>
+                  }}>{convertText(sky)}</span>
                 )}
               </div>
             );
@@ -1467,7 +1467,7 @@ export default function SajuTable({
                   <span style={{ 
                     fontSize: '23px',
                     color: getWuxingTextColor(chineseChar)
-                  }}>{chineseChar}</span>
+                  }}>{convertText(chineseChar)}</span>
                 )}
               </div>
             );
@@ -1554,7 +1554,7 @@ export default function SajuTable({
                   <span style={{ 
                     fontSize: '23px',
                     color: isWolunActive ? undefined : getWuxingTextColor(sky)
-                  }}>{sky}</span>
+                  }}>{convertText(sky)}</span>
                 )}
               </div>
             );
@@ -1602,7 +1602,7 @@ export default function SajuTable({
                   <span style={{ 
                     fontSize: '23px',
                     color: isWolunActive ? undefined : getWuxingTextColor(chineseChar)
-                  }}>{chineseChar}</span>
+                  }}>{convertText(chineseChar)}</span>
                 )}
               </div>
             );
