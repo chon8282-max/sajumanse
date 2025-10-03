@@ -767,7 +767,7 @@ export default function SajuTable({
     const targetGanji = gapja60[targetGanjiIndex];
     const targetYearSky = targetGanji[0];
     
-    // 월운 천간 시작 규칙
+    // 월운 천간 시작 규칙 (축월부터)
     const wolunSkyStartTable: { [key: string]: string } = {
       "甲": "乙", // 갑기년=을축부터 (천간: 을부터)
       "乙": "丁", // 을경년=정축부터 (천간: 정부터)
@@ -784,26 +784,25 @@ export default function SajuTable({
     const startSky = wolunSkyStartTable[targetYearSky] || "乙";
     const startSkyIndex = heavenlyStems.indexOf(startSky);
     
-    // 월운은 calculateMonthGanji 함수 사용하여 60갑자 순환 적용
     const skies: string[] = [];
     const earths: string[] = [];
     
-    // 13개월에 대해 각각 60갑자 순환으로 월간지 계산 
+    // 13개월: 우측에서 좌측으로 축, 인, 묘, 진, 사, 오, 미, 신, 유, 술, 해, 자, 축
+    // 지지는 丑(1)부터 시작
+    const startEarthIndex = 1; // 丑
+    
     for (let i = 0; i < 13; i++) {
-      const monthOffset = 13 - i; // 13월부터 1월까지 (우측에서 좌측)
-      const currentMonth = monthOffset > 12 ? monthOffset - 12 : monthOffset;
+      // 천간: 시작 천간부터 순환
+      const skyIndex = (startSkyIndex + i) % 10;
+      skies.push(heavenlyStems[skyIndex]);
       
-      // 1월~8월인 경우 다음해로 계산 (월운은 연속된 13개월)
-      const currentYear = currentMonth < 9 ? targetYear + 1 : targetYear;
-      
-      // 해당 연도/월의 정확한 월간지 계산
-      const monthGanji = calculateMonthGanji(currentYear, currentMonth);
-      skies.push(monthGanji.sky);
-      earths.push(monthGanji.earth);
+      // 지지: 축(丑)부터 순환 - 丑寅卯辰巳午未申酉戌亥子丑
+      const earthIndex = (startEarthIndex + i) % 12;
+      earths.push(earthlyBranches[earthIndex]);
     }
 
     return { skies, earths };
-  }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years]);
+  }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years, saju.year.sky, saju.year.earth]);
 
   // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
   const wolunMonths = useMemo(() => {
