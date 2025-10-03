@@ -107,18 +107,18 @@
   font-display: swap;
 }
 
-/* 기본 간지 폰트 (CSS 변수 사용) */
+/* 조선궁서체 폰트 정의 (절대경로) */
 @font-face {
-  font-family: 'ChosunGanjiFont';
-  src: url('/fonts/TogebaraMedium.otf') format('opentype');
+  font-family: 'ChosunGsFont';
+  src: url('/fonts/ChosunGs.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'ChosunGanjiFont';
-  src: url('/fonts/TogebaraMedium.otf') format('opentype');
+  font-family: 'ChosunGsFont';
+  src: url('/fonts/ChosunGs.ttf') format('truetype');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
