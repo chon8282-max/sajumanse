@@ -220,19 +220,29 @@ export function calculateSaju(
   }
   
   // 절입일 전월 간지 적용
+  let adjustedYearSkyIndex = yearSkyIndex;
+  let adjustedYearEarthIndex = yearEarthIndex;
+  
   if (usePreviousMonthPillar) {
+    // 입춘(인월 0)의 경우 년주도 함께 변경
+    if (monthEarthIndex === 0) {
+      adjustedYearSkyIndex = (yearSkyIndex - 1 + 10) % 10;
+      adjustedYearEarthIndex = (yearEarthIndex - 1 + 12) % 12;
+    }
+    // 월주를 전월로 변경
     monthEarthIndex = ((monthEarthIndex - 1) + 12) % 12;
   }
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)
+  // 입춘 전월 간지 선택 시 조정된 년주 천간 사용
   let monthSkyStartIndex: number;
-  if (yearSkyIndex === 0 || yearSkyIndex === 5) { // 甲년 또는 己년
+  if (adjustedYearSkyIndex === 0 || adjustedYearSkyIndex === 5) { // 甲년 또는 己년
     monthSkyStartIndex = 2; // 丙부터 시작 (인월=丙)
-  } else if (yearSkyIndex === 1 || yearSkyIndex === 6) { // 乙년 또는 庚년
+  } else if (adjustedYearSkyIndex === 1 || adjustedYearSkyIndex === 6) { // 乙년 또는 庚년
     monthSkyStartIndex = 4; // 戊부터 시작 (인월=戊)
-  } else if (yearSkyIndex === 2 || yearSkyIndex === 7) { // 丙년 또는 辛년
+  } else if (adjustedYearSkyIndex === 2 || adjustedYearSkyIndex === 7) { // 丙년 또는 辛년
     monthSkyStartIndex = 6; // 庚부터 시작 (인월=庚)
-  } else if (yearSkyIndex === 3 || yearSkyIndex === 8) { // 丁년 또는 壬년
+  } else if (adjustedYearSkyIndex === 3 || adjustedYearSkyIndex === 8) { // 丁년 또는 壬년
     monthSkyStartIndex = 8; // 壬부터 시작 (인월=壬)
   } else { // 戊년 또는 癸년
     monthSkyStartIndex = 0; // 甲부터 시작 (인월=甲)
@@ -333,8 +343,9 @@ export function calculateSaju(
   const hourSkyIndex = (hourSkyStartIndex + hourIndex) % 10;
   const hourEarthIndex = hourIndex;
   
-  const yearSky = CHEONGAN[yearSkyIndex];
-  const yearEarth = JIJI[yearEarthIndex];
+  // 절입일 전월 간지 적용 시 조정된 년주 사용
+  const yearSky = CHEONGAN[adjustedYearSkyIndex];
+  const yearEarth = JIJI[adjustedYearEarthIndex];
   const monthSky = CHEONGAN[monthSkyIndex];
   const monthEarth = MONTH_JIJI[monthEarthIndex]; // 월지는 MONTH_JIJI 사용 (寅부터 시작)
   const daySky = CHEONGAN[daySkyIndex];
