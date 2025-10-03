@@ -141,6 +141,57 @@ const BUBYEOK_SAL_MAP: Record<string, string> = {
   "辰": "丑", "戌": "丑", "丑": "丑", "未": "丑"   // 진술축미 월지 = 축
 };
 
+// 정록 매핑 테이블 (일간 → 정록 지지)
+const JEONGROK_MAP: Record<string, string> = {
+  "甲": "寅", "乙": "卯", "丙": "巳", "丁": "午", "戊": "巳",
+  "己": "午", "庚": "申", "辛": "酉", "壬": "亥", "癸": "子"
+};
+
+// 암록 매핑 테이블 (일간 → 암록 지지)
+const AMROK_MAP: Record<string, string> = {
+  "甲": "亥", "乙": "戌", "丙": "申", "丁": "午", "戊": "申",
+  "己": "午", "庚": "巳", "辛": "辰", "壬": "寅", "癸": "丑"
+};
+
+// 문곡귀인 매핑 테이블 (일간 → 문곡귀인 지지)
+const MUNGOK_GWIIN_MAP: Record<string, string> = {
+  "甲": "亥", "乙": "子", "丙": "寅", "丁": "卯", "戊": "寅",
+  "己": "卯", "庚": "巳", "辛": "午", "壬": "申", "癸": "酉"
+};
+
+// 학당귀인 매핑 테이블 (일간 → 학당귀인 지지)
+const HAKDANG_GWIIN_MAP: Record<string, string> = {
+  "甲": "亥", "乙": "午", "丙": "寅", "丁": "酉", "戊": "寅",
+  "己": "酉", "庚": "巳", "辛": "子", "壬": "申", "癸": "卯"
+};
+
+// 금여성 매핑 테이블 (일간 → 금여성 지지)
+const GEUMYEO_SEONG_MAP: Record<string, string> = {
+  "甲": "辰", "乙": "巳", "丙": "未", "丁": "申", "戊": "未",
+  "己": "申", "庚": "戌", "辛": "亥", "壬": "丑", "癸": "寅"
+};
+
+// 천주귀인 매핑 테이블 (일간 → 천주귀인 지지)
+const CHEONJU_GWIIN_MAP: Record<string, string> = {
+  "甲": "巳", "乙": "午", "丙": "巳", "丁": "午", "戊": "申",
+  "己": "酉", "庚": "亥", "辛": "子", "壬": "寅", "癸": "卯"
+};
+
+// 관귀학관 매핑 테이블 (일간 → 관귀학관 지지)
+const GWANGWI_HAKGWAN_MAP: Record<string, string> = {
+  "甲": "巳", "乙": "巳", "丙": "申", "丁": "申", "戊": "亥",
+  "己": "亥", "庚": "寅", "辛": "寅", "壬": "寅", "癸": "寅"
+};
+
+// 태극귀인 매핑 테이블 (일간 → 태극귀인 년지 목록)
+const TAEKEUK_GWIIN_MAP: Record<string, string[]> = {
+  "甲": ["子", "午"], "乙": ["子", "午"],
+  "丙": ["酉", "寅"], "丁": ["酉", "寅"],
+  "戊": ["辰", "戌", "丑", "未"], "己": ["辰", "戌", "丑", "未"],
+  "庚": ["寅", "卯"], "辛": ["寅", "卯"],
+  "壬": ["寅", "卯"], "癸": ["寅", "卯"]
+};
+
 export interface ShinSalResult {
   yearPillar: string[];
   monthPillar: string[];
@@ -716,6 +767,291 @@ export function calculateBubyeokSal(
 }
 
 /**
+ * 정록(正祿) 계산
+ * 일간을 기준으로 정록 지지를 찾습니다
+ */
+export function calculateJeongrok(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const jeongrokTarget = JEONGROK_MAP[daySky];
+  if (!jeongrokTarget) return result;
+
+  if (yearEarth === jeongrokTarget) {
+    result.yearPillar.push("正祿");
+  }
+  if (monthEarth === jeongrokTarget) {
+    result.monthPillar.push("正祿");
+  }
+  if (dayEarth === jeongrokTarget) {
+    result.dayPillar.push("正祿");
+  }
+  if (hourEarth === jeongrokTarget) {
+    result.hourPillar.push("正祿");
+  }
+
+  return result;
+}
+
+/**
+ * 암록(暗祿) 계산
+ * 일간을 기준으로 암록 지지를 찾습니다
+ */
+export function calculateAmrok(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const amrokTarget = AMROK_MAP[daySky];
+  if (!amrokTarget) return result;
+
+  if (yearEarth === amrokTarget) {
+    result.yearPillar.push("暗祿");
+  }
+  if (monthEarth === amrokTarget) {
+    result.monthPillar.push("暗祿");
+  }
+  if (dayEarth === amrokTarget) {
+    result.dayPillar.push("暗祿");
+  }
+  if (hourEarth === amrokTarget) {
+    result.hourPillar.push("暗祿");
+  }
+
+  return result;
+}
+
+/**
+ * 문곡귀인(文曲貴人) 계산
+ * 일간을 기준으로 문곡귀인 지지를 찾습니다
+ */
+export function calculateMungokGwiin(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const mungokTarget = MUNGOK_GWIIN_MAP[daySky];
+  if (!mungokTarget) return result;
+
+  if (yearEarth === mungokTarget) {
+    result.yearPillar.push("文曲貴人");
+  }
+  if (monthEarth === mungokTarget) {
+    result.monthPillar.push("文曲貴人");
+  }
+  if (dayEarth === mungokTarget) {
+    result.dayPillar.push("文曲貴人");
+  }
+  if (hourEarth === mungokTarget) {
+    result.hourPillar.push("文曲貴人");
+  }
+
+  return result;
+}
+
+/**
+ * 학당귀인(學堂貴人) 계산
+ * 일간을 기준으로 학당귀인 지지를 찾습니다
+ */
+export function calculateHakdangGwiin(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const hakdangTarget = HAKDANG_GWIIN_MAP[daySky];
+  if (!hakdangTarget) return result;
+
+  if (yearEarth === hakdangTarget) {
+    result.yearPillar.push("學堂貴人");
+  }
+  if (monthEarth === hakdangTarget) {
+    result.monthPillar.push("學堂貴人");
+  }
+  if (dayEarth === hakdangTarget) {
+    result.dayPillar.push("學堂貴人");
+  }
+  if (hourEarth === hakdangTarget) {
+    result.hourPillar.push("學堂貴人");
+  }
+
+  return result;
+}
+
+/**
+ * 금여성(金與星) 계산
+ * 일간을 기준으로 금여성 지지를 찾습니다
+ */
+export function calculateGeumyeoSeong(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const geumyeoTarget = GEUMYEO_SEONG_MAP[daySky];
+  if (!geumyeoTarget) return result;
+
+  if (yearEarth === geumyeoTarget) {
+    result.yearPillar.push("金與星");
+  }
+  if (monthEarth === geumyeoTarget) {
+    result.monthPillar.push("金與星");
+  }
+  if (dayEarth === geumyeoTarget) {
+    result.dayPillar.push("金與星");
+  }
+  if (hourEarth === geumyeoTarget) {
+    result.hourPillar.push("金與星");
+  }
+
+  return result;
+}
+
+/**
+ * 천주귀인(天廚貴人) 계산
+ * 일간을 기준으로 천주귀인 지지를 찾습니다
+ */
+export function calculateCheonjuGwiin(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const cheonjuTarget = CHEONJU_GWIIN_MAP[daySky];
+  if (!cheonjuTarget) return result;
+
+  if (yearEarth === cheonjuTarget) {
+    result.yearPillar.push("天廚貴人");
+  }
+  if (monthEarth === cheonjuTarget) {
+    result.monthPillar.push("天廚貴人");
+  }
+  if (dayEarth === cheonjuTarget) {
+    result.dayPillar.push("天廚貴人");
+  }
+  if (hourEarth === cheonjuTarget) {
+    result.hourPillar.push("天廚貴人");
+  }
+
+  return result;
+}
+
+/**
+ * 관귀학관(官貴學館) 계산
+ * 일간을 기준으로 관귀학관 지지를 찾습니다
+ */
+export function calculateGwangwiHakgwan(
+  daySky: string,
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const gwangwiTarget = GWANGWI_HAKGWAN_MAP[daySky];
+  if (!gwangwiTarget) return result;
+
+  if (yearEarth === gwangwiTarget) {
+    result.yearPillar.push("官貴學館");
+  }
+  if (monthEarth === gwangwiTarget) {
+    result.monthPillar.push("官貴學館");
+  }
+  if (dayEarth === gwangwiTarget) {
+    result.dayPillar.push("官貴學館");
+  }
+  if (hourEarth === gwangwiTarget) {
+    result.hourPillar.push("官貴學館");
+  }
+
+  return result;
+}
+
+/**
+ * 태극귀인(太極貴人) 계산
+ * 일간을 기준으로 년지에서 태극귀인을 찾습니다
+ */
+export function calculateTaekeukGwiin(
+  daySky: string,
+  yearEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const taekeukTargets = TAEKEUK_GWIIN_MAP[daySky];
+  if (!taekeukTargets) return result;
+
+  // 년지만 확인
+  if (taekeukTargets.includes(yearEarth)) {
+    result.yearPillar.push("太極貴人");
+  }
+
+  return result;
+}
+
+/**
  * 모든 신살 계산 (천을귀인, 문창귀인 포함)
  * 여러 신살이 동시에 나타날 수 있습니다.
  */
@@ -803,6 +1139,30 @@ export function calculateFirstRowShinSal(
   // 부벽살 계산
   const bubyeokSal = calculateBubyeokSal(monthEarth, yearEarth, dayEarth, hourEarth);
   
+  // 정록 계산
+  const jeongrok = calculateJeongrok(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 암록 계산
+  const amrok = calculateAmrok(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 문곡귀인 계산
+  const mungokGwiin = calculateMungokGwiin(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 학당귀인 계산
+  const hakdangGwiin = calculateHakdangGwiin(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 금여성 계산
+  const geumyeoSeong = calculateGeumyeoSeong(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 천주귀인 계산
+  const cheonjuGwiin = calculateCheonjuGwiin(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 관귀학관 계산
+  const gwangwiHakgwan = calculateGwangwiHakgwan(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
+  
+  // 태극귀인 계산
+  const taekeukGwiin = calculateTaekeukGwiin(daySky, yearEarth);
+  
   // 모든 신살 결과를 합쳐서 반환
   let result = mergeShinSalResults(cheondeokGwiin, woldeokGwiin);
   result = mergeShinSalResults(result, goegangSal);
@@ -816,6 +1176,14 @@ export function calculateFirstRowShinSal(
   result = mergeShinSalResults(result, goranSal);
   result = mergeShinSalResults(result, hongyeomSal);
   result = mergeShinSalResults(result, bubyeokSal);
+  result = mergeShinSalResults(result, jeongrok);
+  result = mergeShinSalResults(result, amrok);
+  result = mergeShinSalResults(result, mungokGwiin);
+  result = mergeShinSalResults(result, hakdangGwiin);
+  result = mergeShinSalResults(result, geumyeoSeong);
+  result = mergeShinSalResults(result, cheonjuGwiin);
+  result = mergeShinSalResults(result, gwangwiHakgwan);
+  result = mergeShinSalResults(result, taekeukGwiin);
   
   return result;
 }
@@ -836,7 +1204,15 @@ const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "聾兒殺": "농아살",
   "孤鸞殺": "고란살",
   "紅艶殺": "홍염살",
-  "釜劈殺": "부벽살"
+  "釜劈殺": "부벽살",
+  "正祿": "정록",
+  "暗祿": "암록",
+  "文曲貴人": "문곡귀인",
+  "學堂貴人": "학당귀인",
+  "金與星": "금여성",
+  "天廚貴人": "천주귀인",
+  "官貴學館": "관귀학관",
+  "太極貴人": "태극귀인"
 };
 
 /**
