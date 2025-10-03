@@ -123,6 +123,14 @@ const NONGA_SAL_MAP: Record<string, string> = {
 // 고란살 간지 목록 (갑인, 을사, 정사, 무신, 신해)
 const GORAN_SAL_GANJI = ["甲寅", "乙巳", "丁巳", "戊申", "辛亥"];
 
+// 도화살 매핑 테이블 (년지 → 도화살 지지)
+const DOHWA_SAL_MAP: Record<string, string> = {
+  "寅": "卯", "午": "卯", "戌": "卯",  // 인오술 년생 = 묘
+  "巳": "午", "酉": "午", "丑": "午",  // 사유축 년생 = 오
+  "申": "酉", "子": "酉", "辰": "酉",  // 신자진 년생 = 유
+  "亥": "子", "卯": "子", "未": "子"   // 해묘미 년생 = 자
+};
+
 // 홍염살 매핑 테이블 (일간 → 홍염살 지지)
 const HONGYEOM_SAL_MAP: Record<string, string[]> = {
   "甲": ["午"],
@@ -692,6 +700,43 @@ export function calculateGoranSal(
 }
 
 /**
+ * 도화살(桃花殺) 계산
+ * 년지를 기준으로 년월일시의 지지에서 도화살을 찾습니다
+ */
+export function calculateDohwaSal(
+  yearEarth: string,
+  monthEarth: string,
+  dayEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const dohwaTarget = DOHWA_SAL_MAP[yearEarth];
+  if (!dohwaTarget) return result;
+
+  // 각 주의 지지에서 도화살에 해당하는지 확인
+  if (yearEarth === dohwaTarget) {
+    result.yearPillar.push("桃花殺");
+  }
+  if (monthEarth === dohwaTarget) {
+    result.monthPillar.push("桃花殺");
+  }
+  if (dayEarth === dohwaTarget) {
+    result.dayPillar.push("桃花殺");
+  }
+  if (hourEarth === dohwaTarget) {
+    result.hourPillar.push("桃花殺");
+  }
+
+  return result;
+}
+
+/**
  * 홍염살(紅艶殺) 계산
  * 일간을 기준으로 년월일시의 지지에서 홍염살을 찾습니다
  */
@@ -1133,6 +1178,9 @@ export function calculateFirstRowShinSal(
   // 고란살 계산
   const goranSal = calculateGoranSal(daySky, dayEarth);
   
+  // 도화살 계산
+  const dohwaSal = calculateDohwaSal(yearEarth, monthEarth, dayEarth, hourEarth);
+  
   // 홍염살 계산
   const hongyeomSal = calculateHongyeomSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
   
@@ -1174,6 +1222,7 @@ export function calculateFirstRowShinSal(
   result = mergeShinSalResults(result, ibyeolSal);
   result = mergeShinSalResults(result, nongaSal);
   result = mergeShinSalResults(result, goranSal);
+  result = mergeShinSalResults(result, dohwaSal);
   result = mergeShinSalResults(result, hongyeomSal);
   result = mergeShinSalResults(result, bubyeokSal);
   result = mergeShinSalResults(result, jeongrok);
@@ -1203,6 +1252,7 @@ const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "離別殺": "이별살",
   "聾兒殺": "농아살",
   "孤鸞殺": "고란살",
+  "桃花殺": "도화살",
   "紅艶殺": "홍염살",
   "釜劈殺": "부벽살",
   "正祿": "정록",
