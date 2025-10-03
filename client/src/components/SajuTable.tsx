@@ -1227,10 +1227,10 @@ export default function SajuTable({
           {displayMode === 'base' && (
             <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 4 && (
+          {displayMode === 'daeun' && sajuColumns.length === 4 && (
             <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 3 && (
+          {displayMode === 'daeun' && sajuColumns.length === 3 && (
             <>
               <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
               <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
@@ -1330,10 +1330,10 @@ export default function SajuTable({
           {displayMode === 'base' && (
             <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 4 && (
+          {displayMode === 'daeun' && sajuColumns.length === 4 && (
             <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 3 && (
+          {displayMode === 'daeun' && sajuColumns.length === 3 && (
             <>
               <div className="text-center font-bold border-r border-border flex items-center justify-center bg-white dark:bg-gray-900"></div>
               <div className="text-center font-bold flex items-center justify-center bg-white dark:bg-gray-900"></div>
@@ -1385,10 +1385,10 @@ export default function SajuTable({
           {displayMode === 'base' && (
             <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 4 && (
+          {displayMode === 'daeun' && sajuColumns.length === 4 && (
             <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 3 && (
+          {displayMode === 'daeun' && sajuColumns.length === 3 && (
             <>
               <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
               <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center bg-white dark:bg-gray-900"></div>
@@ -1456,10 +1456,10 @@ export default function SajuTable({
           {displayMode === 'base' && (
             <div className="bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 4 && (
+          {displayMode === 'daeun' && sajuColumns.length === 4 && (
             <div className="border-r border-border bg-white dark:bg-gray-900"></div>
           )}
-          {displayMode !== 'base' && sajuColumns.length === 3 && (
+          {displayMode === 'daeun' && sajuColumns.length === 3 && (
             <>
               <div className="border-r border-border bg-white dark:bg-gray-900"></div>
               <div className="bg-white dark:bg-gray-900"></div>
