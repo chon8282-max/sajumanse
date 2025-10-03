@@ -203,12 +203,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updateData.birthDay = solarCalcDay;
           }
 
-          // 생시가 있는 경우에만 사주팔자 계산
-          if (validatedData.birthTime) {
-            try {
-              let hour = 0;
-              let minute = 0;
-              
+          // 사주팔자 계산 (생시 유무와 관계없이 실행)
+          try {
+            let hour: number | undefined = undefined;
+            let minute = 0;
+            
+            // 생시가 있는 경우에만 시간 파싱
+            if (validatedData.birthTime) {
               // 전통 시간대 코드인지 확인 (예: "子時")
               const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
               if (timePeriod) {
@@ -225,59 +226,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   hour = parseInt(timeStr) || 0;
                 }
               }
-
-              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
-              const sajuResult = calculateSaju(
-                sajuCalculationYear,      // 년월주는 음력
-                sajuCalculationMonth,
-                sajuCalculationDay,
-                hour,
-                minute,
-                validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
-                solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-                null,  // apiData - 로컬 계산만 사용하므로 null
-                validatedData.usePreviousMonthPillar // 절입일 전월 간지 적용 여부
-              );
-              console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
-
-              // 사주팔자 정보 추가
-              updateData.yearSky = sajuResult.year.sky;
-              updateData.yearEarth = sajuResult.year.earth;
-              updateData.monthSky = sajuResult.month.sky;
-              updateData.monthEarth = sajuResult.month.earth;
-              updateData.daySky = sajuResult.day.sky;
-              updateData.dayEarth = sajuResult.day.earth;
-              updateData.hourSky = sajuResult.hour.sky;
-              updateData.hourEarth = sajuResult.hour.earth;
-
-              const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
-
-              res.json({
-                success: true,
-                data: {
-                  record: updatedRecord,
-                  sajuInfo: sajuResult
-                },
-                message: "사주 정보가 성공적으로 저장되었습니다."
-              });
-            } catch (sajuError) {
-              console.error('Saju calculation error:', sajuError);
-              // 사주 계산 실패시에도 음력 정보는 저장
-              const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
-              res.status(500).json({
-                success: false,
-                error: sajuError instanceof Error ? sajuError.message : '사주팔자 계산 중 오류가 발생했습니다.',
-                details: '정확한 사주팔자 계산을 위해 API 연결이 필요합니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.',
-                data: { record: updatedRecord }
-              });
             }
-          } else {
-            // 생시가 없는 경우: 음력 정보만 저장
+
+            console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
+            const sajuResult = calculateSaju(
+              sajuCalculationYear,      // 년월주는 음력
+              sajuCalculationMonth,
+              sajuCalculationDay,
+              hour as any,  // undefined일 수 있음
+              minute,
+              validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
+              solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
+              null,  // apiData - 로컬 계산만 사용하므로 null
+              validatedData.usePreviousMonthPillar // 절입일 전월 간지 적용 여부
+            );
+            console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+
+            // 사주팔자 정보 추가
+            updateData.yearSky = sajuResult.year.sky;
+            updateData.yearEarth = sajuResult.year.earth;
+            updateData.monthSky = sajuResult.month.sky;
+            updateData.monthEarth = sajuResult.month.earth;
+            updateData.daySky = sajuResult.day.sky;
+            updateData.dayEarth = sajuResult.day.earth;
+            updateData.hourSky = sajuResult.hour.sky;
+            updateData.hourEarth = sajuResult.hour.earth;
+
             const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+
             res.json({
               success: true,
-              data: { record: updatedRecord },
-              message: "사주 기본 정보가 저장되었습니다. (생시 정보 없음으로 사주팔자 미계산)"
+              data: {
+                record: updatedRecord,
+                sajuInfo: sajuResult
+              },
+              message: validatedData.birthTime ? "사주 정보가 성공적으로 저장되었습니다." : "사주 정보가 저장되었습니다. (생시 미상)"
+            });
+          } catch (sajuError) {
+            console.error('Saju calculation error:', sajuError);
+            // 사주 계산 실패시에도 음력 정보는 저장
+            const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+            res.status(500).json({
+              success: false,
+              error: sajuError instanceof Error ? sajuError.message : '사주팔자 계산 중 오류가 발생했습니다.',
+              details: '정확한 사주팔자 계산을 위해 API 연결이 필요합니다. 네트워크 상태를 확인하고 잠시 후 다시 시도해주세요.',
+              data: { record: updatedRecord }
             });
           }
         } catch (conversionError) {

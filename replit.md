@@ -41,6 +41,13 @@ Preferred communication style: Simple, everyday language.
 - **Five Elements Analysis**: Wu Xing (오행) balance analysis for fortune interpretation
 - **Calendar Conversion**: Solar to lunar calendar conversion with 24 solar terms consideration
 - **Fortune Analysis**: Comprehensive fortune scoring system covering overall, love, and career aspects
+- **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
+  - When birth time is unknown, hourSky and hourEarth are stored as empty strings
+  - Hour pillar Wuxing values (hourSky, hourEarth) are also empty strings
+  - UI dynamically displays 3 pillars (일주, 월주, 년주) instead of 4
+  - All auxiliary calculations (12신살, 신살, etc.) adapt to 3-column layout
+  - Type system allows `WuXing | ''` for hour pillar Wuxing fields only
+  - Color helper functions (getWuXingColor, getWuXingBgColor) gracefully handle empty strings by returning ''
 
 ## External Dependencies
 

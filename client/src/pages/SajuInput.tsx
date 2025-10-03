@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus, AlertCircle } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
@@ -122,6 +123,7 @@ export default function SajuInput() {
     day: "",
     birthTime: "",
     selectedTimeCode: "",
+    birthTimeUnknown: false,
     gender: "남자",
     groupId: "",
     memo: "",
@@ -151,6 +153,7 @@ export default function SajuInput() {
         day: urlParams.get('day') || "",
         birthTime: urlParams.get('birthTime') || "",
         selectedTimeCode: "",
+        birthTimeUnknown: !urlParams.get('birthTime'),
         gender: urlParams.get('gender') || "남자",
         groupId: urlParams.get('groupId') || "",
         memo: urlParams.get('memo') || "",
@@ -197,7 +200,7 @@ export default function SajuInput() {
     setLocation("/manseryeok");
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -452,28 +455,46 @@ export default function SajuInput() {
         {/* 생시 */}
         <div className="space-y-1">
           <Label className="text-xs font-medium">생시 (전통 십이시)</Label>
-          <Select 
-            value={formData.selectedTimeCode}
-            onValueChange={(value) => {
-              handleInputChange("selectedTimeCode", value);
-              handleInputChange("birthTime", value);
-            }}
-          >
-            <SelectTrigger data-testid="select-birth-time" className="text-sm h-8">
-              <SelectValue placeholder="생시를 선택하세요" />
-            </SelectTrigger>
-            <SelectContent>
-              {TRADITIONAL_TIME_PERIODS.map((period) => (
-                <SelectItem 
-                  key={period.code} 
-                  value={period.code}
-                  data-testid={`select-time-${period.code}`}
-                >
-                  {period.name} ({period.range})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2 items-center">
+            <Select 
+              value={formData.selectedTimeCode}
+              onValueChange={(value) => {
+                handleInputChange("selectedTimeCode", value);
+                handleInputChange("birthTime", value);
+              }}
+              disabled={formData.birthTimeUnknown}
+            >
+              <SelectTrigger data-testid="select-birth-time" className="text-sm h-8 flex-1">
+                <SelectValue placeholder="생시를 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                {TRADITIONAL_TIME_PERIODS.map((period) => (
+                  <SelectItem 
+                    key={period.code} 
+                    value={period.code}
+                    data-testid={`select-time-${period.code}`}
+                  >
+                    {period.name} ({period.range})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center space-x-1.5 whitespace-nowrap">
+              <Checkbox 
+                id="birthTimeUnknown"
+                checked={formData.birthTimeUnknown}
+                onCheckedChange={(checked) => {
+                  handleInputChange("birthTimeUnknown", !!checked);
+                  if (checked) {
+                    handleInputChange("selectedTimeCode", "");
+                    handleInputChange("birthTime", "");
+                  }
+                }}
+                data-testid="checkbox-birth-time-unknown"
+              />
+              <Label htmlFor="birthTimeUnknown" className="text-xs cursor-pointer">생시모름</Label>
+            </div>
+          </div>
         </div>
 
         {/* 성별 */}

@@ -172,19 +172,19 @@ function calculateSibiSinsal(yearEarth: string, sajuColumns: Array<{sky: string,
   // 년지 기준 시작 지지 찾기
   const startJiji = samhapStartMap[yearEarth];
   if (!startJiji) {
-    return ['', '', '', '']; // 계산 불가시 빈 배열
+    return sajuColumns.map(() => ''); // sajuColumns 길이에 맞춰 빈 배열 반환
   }
   
   // 시작 지지의 인덱스 찾기
   const startIndex = jiji.indexOf(startJiji);
   if (startIndex === -1) {
-    return ['', '', '', ''];
+    return sajuColumns.map(() => '');
   }
   
-  // 각 사주 기둥(시일월년)에 해당하는 12신살 계산
+  // 각 사주 기둥(시일월년 또는 일월년)에 해당하는 12신살 계산
   const result: string[] = [];
   
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < sajuColumns.length; i++) {
     const currentEarth = sajuColumns[i].earth;
     const currentIndex = jiji.indexOf(currentEarth);
     
@@ -487,18 +487,29 @@ export default function SajuTable({
   };
 
   // 사주 데이터 구성 (메모이제이션)
-  const sajuColumns = useMemo(() => [
-    { label: "시주", sky: saju.hour.sky, earth: saju.hour.earth },
-    { label: "일주", sky: saju.day.sky, earth: saju.day.earth },
-    { label: "월주", sky: saju.month.sky, earth: saju.month.earth },
-    { label: "년주", sky: saju.year.sky, earth: saju.year.earth }
-  ], [saju]);
+  // 생시가 없으면 시주를 제외
+  const sajuColumns = useMemo(() => {
+    const columns = [];
+    
+    // 생시가 있을 때만 시주 추가
+    if (saju.hour.sky && saju.hour.earth) {
+      columns.push({ label: "시주", sky: saju.hour.sky, earth: saju.hour.earth });
+    }
+    
+    columns.push({ label: "일주", sky: saju.day.sky, earth: saju.day.earth });
+    columns.push({ label: "월주", sky: saju.month.sky, earth: saju.month.earth });
+    columns.push({ label: "년주", sky: saju.year.sky, earth: saju.year.earth });
+    
+    return columns;
+  }, [saju]);
 
   // 12신살 계산 (년지 기준)
   const sibiSinsal = useMemo(() => {
-    if (!saju?.year?.earth) return ['', '', '', ''];
+    const hasHourPillar = saju.hour.sky && saju.hour.earth;
+    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
+    if (!saju?.year?.earth) return defaultArray;
     return calculateSibiSinsal(saju.year.earth, sajuColumns);
-  }, [saju?.year?.earth, sajuColumns]);
+  }, [saju?.year?.earth, saju?.hour?.sky, saju?.hour?.earth, sajuColumns]);
 
   // 공망 계산 (일주 기준)
   const gongmang = useMemo(() => {
@@ -535,7 +546,10 @@ export default function SajuTable({
 
   // 신살 계산 (메모이제이션)
   const shinsal = useMemo(() => {
-    if (!saju?.day?.sky) return ['', '', '', ''];
+    const hasHourPillar = saju.hour.sky && saju.hour.earth;
+    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
+    
+    if (!saju?.day?.sky) return defaultArray;
     
     // 각 주(년월일시)의 지지에서 신살 계산
     const daySky = saju.day.sky;
@@ -546,18 +560,24 @@ export default function SajuTable({
     
     const shinsalResult = calculateAllShinSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
     
-    // sajuColumns 순서(시주→일주→월주→년주)에 맞춰 신살 배열 재배열
-    return [
-      formatShinSal(shinsalResult.hourPillar, showKorean),  // 시주 (첫 번째 컬럼)
-      formatShinSal(shinsalResult.dayPillar, showKorean),   // 일주 (두 번째 컬럼)
-      formatShinSal(shinsalResult.monthPillar, showKorean), // 월주 (세 번째 컬럼)
-      formatShinSal(shinsalResult.yearPillar, showKorean)   // 년주 (네 번째 컬럼)
-    ];
-  }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean]);
+    // sajuColumns 순서에 맞춰 신살 배열 재배열
+    const result = [];
+    if (hasHourPillar) {
+      result.push(formatShinSal(shinsalResult.hourPillar, showKorean));  // 시주
+    }
+    result.push(formatShinSal(shinsalResult.dayPillar, showKorean));   // 일주
+    result.push(formatShinSal(shinsalResult.monthPillar, showKorean)); // 월주
+    result.push(formatShinSal(shinsalResult.yearPillar, showKorean));  // 년주
+    
+    return result;
+  }, [saju?.day?.sky, saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.sky, saju?.hour?.earth, showKorean]);
 
   // 1행 신살 계산 (천덕귀인, 월덕귀인 - 메모이제이션)
   const firstRowShinsal = useMemo(() => {
-    if (!saju?.day?.sky) return ['', '', '', ''];
+    const hasHourPillar = saju.hour.sky && saju.hour.earth;
+    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
+    
+    if (!saju?.day?.sky) return defaultArray;
     
     // 모든 천간과 지지 정보 수집
     const yearSky = saju.year.sky;
@@ -574,13 +594,16 @@ export default function SajuTable({
       yearEarth, monthEarth, dayEarth, hourEarth
     );
     
-    // sajuColumns 순서(시주→일주→월주→년주)에 맞춰 1행 신살 배열 재배열
-    return [
-      formatShinSal(firstRowResult.hourPillar, showKorean),  // 시주 (첫 번째 컬럼)
-      formatShinSal(firstRowResult.dayPillar, showKorean),   // 일주 (두 번째 컬럼)
-      formatShinSal(firstRowResult.monthPillar, showKorean), // 월주 (세 번째 컬럼)
-      formatShinSal(firstRowResult.yearPillar, showKorean)   // 년주 (네 번째 컬럼)
-    ];
+    // sajuColumns 순서에 맞춰 1행 신살 배열 재배열
+    const result = [];
+    if (hasHourPillar) {
+      result.push(formatShinSal(firstRowResult.hourPillar, showKorean));  // 시주
+    }
+    result.push(formatShinSal(firstRowResult.dayPillar, showKorean));   // 일주
+    result.push(formatShinSal(firstRowResult.monthPillar, showKorean)); // 월주
+    result.push(formatShinSal(firstRowResult.yearPillar, showKorean));  // 년주
+    
+    return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
       saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean]);
 

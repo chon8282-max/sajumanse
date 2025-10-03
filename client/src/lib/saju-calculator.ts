@@ -147,7 +147,10 @@ export function calculateSaju(
   usePreviousMonthPillar?: boolean // 절입일 전월 간지 적용 여부
 ): SajuInfo {
   let calcDate: Date;
-  const timeInMinutes = hour * 60 + minute;
+  
+  // 생시 미상 여부 확인 (hour가 유효하지 않으면 생시를 모르는 것으로 간주)
+  const isBirthTimeUnknown = hour === undefined || hour === null || isNaN(hour);
+  const timeInMinutes = isBirthTimeUnknown ? 0 : hour * 60 + minute;
   
   // 음력인 경우 양력으로 변환
   if (isLunar) {
@@ -156,7 +159,10 @@ export function calculateSaju(
     month = calcDate.getMonth() + 1;
     day = calcDate.getDate();
   } else {
-    calcDate = new Date(year, month - 1, day, hour, minute);
+    // 생시 미상일 경우 12시로 기본 설정 (일주 계산용)
+    const defaultHour = isBirthTimeUnknown ? 12 : hour;
+    const defaultMinute = isBirthTimeUnknown ? 0 : minute;
+    calcDate = new Date(year, month - 1, day, defaultHour, defaultMinute);
   }
   
   // 일주 계산을 위한 날짜 준비
@@ -333,8 +339,10 @@ export function calculateSaju(
   const monthEarth = MONTH_JIJI[monthEarthIndex]; // 월지는 MONTH_JIJI 사용 (寅부터 시작)
   const daySky = CHEONGAN[daySkyIndex];
   const dayEarth = JIJI[dayEarthIndex];
-  const hourSky = CHEONGAN[hourSkyIndex];
-  const hourEarth = JIJI[hourEarthIndex];
+  
+  // 생시 미상일 경우 시주를 빈 값으로 설정
+  const hourSky = isBirthTimeUnknown ? "" : CHEONGAN[hourSkyIndex];
+  const hourEarth = isBirthTimeUnknown ? "" : JIJI[hourEarthIndex];
   
   return {
     year: { sky: yearSky, earth: yearEarth },
@@ -348,8 +356,8 @@ export function calculateSaju(
       monthEarth: JIJI_WUXING[monthEarth],
       daySky: CHEONGAN_WUXING[daySky],
       dayEarth: JIJI_WUXING[dayEarth],
-      hourSky: CHEONGAN_WUXING[hourSky],
-      hourEarth: JIJI_WUXING[hourEarth],
+      hourSky: hourSky ? CHEONGAN_WUXING[hourSky] : '',
+      hourEarth: hourEarth ? JIJI_WUXING[hourEarth] : '',
     }
   };
 }
@@ -371,7 +379,8 @@ export function getCurrentSaju(): SajuInfo {
 /**
  * 오행 색상 반환
  */
-export function getWuXingColor(wuxing: WuXing): string {
+export function getWuXingColor(wuxing: WuXing | ''): string {
+  if (!wuxing) return '';
   const colors = {
     "목": "text-green-600 dark:text-green-400",
     "화": "text-red-600 dark:text-red-400", 
@@ -385,7 +394,8 @@ export function getWuXingColor(wuxing: WuXing): string {
 /**
  * 오행 배경색 반환
  */
-export function getWuXingBgColor(wuxing: WuXing): string {
+export function getWuXingBgColor(wuxing: WuXing | ''): string {
+  if (!wuxing) return '';
   const colors = {
     "목": "bg-green-100 dark:bg-green-900/20",
     "화": "bg-red-100 dark:bg-red-900/20",
