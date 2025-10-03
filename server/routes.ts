@@ -215,7 +215,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (timePeriod) {
                 // 전통 시간대의 대표 시간 사용
                 hour = timePeriod.hour;
-                minute = 0;
+                // 야자시는 23:31부터 시작하므로 minute을 31로 설정
+                minute = timePeriod.code === "夜子時" ? 31 : 0;
               } else {
                 // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
                 const timeStr = validatedData.birthTime;
