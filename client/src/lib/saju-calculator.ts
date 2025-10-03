@@ -166,7 +166,7 @@ export function calculateSaju(
   }
   
   // 야자시 체크 (23:31~00:30)
-  const isNightZiShi = timeInMinutes >= 1411; // 23:31 이후
+  const isNightZiShi = timeInMinutes >= 1411 || timeInMinutes <= 30; // 23:31 이후 또는 00:00~00:30
   
   // 일주 계산을 위한 날짜 준비
   let sajuDate: Date;
@@ -307,8 +307,10 @@ export function calculateSaju(
   // 시주 계산 (전통 시간 구간 기준 - 31분부터 시간 변경)
   let hourIndex: number;
   
-  // 00:31-01:30 자시, 01:31-03:30 축시, ... 순서대로 정확한 시간 구분
-  if (timeInMinutes >= 0 && timeInMinutes <= 90) { // 00:31-01:30 (자시)
+  // 00:00-00:30 야자시, 00:31-01:30 자시, 01:31-03:30 축시, ... 순서대로 정확한 시간 구분
+  if (timeInMinutes >= 0 && timeInMinutes <= 30) { // 00:00-00:30 (야자시)
+    hourIndex = 12; // 夜子時
+  } else if (timeInMinutes >= 31 && timeInMinutes <= 90) { // 00:31-01:30 (자시)
     hourIndex = 0; // 子時
   } else if (timeInMinutes >= 91 && timeInMinutes <= 210) { // 01:31-03:30 (축시)
     hourIndex = 1; // 丑時
