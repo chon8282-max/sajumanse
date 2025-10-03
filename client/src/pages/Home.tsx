@@ -218,7 +218,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-md space-y-1">
+      <div className="container mx-auto px-4 py-6 max-w-md space-y-4">
 
         {/* 현재 시각의 만세력 */}
         <div>
@@ -287,7 +287,7 @@ export default function Home() {
         <MenuGrid />
 
         {/* 하단 여백 (네비게이션 공간) */}
-        <div className="h-20" />
+        <div className="h-24" />
       </div>
     </div>
   );

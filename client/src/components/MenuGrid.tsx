@@ -79,8 +79,8 @@ export default function MenuGrid() {
   ];
 
   return (
-    <div className="space-y-1">
-      <div className="grid grid-cols-3 gap-[1px]">
+    <div className="space-y-2">
+      <div className="grid grid-cols-3 gap-2">
         {menuItems.map((item, index) => (
           <div
             key={index} 
