@@ -1,34 +1,41 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Moon, Sun, Calendar, Settings, User } from "lucide-react";
+import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import logoPath from "@assets/만세력로고_1758875108140.png";
+import { useAuth } from "@/hooks/useAuth";
+import type { User } from "@shared/schema";
 
 interface MobileHeaderProps {
   currentDate: Date;
   isDarkMode: boolean;
   onThemeToggle: () => void;
   onMenuClick: () => void;
-  userName?: string;
 }
 
 export default function MobileHeader({ 
   currentDate, 
   isDarkMode, 
   onThemeToggle, 
-  onMenuClick,
-  userName = "사용자"
+  onMenuClick
 }: MobileHeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const { user, isAuthenticated, isLoading } = useAuth() as { user?: User; isAuthenticated: boolean; isLoading: boolean };
 
   const handleUserClick = () => {
-    setShowUserMenu(!showUserMenu);
-    console.log('User menu toggled');
+    if (!isAuthenticated && !isLoading) {
+      // 로그인하지 않은 경우 로그인 페이지로 이동
+      window.location.href = '/api/login';
+    } else {
+      // 로그인한 경우 메뉴 토글
+      setShowUserMenu(!showUserMenu);
+      console.log('User menu toggled');
+    }
   };
 
-  const handleSettingsClick = () => {
-    console.log('Settings clicked');
+  const handleLogout = () => {
+    window.location.href = '/api/logout';
   };
 
   return (
@@ -77,24 +84,26 @@ export default function MobileHeader({
               data-testid="button-user-menu"
               className="h-8 w-8"
             >
-              <User className="w-4 h-4" />
+              <UserIcon className="w-4 h-4" />
             </Button>
             
-            {showUserMenu && (
+            {showUserMenu && isAuthenticated && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-popover border rounded-md shadow-md p-2 z-50">
                 <div className="p-2 border-b border-border">
-                  <p className="font-medium text-sm" data-testid="text-user-name">{userName}</p>
+                  <p className="font-medium text-sm" data-testid="text-user-name">
+                    {user?.firstName || user?.email || '사용자'}
+                  </p>
                   <p className="text-xs text-muted-foreground">환영합니다!</p>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start mt-2"
-                  onClick={handleSettingsClick}
-                  data-testid="button-settings"
+                  onClick={handleLogout}
+                  data-testid="button-logout"
                 >
-                  <Settings className="w-4 h-4 mr-2" />
-                  설정
+                  <LogOut className="w-4 h-4 mr-2" />
+                  로그아웃
                 </Button>
               </div>
             )}
