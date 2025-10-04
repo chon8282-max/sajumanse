@@ -13,6 +13,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
+import { useState, useRef, useEffect } from "react";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -23,6 +24,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { font, setFont } = useFont();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
   const handleDbBackup = () => {
     toast({
@@ -58,6 +62,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     onClose();
   };
 
+  // 스와이프 감지
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 50) {
+      // 왼쪽으로 50px 이상 스와이프하면 닫기
+      onClose();
+    }
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -70,7 +92,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       />
       
       {/* 사이드 메뉴 */}
-      <div className="fixed left-0 top-0 h-full w-80 bg-background border-r z-50 transform transition-transform duration-300 ease-in-out">
+      <div 
+        ref={menuRef}
+        className="fixed left-0 top-0 h-full w-[60%] bg-background border-r z-50 transform transition-transform duration-300 ease-in-out"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        data-testid="mobile-menu"
+      >
         <div className="flex flex-col h-full">
           {/* 헤더 */}
           <div className="flex items-center justify-between p-4 border-b">
