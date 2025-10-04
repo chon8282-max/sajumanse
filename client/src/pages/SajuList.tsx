@@ -723,11 +723,11 @@ export default function SajuList() {
                             {/* 세 번째 줄: 저장일, 소속그룹 */}
                             <div className="text-xs text-muted-foreground flex items-center justify-between">
                               <span data-testid={`text-created-${saju.id}`}>
-                                {saju.createdAt ? new Date(saju.createdAt).toLocaleDateString('ko-KR', {
+                                {`정보 저장일: ${saju.createdAt ? new Date(saju.createdAt).toLocaleDateString('ko-KR', {
                                   year: 'numeric',
                                   month: 'numeric', 
                                   day: 'numeric'
-                                }) : '날짜 미상'}
+                                }) : '날짜 미상'}`}
                               </span>
                               {groupName && (
                                 <span data-testid={`text-group-${saju.id}`}>
