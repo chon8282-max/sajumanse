@@ -70,24 +70,24 @@ const EARTHLY_BRANCH_HIDDEN_STEMS: Record<string, string[]> = {
   '亥': ['戊', '甲', '壬']  // 해 = 무갑임
 };
 
-// 오행 매핑 함수
+// 오행 매핑 함수 (음양 기호 포함)
 function getWuxingElement(character: string): string {
   const wuxingMap: Record<string, string> = {
-    // 갑을인묘 = 木 (목)
-    '갑': '木', '을': '木', '인': '木', '묘': '木',
-    '甲': '木', '乙': '木', '寅': '木', '卯': '木',
-    // 병정사오 = 火 (화)
-    '병': '火', '정': '火', '사': '火', '오': '火',
-    '丙': '火', '丁': '火', '巳': '火', '午': '火',
-    // 무기진미술축 = 土 (토)
-    '무': '土', '기': '土', '진': '土', '미': '土', '술': '土', '축': '土',
-    '戊': '土', '己': '土', '辰': '土', '未': '土', '戌': '土', '丑': '土',
-    // 경신신유 = 金 (금)
-    '경': '金', '신': '金', '유': '金',
-    '庚': '金', '辛': '金', '申': '金', '酉': '金',
-    // 임계해자 = 水 (수)
-    '임': '水', '계': '水', '해': '水', '자': '水',
-    '壬': '水', '癸': '水', '亥': '水', '子': '水'
+    // 갑인=+목, 을묘=-목
+    '갑': '+木', '을': '-木', '인': '+木', '묘': '-木',
+    '甲': '+木', '乙': '-木', '寅': '+木', '卯': '-木',
+    // 병사=+화, 정오=-화
+    '병': '+火', '정': '-火', '사': '+火', '오': '-火',
+    '丙': '+火', '丁': '-火', '巳': '+火', '午': '-火',
+    // 무진술=+토, 기축미=-토
+    '무': '+土', '기': '-土', '진': '+土', '미': '-土', '술': '+土', '축': '-土',
+    '戊': '+土', '己': '-土', '辰': '+土', '未': '-土', '戌': '+土', '丑': '-土',
+    // 경신=+금, 신유=-금
+    '경': '+金', '신': '-金', '유': '-金',
+    '庚': '+金', '辛': '-金', '申': '+金', '酉': '-金',
+    // 임해=+수, 계자=-수
+    '임': '+水', '계': '-水', '해': '+水', '자': '-水',
+    '壬': '+水', '癸': '-水', '亥': '+水', '子': '-水'
   };
   
   return wuxingMap[character] || character;
@@ -1450,15 +1450,23 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-start text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-shinsal-${index}`}
               >
-                {shinsalArray.map((shinsal, idx) => (
-                  <div 
-                    key={`shinsal-${index}-${idx}`}
-                    className="leading-tight"
-                    style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
-                  >
-                    {shinsal}
-                  </div>
-                ))}
+                {shinsalArray.map((shinsal, idx) => {
+                  // 12신살은 첫 번째 요소 (idx === 0)
+                  // 한글2일 때만 12신살을 한글로 변환
+                  const displayText = idx === 0 && showKorean2 
+                    ? (SINSAL_KOREAN_MAP[shinsal] || shinsal)
+                    : shinsal;
+                  
+                  return (
+                    <div 
+                      key={`shinsal-${index}-${idx}`}
+                      className="leading-tight"
+                      style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
+                    >
+                      {displayText}
+                    </div>
+                  );
+                })}
               </div>
             )))
           ) : (

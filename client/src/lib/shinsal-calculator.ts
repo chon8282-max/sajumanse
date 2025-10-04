@@ -123,6 +123,54 @@ const NONGA_SAL_MAP: Record<string, string> = {
 // 고란살 간지 목록 (갑인, 을사, 정사, 무신, 신해)
 const GORAN_SAL_GANJI = ["甲寅", "乙巳", "丁巳", "戊申", "辛亥"];
 
+// 록공망 간지 목록 (갑진, 을사, 병신, 정해, 무술, 기축, 경진, 신사, 임신, 계해)
+const ROK_GONGMANG_GANJI = ["甲辰", "乙巳", "丙申", "丁亥", "戊戌", "己丑", "庚辰", "辛巳", "壬申", "癸亥"];
+
+// 공망 매핑 테이블 (일주 간지 → 공망 지지)
+const GONGMANG_MAP: Record<string, string[]> = {
+  // 자축 공망 (子丑 空亡) - 첫 번째 그룹
+  '甲子': ['子', '丑'], '乙丑': ['子', '丑'],
+  '丙寅': ['子', '丑'], '丁卯': ['子', '丑'],
+  '戊辰': ['子', '丑'], '己巳': ['子', '丑'],
+  '庚午': ['子', '丑'], '辛未': ['子', '丑'],
+  '壬申': ['子', '丑'], '癸酉': ['子', '丑'],
+  
+  // 신유 공망 (申酉 空亡)
+  '甲戌': ['申', '酉'], '乙亥': ['申', '酉'],
+  '丙子': ['申', '酉'], '丁丑': ['申', '酉'],
+  '戊寅': ['申', '酉'], '己卯': ['申', '酉'],
+  '庚辰': ['申', '酉'], '辛巳': ['申', '酉'],
+  '壬午': ['申', '酉'], '癸未': ['申', '酉'],
+  
+  // 오미 공망 (午未 空亡)
+  '甲申': ['午', '未'], '乙酉': ['午', '未'],
+  '丙戌': ['午', '未'], '丁亥': ['午', '未'],
+  '戊子': ['午', '未'], '己丑': ['午', '未'],
+  '庚寅': ['午', '未'], '辛卯': ['午', '未'],
+  '壬辰': ['午', '未'], '癸巳': ['午', '未'],
+  
+  // 진사 공망 (辰巳 空亡)
+  '甲午': ['辰', '巳'], '乙未': ['辰', '巳'],
+  '丙申': ['辰', '巳'], '丁酉': ['辰', '巳'],
+  '戊戌': ['辰', '巳'], '己亥': ['辰', '巳'],
+  '庚子': ['辰', '巳'], '辛丑': ['辰', '巳'],
+  '壬寅': ['辰', '巳'], '癸卯': ['辰', '巳'],
+  
+  // 인묘 공망 (寅卯 空亡)
+  '甲辰': ['寅', '卯'], '乙巳': ['寅', '卯'],
+  '丙午': ['寅', '卯'], '丁未': ['寅', '卯'],
+  '戊申': ['寅', '卯'], '己酉': ['寅', '卯'],
+  '庚戌': ['寅', '卯'], '辛亥': ['寅', '卯'],
+  '壬子': ['寅', '卯'], '癸丑': ['寅', '卯'],
+  
+  // 자축 공망 (子丑 空亡) - 두 번째 그룹
+  '甲寅': ['子', '丑'], '乙卯': ['子', '丑'],
+  '丙辰': ['子', '丑'], '丁巳': ['子', '丑'],
+  '戊午': ['子', '丑'], '己未': ['子', '丑'],
+  '庚申': ['子', '丑'], '辛酉': ['子', '丑'],
+  '壬戌': ['子', '丑'], '癸亥': ['子', '丑']
+};
+
 // 도화살 매핑 테이블 (년지 → 도화살 지지)
 const DOHWA_SAL_MAP: Record<string, string> = {
   "寅": "卯", "午": "卯", "戌": "卯",  // 인오술 년생 = 묘
@@ -700,6 +748,67 @@ export function calculateGoranSal(
 }
 
 /**
+ * 록공망(祿空亡) 계산
+ * 일주 간지를 확인합니다
+ */
+export function calculateRokGongmang(
+  daySky: string,
+  dayEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const dayGanji = daySky + dayEarth;
+  if (ROK_GONGMANG_GANJI.includes(dayGanji)) {
+    result.dayPillar.push("祿空亡");
+  }
+
+  return result;
+}
+
+/**
+ * 공망(空亡) 계산
+ * 일주 기준으로 공망 지지를 찾습니다
+ */
+export function calculateGongmang(
+  daySky: string,
+  dayEarth: string,
+  yearEarth: string,
+  monthEarth: string,
+  hourEarth: string
+): ShinSalResult {
+  const result: ShinSalResult = {
+    yearPillar: [],
+    monthPillar: [],
+    dayPillar: [],
+    hourPillar: []
+  };
+
+  const dayGanji = daySky + dayEarth;
+  const gongmangEarths = GONGMANG_MAP[dayGanji] || [];
+
+  // 각 주의 지지가 공망에 해당하는지 확인
+  if (gongmangEarths.includes(yearEarth)) {
+    result.yearPillar.push("空亡");
+  }
+  if (gongmangEarths.includes(monthEarth)) {
+    result.monthPillar.push("空亡");
+  }
+  if (gongmangEarths.includes(dayEarth)) {
+    result.dayPillar.push("空亡");
+  }
+  if (gongmangEarths.includes(hourEarth)) {
+    result.hourPillar.push("空亡");
+  }
+
+  return result;
+}
+
+/**
  * 도화살(桃花殺) 계산
  * 년지를 기준으로 년월일시의 지지에서 도화살을 찾습니다
  */
@@ -1178,6 +1287,12 @@ export function calculateFirstRowShinSal(
   // 고란살 계산
   const goranSal = calculateGoranSal(daySky, dayEarth);
   
+  // 록공망 계산
+  const rokGongmang = calculateRokGongmang(daySky, dayEarth);
+  
+  // 공망 계산
+  const gongmang = calculateGongmang(daySky, dayEarth, yearEarth, monthEarth, hourEarth);
+  
   // 도화살 계산
   const dohwaSal = calculateDohwaSal(yearEarth, monthEarth, dayEarth, hourEarth);
   
@@ -1222,6 +1337,8 @@ export function calculateFirstRowShinSal(
   result = mergeShinSalResults(result, ibyeolSal);
   result = mergeShinSalResults(result, nongaSal);
   result = mergeShinSalResults(result, goranSal);
+  result = mergeShinSalResults(result, rokGongmang);
+  result = mergeShinSalResults(result, gongmang);
   result = mergeShinSalResults(result, dohwaSal);
   result = mergeShinSalResults(result, hongyeomSal);
   result = mergeShinSalResults(result, bubyeokSal);
@@ -1252,6 +1369,8 @@ const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "離別殺": "이별살",
   "聾兒殺": "농아살",
   "孤鸞殺": "고란살",
+  "祿空亡": "록공망",
+  "空亡": "공망",
   "桃花殺": "도화살",
   "紅艶殺": "홍염살",
   "釜劈殺": "부벽살",
