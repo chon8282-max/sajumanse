@@ -161,7 +161,7 @@ export default function Compatibility() {
                   </Button>
                   <CardTitle className="text-sm">사주 1</CardTitle>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-0 items-start">
                   {leftSajuId && (
                     <>
                       <Button
@@ -250,7 +250,7 @@ export default function Compatibility() {
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">사주 2</CardTitle>
-                <div className="flex gap-1">
+                <div className="flex gap-0 items-start">
                   {rightSajuId && (
                     <>
                       <Button
