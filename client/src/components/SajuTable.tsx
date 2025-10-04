@@ -1495,7 +1495,18 @@ export default function SajuTable({
           )}
         </div>
 
-        
+        {/* 6행: 대운수 */}
+        <div className="grid grid-cols-10 border-b border-border">
+          {daeunAges.map((age, colIndex) => (
+            <div 
+              key={`daeun-age-${colIndex}`}
+              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-800 text-black dark:text-white flex items-center justify-center"
+              data-testid={`text-daeun-age-${colIndex}`}
+            >
+              {age}
+            </div>
+          ))}
+        </div>
 
         {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10">
