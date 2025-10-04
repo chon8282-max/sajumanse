@@ -3,24 +3,12 @@ import { pgTable, text, varchar, integer, date, boolean, timestamp, jsonb, index
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table (Replit Auth)
-export const sessions = pgTable(
-  "sessions",
-  {
-    sid: varchar("sid").primaryKey(),
-    sess: jsonb("sess").notNull(),
-    expire: timestamp("expire").notNull(),
-  },
-  (table) => [index("IDX_session_expire").on(table.expire)],
-);
-
-// User storage table (Replit Auth)
+// User storage table (Firebase Auth)
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey(), // Replit sub (subject) ID - always provided, no default needed
+  id: varchar("id").primaryKey(), // Firebase UID
   email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
+  displayName: varchar("display_name"),
+  photoUrl: varchar("photo_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
