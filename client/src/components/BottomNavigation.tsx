@@ -70,13 +70,14 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
             });
           } catch (error: any) {
             if (error.name !== 'AbortError') {
-              // 사용자가 취소한 경우가 아니면 다운로드로 fallback
-              downloadImage(canvas);
+              // 공유 실패 시 다운로드로 fallback
+              console.error('Share failed:', error);
+              downloadImage(canvas, true); // 공유 실패 플래그 전달
             }
           }
         } else {
           // Web Share API를 지원하지 않는 경우 다운로드
-          downloadImage(canvas);
+          downloadImage(canvas, false);
         }
       }, 'image/jpeg', 0.95);
     } catch (error) {
@@ -89,15 +90,17 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     }
   };
 
-  const downloadImage = (canvas: HTMLCanvasElement) => {
+  const downloadImage = (canvas: HTMLCanvasElement, isShareFailed: boolean = false) => {
     const link = document.createElement('a');
     link.download = `사주명식_${new Date().toISOString().slice(0, 10)}.jpg`;
     link.href = canvas.toDataURL('image/jpeg', 0.95);
     link.click();
     
     toast({
-      title: "다운로드 완료",
-      description: "화면이 이미지로 저장되었습니다."
+      title: isShareFailed ? "이미지 다운로드됨" : "다운로드 완료",
+      description: isShareFailed 
+        ? "다운로드된 이미지를 갤러리에서 직접 공유하세요." 
+        : "화면이 이미지로 저장되었습니다."
     });
   };
 
