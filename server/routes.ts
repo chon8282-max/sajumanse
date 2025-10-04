@@ -23,10 +23,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========================================
   await setupAuth(app);
 
-  // 인증된 사용자 정보 조회
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // 인증된 사용자 정보 조회 (로그인하지 않은 경우 null 반환)
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      // 로그인하지 않은 경우 null 반환 (옵셔널 체이닝으로 안전하게 체크)
+      if (!req.isAuthenticated?.()) {
+        return res.json(null);
+      }
+      
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.json(null);
+      }
+      
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {

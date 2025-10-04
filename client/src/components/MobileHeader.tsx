@@ -21,7 +21,7 @@ export default function MobileHeader({
   onMenuClick
 }: MobileHeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, isAuthenticated, isLoading } = useAuth() as { user?: User; isAuthenticated: boolean; isLoading: boolean };
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   const handleUserClick = () => {
     if (!isAuthenticated && !isLoading) {
@@ -91,7 +91,7 @@ export default function MobileHeader({
               <div className="absolute right-0 top-full mt-2 w-48 bg-popover border rounded-md shadow-md p-2 z-50">
                 <div className="p-2 border-b border-border">
                   <p className="font-medium text-sm" data-testid="text-user-name">
-                    {user?.firstName || user?.email || '사용자'}
+                    {(user as User)?.firstName || (user as User)?.email || '사용자'}
                   </p>
                   <p className="text-xs text-muted-foreground">환영합니다!</p>
                 </div>
