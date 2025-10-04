@@ -2,7 +2,7 @@ import { useLocation as useWouterLocation, useSearch } from "wouter";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, Edit, Moon, Sun, Heart } from "lucide-react";
+import { ArrowLeft, Save, Edit, Moon, Sun } from "lucide-react";
 import SajuTable from "@/components/SajuTable";
 import { findGanjiIndex } from "@/lib/ganji-calculator";
 import { calculateCompleteDaeun, calculateCurrentAge, DaeunPeriod, findCurrentDaeun } from "@/lib/daeun-calculator";
@@ -610,26 +610,9 @@ export default function GanjiResult() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => {
-              // 간지로 뽑기 모드에서는 ID가 없으므로 쿼리 파라미터 없이 이동
-              if (isEditMode && recordId) {
-                setLocation(`/compatibility?left=${recordId}`);
-              } else {
-                setLocation('/compatibility');
-              }
-            }}
-            data-testid="button-compatibility"
-            className="hover-elevate active-elevate-2 flex items-center gap-0.5 scale-[0.6] origin-center"
-          >
-            <Heart className="h-3 w-3" />
-            <span className="text-xs">궁합</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
             onClick={handleEdit}
             data-testid="button-edit"
-            className="hover-elevate active-elevate-2 flex items-center gap-0.5 scale-[0.6] origin-center"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5"
           >
             <Edit className="h-3 w-3" />
             <span className="text-xs">수정</span>
@@ -640,7 +623,7 @@ export default function GanjiResult() {
             onClick={handleSave}
             disabled={(isEditMode ? updateMutation.isPending : saveMutation.isPending) || !selectedYear}
             data-testid="button-save"
-            className="hover-elevate active-elevate-2 flex items-center gap-0.5 scale-[0.6] origin-center"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5"
           >
             <Save className="h-3 w-3" />
             <span className="text-xs">
@@ -683,6 +666,7 @@ export default function GanjiResult() {
 
         {/* 사주 테이블 */}
         <SajuTable
+          id={recordId || undefined}
           saju={saju}
           title="사주 명식표"
           name={name.trim() || '이름없음'}

@@ -14,9 +14,11 @@ import { Button } from "@/components/ui/button";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 import { calculateCheonganEvent } from "@/lib/cheongan-event-calculator";
+import { useLocation } from "wouter";
 
 interface SajuTableProps {
   saju: SajuInfo;
+  id?: string;
   title?: string;
   name?: string;
   birthYear?: number;
@@ -228,7 +230,8 @@ function calculateSibiSinsal(yearEarth: string, sajuColumns: Array<{sky: string,
 }
 
 export default function SajuTable({ 
-  saju, 
+  saju,
+  id,
   title = "四柱命式", 
   name,
   birthYear,
@@ -266,6 +269,7 @@ export default function SajuTable({
   onNameClick,
   onMemoChange
 }: SajuTableProps) {
+  const [, setLocation] = useLocation();
 
   // 나이 계산 (간지년 기준)
   const age = useMemo(() => {
@@ -1154,6 +1158,11 @@ export default function SajuTable({
             </button>
             <button 
               className="px-3 py-1 text-xs bg-pink-100 hover:bg-pink-200 dark:bg-pink-900 dark:hover:bg-pink-800 border border-pink-300 dark:border-pink-700 rounded-md transition-colors"
+              onClick={() => {
+                if (id) {
+                  setLocation(`/compatibility?left=${id}`);
+                }
+              }}
               data-testid="button-compatibility"
             >
               궁합
