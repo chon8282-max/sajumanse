@@ -201,7 +201,6 @@ function AppContent() {
           isDarkMode={theme === "dark"}
           onThemeToggle={toggleTheme}
           onMenuClick={handleMenuClick}
-          userName="만세력 사용자"
         />
       )}
       

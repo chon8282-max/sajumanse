@@ -14,8 +14,26 @@ import {
 } from "./lib/data-gov-kr-service";
 import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // ========================================
+  // 인증 관련 설정 (Replit Auth)
+  // ========================================
+  await setupAuth(app);
+
+  // 인증된 사용자 정보 조회
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
 
   // ========================================
   // 그룹 관련 API 라우트
