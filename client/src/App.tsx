@@ -34,6 +34,7 @@ import GanjiInput from "@/pages/GanjiInput";
 import GanjiResult from "@/pages/GanjiResult";
 import Announcements from "@/pages/Announcements";
 import AnnouncementDetail from "@/pages/AnnouncementDetail";
+import AnnouncementAdmin from "@/pages/AnnouncementAdmin";
 
 function Router() {
   return (
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/ganji-result" component={GanjiResult} />
       <Route path="/announcements" component={Announcements} />
       <Route path="/announcements/:id" component={AnnouncementDetail} />
+      <Route path="/announcement-admin" component={AnnouncementAdmin} />
       <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
