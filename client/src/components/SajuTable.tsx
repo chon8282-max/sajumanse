@@ -1191,10 +1191,12 @@ export default function SajuTable({
           )}
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean);
+            const isHourPillar = index === 0;
+            const isMonthPillar = index === 2;
             return (
               <div 
                 key={`sky-${index}`} 
-                className="text-center font-bold border-r border-border flex items-center justify-center"
+                className={`text-center font-bold border-r border-border flex items-center justify-center ${isHourPillar || isMonthPillar ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
@@ -1202,6 +1204,7 @@ export default function SajuTable({
                   margin: '0',
                   lineHeight: '1'
                 }}
+                onClick={isHourPillar ? handleHourEarthClick : isMonthPillar ? handleDayEarthClick : undefined}
                 data-testid={`text-sky-${index}`}
               >
                 {cheonganImage ? (
@@ -1278,13 +1281,13 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean);
             const isHourEarth = index === 0;
-            const isDayEarth = index === 2;
+            const isMonthEarth = index === 2;
             
             return (
               <div 
                 key={`earth-${index}`} 
                 className={`text-center font-bold border-r border-border flex items-center justify-center ${
-                  isHourEarth || (isDayEarth && calendarType !== 'ganji') ? 'cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900' : ''
+                  isHourEarth || isMonthEarth ? 'cursor-pointer hover-elevate active-elevate-2' : ''
                 }`}
                 style={{ 
                   backgroundColor: getWuxingColor(col.earth),
@@ -1295,7 +1298,7 @@ export default function SajuTable({
                   lineHeight: '1'
                 }}
                 data-testid={`text-earth-${index}`}
-                onClick={isHourEarth ? handleHourEarthClick : (isDayEarth && calendarType !== 'ganji' ? handleDayEarthClick : undefined)}
+                onClick={isHourEarth ? handleHourEarthClick : (isMonthEarth ? handleDayEarthClick : undefined)}
               >
                 <div 
                   style={{
@@ -1529,7 +1532,7 @@ export default function SajuTable({
                 key={`daeun-age-${colIndex}`}
                 className={`py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer pt-[0px] pb-[0px] ${
                   isHighlighted 
-                    ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-bold' 
+                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'hover-elevate active-elevate-2 text-black dark:text-white bg-blue-50 dark:bg-blue-950/30'
                 }`}
                 onClick={() => {
