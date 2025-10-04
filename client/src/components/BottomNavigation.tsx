@@ -34,7 +34,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
         windowHeight: element.scrollHeight
       });
 
-      // Canvas를 Blob으로 변환
+      // Canvas를 Blob으로 변환 (JPEG 형식으로 변경 - 더 나은 호환성)
       canvas.toBlob(async (blob) => {
         if (!blob) {
           toast({
@@ -45,7 +45,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
           return;
         }
 
-        const file = new File([blob], 'saju-screen.png', { type: 'image/png' });
+        const file = new File([blob], 'saju-screen.jpg', { type: 'image/jpeg' });
 
         // Web Share API 지원 확인
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -70,7 +70,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
           // Web Share API를 지원하지 않는 경우 다운로드
           downloadImage(canvas);
         }
-      }, 'image/png');
+      }, 'image/jpeg', 0.95);
     } catch (error) {
       console.error('Screenshot failed:', error);
       toast({
@@ -83,8 +83,8 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
 
   const downloadImage = (canvas: HTMLCanvasElement) => {
     const link = document.createElement('a');
-    link.download = `사주명식_${new Date().toISOString().slice(0, 10)}.png`;
-    link.href = canvas.toDataURL();
+    link.download = `사주명식_${new Date().toISOString().slice(0, 10)}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.95);
     link.click();
     
     toast({

@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Home, UserPlus, FolderOpen, RefreshCw } from "lucide-react";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { Home, UserPlus, FolderOpen, RefreshCw, Save } from "lucide-react";
+import { useLocation, useSearch } from "wouter";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { calculateSaju } from "@/lib/saju-calculator";
 import SajuTable from "@/components/SajuTable";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface SajuResultData {
   id: string;
@@ -26,10 +28,29 @@ interface SajuResultData {
 
 export default function Compatibility() {
   const [, setLocation] = useLocation();
+  const searchParams = useSearch();
+  const { toast } = useToast();
+  
   const [leftSajuId, setLeftSajuId] = useState<string | null>(null);
   const [rightSajuId, setRightSajuId] = useState<string | null>(null);
   const [showLeftDialog, setShowLeftDialog] = useState(false);
   const [showRightDialog, setShowRightDialog] = useState(false);
+  const [leftMemo, setLeftMemo] = useState<string>("");
+  const [rightMemo, setRightMemo] = useState<string>("");
+  
+  // 쿼리 파라미터에서 ID 자동 로드
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    const leftId = params.get('left');
+    const rightId = params.get('right');
+    
+    if (leftId && !leftSajuId) {
+      setLeftSajuId(leftId);
+    }
+    if (rightId && !rightSajuId) {
+      setRightSajuId(rightId);
+    }
+  }, [searchParams]);
 
   // 가로 모드 강제 전환
   useEffect(() => {
@@ -62,6 +83,49 @@ export default function Compatibility() {
   
   const leftSaju = leftSajuResponse?.data;
   const rightSaju = rightSajuResponse?.data;
+  
+  // 사주 데이터 로드 시 메모 동기화
+  useEffect(() => {
+    if (leftSaju?.memo) {
+      setLeftMemo(leftSaju.memo);
+    }
+  }, [leftSaju]);
+  
+  useEffect(() => {
+    if (rightSaju?.memo) {
+      setRightMemo(rightSaju.memo);
+    }
+  }, [rightSaju]);
+  
+  // 왼쪽 저장 mutation
+  const leftSaveMutation = useMutation({
+    mutationFn: async (memo: string) => {
+      if (!leftSajuId) return;
+      return apiRequest("PUT", `/api/saju-records/${leftSajuId}`, { memo });
+    },
+    onSuccess: () => {
+      toast({
+        title: "저장 완료",
+        description: "사주 1 메모가 저장되었습니다."
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
+    }
+  });
+  
+  // 오른쪽 저장 mutation
+  const rightSaveMutation = useMutation({
+    mutationFn: async (memo: string) => {
+      if (!rightSajuId) return;
+      return apiRequest("PUT", `/api/saju-records/${rightSajuId}`, { memo });
+    },
+    onSuccess: () => {
+      toast({
+        title: "저장 완료",
+        description: "사주 2 메모가 저장되었습니다."
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
+    }
+  });
 
   const handleHomeClick = () => {
     setLocation('/');
@@ -99,42 +163,65 @@ export default function Compatibility() {
                 </div>
                 <div className="flex gap-1">
                   {leftSajuId && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setLeftSajuId(null)}
-                      data-testid="button-left-change"
-                      className="text-xs h-6 px-2"
-                    >
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                      변경
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLeftSajuId(null)}
+                        data-testid="button-left-change"
+                        className="scale-[0.6] origin-center"
+                      >
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        변경
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => leftSaveMutation.mutate(leftMemo)}
+                        disabled={leftSaveMutation.isPending}
+                        data-testid="button-left-save"
+                        className="scale-[0.6] origin-center"
+                      >
+                        <Save className="w-3 h-3 mr-1" />
+                        {leftSaveMutation.isPending ? "저장중..." : "저장"}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-1">
               {leftSajuId && leftSaju ? (
-                <div className="scale-[0.7] origin-top-left w-[142.86%]">
-                  <SajuTable 
-                    saju={(() => {
-                      const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === leftSaju.birthTime);
-                      return calculateSaju(
-                        leftSaju.birthYear,
-                        leftSaju.birthMonth,
-                        leftSaju.birthDay,
-                        timePeriod?.hour || 0
-                      );
-                    })()}
-                    name={leftSaju.name}
-                    birthYear={leftSaju.birthYear}
-                    birthMonth={leftSaju.birthMonth}
-                    birthDay={leftSaju.birthDay}
-                    birthHour={leftSaju.birthTime || undefined}
-                    gender={leftSaju.gender}
-                    memo={leftSaju.memo || undefined}
-                  />
-                </div>
+                <>
+                  <div className="scale-[0.7] origin-top-left w-[142.86%]">
+                    <SajuTable 
+                      saju={(() => {
+                        const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === leftSaju.birthTime);
+                        return calculateSaju(
+                          leftSaju.birthYear,
+                          leftSaju.birthMonth,
+                          leftSaju.birthDay,
+                          timePeriod?.hour || 0
+                        );
+                      })()}
+                      name={leftSaju.name}
+                      birthYear={leftSaju.birthYear}
+                      birthMonth={leftSaju.birthMonth}
+                      birthDay={leftSaju.birthDay}
+                      birthHour={leftSaju.birthTime || undefined}
+                      gender={leftSaju.gender}
+                    />
+                  </div>
+                  <div className="mt-2 px-2">
+                    <textarea
+                      value={leftMemo}
+                      onChange={(e) => setLeftMemo(e.target.value)}
+                      placeholder="메모를 입력하세요..."
+                      className="w-full text-xs text-muted-foreground whitespace-pre-wrap bg-transparent border border-border rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring min-h-[60px]"
+                      data-testid="textarea-left-memo"
+                    />
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
                   <p className="text-muted-foreground text-center">
@@ -165,42 +252,65 @@ export default function Compatibility() {
                 <CardTitle className="text-sm">사주 2</CardTitle>
                 <div className="flex gap-1">
                   {rightSajuId && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setRightSajuId(null)}
-                      data-testid="button-right-change"
-                      className="text-xs h-6 px-2"
-                    >
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                      변경
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRightSajuId(null)}
+                        data-testid="button-right-change"
+                        className="scale-[0.6] origin-center"
+                      >
+                        <RefreshCw className="w-3 h-3 mr-1" />
+                        변경
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => rightSaveMutation.mutate(rightMemo)}
+                        disabled={rightSaveMutation.isPending}
+                        data-testid="button-right-save"
+                        className="scale-[0.6] origin-center"
+                      >
+                        <Save className="w-3 h-3 mr-1" />
+                        {rightSaveMutation.isPending ? "저장중..." : "저장"}
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-1">
               {rightSajuId && rightSaju ? (
-                <div className="scale-[0.7] origin-top-left w-[142.86%]">
-                  <SajuTable 
-                    saju={(() => {
-                      const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === rightSaju.birthTime);
-                      return calculateSaju(
-                        rightSaju.birthYear,
-                        rightSaju.birthMonth,
-                        rightSaju.birthDay,
-                        timePeriod?.hour || 0
-                      );
-                    })()}
-                    name={rightSaju.name}
-                    birthYear={rightSaju.birthYear}
-                    birthMonth={rightSaju.birthMonth}
-                    birthDay={rightSaju.birthDay}
-                    birthHour={rightSaju.birthTime || undefined}
-                    gender={rightSaju.gender}
-                    memo={rightSaju.memo || undefined}
-                  />
-                </div>
+                <>
+                  <div className="scale-[0.7] origin-top-left w-[142.86%]">
+                    <SajuTable 
+                      saju={(() => {
+                        const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === rightSaju.birthTime);
+                        return calculateSaju(
+                          rightSaju.birthYear,
+                          rightSaju.birthMonth,
+                          rightSaju.birthDay,
+                          timePeriod?.hour || 0
+                        );
+                      })()}
+                      name={rightSaju.name}
+                      birthYear={rightSaju.birthYear}
+                      birthMonth={rightSaju.birthMonth}
+                      birthDay={rightSaju.birthDay}
+                      birthHour={rightSaju.birthTime || undefined}
+                      gender={rightSaju.gender}
+                    />
+                  </div>
+                  <div className="mt-2 px-2">
+                    <textarea
+                      value={rightMemo}
+                      onChange={(e) => setRightMemo(e.target.value)}
+                      placeholder="메모를 입력하세요..."
+                      className="w-full text-xs text-muted-foreground whitespace-pre-wrap bg-transparent border border-border rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring min-h-[60px]"
+                      data-testid="textarea-right-memo"
+                    />
+                  </div>
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
                   <p className="text-muted-foreground text-center">

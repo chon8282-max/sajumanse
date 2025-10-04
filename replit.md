@@ -80,6 +80,18 @@ Preferred communication style: Simple, everyday language.
   - Events include: 비화, 비화합, 목생화, 화생토, 토생금, 금생수, 수생목, 설기, 휴수극, 충(沖), 합(合), etc.
   - Applies to both date-based and Ganji-based (간지로 뽑기) Saju records
   - Implementation: calculateCheonganEvent() function with complete 10x10 stem interaction matrix
+- **Screen Sharing**: Capture and share current screen via Web Share API or download
+  - Image format: JPEG (0.95 quality) for better mobile compatibility
+  - Filename: `사주명식_YYYY-MM-DD.jpg`
+  - Falls back to download if Web Share API not supported
+- **Mobile Menu UX**: 60% width side menu with touch gesture support
+  - Width: 60% of screen width (reduced from 320px fixed)
+  - Swipe to close: Left swipe gesture (50px threshold) closes menu
+  - Touch events: onTouchStart/Move/End handlers for natural mobile interaction
+- **Compatibility Mode**: Side-by-side Saju comparison with save functionality
+  - URL parameters: Auto-loads sajus from `?left={id}&right={id}` query params
+  - Memo editing: Editable textarea for each saju with save button
+  - Button scaling: 60% size reduction for change/save buttons (scale-[0.6])
 
 ## External Dependencies
 
