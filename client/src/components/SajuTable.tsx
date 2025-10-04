@@ -152,6 +152,23 @@ const SINSAL_KOREAN_MAP: Record<string, string> = {
   '攀鞍殺': '반안살', '驛馬殺': '역마살', '六害殺': '육해살', '華蓋殺': '화개살'
 };
 
+// 천간 이벤트 한글-한자 변환 매핑
+const CHEONGAN_EVENT_CHINESE_MAP: Record<string, string> = {
+  '비화': '比和', '비화합': '比和合',
+  '목생화': '木生火', '화생토': '火生土', '토생금': '土生金', '금생수': '金生水', '수생목': '水生木',
+  '설기': '洩氣', '휴수극': '休囚剋', '필요극': '必要剋',
+  '갑무충': '甲戊沖', '갑기합': '甲己合', '갑경충': '甲庚沖',
+  '을기충': '乙己沖', '을경합': '乙庚合', '을신충': '乙辛沖',
+  '병경충': '丙庚沖', '병신합': '丙辛合', '병임충': '丙壬沖',
+  '정신충': '丁辛沖', '정임합': '丁壬合', '정계충': '丁癸沖',
+  '무갑충': '戊甲沖', '무임충': '戊壬沖', '무계합': '戊癸合',
+  '기갑합': '己甲合', '기을충': '己乙沖', '기계충': '己癸沖',
+  '경갑충': '庚甲沖', '경을합': '庚乙合', '경정극': '庚丁剋',
+  '신병합': '辛丙合', '신정충': '辛丁沖',
+  '임병충': '壬丙沖', '임정합': '壬丁合', '임무충': '壬戊沖',
+  '계정충': '癸丁沖', '계무합': '癸戊合', '계기충': '癸己沖'
+};
+
 // 12신살 계산 함수
 function calculateSibiSinsal(yearEarth: string, sajuColumns: Array<{sky: string, earth: string}>): string[] {
   // 12신살 순서
@@ -1207,11 +1224,13 @@ export default function SajuTable({
             if (displayMode === 'daeun' && focusedDaeun && skyCharacter) {
               const daeunSky = focusedDaeun.sky;
               const cheonganEvent = calculateCheonganEvent(daeunSky, skyCharacter);
-              displayText = cheonganEvent;
+              // 한자1 버튼 상태에 따라 한글/한자 변환
+              displayText = showKorean1 ? cheonganEvent : (CHEONGAN_EVENT_CHINESE_MAP[cheonganEvent] || cheonganEvent);
             } else if (displayMode === 'saeun' && focusedSaeun && skyCharacter) {
               const saeunSky = focusedSaeun.sky;
               const cheonganEvent = calculateCheonganEvent(saeunSky, skyCharacter);
-              displayText = cheonganEvent;
+              // 한자1 버튼 상태에 따라 한글/한자 변환
+              displayText = showKorean1 ? cheonganEvent : (CHEONGAN_EVENT_CHINESE_MAP[cheonganEvent] || cheonganEvent);
             } else {
               displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
               displayText = convertTextForRow145(displayText);
