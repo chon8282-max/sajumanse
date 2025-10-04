@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
-import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
+import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, insertAnnouncementSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
 import { convertSolarToLunarServer, convertLunarToSolarServer } from "./lib/lunar-converter";
 import { 
@@ -1518,6 +1518,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Import error:', error);
       res.status(500).json({ 
         error: error instanceof Error ? error.message : "데이터 복원 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // ========================================
+  // 공지사항 API 라우트
+  // ========================================
+
+  // 공지사항 목록 조회
+  app.get("/api/announcements", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const announcements = await storage.getAnnouncements(limit);
+      
+      res.json({
+        success: true,
+        data: announcements
+      });
+    } catch (error) {
+      console.error('Get announcements error:', error);
+      res.status(500).json({ 
+        error: "공지사항 목록 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 특정 공지사항 조회
+  app.get("/api/announcements/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const announcement = await storage.getAnnouncement(id);
+      
+      if (!announcement) {
+        return res.status(404).json({ 
+          error: "해당 공지사항을 찾을 수 없습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        data: announcement
+      });
+    } catch (error) {
+      console.error('Get announcement error:', error);
+      res.status(500).json({ 
+        error: "공지사항 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 새 공지사항 작성 (마스터 전용)
+  app.post("/api/announcements", async (req, res) => {
+    try {
+      const validatedData = insertAnnouncementSchema.parse(req.body);
+      
+      // 마스터 권한 확인 (authorId로 사용자 조회)
+      const author = await storage.getUser(validatedData.authorId);
+      if (!author || !author.isMaster) {
+        return res.status(403).json({ 
+          error: "공지사항 작성 권한이 없습니다." 
+        });
+      }
+
+      const newAnnouncement = await storage.createAnnouncement(validatedData);
+      
+      res.json({
+        success: true,
+        data: newAnnouncement,
+        message: "공지사항이 성공적으로 작성되었습니다."
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Create announcement error:', error);
+      res.status(500).json({ 
+        error: "공지사항 작성 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 공지사항 수정 (마스터 전용)
+  app.put("/api/announcements/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = insertAnnouncementSchema.partial().parse(req.body);
+      
+      // 기존 공지사항 조회
+      const existing = await storage.getAnnouncement(id);
+      if (!existing) {
+        return res.status(404).json({ 
+          error: "해당 공지사항을 찾을 수 없습니다." 
+        });
+      }
+
+      // 마스터 권한 확인
+      const author = await storage.getUser(existing.authorId);
+      if (!author || !author.isMaster) {
+        return res.status(403).json({ 
+          error: "공지사항 수정 권한이 없습니다." 
+        });
+      }
+
+      const updatedAnnouncement = await storage.updateAnnouncement(id, updateData);
+      
+      res.json({
+        success: true,
+        data: updatedAnnouncement,
+        message: "공지사항이 성공적으로 수정되었습니다."
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          error: "입력 데이터가 올바르지 않습니다.", 
+          details: error.errors 
+        });
+      }
+      console.error('Update announcement error:', error);
+      res.status(500).json({ 
+        error: "공지사항 수정 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 공지사항 삭제 (마스터 전용)
+  app.delete("/api/announcements/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // 기존 공지사항 조회
+      const existing = await storage.getAnnouncement(id);
+      if (!existing) {
+        return res.status(404).json({ 
+          error: "해당 공지사항을 찾을 수 없습니다." 
+        });
+      }
+
+      // 마스터 권한 확인
+      const author = await storage.getUser(existing.authorId);
+      if (!author || !author.isMaster) {
+        return res.status(403).json({ 
+          error: "공지사항 삭제 권한이 없습니다." 
+        });
+      }
+
+      const success = await storage.deleteAnnouncement(id);
+      
+      if (!success) {
+        return res.status(404).json({ 
+          error: "공지사항 삭제에 실패했습니다." 
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "공지사항이 삭제되었습니다."
+      });
+    } catch (error) {
+      console.error('Delete announcement error:', error);
+      res.status(500).json({ 
+        error: "공지사항 삭제 중 오류가 발생했습니다." 
       });
     }
   });
