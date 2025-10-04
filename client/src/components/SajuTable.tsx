@@ -1208,11 +1208,9 @@ export default function SajuTable({
               const daeunSky = focusedDaeun.sky;
               const cheonganEvent = calculateCheonganEvent(daeunSky, skyCharacter);
               displayText = cheonganEvent;
-              console.log(`[천간이벤트] displayMode=${displayMode}, daeunSky=${daeunSky}, sajuSky=${skyCharacter}, event=${cheonganEvent}`);
             } else {
               displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
               displayText = convertTextForRow145(displayText);
-              console.log(`[일반육친] displayMode=${displayMode}, showWuxing=${showWuxing}, yukjin=${yukjin}, displayText=${displayText}`);
             }
             
             return (
@@ -1684,8 +1682,7 @@ export default function SajuTable({
           })}
         </div>
 
-        {/* 9행: 歲運 나이 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
-        {(displayMode === 'daeun' || displayMode === 'saeun') && (
+        {/* 9행: 歲運 나이 (우측에서 좌측) */}
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
@@ -1717,10 +1714,8 @@ export default function SajuTable({
             );
           })}
         </div>
-        )}
 
-        {/* 10행: 歲運 천간 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
-        {(displayMode === 'daeun' || displayMode === 'saeun') && (
+        {/* 10행: 歲運 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12">
           {saeunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky, showKorean2);
@@ -1755,10 +1750,8 @@ export default function SajuTable({
             );
           })}
         </div>
-        )}
 
-        {/* 11행: 歲運 지지 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
-        {(displayMode === 'daeun' || displayMode === 'saeun') && (
+        {/* 11행: 歲運 지지 (우측에서 좌측) */}
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => {
             // 한자로 확실히 변환
@@ -1803,10 +1796,8 @@ export default function SajuTable({
             );
           })}
         </div>
-        )}
 
-        {/* 12행: 歲運 년도 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
-        {(displayMode === 'daeun' || displayMode === 'saeun') && (
+        {/* 12행: 歲運 년도 (우측에서 좌측) */}
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
@@ -1857,10 +1848,8 @@ export default function SajuTable({
             );
           })}
         </div>
-        )}
 
-        {/* 13행: 월운(月運) 제목 - saeun 모드에서만 표시 */}
-        {displayMode === 'saeun' && (
+        {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
             className={`py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center ${
@@ -1876,10 +1865,8 @@ export default function SajuTable({
             월운(月運) {isWolunActive && '✓ 활성화'}
           </div>
         </div>
-        )}
 
-        {/* 14행: 월운 천간 (우측에서 좌측) - saeun 모드에서만 표시 */}
-        {displayMode === 'saeun' && (
+        {/* 14행: 월운 천간 (우측에서 좌측) */}
         <div className={`grid grid-cols-13 ${
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
@@ -1919,10 +1906,8 @@ export default function SajuTable({
             );
           })}
         </div>
-        )}
 
-        {/* 15행: 월운 지지 (우측에서 좌측) - saeun 모드에서만 표시 */}
-        {displayMode === 'saeun' && (
+        {/* 15행: 월운 지지 (우측에서 좌측) */}
         <div className={`grid grid-cols-13 border-b border-border ${
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
@@ -1971,10 +1956,8 @@ export default function SajuTable({
             );
           })}
         </div>
-        )}
 
-        {/* 16행: 월운 월 순서 (우측에서 좌측) - saeun 모드에서만 표시 */}
-        {displayMode === 'saeun' && (
+        {/* 16행: 월운 월 순서 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
           {wolunMonths.map((month, colIndex) => (
             <div 
@@ -1986,7 +1969,6 @@ export default function SajuTable({
             </div>
           ))}
         </div>
-        )}
 
         {/* 17행: 메모 + 오늘 날짜 */}
         <div className="flex border-b border-border">
