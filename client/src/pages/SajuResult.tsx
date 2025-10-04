@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun, Heart } from "lucide-react";
+import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -581,19 +581,9 @@ export default function SajuResult() {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => setLocation(`/compatibility?left=${params?.id}`)}
-            data-testid="button-compatibility"
-            className="hover-elevate active-elevate-2 flex items-center gap-0.5 scale-[0.6] origin-center"
-          >
-            <Heart className="h-3 w-3" />
-            <span className="text-xs">궁합</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
             onClick={handleEdit}
             data-testid="button-edit"
-            className="hover-elevate active-elevate-2 flex items-center gap-0.5 scale-[0.6] origin-center"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5"
           >
             <Edit className="h-3 w-3" />
             <span className="text-xs">수정</span>
@@ -604,7 +594,7 @@ export default function SajuResult() {
             onClick={handleSave}
             disabled={saveMutation.isPending}
             data-testid="button-save"
-            className="hover-elevate active-elevate-2 flex items-center gap-0.5 scale-[0.6] origin-center"
+            className="hover-elevate active-elevate-2 flex items-center gap-0.5"
           >
             <Save className="h-3 w-3" />
             <span className="text-xs">{saveMutation.isPending ? "저장중..." : "저장"}</span>
@@ -615,6 +605,7 @@ export default function SajuResult() {
       <div className="max-w-2xl mx-auto">
         {/* 사주명식 테이블 */}
         <SajuTable 
+          id={params?.id}
           saju={(() => {
             // 저장된 pillar 데이터가 있으면 우선 사용 (절입일 선택 반영)
             if (record.yearSky && record.monthSky && record.daySky) {
