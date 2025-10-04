@@ -334,8 +334,8 @@ export default function SajuTable({
   // 오행 표시 상태 관리
   const [showWuxing, setShowWuxing] = useState(false);
   
-  // 12신살 표시 상태 관리
-  const [showSibiSinsal, setShowSibiSinsal] = useState(false);
+  // 한글1/한자1 토글 상태 관리 (1행, 4행, 5행만 한글 변환)
+  const [showKorean1, setShowKorean1] = useState(false);
   
   // 신살 표시 상태 관리 (기본값: false, 지장간 표시)
   const [showShinsal, setShowShinsal] = useState(false);
@@ -344,12 +344,12 @@ export default function SajuTable({
   const [isBirthTimeSelectorOpen, setIsBirthTimeSelectorOpen] = useState(false);
   const [isBirthDateSelectorOpen, setIsBirthDateSelectorOpen] = useState(false);
   
-  // 한글/한자 토글 상태 관리 (기본값: false = 한자 표시)
-  const [showKorean, setShowKorean] = useState(false);
+  // 한글2/한자2 토글 상태 관리 (전체 한글 변환)
+  const [showKorean2, setShowKorean2] = useState(false);
   
-  // 한글/한자 변환 헬퍼 함수
+  // 한글2/한자2 변환 헬퍼 함수 (전체 변환용)
   const convertText = (text: string): string => {
-    if (showKorean) {
+    if (showKorean2) {
       // 한글 모드: 한자 → 한글 변환
       return CHINESE_TO_KOREAN_MAP[text] || text;
     } else {
@@ -358,16 +358,27 @@ export default function SajuTable({
     }
   };
   
-  // 특정 행에서만 한글 변환을 적용하는 헬퍼 함수 (1행, 4행, 5행, 6행만)
-  const convertTextForSpecificRows = (text: string): string => {
+  // 한글1/한자1 변환 헬퍼 함수 (1행, 4행, 5행만 변환용)
+  const convertTextRow145 = (text: string): string => {
+    if (showKorean1) {
+      // 한글 모드: 한자 → 한글 변환
+      return CHINESE_TO_KOREAN_MAP[text] || text;
+    } else {
+      // 한자 모드: 한글 → 한자 변환
+      return KOREAN_TO_CHINESE_MAP[text] || text;
+    }
+  };
+  
+  // 1행, 4행, 5행에서 한글1 변환을 적용하는 헬퍼 함수
+  const convertTextForRow145 = (text: string): string => {
     // 먼저 전체 문자열로 변환 시도 (육친 등 2글자 단어)
-    const converted = convertText(text);
+    const converted = convertTextRow145(text);
     if (converted !== text) {
       return converted;
     }
     
     // 변환되지 않았다면 문자열의 각 문자를 개별적으로 변환 (지장간 등 복합 문자열 처리)
-    return text.split('').map(char => convertText(char)).join('');
+    return text.split('').map(char => convertTextRow145(char)).join('');
   };
   
   
@@ -489,7 +500,7 @@ export default function SajuTable({
     }
     
     // 한글 모드일 때 한자를 한글로 변환
-    if (showKorean && timeText.includes('時')) {
+    if (showKorean2 && timeText.includes('時')) {
       const earthBranch = timeText.replace('時', '');
       const koreanEarth = CHINESE_TO_KOREAN_MAP[earthBranch] || earthBranch;
       return `${koreanEarth}시`;
@@ -590,7 +601,7 @@ export default function SajuTable({
     };
   }, [focusedSaeun, saju.day.sky]);
 
-  // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 + 12신살 - 메모이제이션)
+  // 통합 신살 계산 (12신살 + 천을귀인/문창귀인 + 모든 신살 - 메모이제이션)
   // 각 주별로 신살 배열을 반환
   const allShinsalArrays = useMemo(() => {
     const hasHourPillar = saju.hour.sky && saju.hour.earth;
@@ -617,37 +628,37 @@ export default function SajuTable({
       yearEarth, monthEarth, dayEarth, hourEarth
     );
     
-    // 12신살 계산
+    // 12신살 계산 (한글 변환 안 함)
     const sibiSinsalArray = yearEarth ? calculateSibiSinsal(yearEarth, sajuColumns) : [];
     
-    // 각 주별로 세 결과를 합침 (천을귀인/문창귀인 + 나머지 신살 + 12신살)
+    // 각 주별로 세 결과를 합침 (12신살 맨 위 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
     if (hasHourPillar) {
       result.push([
-        ...formatShinSalArray(secondRowResult.hourPillar, showKorean),
-        ...formatShinSalArray(firstRowResult.hourPillar, showKorean),
-        sibiSinsalArray[0] || ''
+        sibiSinsalArray[0] || '',
+        ...formatShinSalArray(secondRowResult.hourPillar, showKorean1),
+        ...formatShinSalArray(firstRowResult.hourPillar, showKorean1)
       ].filter(s => s !== ''));
     }
     result.push([
-      ...formatShinSalArray(secondRowResult.dayPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.dayPillar, showKorean),
-      sibiSinsalArray[hasHourPillar ? 1 : 0] || ''
+      sibiSinsalArray[hasHourPillar ? 1 : 0] || '',
+      ...formatShinSalArray(secondRowResult.dayPillar, showKorean1),
+      ...formatShinSalArray(firstRowResult.dayPillar, showKorean1)
     ].filter(s => s !== ''));
     result.push([
-      ...formatShinSalArray(secondRowResult.monthPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.monthPillar, showKorean),
-      sibiSinsalArray[hasHourPillar ? 2 : 1] || ''
+      sibiSinsalArray[hasHourPillar ? 2 : 1] || '',
+      ...formatShinSalArray(secondRowResult.monthPillar, showKorean1),
+      ...formatShinSalArray(firstRowResult.monthPillar, showKorean1)
     ].filter(s => s !== ''));
     result.push([
-      ...formatShinSalArray(secondRowResult.yearPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.yearPillar, showKorean),
-      sibiSinsalArray[hasHourPillar ? 3 : 2] || ''
+      sibiSinsalArray[hasHourPillar ? 3 : 2] || '',
+      ...formatShinSalArray(secondRowResult.yearPillar, showKorean1),
+      ...formatShinSalArray(firstRowResult.yearPillar, showKorean1)
     ].filter(s => s !== ''));
     
     return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
-      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean, sajuColumns]);
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean1, sajuColumns]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -1045,25 +1056,25 @@ export default function SajuTable({
             </button>
             <button 
               className={`px-3 py-1 text-xs ${
-                showSibiSinsal 
+                showKorean1 
                   ? 'bg-blue-200 hover:bg-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700' 
                   : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800'
               } border border-blue-300 dark:border-blue-700 rounded-md transition-colors`}
-              onClick={() => setShowSibiSinsal(!showSibiSinsal)}
-              data-testid="button-12sinsal"
+              onClick={() => setShowKorean1(!showKorean1)}
+              data-testid="button-korean1"
             >
-              12신살
+              {showKorean1 ? '한자1' : '한글1'}
             </button>
             <button 
               className={`px-3 py-1 text-xs ${
-                showKorean 
+                showKorean2 
                   ? 'bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700' 
                   : 'bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800'
               } border border-green-300 dark:border-green-700 rounded-md transition-colors`}
-              onClick={() => setShowKorean(!showKorean)}
-              data-testid="button-hangul"
+              onClick={() => setShowKorean2(!showKorean2)}
+              data-testid="button-korean2"
             >
-              {showKorean ? '한자' : '한글'}
+              {showKorean2 ? '한자2' : '한글2'}
             </button>
             <button 
               className="px-3 py-1 text-xs bg-pink-100 hover:bg-pink-200 dark:bg-pink-900 dark:hover:bg-pink-800 border border-pink-300 dark:border-pink-700 rounded-md transition-colors"
@@ -1115,16 +1126,16 @@ export default function SajuTable({
           )}
           {displayMode === 'daeun' && daeunColumnData && (
             <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
-              {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForSpecificRows(daeunColumnData.heavenlyYukjin)}
+              {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForRow145(daeunColumnData.heavenlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
               <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
-                {showWuxing ? getWuxingElement(saeunColumnData.sky) : convertTextForSpecificRows(saeunColumnData.heavenlyYukjin)}
+                {showWuxing ? getWuxingElement(saeunColumnData.sky) : convertTextForRow145(saeunColumnData.heavenlyYukjin)}
               </div>
               <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
-                {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForSpecificRows(daeunColumnData.heavenlyYukjin)}
+                {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForRow145(daeunColumnData.heavenlyYukjin)}
               </div>
             </>
           )}
@@ -1132,7 +1143,7 @@ export default function SajuTable({
           {heavenlyYukjin.map((yukjin, index) => {
             const skyCharacter = sajuColumns[index]?.sky;
             let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
-            displayText = convertTextForSpecificRows(displayText);
+            displayText = convertTextForRow145(displayText);
             
             return (
               <div 
@@ -1171,8 +1182,8 @@ export default function SajuTable({
           )}
           {displayMode === 'daeun' && daeunColumnData && (
             <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
-              {getCheonganImage(daeunColumnData.sky, showKorean) || undefined ? (
-                <img src={getCheonganImage(daeunColumnData.sky, showKorean) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+              {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
+                <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
                 <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
               )}
@@ -1181,15 +1192,15 @@ export default function SajuTable({
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
-                {getCheonganImage(saeunColumnData.sky, showKorean) || undefined ? (
-                  <img src={getCheonganImage(saeunColumnData.sky, showKorean) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                {getCheonganImage(saeunColumnData.sky, showKorean2) || undefined ? (
+                  <img src={getCheonganImage(saeunColumnData.sky, showKorean2) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
                   <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
                 )}
               </div>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
-                {getCheonganImage(daeunColumnData.sky, showKorean) || undefined ? (
-                  <img src={getCheonganImage(daeunColumnData.sky, showKorean) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
+                  <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
                   <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
                 )}
@@ -1197,7 +1208,7 @@ export default function SajuTable({
             </>
           )}
           {sajuColumns.map((col, index) => {
-            const cheonganImage = getCheonganImage(col.sky, showKorean);
+            const cheonganImage = getCheonganImage(col.sky, showKorean2);
             const isHourPillar = index === 0;
             const isMonthPillar = index === 2;
             return (
@@ -1260,8 +1271,8 @@ export default function SajuTable({
           )}
           {displayMode === 'daeun' && daeunColumnData && (
             <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
-              {getJijiImage(daeunColumnData.earth, showKorean) || undefined ? (
-                <img src={getJijiImage(daeunColumnData.earth, showKorean) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+              {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
+                <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
                 <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
               )}
@@ -1270,15 +1281,15 @@ export default function SajuTable({
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
-                {getJijiImage(saeunColumnData.earth, showKorean) || undefined ? (
-                  <img src={getJijiImage(saeunColumnData.earth, showKorean) || undefined} alt={saeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                {getJijiImage(saeunColumnData.earth, showKorean2) || undefined ? (
+                  <img src={getJijiImage(saeunColumnData.earth, showKorean2) || undefined} alt={saeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
                   <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
                 )}
               </div>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
-                {getJijiImage(daeunColumnData.earth, showKorean) || undefined ? (
-                  <img src={getJijiImage(daeunColumnData.earth, showKorean) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
+                {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
+                  <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
                   <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
                 )}
@@ -1286,7 +1297,7 @@ export default function SajuTable({
             </>
           )}
           {sajuColumns.map((col, index) => {
-            const jijiImage = getJijiImage(col.earth, showKorean);
+            const jijiImage = getJijiImage(col.earth, showKorean2);
             const isHourEarth = index === 0;
             const isMonthEarth = index === 2;
             
@@ -1363,23 +1374,23 @@ export default function SajuTable({
           )}
           {displayMode === 'daeun' && daeunColumnData && (
             <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-              {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForSpecificRows(daeunColumnData.earthlyYukjin)}
+              {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForRow145(daeunColumnData.earthlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
               <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-                {showWuxing ? getWuxingElement(saeunColumnData.earth) : convertTextForSpecificRows(saeunColumnData.earthlyYukjin)}
+                {showWuxing ? getWuxingElement(saeunColumnData.earth) : convertTextForRow145(saeunColumnData.earthlyYukjin)}
               </div>
               <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-                {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForSpecificRows(daeunColumnData.earthlyYukjin)}
+                {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForRow145(daeunColumnData.earthlyYukjin)}
               </div>
             </>
           )}
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
             let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
-            displayText = convertTextForSpecificRows(displayText);
+            displayText = convertTextForRow145(displayText);
             
             return (
               <div 
@@ -1418,21 +1429,21 @@ export default function SajuTable({
           )}
           {displayMode === 'daeun' && daeunColumnData && (
             <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-              {convertTextForSpecificRows(daeunColumnData.jijanggan)}
+              {convertText(daeunColumnData.jijanggan)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
               <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-                {convertTextForSpecificRows(saeunColumnData.jijanggan)}
+                {convertText(saeunColumnData.jijanggan)}
               </div>
               <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-                {convertTextForSpecificRows(daeunColumnData.jijanggan)}
+                {convertText(daeunColumnData.jijanggan)}
               </div>
             </>
           )}
           {showShinsal ? (
-            // 신살 표시 (세로 나열, 맨 위 정렬)
+            // 신살 표시 (세로 나열, 맨 위 정렬) - 5행은 이미 showKorean1 적용됨
             (allShinsalArrays.map((shinsalArray, index) => (
               <div 
                 key={`shinsal-${index}`} 
@@ -1445,7 +1456,7 @@ export default function SajuTable({
                     className="leading-tight"
                     style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
                   >
-                    {convertTextForSpecificRows(shinsal)}
+                    {shinsal}
                   </div>
                 ))}
               </div>
@@ -1458,7 +1469,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-jijanggan-${index}`}
               >
-                {convertTextForSpecificRows(stems)}
+                {convertText(stems)}
               </div>
             )))
           )}
@@ -1481,7 +1492,7 @@ export default function SajuTable({
         {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10">
           {daeunGanji.skies.map((sky, colIndex) => {
-            const cheonganImage = getCheonganImage(sky, showKorean);
+            const cheonganImage = getCheonganImage(sky, showKorean2);
             return (
               <div 
                 key={`daeun-sky-${colIndex}`}
@@ -1517,7 +1528,7 @@ export default function SajuTable({
         {/* 8행: 대운 지지 */}
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
-            const jijiImage = getJijiImage(earth, showKorean);
+            const jijiImage = getJijiImage(earth, showKorean2);
             
             return (
               <div 
@@ -1598,7 +1609,7 @@ export default function SajuTable({
         {/* 10행: 歲運 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12">
           {saeunGanji.skies.map((sky, colIndex) => {
-            const cheonganImage = getCheonganImage(sky, showKorean);
+            const cheonganImage = getCheonganImage(sky, showKorean2);
             return (
               <div 
                 key={`saeun-sky-${colIndex}`}
@@ -1643,7 +1654,7 @@ export default function SajuTable({
             }
             
             // 이미지 가져오기
-            const jijiImg = getJijiImage(chineseChar, showKorean);
+            const jijiImg = getJijiImage(chineseChar, showKorean2);
             
             return (
               <div 
@@ -1751,7 +1762,7 @@ export default function SajuTable({
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
           {wolunGanji.skies.map((sky, colIndex) => {
-            const cheonganImage = getCheonganImage(sky, showKorean);
+            const cheonganImage = getCheonganImage(sky, showKorean2);
             return (
               <div 
                 key={`wolun-sky-${colIndex}`}
@@ -1801,7 +1812,7 @@ export default function SajuTable({
             }
             
             // 이미지 가져오기
-            const jijiImg = getJijiImage(chineseChar, showKorean);
+            const jijiImg = getJijiImage(chineseChar, showKorean2);
             
             return (
               <div 
