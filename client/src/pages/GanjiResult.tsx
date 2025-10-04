@@ -303,7 +303,7 @@ export default function GanjiResult() {
         birthYear: reversedDate.year,
         birthMonth: reversedDate.month,
         birthDay: reversedDate.day,
-        birthTime: hourEarth,
+        birthTime: `${hourEarth}時`,
         yearSky,
         yearEarth,
         monthSky,
