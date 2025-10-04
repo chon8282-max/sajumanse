@@ -14,36 +14,9 @@ import {
 } from "./lib/data-gov-kr-service";
 import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
-import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // ========================================
-  // 인증 관련 설정 (Replit Auth)
-  // ========================================
-  await setupAuth(app);
-
-  // 인증된 사용자 정보 조회 (로그인하지 않은 경우 null 반환)
-  app.get('/api/auth/user', async (req: any, res) => {
-    try {
-      // 로그인하지 않은 경우 null 반환 (옵셔널 체이닝으로 안전하게 체크)
-      if (!req.isAuthenticated?.()) {
-        return res.json(null);
-      }
-      
-      const userId = req.user?.claims?.sub;
-      if (!userId) {
-        return res.json(null);
-      }
-      
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
   // ========================================
   // 그룹 관련 API 라우트
   // ========================================
