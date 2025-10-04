@@ -867,7 +867,8 @@ export default function SajuTable({
       earths.push(earthlyBranches[earthIndex]);
     }
 
-    return { skies, earths };
+    // 우측에서 좌측으로 표시하기 위해 배열 뒤집기 (13월→1월)
+    return { skies: skies.reverse(), earths: earths.reverse() };
   }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years, saju.year.sky, saju.year.earth]);
 
   // 월운 월 순서 (16행용 - 13칸, 우측에서 좌측)
@@ -925,12 +926,18 @@ export default function SajuTable({
 
   // 현재 나이가 속한 대운 인덱스 찾기 (렌더링되는 daeunAges 배열 기준)
   const currentDaeunIndex = useMemo(() => {
-    if (!currentAge || !daeunPeriods || daeunPeriods.length === 0 || daeunAges.length === 0) {
+    if (!daeunPeriods || daeunPeriods.length === 0 || daeunAges.length === 0) {
+      return -1;
+    }
+    
+    // focusedDaeun이 있으면 그것을 우선 사용
+    const targetAge = focusedDaeun?.startAge ?? currentAge;
+    if (!targetAge) {
       return -1;
     }
     
     // daeunAges의 각 컬럼은 10년 range를 나타냄
-    // 각 컬럼이 커버하는 나이 범위를 계산하고, currentAge가 속하는 컬럼 찾기
+    // 각 컬럼이 커버하는 나이 범위를 계산하고, targetAge가 속하는 컬럼 찾기
     for (let colIndex = 0; colIndex < daeunAges.length; colIndex++) {
       const startAge = daeunAges[colIndex];  // 컬럼 상단 (예: 57)
       
@@ -940,15 +947,15 @@ export default function SajuTable({
         ? daeunAges[colIndex + 1]  // 다음 컬럼 시작
         : startAge - 10; // 마지막 컬럼은 10년 range
       
-      // currentAge가 이 range에 속하는지 확인
+      // targetAge가 이 range에 속하는지 확인
       // Range: (nextStart, startAge] - exclusive하한, inclusive상한
-      if (currentAge > nextStart && currentAge <= startAge) {
+      if (targetAge > nextStart && targetAge <= startAge) {
         return colIndex;
       }
     }
     
     return -1;
-  }, [currentAge, daeunAges]);
+  }, [currentAge, focusedDaeun, daeunAges, daeunPeriods]);
 
   // 대운 클릭 핸들러
   const handleDaeunAgeClick = useCallback((age: number) => {
@@ -1948,7 +1955,7 @@ export default function SajuTable({
               className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
               data-testid={`text-wolun-month-${colIndex}`}
             >
-              {colIndex === 0 ? 1 : month}
+              {month}
             </div>
           ))}
         </div>
