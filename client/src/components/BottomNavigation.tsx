@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Archive, Home, Heart } from "lucide-react";
+import { Calendar, Archive, Home, Heart, Share2 } from "lucide-react";
+import html2canvas from 'html2canvas';
+import { useToast } from "@/hooks/use-toast";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -15,6 +17,82 @@ const tabs = [
 ];
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
+  const { toast } = useToast();
+
+  const handleScreenShare = async () => {
+    try {
+      // 네비게이션 바 제외하고 캡처
+      const element = document.body;
+      
+      // html2canvas로 화면 캡처
+      const canvas = await html2canvas(element, {
+        allowTaint: true,
+        useCORS: true,
+        scale: 2, // 고화질
+        logging: false,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+      });
+
+      // Canvas를 Blob으로 변환
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          toast({
+            title: "캡처 실패",
+            description: "화면을 캡처할 수 없습니다.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        const file = new File([blob], 'saju-screen.png', { type: 'image/png' });
+
+        // Web Share API 지원 확인
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: '사주 명식',
+              text: '사주 명식 화면 공유'
+            });
+            toast({
+              title: "공유 완료",
+              description: "화면이 성공적으로 공유되었습니다."
+            });
+          } catch (error: any) {
+            if (error.name !== 'AbortError') {
+              // 사용자가 취소한 경우가 아니면 에러 표시
+              console.error('Share failed:', error);
+              downloadImage(canvas);
+            }
+          }
+        } else {
+          // Web Share API를 지원하지 않는 경우 다운로드
+          downloadImage(canvas);
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Screenshot failed:', error);
+      toast({
+        title: "오류 발생",
+        description: "화면 캡처 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const downloadImage = (canvas: HTMLCanvasElement) => {
+    const link = document.createElement('a');
+    link.download = `사주명식_${new Date().toISOString().slice(0, 10)}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+    
+    toast({
+      title: "다운로드 완료",
+      description: "화면이 이미지로 저장되었습니다."
+    });
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-sm border-t z-40" style={{ backgroundColor: 'hsl(var(--bottom-nav-bg))' }}>
       <div className="flex items-center justify-around py-2 px-2 max-w-md mx-auto">
@@ -45,6 +123,20 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
             </Button>
           );
         })}
+        
+        {/* 화면공유 버튼 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="flex-1 flex flex-col items-center gap-1 h-auto py-2 px-1 text-muted-foreground hover:text-foreground"
+          onClick={handleScreenShare}
+          data-testid="button-screen-share"
+        >
+          <div className="relative">
+            <Share2 className="w-5 h-5" />
+          </div>
+          <span className="text-xs font-medium">화면공유</span>
+        </Button>
       </div>
       
       {/* Safe area for devices with home indicator */}
