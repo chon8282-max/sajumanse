@@ -5,7 +5,7 @@ import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut } from "l
 import { format } from "date-fns";
 import logoPath from "@assets/만세력로고_1758875108140.png";
 import { useAuth } from "@/hooks/useAuth";
-import type { User } from "@shared/schema";
+import { signInWithGoogle, signOut } from "@/lib/firebase";
 
 interface MobileHeaderProps {
   currentDate: Date;
@@ -25,17 +25,17 @@ export default function MobileHeader({
 
   const handleUserClick = () => {
     if (!isAuthenticated && !isLoading) {
-      // 로그인하지 않은 경우 로그인 페이지로 이동
-      window.location.href = '/api/login';
+      // 로그인하지 않은 경우 Google 로그인
+      signInWithGoogle();
     } else {
       // 로그인한 경우 메뉴 토글
       setShowUserMenu(!showUserMenu);
-      console.log('User menu toggled');
     }
   };
 
-  const handleLogout = () => {
-    window.location.href = '/api/logout';
+  const handleLogout = async () => {
+    await signOut();
+    setShowUserMenu(false);
   };
 
   return (
@@ -87,11 +87,11 @@ export default function MobileHeader({
               <UserIcon className="w-4 h-4" />
             </Button>
             
-            {showUserMenu && isAuthenticated && (
+            {showUserMenu && isAuthenticated && user && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-popover border rounded-md shadow-md p-2 z-50">
                 <div className="p-2 border-b border-border">
                   <p className="font-medium text-sm" data-testid="text-user-name">
-                    {(user as User)?.firstName || (user as User)?.email || '사용자'}
+                    {user.displayName || user.email || '사용자'}
                   </p>
                   <p className="text-xs text-muted-foreground">환영합니다!</p>
                 </div>
