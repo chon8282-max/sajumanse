@@ -520,28 +520,34 @@ export default function GanjiResult() {
 
   // 대운 클릭 핸들러
   const handleDaeunClick = useCallback((daeunPeriod: DaeunPeriod) => {
+    console.log(`[GanjiResult] handleDaeunClick called - currentMode=${displayMode}, daeunPeriod=`, daeunPeriod);
     if (displayMode === 'base') {
       // A → B: 대운 선택 및 대운 모드로 전환
+      console.log('[GanjiResult] A → B: 대운 모드로 전환');
       setFocusedDaeun(daeunPeriod);
       setDisplayMode('daeun');
       setSaeunOffset(0);
     } else if (displayMode === 'daeun') {
       // B → A: 같은 대운 클릭 시 기본 모드로 복귀
       if (focusedDaeun?.startAge === daeunPeriod.startAge) {
+        console.log('[GanjiResult] B → A: 기본 모드로 복귀');
         setDisplayMode('base');
         setFocusedDaeun(null);
       } else {
         // 다른 대운 클릭 시 대운만 변경
+        console.log('[GanjiResult] B → B: 다른 대운 선택');
         setFocusedDaeun(daeunPeriod);
         setSaeunOffset(0);
       }
     } else if (displayMode === 'saeun') {
       // C → B: 같은 대운 클릭 시 세운 숨김 (대운만 표시)
       if (focusedDaeun?.startAge === daeunPeriod.startAge) {
+        console.log('[GanjiResult] C → B: 세운 숨김');
         setDisplayMode('daeun');
         setFocusedSaeun(null);
       } else {
         // C → B: 다른 대운 클릭 시 대운 변경 및 세운 숨김
+        console.log('[GanjiResult] C → B: 다른 대운 선택 및 세운 숨김');
         setFocusedDaeun(daeunPeriod);
         setDisplayMode('daeun');
         setFocusedSaeun(null);

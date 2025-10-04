@@ -13,6 +13,7 @@ import BirthDateSelector from "@/components/BirthDateSelector";
 import { Button } from "@/components/ui/button";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
+import { calculateCheonganEvent } from "@/lib/cheongan-event-calculator";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -1197,11 +1198,22 @@ export default function SajuTable({
               </div>
             </>
           )}
-          {/* 천간 육친/오행 표시 */}
+          {/* 천간 육친/오행 표시 (대운 모드일 때는 천간 이벤트) */}
           {heavenlyYukjin.map((yukjin, index) => {
             const skyCharacter = sajuColumns[index]?.sky;
-            let displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
-            displayText = convertTextForRow145(displayText);
+            
+            // 대운 모드일 때는 천간 이벤트 계산
+            let displayText: string;
+            if (displayMode === 'daeun' && focusedDaeun && skyCharacter) {
+              const daeunSky = focusedDaeun.sky;
+              const cheonganEvent = calculateCheonganEvent(daeunSky, skyCharacter);
+              displayText = cheonganEvent;
+              console.log(`[천간이벤트] displayMode=${displayMode}, daeunSky=${daeunSky}, sajuSky=${skyCharacter}, event=${cheonganEvent}`);
+            } else {
+              displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
+              displayText = convertTextForRow145(displayText);
+              console.log(`[일반육친] displayMode=${displayMode}, showWuxing=${showWuxing}, yukjin=${yukjin}, displayText=${displayText}`);
+            }
             
             return (
               <div 
@@ -1705,7 +1717,7 @@ export default function SajuTable({
             );
           })}
         </div>
-        ))}
+        )}
 
         {/* 10행: 歲運 천간 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
         {(displayMode === 'daeun' || displayMode === 'saeun') && (
@@ -1743,7 +1755,7 @@ export default function SajuTable({
             );
           })}
         </div>
-        ))}
+        )}
 
         {/* 11행: 歲運 지지 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
         {(displayMode === 'daeun' || displayMode === 'saeun') && (
@@ -1864,8 +1876,10 @@ export default function SajuTable({
             월운(月運) {isWolunActive && '✓ 활성화'}
           </div>
         </div>
+        )}
 
-        {/* 14행: 월운 천간 (우측에서 좌측) */}
+        {/* 14행: 월운 천간 (우측에서 좌측) - saeun 모드에서만 표시 */}
+        {displayMode === 'saeun' && (
         <div className={`grid grid-cols-13 ${
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
@@ -1905,8 +1919,10 @@ export default function SajuTable({
             );
           })}
         </div>
+        )}
 
-        {/* 15행: 월운 지지 (우측에서 좌측) */}
+        {/* 15행: 월운 지지 (우측에서 좌측) - saeun 모드에서만 표시 */}
+        {displayMode === 'saeun' && (
         <div className={`grid grid-cols-13 border-b border-border ${
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
         }`}>
@@ -1955,8 +1971,10 @@ export default function SajuTable({
             );
           })}
         </div>
+        )}
 
-        {/* 16행: 월운 월 순서 (우측에서 좌측) */}
+        {/* 16행: 월운 월 순서 (우측에서 좌측) - saeun 모드에서만 표시 */}
+        {displayMode === 'saeun' && (
         <div className="grid grid-cols-13 border-b border-border">
           {wolunMonths.map((month, colIndex) => (
             <div 
@@ -1968,6 +1986,7 @@ export default function SajuTable({
             </div>
           ))}
         </div>
+        )}
 
         {/* 17행: 메모 + 오늘 날짜 */}
         <div className="flex border-b border-border">
