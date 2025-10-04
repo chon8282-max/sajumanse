@@ -45,10 +45,19 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
           return;
         }
 
-        const file = new File([blob], 'saju-screen.jpg', { type: 'image/jpeg' });
+        const fileName = `사주명식_${new Date().toISOString().slice(0, 10)}.jpg`;
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
 
-        // Web Share API 지원 확인
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // Web Share API 지원 확인 (파일 공유 가능 여부 체크)
+        let canShareFiles = false;
+        try {
+          // @ts-ignore - canShare may not exist in all browsers
+          canShareFiles = !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+        } catch (e) {
+          canShareFiles = false;
+        }
+        
+        if (canShareFiles) {
           try {
             await navigator.share({
               files: [file],
@@ -61,8 +70,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
             });
           } catch (error: any) {
             if (error.name !== 'AbortError') {
-              // 사용자가 취소한 경우가 아니면 에러 표시
-              console.error('Share failed:', error);
+              // 사용자가 취소한 경우가 아니면 다운로드로 fallback
               downloadImage(canvas);
             }
           }
