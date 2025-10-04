@@ -590,7 +590,7 @@ export default function SajuTable({
     };
   }, [focusedSaeun, saju.day.sky]);
 
-  // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 - 메모이제이션)
+  // 통합 신살 계산 (천을귀인, 문창귀인 + 모든 신살 + 12신살 - 메모이제이션)
   // 각 주별로 신살 배열을 반환
   const allShinsalArrays = useMemo(() => {
     const hasHourPillar = saju.hour.sky && saju.hour.earth;
@@ -617,30 +617,37 @@ export default function SajuTable({
       yearEarth, monthEarth, dayEarth, hourEarth
     );
     
-    // 각 주별로 두 결과를 합침
+    // 12신살 계산
+    const sibiSinsalArray = yearEarth ? calculateSibiSinsal(yearEarth, sajuColumns) : [];
+    
+    // 각 주별로 세 결과를 합침 (천을귀인/문창귀인 + 나머지 신살 + 12신살)
     const result: string[][] = [];
     if (hasHourPillar) {
       result.push([
         ...formatShinSalArray(secondRowResult.hourPillar, showKorean),
-        ...formatShinSalArray(firstRowResult.hourPillar, showKorean)
-      ]);
+        ...formatShinSalArray(firstRowResult.hourPillar, showKorean),
+        sibiSinsalArray[0] || ''
+      ].filter(s => s !== ''));
     }
     result.push([
       ...formatShinSalArray(secondRowResult.dayPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.dayPillar, showKorean)
-    ]);
+      ...formatShinSalArray(firstRowResult.dayPillar, showKorean),
+      sibiSinsalArray[hasHourPillar ? 1 : 0] || ''
+    ].filter(s => s !== ''));
     result.push([
       ...formatShinSalArray(secondRowResult.monthPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.monthPillar, showKorean)
-    ]);
+      ...formatShinSalArray(firstRowResult.monthPillar, showKorean),
+      sibiSinsalArray[hasHourPillar ? 2 : 1] || ''
+    ].filter(s => s !== ''));
     result.push([
       ...formatShinSalArray(secondRowResult.yearPillar, showKorean),
-      ...formatShinSalArray(firstRowResult.yearPillar, showKorean)
-    ]);
+      ...formatShinSalArray(firstRowResult.yearPillar, showKorean),
+      sibiSinsalArray[hasHourPillar ? 3 : 2] || ''
+    ].filter(s => s !== ''));
     
     return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
-      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean]);
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean, sajuColumns]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -1425,18 +1432,18 @@ export default function SajuTable({
             </>
           )}
           {showShinsal ? (
-            // 신살 표시 (세로 나열)
+            // 신살 표시 (세로 나열, 맨 위 정렬)
             (allShinsalArrays.map((shinsalArray, index) => (
               <div 
                 key={`shinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-start text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-shinsal-${index}`}
               >
                 {shinsalArray.map((shinsal, idx) => (
                   <div 
                     key={`shinsal-${index}-${idx}`}
                     className="leading-tight"
-                    style={{ marginBottom: idx < shinsalArray.length - 1 ? '1px' : '0' }}
+                    style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
                   >
                     {convertTextForSpecificRows(shinsal)}
                   </div>
