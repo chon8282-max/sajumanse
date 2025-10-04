@@ -74,9 +74,9 @@ Preferred communication style: Simple, everyday language.
   - All auxiliary calculations (12신살, 신살, etc.) adapt to 3-column layout
   - Type system allows `WuXing | ''` for hour pillar Wuxing fields only
   - Color helper functions (getWuXingColor, getWuXingBgColor) gracefully handle empty strings by returning ''
-- **Cheongan Event (천간 이벤트)**: Dynamic interaction between Daeun and Four Pillars
-  - When clicking Daeun in B mode, Row 1 (육친) is replaced with Cheongan Event relationship
-  - Event calculated based on Daeun heavenly stem vs. each pillar's heavenly stem
+- **Cheongan Event (천간 이벤트)**: Dynamic interaction between Daeun/Saeun and Four Pillars
+  - **B mode (Daeun)**: Row 1 (육친) is replaced with Cheongan Event based on Daeun's heavenly stem vs. each pillar's heavenly stem
+  - **C mode (Saeun)**: Row 1 (육친) is replaced with Cheongan Event based on Saeun's heavenly stem vs. each pillar's heavenly stem
   - Events include: 비화, 비화합, 목생화, 화생토, 토생금, 금생수, 수생목, 설기, 휴수극, 충(沖), 합(合), etc.
   - Applies to both date-based and Ganji-based (간지로 뽑기) Saju records
   - Implementation: calculateCheonganEvent() function with complete 10x10 stem interaction matrix

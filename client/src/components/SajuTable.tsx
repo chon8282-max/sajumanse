@@ -1198,15 +1198,19 @@ export default function SajuTable({
               </div>
             </>
           )}
-          {/* 천간 육친/오행 표시 (대운 모드일 때는 천간 이벤트) */}
+          {/* 천간 육친/오행 표시 (대운/세운 모드일 때는 천간 이벤트) */}
           {heavenlyYukjin.map((yukjin, index) => {
             const skyCharacter = sajuColumns[index]?.sky;
             
-            // 대운 모드일 때는 천간 이벤트 계산
+            // 대운 또는 세운 모드일 때는 천간 이벤트 계산
             let displayText: string;
             if (displayMode === 'daeun' && focusedDaeun && skyCharacter) {
               const daeunSky = focusedDaeun.sky;
               const cheonganEvent = calculateCheonganEvent(daeunSky, skyCharacter);
+              displayText = cheonganEvent;
+            } else if (displayMode === 'saeun' && focusedSaeun && skyCharacter) {
+              const saeunSky = focusedSaeun.sky;
+              const cheonganEvent = calculateCheonganEvent(saeunSky, skyCharacter);
               displayText = cheonganEvent;
             } else {
               displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
