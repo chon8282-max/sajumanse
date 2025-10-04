@@ -6,6 +6,7 @@ import {
   lunarSolarCalendar,
   fortuneResults,
   type User, 
+  type UpsertUser,
   type InsertUser, 
   type ManseRyeok, 
   type InsertManseRyeok,
@@ -25,10 +26,9 @@ import { randomUUID } from "crypto";
 
 // 만세력 데이터를 위한 스토리지 인터페이스 확장
 export interface IStorage {
-  // 사용자 관련
+  // 사용자 관련 (Replit Auth)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
   // 만세력 관련 (기존 호환성)
   getManseRyeok(id: string): Promise<ManseRyeok | undefined>;
@@ -82,21 +82,23 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // 사용자 관련 메서드
+  // 사용자 관련 메서드 (Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async upsertUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
       .returning();
     return user;
   }

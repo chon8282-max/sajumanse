@@ -1,7 +1,32 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, date, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, date, boolean, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Session storage table (Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table (Replit Auth)
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
 
 // 그룹 정보 테이블
 export const groups = pgTable("groups", {
@@ -279,20 +304,21 @@ export const fortuneResults = pgTable("fortune_results", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// 기존 사용자 스키마 유지
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+// 기존 로컬 인증 스키마는 Replit Auth로 교체됨
+// export const users = pgTable("users", {
+//   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+//   username: text("username").notNull().unique(),
+//   password: text("password").notNull(),
+// });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  profileImageUrl: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
 
 // 음양력 변환 데이터 테이블
 export const lunarSolarCalendar = pgTable("lunar_solar_calendar", {
