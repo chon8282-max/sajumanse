@@ -628,37 +628,50 @@ export default function SajuTable({
       yearEarth, monthEarth, dayEarth, hourEarth
     );
     
-    // 12신살 계산 (한글 변환 안 함)
+    // 12신살 계산
     const sibiSinsalArray = yearEarth ? calculateSibiSinsal(yearEarth, sajuColumns) : [];
+    
+    // 12신살 변환 헬퍼 함수
+    // 한자1(showKorean1=true): 12신살을 한글로 변환
+    // 한자2(showKorean2=true): 12신살을 한자로 유지
+    const convert12Sinsal = (sinsal: string): string => {
+      if (!sinsal) return '';
+      // showKorean1이 true면 12신살을 한글로 변환
+      if (showKorean1 && !showKorean2) {
+        return SINSAL_KOREAN_MAP[sinsal] || sinsal;
+      }
+      // 그 외에는 한자로 유지
+      return sinsal;
+    };
     
     // 각 주별로 세 결과를 합침 (12신살 맨 위 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
     if (hasHourPillar) {
       result.push([
-        sibiSinsalArray[0] || '',
+        convert12Sinsal(sibiSinsalArray[0] || ''),
         ...formatShinSalArray(secondRowResult.hourPillar, showKorean1),
         ...formatShinSalArray(firstRowResult.hourPillar, showKorean1)
       ].filter(s => s !== ''));
     }
     result.push([
-      sibiSinsalArray[hasHourPillar ? 1 : 0] || '',
+      convert12Sinsal(sibiSinsalArray[hasHourPillar ? 1 : 0] || ''),
       ...formatShinSalArray(secondRowResult.dayPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.dayPillar, showKorean1)
     ].filter(s => s !== ''));
     result.push([
-      sibiSinsalArray[hasHourPillar ? 2 : 1] || '',
+      convert12Sinsal(sibiSinsalArray[hasHourPillar ? 2 : 1] || ''),
       ...formatShinSalArray(secondRowResult.monthPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.monthPillar, showKorean1)
     ].filter(s => s !== ''));
     result.push([
-      sibiSinsalArray[hasHourPillar ? 3 : 2] || '',
+      convert12Sinsal(sibiSinsalArray[hasHourPillar ? 3 : 2] || ''),
       ...formatShinSalArray(secondRowResult.yearPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.yearPillar, showKorean1)
     ].filter(s => s !== ''));
     
     return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
-      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean1, sajuColumns]);
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean1, showKorean2, sajuColumns]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
@@ -909,6 +922,44 @@ export default function SajuTable({
     // 우측에서 좌측으로 표시하기 위해 배열 뒤집기
     return { skies: skies.reverse(), earths: earths.reverse() };
   }, [gender, saju.year.sky, saju.month.sky, saju.month.earth]);
+
+  // 현재 나이가 속한 대운 인덱스 찾기 (렌더링되는 daeunAges 배열 기준)
+  const currentDaeunIndex = useMemo(() => {
+    if (!currentAge || !daeunPeriods || daeunPeriods.length === 0 || daeunAges.length === 0) {
+      return -1;
+    }
+    
+    // daeunAges의 각 컬럼은 10년 range를 나타냄
+    // 각 컬럼이 커버하는 나이 범위를 계산하고, currentAge가 속하는 컬럼 찾기
+    for (let colIndex = 0; colIndex < daeunAges.length; colIndex++) {
+      const startAge = daeunAges[colIndex];  // 컬럼 상단 (예: 57)
+      
+      // 다음 컬럼의 시작 나이 (현재 컬럼의 하한, exclusive)
+      // daeunAges는 내림차순이므로 다음 인덱스가 더 작은 나이
+      const nextStart = colIndex < daeunAges.length - 1 
+        ? daeunAges[colIndex + 1]  // 다음 컬럼 시작
+        : startAge - 10; // 마지막 컬럼은 10년 range
+      
+      // currentAge가 이 range에 속하는지 확인
+      // Range: (nextStart, startAge] - exclusive하한, inclusive상한
+      if (currentAge > nextStart && currentAge <= startAge) {
+        return colIndex;
+      }
+    }
+    
+    return -1;
+  }, [currentAge, daeunAges]);
+
+  // 대운 클릭 핸들러
+  const handleDaeunAgeClick = useCallback((age: number) => {
+    if (!daeunPeriods || !onDaeunClick) return;
+    
+    // age에 해당하는 daeunPeriod 찾기
+    const period = daeunPeriods.find(p => age >= p.startAge && age <= p.endAge);
+    if (period) {
+      onDaeunClick(period);
+    }
+  }, [daeunPeriods, onDaeunClick]);
 
 
   // 간지별 배경색 매핑
@@ -1497,25 +1548,41 @@ export default function SajuTable({
 
         {/* 6행: 대운수 */}
         <div className="grid grid-cols-10 border-b border-border">
-          {daeunAges.map((age, colIndex) => (
-            <div 
-              key={`daeun-age-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-800 text-black dark:text-white flex items-center justify-center"
-              data-testid={`text-daeun-age-${colIndex}`}
-            >
-              {age}
-            </div>
-          ))}
+          {daeunAges.map((age, colIndex) => {
+            const isCurrentDaeun = colIndex === currentDaeunIndex;
+            
+            return (
+              <div 
+                key={`daeun-age-${colIndex}`}
+                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isCurrentDaeun
+                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600'
+                    : 'bg-white dark:bg-gray-800'
+                }`}
+                onClick={() => handleDaeunAgeClick(age)}
+                data-testid={`text-daeun-age-${colIndex}`}
+              >
+                <span className={isCurrentDaeun ? 'text-black dark:text-white' : 'text-black dark:text-white'}>
+                  {age}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10">
           {daeunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky, showKorean2);
+            const isCurrentDaeun = colIndex === currentDaeunIndex;
+            const age = daeunAges[colIndex];
+            
             return (
               <div 
                 key={`daeun-sky-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className={`text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isCurrentDaeun ? 'ring-2 ring-red-600 ring-inset' : ''
+                }`}
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
@@ -1523,6 +1590,7 @@ export default function SajuTable({
                   margin: '0',
                   lineHeight: '1'
                 }}
+                onClick={() => handleDaeunAgeClick(age)}
                 data-testid={`text-daeun-sky-${colIndex}`}
               >
                 {cheonganImage ? (
@@ -1548,11 +1616,15 @@ export default function SajuTable({
         <div className="grid grid-cols-10 border-b border-border">
           {daeunGanji.earths.map((earth, colIndex) => {
             const jijiImage = getJijiImage(earth, showKorean2);
+            const isCurrentDaeun = colIndex === currentDaeunIndex;
+            const age = daeunAges[colIndex];
             
             return (
               <div 
                 key={`daeun-earth-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className={`text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isCurrentDaeun ? 'ring-2 ring-red-600 ring-inset' : ''
+                }`}
                 style={{ 
                   backgroundColor: getWuxingColor(earth),
                   fontFamily: "var(--ganji-font-family)",
@@ -1561,6 +1633,7 @@ export default function SajuTable({
                   position: 'relative',
                   lineHeight: '1'
                 }}
+                onClick={() => handleDaeunAgeClick(age)}
                 data-testid={`text-daeun-earth-${colIndex}`}
               >
                 <div 
