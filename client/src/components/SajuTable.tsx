@@ -1176,16 +1176,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
+            <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
               {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForRow145(daeunColumnData.heavenlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
+              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
                 {showWuxing ? getWuxingElement(saeunColumnData.sky) : convertTextForRow145(saeunColumnData.heavenlyYukjin)}
               </div>
-              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[2px]">
+              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
                 {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForRow145(daeunColumnData.heavenlyYukjin)}
               </div>
             </>
@@ -1232,7 +1232,7 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+            <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
               {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                 <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
@@ -1242,14 +1242,14 @@ export default function SajuTable({
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
                 {getCheonganImage(saeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(saeunColumnData.sky, showKorean2) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
                   <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
                 )}
               </div>
-              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
                 {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
@@ -1479,16 +1479,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+            <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
               {convertText(daeunColumnData.jijanggan)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {convertText(saeunColumnData.jijanggan)}
               </div>
-              <div className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {convertText(daeunColumnData.jijanggan)}
               </div>
             </>
