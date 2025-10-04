@@ -148,9 +148,9 @@ export function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): 
     const startDate = new Date(termStart);
     const endDate = new Date(termEnd);
     
-    // 범위를 조금 넓혀서 검색 (절기 전후 5일)
-    startDate.setDate(startDate.getDate() - 5);
-    endDate.setDate(endDate.getDate() + 5);
+    // 범위를 조금 넓혀서 검색 (절기 전후 30일로 확장)
+    startDate.setDate(startDate.getDate() - 30);
+    endDate.setDate(endDate.getDate() + 30);
     
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
