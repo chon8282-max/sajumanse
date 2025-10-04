@@ -62,6 +62,23 @@ export interface IStorage {
   saveFortuneResult(data: InsertFortuneResult): Promise<FortuneResult>;
   getFortuneResult(sajuRecordId: string): Promise<FortuneResult | undefined>;
   deleteFortuneResult(id: string): Promise<boolean>;
+  
+  // 백업/복원 관련
+  exportAllData(): Promise<{
+    sajuRecords: SajuRecord[];
+    groups: Group[];
+    fortuneResults: FortuneResult[];
+    version: string;
+    exportDate: string;
+  }>;
+  importAllData(data: {
+    sajuRecords?: SajuRecord[];
+    groups?: Group[];
+    fortuneResults?: FortuneResult[];
+  }): Promise<{
+    imported: number;
+    errors: string[];
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -354,6 +371,153 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // 백업/복원 관련 메서드
+  async exportAllData(): Promise<{
+    sajuRecords: SajuRecord[];
+    groups: Group[];
+    fortuneResults: FortuneResult[];
+    version: string;
+    exportDate: string;
+  }> {
+    const [allSajuRecords, allGroups, allFortuneResults] = await Promise.all([
+      db.select().from(sajuRecords),
+      db.select().from(groups),
+      db.select().from(fortuneResults),
+    ]);
+
+    return {
+      sajuRecords: allSajuRecords,
+      groups: allGroups,
+      fortuneResults: allFortuneResults,
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+    };
+  }
+
+  async importAllData(data: {
+    sajuRecords?: SajuRecord[];
+    groups?: Group[];
+    fortuneResults?: FortuneResult[];
+  }): Promise<{
+    imported: number;
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    let imported = 0;
+
+    // Date 변환 헬퍼 함수 (null/undefined는 그대로 유지)
+    const parseDate = (dateStr: any): Date | null => {
+      if (dateStr === null || dateStr === undefined) return null;
+      if (dateStr instanceof Date) return dateStr;
+      return new Date(dateStr);
+    };
+
+    // 트랜잭션으로 전체 import 과정 감싸기
+    await db.transaction(async (tx) => {
+      try {
+        // 그룹 먼저 import (외래 키 의존성)
+        if (data.groups && data.groups.length > 0) {
+          const groupsToInsert = data.groups.map(g => ({
+            id: g.id,
+            name: g.name,
+            isDefault: g.isDefault ?? false,
+            createdAt: parseDate(g.createdAt),
+            updatedAt: parseDate(g.updatedAt),
+          }));
+          
+          const result = await tx.insert(groups).values(groupsToInsert)
+            .onConflictDoUpdate({
+              target: groups.id,
+              set: {
+                name: sql`EXCLUDED.name`,
+                isDefault: sql`EXCLUDED.is_default`,
+                updatedAt: sql`EXCLUDED.updated_at`,
+              }
+            })
+            .returning({ id: groups.id });
+          imported += result.length;
+        }
+
+        // 사주 기록 배치 import (100개씩)
+        if (data.sajuRecords && data.sajuRecords.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < data.sajuRecords.length; i += batchSize) {
+            const batch = data.sajuRecords.slice(i, i + batchSize).map(r => ({
+              ...r,
+              createdAt: parseDate(r.createdAt),
+              updatedAt: parseDate(r.updatedAt),
+            }));
+            const result = await tx.insert(sajuRecords).values(batch)
+              .onConflictDoUpdate({
+                target: sajuRecords.id,
+                set: {
+                  name: sql`EXCLUDED.name`,
+                  birthYear: sql`EXCLUDED.birth_year`,
+                  birthMonth: sql`EXCLUDED.birth_month`,
+                  birthDay: sql`EXCLUDED.birth_day`,
+                  birthTime: sql`EXCLUDED.birth_time`,
+                  calendarType: sql`EXCLUDED.calendar_type`,
+                  gender: sql`EXCLUDED.gender`,
+                  groupId: sql`EXCLUDED.group_id`,
+                  memo: sql`EXCLUDED.memo`,
+                  lunarYear: sql`EXCLUDED.lunar_year`,
+                  lunarMonth: sql`EXCLUDED.lunar_month`,
+                  lunarDay: sql`EXCLUDED.lunar_day`,
+                  isLeapMonth: sql`EXCLUDED.is_leap_month`,
+                  yearSky: sql`EXCLUDED.year_sky`,
+                  yearEarth: sql`EXCLUDED.year_earth`,
+                  monthSky: sql`EXCLUDED.month_sky`,
+                  monthEarth: sql`EXCLUDED.month_earth`,
+                  daySky: sql`EXCLUDED.day_sky`,
+                  dayEarth: sql`EXCLUDED.day_earth`,
+                  hourSky: sql`EXCLUDED.hour_sky`,
+                  hourEarth: sql`EXCLUDED.hour_earth`,
+                  updatedAt: sql`EXCLUDED.updated_at`,
+                }
+              })
+              .returning({ id: sajuRecords.id });
+            imported += result.length;
+          }
+        }
+
+        // 운세 결과 배치 import (100개씩)
+        if (data.fortuneResults && data.fortuneResults.length > 0) {
+          const batchSize = 100;
+          for (let i = 0; i < data.fortuneResults.length; i += batchSize) {
+            const batch = data.fortuneResults.slice(i, i + batchSize).map(r => ({
+              ...r,
+              calculationDate: parseDate(r.calculationDate),
+              createdAt: parseDate(r.createdAt),
+              updatedAt: parseDate(r.updatedAt),
+            }));
+            const result = await tx.insert(fortuneResults).values(batch)
+              .onConflictDoUpdate({
+                target: fortuneResults.id,
+                set: {
+                  sajuRecordId: sql`EXCLUDED.saju_record_id`,
+                  daeunNumber: sql`EXCLUDED.daeun_number`,
+                  daeunDirection: sql`EXCLUDED.daeun_direction`,
+                  daeunStartAge: sql`EXCLUDED.daeun_start_age`,
+                  daeunList: sql`EXCLUDED.daeun_list`,
+                  saeunStartYear: sql`EXCLUDED.saeun_start_year`,
+                  calculationDate: sql`EXCLUDED.calculation_date`,
+                  algorithmVersion: sql`EXCLUDED.algorithm_version`,
+                  updatedAt: sql`EXCLUDED.updated_at`,
+                }
+              })
+              .returning({ id: fortuneResults.id });
+            imported += result.length;
+          }
+        }
+      } catch (error) {
+        errors.push(`Import failed: ${error}`);
+        throw error; // 트랜잭션 롤백
+      }
+    });
+
+    return { imported, errors };
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -464,8 +628,8 @@ export class MemStorage implements IStorage {
       id,
       name: data.name ?? "이름없음",
       birthYear: data.birthYear,
-      birthMonth: data.birthMonth,
-      birthDay: data.birthDay,
+      birthMonth: data.birthMonth ?? null,
+      birthDay: data.birthDay ?? null,
       birthTime: data.birthTime ?? null,
       calendarType: data.calendarType ?? "양력",
       gender: data.gender,
@@ -653,6 +817,72 @@ export class MemStorage implements IStorage {
 
   async deleteFortuneResult(id: string): Promise<boolean> {
     return this.fortuneResults.delete(id);
+  }
+
+  // 백업/복원 관련 메서드
+  async exportAllData(): Promise<{
+    sajuRecords: SajuRecord[];
+    groups: Group[];
+    fortuneResults: FortuneResult[];
+    version: string;
+    exportDate: string;
+  }> {
+    return {
+      sajuRecords: Array.from(this.sajuRecords.values()),
+      groups: Array.from(this.groups.values()),
+      fortuneResults: Array.from(this.fortuneResults.values()),
+      version: "1.0",
+      exportDate: new Date().toISOString(),
+    };
+  }
+
+  async importAllData(data: {
+    sajuRecords?: SajuRecord[];
+    groups?: Group[];
+    fortuneResults?: FortuneResult[];
+  }): Promise<{
+    imported: number;
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    let imported = 0;
+
+    try {
+      // 그룹 먼저 import
+      if (data.groups && data.groups.length > 0) {
+        for (const group of data.groups) {
+          if (!this.groups.has(group.id)) {
+            this.groups.set(group.id, group);
+            imported++;
+          }
+        }
+      }
+
+      // 사주 기록 import
+      if (data.sajuRecords && data.sajuRecords.length > 0) {
+        for (const record of data.sajuRecords) {
+          if (!this.sajuRecords.has(record.id)) {
+            this.sajuRecords.set(record.id, record);
+            imported++;
+          }
+        }
+      }
+
+      // 운세 결과 import
+      if (data.fortuneResults && data.fortuneResults.length > 0) {
+        for (const result of data.fortuneResults) {
+          if (!this.fortuneResults.has(result.id)) {
+            this.fortuneResults.set(result.id, result);
+            imported++;
+          }
+        }
+      }
+
+      return { imported, errors };
+    } catch (error) {
+      errors.push(`Import failed: ${error}`);
+      return { imported, errors };
+    }
   }
 }
 

@@ -28,19 +28,86 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  const handleDbBackup = () => {
-    toast({
-      title: "DB 백업",
-      description: "데이터베이스 백업 기능이 준비 중입니다.",
-    });
+  const handleDbBackup = async () => {
+    try {
+      toast({
+        title: "백업 중...",
+        description: "데이터를 백업하는 중입니다.",
+      });
+
+      const response = await fetch('/api/backup/export');
+      if (!response.ok) throw new Error('백업 실패');
+
+      const data = await response.json();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `saju-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "백업 완료",
+        description: `${data.sajuRecords.length}개의 사주 기록을 백업했습니다.`,
+      });
+    } catch (error) {
+      toast({
+        title: "백업 실패",
+        description: "데이터 백업 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
     onClose();
   };
 
   const handleDbRestore = () => {
-    toast({
-      title: "DB 불러오기",
-      description: "데이터베이스 복원 기능이 준비 중입니다.",
-    });
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) return;
+
+      try {
+        toast({
+          title: "복원 중...",
+          description: "데이터를 복원하는 중입니다.",
+        });
+
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        const response = await fetch('/api/backup/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+          toast({
+            title: "복원 완료",
+            description: result.message || `${result.imported}개의 데이터를 복원했습니다.`,
+          });
+          // 페이지 새로고침하여 데이터 반영
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          throw new Error(result.error || '복원 실패');
+        }
+      } catch (error) {
+        toast({
+          title: "복원 실패",
+          description: error instanceof Error ? error.message : "데이터 복원 중 오류가 발생했습니다.",
+          variant: "destructive",
+        });
+      }
+    };
+    input.click();
     onClose();
   };
 
