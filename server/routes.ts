@@ -1445,6 +1445,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================================
+  // 백업/복원 API 라우트
+  // ========================================
+
+  // 전체 데이터 백업 (Export)
+  app.get("/api/backup/export", async (req, res) => {
+    try {
+      console.log("Exporting all data...");
+      const data = await storage.exportAllData();
+      
+      // JSON 파일로 다운로드
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename=saju-backup-${data.exportDate.split('T')[0]}.json`);
+      res.json(data);
+    } catch (error) {
+      console.error('Export error:', error);
+      res.status(500).json({ 
+        error: "데이터 백업 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // 전체 데이터 복원 (Import)
+  app.post("/api/backup/import", async (req, res) => {
+    try {
+      console.log("Importing data...");
+      const data = req.body;
+      
+      // 기본 데이터 유효성 검증
+      if (!data || typeof data !== 'object') {
+        return res.status(400).json({ 
+          error: "올바른 백업 데이터를 제공해주세요." 
+        });
+      }
+
+      // 백업 파일 구조 검증
+      if (!data.version || !data.exportDate) {
+        return res.status(400).json({ 
+          error: "올바른 백업 파일 형식이 아닙니다." 
+        });
+      }
+
+      // 배열 타입 검증
+      if (data.sajuRecords && !Array.isArray(data.sajuRecords)) {
+        return res.status(400).json({ 
+          error: "사주 기록 데이터 형식이 올바르지 않습니다." 
+        });
+      }
+
+      if (data.groups && !Array.isArray(data.groups)) {
+        return res.status(400).json({ 
+          error: "그룹 데이터 형식이 올바르지 않습니다." 
+        });
+      }
+
+      if (data.fortuneResults && !Array.isArray(data.fortuneResults)) {
+        return res.status(400).json({ 
+          error: "운세 결과 데이터 형식이 올바르지 않습니다." 
+        });
+      }
+
+      const result = await storage.importAllData(data);
+      
+      res.json({
+        success: true,
+        imported: result.imported,
+        errors: result.errors,
+        message: `${result.imported}개의 데이터를 성공적으로 복원했습니다.`
+      });
+    } catch (error) {
+      console.error('Import error:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : "데이터 복원 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
 
   const httpServer = createServer(app);
   return httpServer;
