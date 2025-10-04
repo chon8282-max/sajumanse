@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import SajuTable from "@/components/SajuTable";
@@ -9,10 +9,11 @@ import MenuGrid from "@/components/MenuGrid";
 import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { type SajuInfo } from "@shared/schema";
-import { RefreshCw, Sparkles, Save } from "lucide-react";
+import { type SajuInfo, type Announcement } from "@shared/schema";
+import { RefreshCw, Sparkles, Save, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
@@ -26,6 +27,16 @@ export default function Home() {
     hour: number;
     isLunar: boolean;
   } | null>(null);
+  const [, setLocation] = useLocation();
+
+  // 최신 공지사항 2개 조회
+  const { data: announcementsData } = useQuery<{ success: boolean; data: Announcement[] }>({
+    queryKey: ["/api/announcements", { limit: 2 }],
+    staleTime: 1000 * 60 * 5, // 5분 캐시
+    refetchOnWindowFocus: false,
+  });
+
+  const announcements = announcementsData?.data || [];
 
   // 음력 날짜 API 호출 (오프라인 환경에서는 비활성화)
   const { data: lunarData, error: lunarError } = useQuery({
@@ -281,6 +292,42 @@ export default function Home() {
               현재 시각 만세력으로 돌아가기
             </Button>
           </div>
+        )}
+
+        {/* 공지사항 섹션 */}
+        {announcements.length > 0 && (
+          <Card data-testid="card-announcements">
+            <CardContent className="p-4 space-y-2">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-semibold">알립니다</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation("/announcements")}
+                  data-testid="button-view-all-announcements"
+                  className="text-xs h-7 px-2"
+                >
+                  전체보기
+                  <ChevronRight className="w-3 h-3 ml-1" />
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {announcements.map((announcement) => (
+                  <div
+                    key={announcement.id}
+                    onClick={() => setLocation(`/announcements/${announcement.id}`)}
+                    data-testid={`announcement-item-${announcement.id}`}
+                    className="p-3 rounded-md border bg-card hover-elevate active-elevate-2 cursor-pointer"
+                  >
+                    <div className="text-sm font-medium line-clamp-1">{announcement.title}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {announcement.createdAt && format(new Date(announcement.createdAt), 'yyyy.MM.dd', { locale: ko })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* 메뉴 그리드 */}
