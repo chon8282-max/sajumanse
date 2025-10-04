@@ -5,6 +5,7 @@ import {
   groups,
   lunarSolarCalendar,
   fortuneResults,
+  announcements,
   type User, 
   type UpsertUser,
   type InsertUser, 
@@ -18,6 +19,8 @@ import {
   type InsertLunarSolarCalendar,
   type FortuneResult,
   type InsertFortuneResult,
+  type Announcement,
+  type InsertAnnouncement,
   DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
@@ -79,6 +82,13 @@ export interface IStorage {
     imported: number;
     errors: string[];
   }>;
+  
+  // 공지사항 관련
+  getAnnouncements(limit?: number): Promise<Announcement[]>;
+  getAnnouncement(id: string): Promise<Announcement | undefined>;
+  createAnnouncement(data: InsertAnnouncement): Promise<Announcement>;
+  updateAnnouncement(id: string, data: Partial<Announcement>): Promise<Announcement | undefined>;
+  deleteAnnouncement(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -520,6 +530,49 @@ export class DatabaseStorage implements IStorage {
 
     return { imported, errors };
   }
+
+  // 공지사항 관련 메서드
+  async getAnnouncements(limit: number = 10): Promise<Announcement[]> {
+    const result = await db
+      .select()
+      .from(announcements)
+      .orderBy(sql`${announcements.createdAt} DESC`)
+      .limit(limit);
+    return result;
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    const [announcement] = await db
+      .select()
+      .from(announcements)
+      .where(eq(announcements.id, id));
+    return announcement || undefined;
+  }
+
+  async createAnnouncement(data: InsertAnnouncement): Promise<Announcement> {
+    const [announcement] = await db
+      .insert(announcements)
+      .values(data)
+      .returning();
+    return announcement;
+  }
+
+  async updateAnnouncement(id: string, data: Partial<Announcement>): Promise<Announcement | undefined> {
+    const [announcement] = await db
+      .update(announcements)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(announcements.id, id))
+      .returning();
+    return announcement || undefined;
+  }
+
+  async deleteAnnouncement(id: string): Promise<boolean> {
+    const result = await db
+      .delete(announcements)
+      .where(eq(announcements.id, id))
+      .returning();
+    return result.length > 0;
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -530,6 +583,7 @@ export class MemStorage implements IStorage {
   private groups: Map<string, Group>;
   private lunarSolarData: Map<string, LunarSolarCalendar>;
   private fortuneResults: Map<string, FortuneResult>;
+  private announcements: Map<string, Announcement>;
 
   constructor() {
     this.users = new Map();
@@ -538,6 +592,7 @@ export class MemStorage implements IStorage {
     this.groups = new Map();
     this.lunarSolarData = new Map();
     this.fortuneResults = new Map();
+    this.announcements = new Map();
     
     // 기본 그룹 초기화
     this.initializeDefaultGroups();
@@ -884,6 +939,50 @@ export class MemStorage implements IStorage {
       errors.push(`Import failed: ${error}`);
       return { imported, errors };
     }
+  }
+
+  // 공지사항 관련 메서드 (MemStorage)
+  async getAnnouncements(limit: number = 10): Promise<Announcement[]> {
+    return Array.from(this.announcements.values())
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+      .slice(0, limit);
+  }
+
+  async getAnnouncement(id: string): Promise<Announcement | undefined> {
+    return this.announcements.get(id);
+  }
+
+  async createAnnouncement(data: InsertAnnouncement): Promise<Announcement> {
+    const id = randomUUID();
+    const now = new Date();
+    const announcement: Announcement = {
+      id,
+      title: data.title,
+      content: data.content,
+      authorId: data.authorId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.announcements.set(id, announcement);
+    return announcement;
+  }
+
+  async updateAnnouncement(id: string, data: Partial<Announcement>): Promise<Announcement | undefined> {
+    const existing = this.announcements.get(id);
+    if (!existing) return undefined;
+    
+    const updated: Announcement = {
+      ...existing,
+      ...data,
+      id,
+      updatedAt: new Date(),
+    };
+    this.announcements.set(id, updated);
+    return updated;
+  }
+
+  async deleteAnnouncement(id: string): Promise<boolean> {
+    return this.announcements.delete(id);
   }
 }
 

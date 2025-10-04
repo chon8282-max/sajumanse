@@ -9,12 +9,32 @@ export const users = pgTable("users", {
   email: varchar("email").unique(),
   displayName: varchar("display_name"),
   photoUrl: varchar("photo_url"),
+  isMaster: boolean("is_master").notNull().default(false), // 마스터 권한
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// 공지사항 테이블 (알립니다)
+export const announcements = pgTable("announcements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(), // 제목
+  content: text("content").notNull(), // 내용
+  authorId: varchar("author_id").references(() => users.id).notNull(), // 작성자
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
+export type Announcement = typeof announcements.$inferSelect;
 
 // 그룹 정보 테이블
 export const groups = pgTable("groups", {
