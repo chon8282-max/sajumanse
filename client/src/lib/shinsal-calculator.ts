@@ -278,19 +278,19 @@ export function calculateCheonulGwiin(
 
   // 각 주의 지지가 천을귀인에 해당하는지 확인
   if (cheonulGwiinEarths.includes(yearEarth)) {
-    result.yearPillar.push("천을귀인");
+    result.yearPillar.push("天乙貴人");
   }
   
   if (cheonulGwiinEarths.includes(monthEarth)) {
-    result.monthPillar.push("천을귀인");
+    result.monthPillar.push("天乙貴人");
   }
   
   if (cheonulGwiinEarths.includes(dayEarth)) {
-    result.dayPillar.push("천을귀인");
+    result.dayPillar.push("天乙貴人");
   }
   
   if (cheonulGwiinEarths.includes(hourEarth)) {
-    result.hourPillar.push("천을귀인");
+    result.hourPillar.push("天乙貴人");
   }
 
   return result;
@@ -319,19 +319,19 @@ export function calculateMunchangGwiin(
 
   // 각 주의 지지가 문창귀인에 해당하는지 확인
   if (munchangGwiinEarths.includes(yearEarth)) {
-    result.yearPillar.push("문창귀인");
+    result.yearPillar.push("文昌貴人");
   }
   
   if (munchangGwiinEarths.includes(monthEarth)) {
-    result.monthPillar.push("문창귀인");
+    result.monthPillar.push("文昌貴人");
   }
   
   if (munchangGwiinEarths.includes(dayEarth)) {
-    result.dayPillar.push("문창귀인");
+    result.dayPillar.push("文昌貴人");
   }
   
   if (munchangGwiinEarths.includes(hourEarth)) {
-    result.hourPillar.push("문창귀인");
+    result.hourPillar.push("文昌貴人");
   }
 
   return result;
@@ -1358,8 +1358,8 @@ export function calculateFirstRowShinSal(
 const SHINSAL_KOREAN_MAP: Record<string, string> = {
   "天德貴人": "천덕귀인",
   "月德貴人": "월덕귀인",
-  "천을귀인": "천을귀인",
-  "문창귀인": "문창귀인",
+  "天乙貴人": "천을귀인",
+  "文昌貴人": "문창귀인",
   "魁罡煞": "괴강살",
   "白虎大煞": "백호대살",
   "羊刃煞": "양인살",
