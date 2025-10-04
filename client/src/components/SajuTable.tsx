@@ -1672,7 +1672,8 @@ export default function SajuTable({
           })}
         </div>
 
-        {/* 9행: 歲運 나이 (우측에서 좌측) */}
+        {/* 9행: 歲運 나이 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
+        {(displayMode === 'daeun' || displayMode === 'saeun') && (
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
@@ -1704,8 +1705,10 @@ export default function SajuTable({
             );
           })}
         </div>
+        ))}
 
-        {/* 10행: 歲運 천간 (우측에서 좌측) */}
+        {/* 10행: 歲運 천간 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
+        {(displayMode === 'daeun' || displayMode === 'saeun') && (
         <div className="grid grid-cols-12">
           {saeunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky, showKorean2);
@@ -1740,8 +1743,10 @@ export default function SajuTable({
             );
           })}
         </div>
+        ))}
 
-        {/* 11행: 歲運 지지 (우측에서 좌측) */}
+        {/* 11행: 歲運 지지 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
+        {(displayMode === 'daeun' || displayMode === 'saeun') && (
         <div className="grid grid-cols-12 border-b border-border">
           {saeunGanji.earths.map((earth, colIndex) => {
             // 한자로 확실히 변환
@@ -1786,8 +1791,10 @@ export default function SajuTable({
             );
           })}
         </div>
+        )}
 
-        {/* 12행: 歲運 년도 (우측에서 좌측) */}
+        {/* 12행: 歲運 년도 (우측에서 좌측) - daeun/saeun 모드에서만 표시 */}
+        {(displayMode === 'daeun' || displayMode === 'saeun') && (
         <div 
           className="grid grid-cols-12 border-b border-border"
           onTouchStart={handleTouchStart}
@@ -1838,8 +1845,10 @@ export default function SajuTable({
             );
           })}
         </div>
+        )}
 
-        {/* 13행: 월운(月運) 제목 */}
+        {/* 13행: 월운(月運) 제목 - saeun 모드에서만 표시 */}
+        {displayMode === 'saeun' && (
         <div className="grid grid-cols-1 border-b border-border">
           <div 
             className={`py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center ${
