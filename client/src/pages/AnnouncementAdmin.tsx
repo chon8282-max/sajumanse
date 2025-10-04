@@ -53,10 +53,11 @@ export default function AnnouncementAdmin() {
   const createMutation = useMutation({
     mutationFn: async (data: { title: string; content: string; authorId: string }) => {
       const response = await apiRequest("POST", "/api/announcements", data);
-      if (!(response as any).success) {
-        throw new Error((response as any).error || "공지사항 작성에 실패했습니다.");
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "공지사항 작성에 실패했습니다.");
       }
-      return response;
+      return json;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/announcements"] });
@@ -83,10 +84,11 @@ export default function AnnouncementAdmin() {
         title: data.title,
         content: data.content,
       });
-      if (!(response as any).success) {
-        throw new Error((response as any).error || "공지사항 수정에 실패했습니다.");
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "공지사항 수정에 실패했습니다.");
       }
-      return response;
+      return json;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/announcements"] });
@@ -111,10 +113,11 @@ export default function AnnouncementAdmin() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await apiRequest("DELETE", `/api/announcements/${id}`);
-      if (!(response as any).success) {
-        throw new Error((response as any).error || "공지사항 삭제에 실패했습니다.");
+      const json = await response.json();
+      if (!json.success) {
+        throw new Error(json.error || "공지사항 삭제에 실패했습니다.");
       }
-      return response;
+      return json;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/announcements"] });
