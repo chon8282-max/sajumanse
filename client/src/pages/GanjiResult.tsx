@@ -185,7 +185,8 @@ export default function GanjiResult() {
           lunarData = {
             lunarYear: lunarResult.data.lunYear,
             lunarMonth: lunarResult.data.lunMonth,
-            lunarDay: lunarResult.data.lunDay
+            lunarDay: lunarResult.data.lunDay,
+            isLeapMonth: lunarResult.data.lunLeapMonth === "윤"
           };
         } else {
           console.warn('음력 변환 결과 없음:', lunarResult);
@@ -219,6 +220,7 @@ export default function GanjiResult() {
         lunarYear: lunarData?.lunarYear || null,
         lunarMonth: lunarData?.lunarMonth || null,
         lunarDay: lunarData?.lunarDay || null,
+        isLeapMonth: lunarData?.isLeapMonth || false,
       });
       
       const data = await response.json();
@@ -285,7 +287,8 @@ export default function GanjiResult() {
           lunarData = {
             lunarYear: lunarResult.data.lunYear,
             lunarMonth: lunarResult.data.lunMonth,
-            lunarDay: lunarResult.data.lunDay
+            lunarDay: lunarResult.data.lunDay,
+            isLeapMonth: lunarResult.data.lunLeapMonth === "윤"
           };
         } else {
           console.warn('음력 변환 결과 없음:', lunarResult);
@@ -315,6 +318,7 @@ export default function GanjiResult() {
         lunarYear: lunarData?.lunarYear || null,
         lunarMonth: lunarData?.lunarMonth || null,
         lunarDay: lunarData?.lunarDay || null,
+        isLeapMonth: lunarData?.isLeapMonth || false,
       });
       
       const data = await response.json();
