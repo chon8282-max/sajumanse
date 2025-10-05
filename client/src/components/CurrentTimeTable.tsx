@@ -137,14 +137,14 @@ export default function CurrentTimeTable({
       </div>
       {/* 알림 섹션 */}
       <div className="mt-1.5 p-1.5 bg-muted/30 rounded-lg border">
-        <h3 className="text-xs font-semibold text-primary flex items-center mt-[0px] mb-[0px]" style={{ letterSpacing: '-0.02em' }}>
+        <h3 className="text-xs font-semibold text-primary flex items-center mt-[0px] mb-[2px]" style={{ letterSpacing: '-0.02em' }}>
           <span className="w-1.5 h-1.5 bg-primary rounded-full mr-1.5"></span>
           알림
         </h3>
-        <div className="space-y-1.5 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-[2px] text-xs text-muted-foreground">
           <div className="flex items-start space-x-1.5 min-w-0">
             <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
-            <span className="flex-1 min-w-0 truncate pt-[6px] pb-[6px]" style={{ letterSpacing: '-0.01em' }}>오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
+            <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
           </div>
           <div className="flex items-start space-x-1.5 min-w-0">
             <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
