@@ -144,6 +144,22 @@ export default function GanjiResult() {
   const name = nameFromUrl || '이름없음';
   const isEditMode = fromEdit && recordId;
 
+  // 역산된 날짜 계산 (연도가 선택되면)
+  const reversedDate = useMemo(() => {
+    if (!selectedYear) return null;
+    
+    return reverseCalculateSolarDate({
+      yearSky,
+      yearEarth,
+      monthSky,
+      monthEarth,
+      daySky,
+      dayEarth,
+      hourSky,
+      hourEarth
+    }, selectedYear);
+  }, [selectedYear, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
+
   // 대운/세운 모드 상태
   const [displayMode, setDisplayMode] = useState<DisplayMode>('base');
   const [focusedDaeun, setFocusedDaeun] = useState<DaeunPeriod | null>(null);
@@ -487,24 +503,24 @@ export default function GanjiResult() {
 
   // 선택된 연도가 있을 때 나이 계산
   const currentAge = useMemo(() => {
-    if (!selectedYear) return undefined;
-    return calculateCurrentAge(selectedYear, 1, 1); // 월일은 1월 1일로 가정
-  }, [selectedYear]);
+    if (!reversedDate) return undefined;
+    return calculateCurrentAge(reversedDate.year, reversedDate.month, reversedDate.day);
+  }, [reversedDate]);
 
   // 선택된 연도가 있을 때 대운 계산
   const daeunData = useMemo(() => {
-    if (!selectedYear) return null;
+    if (!reversedDate) return null;
     
     return calculateCompleteDaeun({
       gender: gender,
       yearSky: yearSky,
       monthSky: monthSky,
       monthEarth: monthEarth,
-      birthYear: selectedYear,
-      birthMonth: 1, // 월일은 가정값
-      birthDay: 1
+      birthYear: reversedDate.year,
+      birthMonth: reversedDate.month,
+      birthDay: reversedDate.day
     });
-  }, [selectedYear, gender, yearSky, monthSky, monthEarth]);
+  }, [reversedDate, gender, yearSky, monthSky, monthEarth]);
 
   // 현재 대운 찾기
   const currentDaeun = useMemo(() => {
@@ -514,18 +530,18 @@ export default function GanjiResult() {
 
   // 세운 데이터 계산
   const saeunData = useMemo(() => {
-    if (!yearSky || !yearEarth || !focusedDaeun || !selectedYear) {
+    if (!yearSky || !yearEarth || !focusedDaeun || !reversedDate) {
       return null;
     }
     
     return calculateSaeun(
-      selectedYear, 
+      reversedDate.year, 
       yearSky, 
       yearEarth, 
       12,
       focusedDaeun.startAge - 1 + saeunOffset
     );
-  }, [selectedYear, yearSky, yearEarth, focusedDaeun, saeunOffset]);
+  }, [reversedDate, yearSky, yearEarth, focusedDaeun, saeunOffset]);
 
   // 연도 변경 시 모든 상태 리셋
   useEffect(() => {
@@ -699,9 +715,9 @@ export default function GanjiResult() {
           saju={saju}
           title="사주 명식표"
           name={name.trim() || '이름없음'}
-          birthYear={selectedYear || undefined}
-          birthMonth={undefined}
-          birthDay={undefined}
+          birthYear={reversedDate?.year || selectedYear || undefined}
+          birthMonth={reversedDate?.month || undefined}
+          birthDay={reversedDate?.day || undefined}
           gender={gender}
           yearSky={yearSky || undefined}
           yearEarth={yearEarth || undefined}
