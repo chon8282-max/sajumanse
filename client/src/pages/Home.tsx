@@ -294,40 +294,20 @@ export default function Home() {
           </div>
         )}
 
-        {/* 공지사항 섹션 */}
+        {/* 공지사항 섹션 - 내용이 있을 때만 표시 */}
         {announcements.length > 0 && (
-          <Card data-testid="card-announcements">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold">알립니다</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLocation("/announcements")}
-                  data-testid="button-view-all-announcements"
-                  className="text-xs h-7 px-2"
-                >
-                  전체보기
-                  <ChevronRight className="w-3 h-3 ml-1" />
-                </Button>
+          <div data-testid="card-announcements" className="space-y-[2px]">
+            {announcements.slice(0, 2).map((announcement) => (
+              <div
+                key={announcement.id}
+                onClick={() => setLocation(`/announcements/${announcement.id}`)}
+                data-testid={`announcement-item-${announcement.id}`}
+                className="px-3 py-2 rounded-md border bg-card hover-elevate active-elevate-2 cursor-pointer"
+              >
+                <div className="text-sm font-medium line-clamp-1">{announcement.title}</div>
               </div>
-              <div className="flex flex-col gap-[2px]">
-                {announcements.map((announcement) => (
-                  <div
-                    key={announcement.id}
-                    onClick={() => setLocation(`/announcements/${announcement.id}`)}
-                    data-testid={`announcement-item-${announcement.id}`}
-                    className="p-3 rounded-md border bg-card hover-elevate active-elevate-2 cursor-pointer"
-                  >
-                    <div className="text-sm font-medium line-clamp-1">{announcement.title}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {announcement.createdAt && format(new Date(announcement.createdAt), 'yyyy.MM.dd', { locale: ko })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         )}
 
         {/* 메뉴 그리드 */}
