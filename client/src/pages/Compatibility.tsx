@@ -106,7 +106,8 @@ export default function Compatibility() {
     onSuccess: () => {
       toast({
         title: "저장 완료",
-        description: "사주 1 메모가 저장되었습니다."
+        description: "사주 1 메모가 저장되었습니다.",
+        duration: 500
       });
       queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
     }
@@ -121,7 +122,8 @@ export default function Compatibility() {
     onSuccess: () => {
       toast({
         title: "저장 완료",
-        description: "사주 2 메모가 저장되었습니다."
+        description: "사주 2 메모가 저장되었습니다.",
+        duration: 500
       });
       queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
     }
