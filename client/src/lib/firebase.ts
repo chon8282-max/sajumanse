@@ -23,6 +23,11 @@ export const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
 googleProvider.addScope('https://www.googleapis.com/auth/drive.appdata');
 
+googleProvider.setCustomParameters({
+  access_type: 'offline',
+  prompt: 'consent'
+});
+
 export const signInWithGoogle = () => {
   return signInWithRedirect(auth, googleProvider);
 };

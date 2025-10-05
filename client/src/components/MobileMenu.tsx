@@ -308,7 +308,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   data-testid="button-db-restore"
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  가져오기
+                  DB가져오기
                 </Button>
               </div>
             </Card>
