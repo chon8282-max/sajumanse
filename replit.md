@@ -107,7 +107,25 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Replit-specific plugins for development environment integration
 
 ### Authentication & Sessions
+- **Firebase Authentication**: Google OAuth for user authentication with Drive API scopes
+- **Google Drive Integration**: Backup and restore functionality using Google Drive API
+- **Token Management**: OAuth access tokens stored securely in AuthContext with automatic cleanup on logout
 - **Session Management**: connect-pg-simple for PostgreSQL-backed session storage
 - **Security**: Built-in Express session handling with secure cookie configuration
+
+### Backup & Restore System
+- **Google Drive Backup**: Automatic database backup to user's Google Drive appDataFolder
+  - Authentication required: Users must login with Google OAuth to access backup/restore features
+  - Format: JSON backup files with timestamp naming (saju-backup-YYYY-MM-DD.json)
+  - Storage: Stored in Google Drive appDataFolder (hidden from user's main Drive)
+  - API endpoints: /api/backup/drive/upload, /api/backup/drive/list, /api/backup/drive/download
+- **Error Handling**: Comprehensive auth error detection and automatic re-login prompts
+  - Drive API 401/403 errors trigger automatic logout and re-authentication flow
+  - Clear user guidance with "인증 만료" messages
+  - Server-side error normalization (string/number status codes) for reliable detection
+- **Token Security**: 
+  - Access tokens cleared from both memory and localStorage on logout
+  - Tokens extracted from OAuth redirect using getRedirectResult
+  - Automatic token cleanup when auth state changes to null
 
 The application uses a monorepo structure with shared TypeScript definitions between client and server, ensuring type safety across the full stack. The design system follows Korean cultural aesthetics with warm color palettes and traditional typography choices suitable for displaying Korean characters and traditional calendar information.
