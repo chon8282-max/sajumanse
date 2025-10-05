@@ -311,7 +311,7 @@ export default function Home() {
                   <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {announcements.map((announcement) => (
                   <div
                     key={announcement.id}
