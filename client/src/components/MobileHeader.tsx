@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut } from "lucide-react";
+import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } from "lucide-react";
 import { format } from "date-fns";
 import logoPath from "@assets/만세력로고_1758875108140.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,22 +19,14 @@ export default function MobileHeader({
   onThemeToggle, 
   onMenuClick
 }: MobileHeaderProps) {
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const { user, loading, isAuthenticated } = useAuth();
 
-  const handleUserClick = () => {
+  const handleAuthClick = async () => {
     if (!isAuthenticated && !loading) {
-      // 로그인하지 않은 경우 Google 로그인
       signInWithGoogle();
     } else if (isAuthenticated) {
-      // 로그인한 경우 메뉴 토글
-      setShowUserMenu(!showUserMenu);
+      await signOut();
     }
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    setShowUserMenu(false);
   };
 
   return (
@@ -76,38 +67,23 @@ export default function MobileHeader({
             {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
 
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleUserClick}
-              data-testid="button-user-menu"
-              className="h-8 w-8"
-            >
-              <UserIcon className="w-4 h-4" />
-            </Button>
-            
-            {showUserMenu && isAuthenticated && user && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-popover border rounded-md shadow-md p-2 z-50">
-                <div className="p-2 border-b border-border">
-                  <p className="font-medium text-sm" data-testid="text-user-name">
-                    {user.displayName || user.email || '사용자'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">환영합니다!</p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start mt-2"
-                  onClick={handleLogout}
-                  data-testid="button-logout"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  로그아웃
-                </Button>
-              </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleAuthClick}
+            data-testid="button-auth"
+            className={`h-8 w-8 ${
+              isAuthenticated 
+                ? 'text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {isAuthenticated ? (
+              <LogOut className="w-4 h-4" />
+            ) : (
+              <LogIn className="w-4 h-4" />
             )}
-          </div>
+          </Button>
         </div>
       </div>
     </header>
