@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { type SajuInfo } from "@shared/schema";
+import { type SajuInfo, type Announcement } from "@shared/schema";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 
@@ -8,13 +8,15 @@ interface CurrentTimeTableProps {
   title?: string;
   solarDate?: string;
   isOffline?: boolean;
+  announcements?: Announcement[];
 }
 
 export default function CurrentTimeTable({ 
   saju, 
   title = "현재 만세력",
   solarDate,
-  isOffline = false
+  isOffline = false,
+  announcements = []
 }: CurrentTimeTableProps) {
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
@@ -135,23 +137,23 @@ export default function CurrentTimeTable({
           })}
         </div>
       </div>
-      {/* 알림 섹션 */}
-      <div className="mt-1.5 p-1.5 bg-muted/30 rounded-lg border">
-        <h3 className="text-xs font-semibold text-primary flex items-center mt-[0px] mb-[2px]" style={{ letterSpacing: '-0.02em' }}>
-          <span className="w-1.5 h-1.5 bg-primary rounded-full mr-1.5"></span>
-          알림
-        </h3>
-        <div className="flex flex-col gap-[2px] text-xs text-muted-foreground">
-          <div className="flex items-start space-x-1.5 min-w-0">
-            <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
-            <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>오늘의 운세: 목요일은 새로운 시작의 기운이 강한 날입니다.</span>
-          </div>
-          <div className="flex items-start space-x-1.5 min-w-0">
-            <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
-            <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>만세력 업데이트: 2025년 음력 절입시간 정보가 업데이트되었습니다.</span>
+      {/* 알림 섹션 - 공지사항이 있을 때만 표시 */}
+      {announcements.length > 0 && (
+        <div className="mt-1.5 p-1.5 bg-muted/30 rounded-lg border">
+          <h3 className="text-xs font-semibold text-primary flex items-center mt-[0px] mb-[2px]" style={{ letterSpacing: '-0.02em' }}>
+            <span className="w-1.5 h-1.5 bg-primary rounded-full mr-1.5"></span>
+            알림
+          </h3>
+          <div className="flex flex-col gap-[2px] text-xs text-muted-foreground">
+            {announcements.slice(0, 2).map((announcement) => (
+              <div key={announcement.id} className="flex items-start space-x-1.5 min-w-0">
+                <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
+                <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>{announcement.title}</span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
     </Card>
   );
 }

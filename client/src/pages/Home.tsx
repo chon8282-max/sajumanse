@@ -29,9 +29,9 @@ export default function Home() {
   } | null>(null);
   const [, setLocation] = useLocation();
 
-  // 최신 공지사항 2개 조회
+  // 최신 공지사항 조회
   const { data: announcementsData } = useQuery<{ success: boolean; data: Announcement[] }>({
-    queryKey: ["/api/announcements", { limit: 2 }],
+    queryKey: ["/api/announcements"],
     staleTime: 1000 * 60 * 5, // 5분 캐시
     refetchOnWindowFocus: false,
   });
@@ -238,6 +238,7 @@ export default function Home() {
             title="현재 만세력"
             solarDate={getCurrentDateInfo().solarDate}
             isOffline={navigator.onLine === false}
+            announcements={announcements}
           />
         </div>
 
