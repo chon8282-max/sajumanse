@@ -1522,6 +1522,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Google Drive 백업 업로드
+  app.post("/api/backup/drive/upload", async (req, res) => {
+    try {
+      const { accessToken } = req.body;
+      
+      if (!accessToken) {
+        return res.status(401).json({ 
+          error: "인증 토큰이 필요합니다." 
+        });
+      }
+
+      const data = await storage.exportAllData();
+      const fileName = `saju-backup-${data.exportDate.split('T')[0]}.json`;
+      const fileContent = JSON.stringify(data, null, 2);
+
+      const { uploadBackupToDrive } = await import('./google-drive');
+      const result = await uploadBackupToDrive(fileName, fileContent, accessToken);
+      
+      res.json({
+        success: true,
+        fileId: result.id,
+        fileName: result.name,
+        message: "Google Drive에 백업되었습니다."
+      });
+    } catch (error) {
+      console.error('Google Drive upload error:', error);
+      res.status(500).json({ 
+        error: "Google Drive 백업 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // Google Drive 백업 목록 조회
+  app.post("/api/backup/drive/list", async (req, res) => {
+    try {
+      const { accessToken } = req.body;
+      
+      if (!accessToken) {
+        return res.status(401).json({ 
+          error: "인증 토큰이 필요합니다." 
+        });
+      }
+
+      const { listBackupsFromDrive } = await import('./google-drive');
+      const files = await listBackupsFromDrive(accessToken);
+      
+      res.json({
+        success: true,
+        files: files
+      });
+    } catch (error) {
+      console.error('Google Drive list error:', error);
+      res.status(500).json({ 
+        error: "Google Drive 목록 조회 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // Google Drive 백업 다운로드
+  app.post("/api/backup/drive/download", async (req, res) => {
+    try {
+      const { accessToken, fileId } = req.body;
+      
+      if (!accessToken || !fileId) {
+        return res.status(400).json({ 
+          error: "인증 토큰과 파일 ID가 필요합니다." 
+        });
+      }
+
+      const { downloadBackupFromDrive } = await import('./google-drive');
+      const data = await downloadBackupFromDrive(fileId, accessToken);
+      
+      res.json({
+        success: true,
+        data: data
+      });
+    } catch (error) {
+      console.error('Google Drive download error:', error);
+      res.status(500).json({ 
+        error: "Google Drive 다운로드 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
   // ========================================
   // 공지사항 API 라우트
   // ========================================
