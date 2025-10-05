@@ -27,12 +27,16 @@ export default function MobileHeader({
     if (!isAuthenticated && !loading) {
       signInWithGoogle();
     } else if (isAuthenticated) {
-      await signOut();
-      toast({
-        title: "로그아웃 완료",
-        description: "정상적으로 로그아웃되었습니다.",
-        duration: 2000
-      });
+      try {
+        await signOut();
+        toast({
+          title: "로그아웃 완료",
+          description: "정상적으로 로그아웃되었습니다.",
+          duration: 3000
+        });
+      } catch (error) {
+        console.error('로그아웃 오류:', error);
+      }
     }
   };
 
