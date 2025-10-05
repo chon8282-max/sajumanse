@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import logoPath from "@assets/만세력로고_1758875108140.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle, signOut } from "@/lib/firebase";
+import { useToast } from "@/hooks/use-toast";
 
 interface MobileHeaderProps {
   currentDate: Date;
@@ -20,12 +21,18 @@ export default function MobileHeader({
   onMenuClick
 }: MobileHeaderProps) {
   const { user, loading, isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
   const handleAuthClick = async () => {
     if (!isAuthenticated && !loading) {
       signInWithGoogle();
     } else if (isAuthenticated) {
       await signOut();
+      toast({
+        title: "로그아웃 완료",
+        description: "정상적으로 로그아웃되었습니다.",
+        duration: 2000
+      });
     }
   };
 
