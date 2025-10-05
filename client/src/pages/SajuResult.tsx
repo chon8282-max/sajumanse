@@ -383,7 +383,7 @@ export default function SajuResult() {
     },
     onSuccess: (_, timeCode) => {
       // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id || "null"] });
       toast({
         title: "생시 변경됨",
         description: `생시가 ${timeCode}로 변경되었습니다.`,
@@ -424,7 +424,7 @@ export default function SajuResult() {
     },
     onSuccess: (_, { year, month, day }) => {
       // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id || "null"] });
       toast({
         title: "생년월일 변경됨",
         description: `생년월일이 ${year}.${month}.${day}로 변경되었습니다.`,
