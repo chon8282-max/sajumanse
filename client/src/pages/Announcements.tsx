@@ -19,8 +19,7 @@ export default function Announcements() {
 
   const announcements = announcementsData?.data || [];
 
-  const masterUserIds = import.meta.env.VITE_MASTER_USER_IDS?.split(',') || [];
-  const isMaster = isAuthenticated && user && masterUserIds.includes(user.uid);
+  const isMaster = isAuthenticated && user?.email === 'chon8282@gmail.com';
 
   return (
     <div className="min-h-screen bg-background">
