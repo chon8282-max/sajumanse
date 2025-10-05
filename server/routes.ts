@@ -366,20 +366,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // 년월일과 달력 타입이 변경된 경우 음력 변환 시도 (생시 유무와 상관없이)
-      if (validatedData.birthYear && validatedData.birthMonth && validatedData.birthDay && validatedData.calendarType) {
+      // 년월일이 변경된 경우 음력 변환 및 사주 재계산 (달력 타입은 기존 레코드에서 가져옴)
+      if (validatedData.birthYear || validatedData.birthMonth || validatedData.birthDay) {
+        // 기존 레코드 정보와 병합
+        const finalYear = validatedData.birthYear || updatedRecord.birthYear;
+        const finalMonth = validatedData.birthMonth || updatedRecord.birthMonth || 1;
+        const finalDay = validatedData.birthDay || updatedRecord.birthDay || 1;
+        const finalCalendarType = validatedData.calendarType || updatedRecord.calendarType;
+        
+        if (finalCalendarType) {
         try {
           // 음력 변환 (양력 입력인 경우)
           let lunarConversion = null;
-          let sajuCalculationYear = validatedData.birthYear;
-          let sajuCalculationMonth = validatedData.birthMonth;
-          let sajuCalculationDay = validatedData.birthDay;
+          let sajuCalculationYear = finalYear;
+          let sajuCalculationMonth = finalMonth;
+          let sajuCalculationDay = finalDay;
           
-          if (validatedData.calendarType === "양력") {
+          if (finalCalendarType === "양력") {
             try {
-              const birthDate = new Date(validatedData.birthYear, validatedData.birthMonth - 1, validatedData.birthDay);
+              const birthDate = new Date(finalYear, finalMonth - 1, finalDay);
               lunarConversion = await convertSolarToLunarServer(birthDate);
-              console.log(`양력 ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
+              console.log(`양력 ${finalYear}-${finalMonth}-${finalDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
               
               // 사주 계산은 음력 날짜를 사용
               sajuCalculationYear = lunarConversion.year;
@@ -392,14 +399,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // 최적화: 로컬 라이브러리만 사용 (즉시 처리)
-          let solarCalcYear = validatedData.birthYear;
-          let solarCalcMonth = validatedData.birthMonth; 
-          let solarCalcDay = validatedData.birthDay;
+          let solarCalcYear = finalYear;
+          let solarCalcMonth = finalMonth; 
+          let solarCalcDay = finalDay;
           
-          if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
+          if (finalCalendarType === "음력" || finalCalendarType === "윤달") {
             try {
               // 로컬 라이브러리로 즉시 변환 (API 호출 완전 제거)
-              const isLeapMonth = validatedData.calendarType === "윤달";
+              const isLeapMonth = finalCalendarType === "윤달";
               const solarDate = await convertLunarToSolarServer(sajuCalculationYear, sajuCalculationMonth, sajuCalculationDay, isLeapMonth);
               solarCalcYear = solarDate.getFullYear();
               solarCalcMonth = solarDate.getMonth() + 1;
@@ -411,44 +418,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // 음력 정보 저장을 위한 기본 updateData 준비
-          const updateData: any = {
-            calendarType: validatedData.calendarType  // 원본 달력 타입 보존
-          };
+          const updateData: any = {};
 
           // 음력 정보 저장
-          if (validatedData.calendarType === "양력" && lunarConversion) {
+          if (finalCalendarType === "양력" && lunarConversion) {
             // 양력 입력 시: 변환된 음력 정보 저장
             updateData.lunarYear = lunarConversion.year;
             updateData.lunarMonth = lunarConversion.month;
             updateData.lunarDay = lunarConversion.day;
             updateData.isLeapMonth = lunarConversion.isLeapMonth;
-          } else if (validatedData.calendarType === "음력" || validatedData.calendarType === "윤달") {
+          } else if (finalCalendarType === "음력" || finalCalendarType === "윤달") {
             // 음력 입력 시: 입력된 음력 정보 그대로 저장하고, 변환된 양력 정보로 birthYear/Month/Day 업데이트
-            updateData.lunarYear = validatedData.birthYear;
-            updateData.lunarMonth = validatedData.birthMonth;
-            updateData.lunarDay = validatedData.birthDay;
-            updateData.isLeapMonth = validatedData.calendarType === "윤달";
+            updateData.lunarYear = finalYear;
+            updateData.lunarMonth = finalMonth;
+            updateData.lunarDay = finalDay;
+            updateData.isLeapMonth = finalCalendarType === "윤달";
             // 변환된 양력 정보로 메인 생년월일 필드 업데이트
             updateData.birthYear = solarCalcYear;
             updateData.birthMonth = solarCalcMonth;
             updateData.birthDay = solarCalcDay;
           }
 
-          // 생시가 있는 경우에만 사주팔자 계산
-          if (validatedData.birthTime) {
+          // 생시가 있는 경우 사주팔자 계산 (validatedData 또는 기존 레코드에서)
+          const finalBirthTime = validatedData.birthTime || updatedRecord.birthTime;
+          if (finalBirthTime) {
             try {
               let hour = 0;
               let minute = 0;
               
               // 전통 시간대 코드인지 확인 (예: "子時")
-              const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
+              const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === finalBirthTime);
               if (timePeriod) {
                 // 전통 시간대의 대표 시간 사용
                 hour = timePeriod.hour;
                 minute = 0;
               } else {
                 // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
-                const timeStr = validatedData.birthTime;
+                const timeStr = finalBirthTime;
                 if (timeStr.includes(':')) {
                   hour = parseInt(timeStr.split(':')[0]) || 0;
                   minute = parseInt(timeStr.split(':')[1]) || 0;
@@ -457,17 +463,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
+              const finalUsePreviousMonthPillar = validatedData.usePreviousMonthPillar ?? updatedRecord.usePreviousMonthPillar;
+              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
               const sajuResult = calculateSaju(
                 sajuCalculationYear,      // 년월주는 음력
                 sajuCalculationMonth,
                 sajuCalculationDay,
                 hour,
                 minute,
-                validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
+                finalCalendarType === "음력" || finalCalendarType === "윤달",
                 solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
                 null,  // apiData - 로컬 계산만 사용하므로 null
-                validatedData.usePreviousMonthPillar // 절입일 전월 간지 적용 여부
+                finalUsePreviousMonthPillar // 절입일 전월 간지 적용 여부
               );
               console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
@@ -517,6 +524,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             success: true,
             data: updatedRecord,
             message: "기본 정보만 업데이트되었습니다. (음력 변환 실패)"
+          });
+        }
+        } else {
+          // finalCalendarType이 없는 경우 (달력 타입이 누락됨)
+          res.json({
+            success: true,
+            data: updatedRecord,
+            message: "기본 정보만 업데이트되었습니다. (달력 타입 정보 없음)"
           });
         }
       } else if (validatedData.birthTime) {
