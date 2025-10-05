@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function Announcements() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const { data: announcementsData, isLoading } = useQuery<{ success: boolean; data: Announcement[] }>({
     queryKey: ["/api/announcements"],
@@ -20,7 +20,7 @@ export default function Announcements() {
   const announcements = announcementsData?.data || [];
 
   const masterUserIds = import.meta.env.VITE_MASTER_USER_IDS?.split(',') || [];
-  const isMaster = user && masterUserIds.includes(user.uid);
+  const isMaster = isAuthenticated && user && masterUserIds.includes(user.uid);
 
   return (
     <div className="min-h-screen bg-background">

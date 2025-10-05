@@ -5,12 +5,14 @@ import { auth, onAuthStateChanged } from "@/lib/firebase";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAuthenticated: boolean;
   googleAccessToken: string | null;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  isAuthenticated: false,
   googleAccessToken: null,
 });
 
@@ -67,8 +69,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => unsubscribe();
   }, []);
 
+  const isAuthenticated = !loading && !!user;
+
   return (
-    <AuthContext.Provider value={{ user, loading, googleAccessToken }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated, googleAccessToken }}>
       {children}
     </AuthContext.Provider>
   );
