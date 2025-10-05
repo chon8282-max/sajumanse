@@ -25,6 +25,16 @@ export default function MenuGrid() {
       window.open("https://www.youtube.com/@chon8282", "_blank");
     } else if (menuName === "사주공부") {
       window.open("https://sajuacademy.com", "_blank");
+    } else if (menuName === "감정중인 사주") {
+      const currentSajuId = sessionStorage.getItem('currentSajuId');
+      if (currentSajuId) {
+        setLocation(`/saju-result/${currentSajuId}`);
+      } else {
+        toast({
+          title: "감정중인 사주 없음",
+          description: "최근 감정한 사주가 없습니다.",
+        });
+      }
     } else {
       toast({
         title: menuName,
