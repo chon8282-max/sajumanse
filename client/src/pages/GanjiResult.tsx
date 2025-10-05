@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 import { calculateHourGanji } from "@/lib/ganji-calculator";
 import { CHEONGAN, JIJI } from "@shared/schema";
+import { calculateSaju } from "@/lib/saju-calculator";
 
 // 다음 간지 계산 (60갑자 순환)
 function getNextGanji(sky: string, earth: string) {
@@ -388,11 +389,28 @@ export default function GanjiResult() {
     }
   };
 
-  // 생일 변경 핸들러 (간지 입력에서는 사용 안 함, 에러 방지용)
-  const handleBirthDateChange = (year: number, month: number, day: number) => {
-    // 간지 입력 페이지에서는 날짜 변경 불가
-    console.log('간지 입력 페이지에서는 날짜 변경이 지원되지 않습니다.');
-  };
+  // 생일 변경 핸들러 - 날짜로부터 간지 재계산
+  const handleBirthDateChange = useCallback((newYear: number, newMonth: number, newDay: number) => {
+    // 새로운 날짜로 사주 계산 (기존 시간 정보 사용)
+    const hourIndex = JIJI.indexOf(hourEarth as any);
+    const calculatedHour = hourIndex !== -1 ? hourIndex * 2 + 1 : 1; // 지지에서 시간 복원
+    
+    // 새로운 날짜로 사주 계산 (양력 기준)
+    const newSaju = calculateSaju(newYear, newMonth, newDay, calculatedHour, 0, false);
+    
+    // 계산된 간지로 URL 파라미터 업데이트
+    const params = new URLSearchParams(searchParams);
+    params.set('yearSky', newSaju.year.sky);
+    params.set('yearEarth', newSaju.year.earth);
+    params.set('monthSky', newSaju.month.sky);
+    params.set('monthEarth', newSaju.month.earth);
+    params.set('daySky', newSaju.day.sky);
+    params.set('dayEarth', newSaju.day.earth);
+    params.set('hourSky', newSaju.hour.sky);
+    params.set('hourEarth', newSaju.hour.earth);
+    
+    setLocation(`/ganji-result?${params.toString()}`);
+  }, [hourEarth, gender, name, searchParams, setLocation]);
 
   // 파라미터 검증
   useEffect(() => {
