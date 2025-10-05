@@ -87,7 +87,16 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           description: "Google Drive에 성공적으로 백업되었습니다.",
         });
       } else {
-        throw new Error(result.error || '백업 실패');
+        if (response.status === 401 || response.status === 403) {
+          toast({
+            title: "인증 만료",
+            description: "Google 인증이 만료되었습니다. 다시 로그인해주세요.",
+          });
+          await signOut();
+          setLocation("/login");
+        } else {
+          throw new Error(result.error || '백업 실패');
+        }
       }
     } catch (error) {
       toast({
@@ -124,6 +133,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
       const listResult = await listResponse.json();
       
+      if (listResponse.status === 401 || listResponse.status === 403) {
+        toast({
+          title: "인증 만료",
+          description: "Google 인증이 만료되었습니다. 다시 로그인해주세요.",
+        });
+        await signOut();
+        setLocation("/login");
+        onClose();
+        return;
+      }
+      
       if (!listResponse.ok || !listResult.files || listResult.files.length === 0) {
         toast({
           title: "백업 파일 없음",
@@ -142,6 +162,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       });
 
       const downloadResult = await downloadResponse.json();
+      
+      if (downloadResponse.status === 401 || downloadResponse.status === 403) {
+        toast({
+          title: "인증 만료",
+          description: "Google 인증이 만료되었습니다. 다시 로그인해주세요.",
+        });
+        await signOut();
+        setLocation("/login");
+        onClose();
+        return;
+      }
       
       if (!downloadResponse.ok) {
         throw new Error(downloadResult.error || '다운로드 실패');

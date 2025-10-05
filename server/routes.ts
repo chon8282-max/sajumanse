@@ -1546,8 +1546,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: result.name,
         message: "Google Drive에 백업되었습니다."
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google Drive upload error:', error);
+      
+      if (error.authError || error.status === 401 || error.status === 403) {
+        return res.status(401).json({ 
+          error: "Google Drive 인증이 만료되었습니다.",
+          authError: true
+        });
+      }
+      
       res.status(500).json({ 
         error: "Google Drive 백업 중 오류가 발생했습니다." 
       });
@@ -1572,8 +1580,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         files: files
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google Drive list error:', error);
+      
+      if (error.authError || error.status === 401 || error.status === 403) {
+        return res.status(401).json({ 
+          error: "Google Drive 인증이 만료되었습니다.",
+          authError: true
+        });
+      }
+      
       res.status(500).json({ 
         error: "Google Drive 목록 조회 중 오류가 발생했습니다." 
       });
@@ -1598,8 +1614,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         data: data
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google Drive download error:', error);
+      
+      if (error.authError || error.status === 401 || error.status === 403) {
+        return res.status(401).json({ 
+          error: "Google Drive 인증이 만료되었습니다.",
+          authError: true
+        });
+      }
+      
       res.status(500).json({ 
         error: "Google Drive 다운로드 중 오류가 발생했습니다." 
       });

@@ -73,8 +73,15 @@ export async function uploadBackupToDrive(fileName: string, fileContent: string,
     });
 
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading to Google Drive:', error);
+    const status = Number(error.response?.status ?? error.status ?? error.code);
+    if (status === 401 || status === 403 || error.code === '401' || error.code === '403') {
+      const authError: any = new Error('Google Drive authentication failed');
+      authError.authError = true;
+      authError.status = status || 401;
+      throw authError;
+    }
     throw error;
   }
 }
@@ -96,8 +103,15 @@ export async function listBackupsFromDrive(userAccessToken: string) {
     });
 
     return response.data.files || [];
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error listing from Google Drive:', error);
+    const status = Number(error.response?.status ?? error.status ?? error.code);
+    if (status === 401 || status === 403 || error.code === '401' || error.code === '403') {
+      const authError: any = new Error('Google Drive authentication failed');
+      authError.authError = true;
+      authError.status = status || 401;
+      throw authError;
+    }
     throw error;
   }
 }
@@ -117,8 +131,15 @@ export async function downloadBackupFromDrive(fileId: string, userAccessToken: s
     }, { responseType: 'text' });
 
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error downloading from Google Drive:', error);
+    const status = Number(error.response?.status ?? error.status ?? error.code);
+    if (status === 401 || status === 403 || error.code === '401' || error.code === '403') {
+      const authError: any = new Error('Google Drive authentication failed');
+      authError.authError = true;
+      authError.status = status || 401;
+      throw authError;
+    }
     throw error;
   }
 }
