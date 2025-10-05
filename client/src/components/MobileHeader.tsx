@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import logoPath from "@assets/만세력로고_1758875108140.png";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle, signOut } from "@/lib/firebase";
 
 interface MobileHeaderProps {
@@ -21,13 +21,13 @@ export default function MobileHeader({
   onMenuClick
 }: MobileHeaderProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
 
   const handleUserClick = () => {
-    if (!isAuthenticated && !isLoading) {
+    if (!isAuthenticated && !loading) {
       // 로그인하지 않은 경우 Google 로그인
       signInWithGoogle();
-    } else {
+    } else if (isAuthenticated) {
       // 로그인한 경우 메뉴 토글
       setShowUserMenu(!showUserMenu);
     }
