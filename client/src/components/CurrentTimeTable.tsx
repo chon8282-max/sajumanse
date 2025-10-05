@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { type SajuInfo, type Announcement } from "@shared/schema";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
+import { useLocation } from "wouter";
 
 interface CurrentTimeTableProps {
   saju: SajuInfo;
@@ -18,6 +19,7 @@ export default function CurrentTimeTable({
   isOffline = false,
   announcements = []
 }: CurrentTimeTableProps) {
+  const [, setLocation] = useLocation();
 
   // 사주 데이터 구성 (우측부터 년월일시 순)
   const sajuColumns = [
@@ -146,7 +148,12 @@ export default function CurrentTimeTable({
           </h3>
           <div className="flex flex-col gap-[2px] text-xs text-muted-foreground">
             {announcements.slice(0, 2).map((announcement) => (
-              <div key={announcement.id} className="flex items-start space-x-1.5 min-w-0">
+              <div 
+                key={announcement.id} 
+                className="flex items-start space-x-1.5 min-w-0 cursor-pointer hover-elevate active-elevate-2 rounded px-1 py-0.5"
+                onClick={() => setLocation(`/announcements/${announcement.id}`)}
+                data-testid={`announcement-link-${announcement.id}`}
+              >
                 <span className="text-[10px] text-primary font-medium flex-shrink-0">•</span>
                 <span className="flex-1 min-w-0 truncate" style={{ letterSpacing: '-0.01em' }}>{announcement.title}</span>
               </div>

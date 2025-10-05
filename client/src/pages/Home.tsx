@@ -295,21 +295,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* 공지사항 섹션 - 내용이 있을 때만 표시 */}
-        {announcements.length > 0 && (
-          <div data-testid="card-announcements" className="flex flex-col gap-[2px]">
-            {announcements.slice(0, 2).map((announcement) => (
-              <div
-                key={announcement.id}
-                onClick={() => setLocation(`/announcements/${announcement.id}`)}
-                data-testid={`announcement-item-${announcement.id}`}
-                className="px-3 py-1.5 rounded-md border bg-card hover-elevate active-elevate-2 cursor-pointer"
-              >
-                <div className="text-sm font-medium line-clamp-1">{announcement.title}</div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* 메뉴 그리드 */}
         <MenuGrid />
