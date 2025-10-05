@@ -519,8 +519,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: "기본 정보만 업데이트되었습니다. (음력 변환 실패)"
           });
         }
+      } else if (validatedData.birthTime) {
+        // 생시만 변경하는 경우: 기존 레코드 정보를 사용해서 사주 재계산
+        try {
+          let hour = 0;
+          let minute = 0;
+          
+          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
+          if (timePeriod) {
+            hour = timePeriod.hour;
+            minute = 0;
+          } else {
+            const timeStr = validatedData.birthTime;
+            if (timeStr.includes(':')) {
+              hour = parseInt(timeStr.split(':')[0]) || 0;
+              minute = parseInt(timeStr.split(':')[1]) || 0;
+            } else {
+              hour = parseInt(timeStr) || 0;
+            }
+          }
+
+          // 사주 계산을 위한 날짜 정보 (음력 우선, 없으면 양력)
+          let sajuCalculationYear = updatedRecord.lunarYear || updatedRecord.birthYear;
+          let sajuCalculationMonth = (updatedRecord.lunarMonth || updatedRecord.birthMonth) || 1;
+          let sajuCalculationDay = (updatedRecord.lunarDay || updatedRecord.birthDay) || 1;
+          
+          const sajuResult = calculateSaju(
+            sajuCalculationYear,
+            sajuCalculationMonth,
+            sajuCalculationDay,
+            hour,
+            minute,
+            updatedRecord.calendarType === "음력" || updatedRecord.calendarType === "윤달",
+            { solarYear: updatedRecord.birthYear, solarMonth: updatedRecord.birthMonth || 1, solarDay: updatedRecord.birthDay || 1 },
+            null,
+            false
+          );
+
+          const updateData = {
+            yearSky: sajuResult.year.sky,
+            yearEarth: sajuResult.year.earth,
+            monthSky: sajuResult.month.sky,
+            monthEarth: sajuResult.month.earth,
+            daySky: sajuResult.day.sky,
+            dayEarth: sajuResult.day.earth,
+            hourSky: sajuResult.hour.sky,
+            hourEarth: sajuResult.hour.earth
+          };
+
+          updatedRecord = await storage.updateSajuRecord(id, updateData);
+
+          res.json({
+            success: true,
+            data: {
+              record: updatedRecord,
+              sajuInfo: sajuResult
+            },
+            message: "생시 및 사주 정보가 성공적으로 업데이트되었습니다."
+          });
+        } catch (sajuError) {
+          console.error('Saju calculation error for birthTime only update:', sajuError);
+          res.json({
+            success: true,
+            data: updatedRecord,
+            message: "생시만 업데이트되었습니다. (사주 계산 오류)"
+          });
+        }
       } else {
-        // 생년월일이나 달력 타입이 없는 경우 기본 업데이트만
+        // 그 외의 경우 기본 업데이트만
         res.json({
           success: true,
           data: updatedRecord,
