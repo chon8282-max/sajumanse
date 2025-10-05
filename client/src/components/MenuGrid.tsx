@@ -36,45 +36,45 @@ export default function MenuGrid() {
   const menuItems = [
     {
       title: "만세력",
-      icon: <Calendar className="w-8 h-8" />,
+      icon: <Calendar style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-red-100 dark:bg-red-900/20",
       iconColor: "text-red-600 dark:text-red-400",
       onClick: () => handleMenuClick("만세력")
     },
     {
       title: "사주불러오기",
-      icon: <FileText className="w-8 h-8" />,
+      icon: <FileText style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-orange-50 dark:bg-orange-900/20",
       iconColor: "text-orange-600 dark:text-orange-400",
       onClick: () => handleMenuClick("사주불러오기")
     },
     {
       title: "지천명 유튜브",
-      icon: <Youtube className="w-8 h-8" />,
+      icon: <Youtube style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-teal-100 dark:bg-teal-900/20",
       iconColor: "text-teal-600 dark:text-teal-400",
       onClick: () => handleMenuClick("지천명 유튜브")
     },
     {
       title: "역학달력",
-      icon: <BookOpen className="w-8 h-8" />,
+      icon: <BookOpen style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-purple-100 dark:bg-purple-900/20",
       iconColor: "text-purple-600 dark:text-purple-400",
       onClick: () => handleMenuClick("역학달력")
     },
     {
       title: "사주공부",
-      icon: <GraduationCap className="w-8 h-8" />,
+      icon: <GraduationCap style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-yellow-100 dark:bg-yellow-900/20",
       iconColor: "text-yellow-600 dark:text-yellow-400",
       onClick: () => handleMenuClick("사주공부")
     },
     {
-      title: "오늘의 운세",
-      icon: <Star className="w-8 h-8" />,
+      title: "감정중인 사주",
+      icon: <Star style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-green-100 dark:bg-green-900/20",
       iconColor: "text-green-600 dark:text-green-400",
-      onClick: () => handleMenuClick("오늘의 운세")
+      onClick: () => handleMenuClick("감정중인 사주")
     }
   ];
 
@@ -95,7 +95,7 @@ export default function MenuGrid() {
             <div className={`${item.iconColor} mb-2 drop-shadow-sm`}>
               {item.icon}
             </div>
-            <p className="text-xs font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm whitespace-nowrap">
+            <p className="font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm whitespace-nowrap" style={{ fontSize: '0.9rem' }}>
               {item.title}
             </p>
           </div>
