@@ -297,7 +297,7 @@ export default function Home() {
         {/* 공지사항 섹션 */}
         {announcements.length > 0 && (
           <Card data-testid="card-announcements">
-            <CardContent className="p-4 space-y-2">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-base font-semibold">알립니다</h3>
                 <Button
@@ -311,7 +311,7 @@ export default function Home() {
                   <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <div className="flex flex-col gap-[2px]">
                 {announcements.map((announcement) => (
                   <div
                     key={announcement.id}
