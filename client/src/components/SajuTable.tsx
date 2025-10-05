@@ -1119,7 +1119,7 @@ export default function SajuTable({
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
-          <div className="text-center text-xs text-muted-foreground mb-3">
+          <div className="text-center text-xs text-muted-foreground mb-1.5">
             <span data-testid="text-birth-info">
               {reversedDate ? (
                 // 간지 역산된 날짜 표시
@@ -1156,7 +1156,7 @@ export default function SajuTable({
           </div>
 
           {/* 세 번째 줄: 5개 버튼 */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-1">
             <button 
               className={`px-3 py-1 text-xs ${
                 showWuxing 
