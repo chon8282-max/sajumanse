@@ -1571,9 +1571,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { fileId } = req.body;
       
-      if (!fileId) {
+      if (!fileId || typeof fileId !== 'string' || fileId.length === 0) {
         return res.status(400).json({ 
-          error: "파일 ID가 필요합니다." 
+          error: "유효한 파일 ID가 필요합니다." 
         });
       }
 
