@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { FontProvider } from "@/contexts/FontContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -35,11 +36,13 @@ import GanjiResult from "@/pages/GanjiResult";
 import Announcements from "@/pages/Announcements";
 import AnnouncementDetail from "@/pages/AnnouncementDetail";
 import AnnouncementAdmin from "@/pages/AnnouncementAdmin";
+import Login from "@/pages/Login";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
       <Route path="/manseryeok" component={Manseryeok} />
       <Route path="/calendar" component={Calendar} />
       <Route path="/saju-input" component={SajuInput} />
@@ -267,9 +270,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <ThemeProvider defaultTheme="light">
-          <FontProvider>
-            <AppContent />
-          </FontProvider>
+          <AuthProvider>
+            <FontProvider>
+              <AppContent />
+            </FontProvider>
+          </AuthProvider>
         </ThemeProvider>
       </TooltipProvider>
     </QueryClientProvider>
