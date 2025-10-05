@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,7 +28,8 @@ export const signInWithGoogle = () => {
 };
 
 export const signOut = () => {
+  localStorage.removeItem('googleAccessToken');
   return firebaseSignOut(auth);
 };
 
-export { onAuthStateChanged };
+export { onAuthStateChanged, getRedirectResult };
