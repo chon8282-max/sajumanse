@@ -112,10 +112,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleNotifications = () => {
-    toast({
-      title: "알립니다",
-      description: "공지사항을 확인해주세요.",
-    });
+    setLocation("/announcements");
     onClose();
   };
 
