@@ -680,6 +680,7 @@ export default function SajuResult() {
           lunarYear={record.lunarYear || undefined}
           lunarMonth={record.lunarMonth || undefined}
           lunarDay={record.lunarDay || undefined}
+          isLeapMonth={record.isLeapMonth || false}
           birthHour={record.birthTime || ''}
           daySky={record.daySky || ''}
           dayEarth={record.dayEarth || ''}

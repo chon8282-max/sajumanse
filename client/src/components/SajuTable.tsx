@@ -28,6 +28,7 @@ interface SajuTableProps {
   lunarYear?: number;
   lunarMonth?: number;
   lunarDay?: number;
+  isLeapMonth?: boolean;
   birthHour?: string;
   daySky?: string;
   dayEarth?: string;
@@ -241,6 +242,7 @@ export default function SajuTable({
   lunarYear,
   lunarMonth,
   lunarDay,
+  isLeapMonth,
   birthHour,
   daySky,
   dayEarth,
@@ -1130,7 +1132,7 @@ export default function SajuTable({
                 // 음력 입력인 경우: 음력 먼저, 양력 나중
                 (<>
                   {lunarYear && lunarMonth && lunarDay && (
-                    <>음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
+                    <>{isLeapMonth ? '음력 (윤달)' : '음력'}: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
                   )}
                   {birthYear && birthMonth && birthDay && (
                     <>  양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
@@ -1143,7 +1145,7 @@ export default function SajuTable({
                     <>양력: {birthYear}.{birthMonth.toString().padStart(2, '0')}.{birthDay.toString().padStart(2, '0')}</>
                   )}
                   {lunarYear && lunarMonth && lunarDay && (
-                    <>  음력: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
+                    <>  {isLeapMonth ? '음력 (윤달)' : '음력'}: {lunarYear}.{lunarMonth.toString().padStart(2, '0')}.{lunarDay.toString().padStart(2, '0')}</>
                   )}
                 </>)
               )}
