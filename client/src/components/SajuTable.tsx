@@ -1217,31 +1217,44 @@ export default function SajuTable({
       )}
       {/* 사주명식 메인 테이블 */}
       <div className="border border-border">
-        {/* 0행: 컬럼 헤더 (대운/세운 모드에서만 표시) */}
-        {displayMode !== 'base' && (
-          <div className="grid grid-cols-6 border-b border-border bg-gray-100 dark:bg-gray-800">
-            {displayMode === 'saeun' && (
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">세운</div>
-            )}
-            <div className="py-[2px] text-center text-sm font-bold border-r border-border">대운</div>
-            {sajuColumns.length === 4 ? (
-              <>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">시주</div>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">일주</div>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">월주</div>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">년주</div>
-              </>
-            ) : (
-              <>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">일주</div>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">월주</div>
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border">년주</div>
+        {/* 0행: 컬럼 헤더 (모든 모드에서 표시) */}
+        <div className="grid grid-cols-6 border-b border-border bg-gray-100 dark:bg-gray-800">
+          {displayMode === 'base' && (
+            <>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border"></div>
+              {sajuColumns.length === 3 && (
                 <div className="py-[2px] text-center text-sm font-bold border-r border-border"></div>
+              )}
+            </>
+          )}
+          {displayMode === 'saeun' && (
+            <div className="py-[2px] text-center text-sm font-bold border-r border-border">세운</div>
+          )}
+          {displayMode === 'daeun' && (
+            <div className="py-[2px] text-center text-sm font-bold border-r border-border">대운</div>
+          )}
+          {displayMode === 'saeun' && (
+            <div className="py-[2px] text-center text-sm font-bold border-r border-border">대운</div>
+          )}
+          {sajuColumns.length === 4 ? (
+            <>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">시주</div>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">일주</div>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">월주</div>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">년주</div>
+            </>
+          ) : (
+            <>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">일주</div>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">월주</div>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border">년주</div>
+              <div className="py-[2px] text-center text-sm font-bold border-r border-border"></div>
+              {displayMode === 'base' && (
                 <div className="py-[2px] text-center text-sm font-bold"></div>
-              </>
-            )}
-          </div>
-        )}
+              )}
+            </>
+          )}
+        </div>
         
         {/* 1행: 천간 육친 / 오행 */}
         <div className={`grid ${displayMode === 'base' ? 'grid-cols-6' : displayMode === 'saeun' ? 'grid-cols-6' : 'grid-cols-6'} border-b border-border`}>
