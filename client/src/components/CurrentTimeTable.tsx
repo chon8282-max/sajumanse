@@ -56,8 +56,8 @@ export default function CurrentTimeTable({
     >
       {/* 제목 */}
       <div className="text-center mb-0.5">
-        <h2 className="text-sm font-bold text-primary mb-0.5" style={{ letterSpacing: '-0.02em' }}>{title}</h2>
-        <div className="text-[10px] text-muted-foreground">
+        <h2 className="font-bold text-primary mb-0.5" style={{ letterSpacing: '-0.02em', fontSize: '16px' }}>{title}</h2>
+        <div className="text-muted-foreground" style={{ fontSize: '12px' }}>
           <p style={{ letterSpacing: '-0.01em' }}>{solarDate || '양력 정보 없음'}</p>
         </div>
       </div>
