@@ -47,13 +47,8 @@ export async function getUncachableGoogleDriveClient() {
   return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
-export async function uploadBackupToDrive(fileName: string, fileContent: string, userAccessToken: string) {
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: userAccessToken
-  });
-
-  const drive = google.drive({ version: 'v3', auth: oauth2Client });
+export async function uploadBackupToDrive(fileName: string, fileContent: string) {
+  const drive = await getUncachableGoogleDriveClient();
 
   const fileMetadata = {
     name: fileName,
@@ -75,24 +70,12 @@ export async function uploadBackupToDrive(fileName: string, fileContent: string,
     return response.data;
   } catch (error: any) {
     console.error('Error uploading to Google Drive:', error);
-    const status = Number(error.response?.status ?? error.status ?? error.code);
-    if (status === 401 || status === 403 || error.code === '401' || error.code === '403') {
-      const authError: any = new Error('Google Drive authentication failed');
-      authError.authError = true;
-      authError.status = status || 401;
-      throw authError;
-    }
     throw error;
   }
 }
 
-export async function listBackupsFromDrive(userAccessToken: string) {
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: userAccessToken
-  });
-
-  const drive = google.drive({ version: 'v3', auth: oauth2Client });
+export async function listBackupsFromDrive() {
+  const drive = await getUncachableGoogleDriveClient();
 
   try {
     const response = await drive.files.list({
@@ -105,24 +88,12 @@ export async function listBackupsFromDrive(userAccessToken: string) {
     return response.data.files || [];
   } catch (error: any) {
     console.error('Error listing from Google Drive:', error);
-    const status = Number(error.response?.status ?? error.status ?? error.code);
-    if (status === 401 || status === 403 || error.code === '401' || error.code === '403') {
-      const authError: any = new Error('Google Drive authentication failed');
-      authError.authError = true;
-      authError.status = status || 401;
-      throw authError;
-    }
     throw error;
   }
 }
 
-export async function downloadBackupFromDrive(fileId: string, userAccessToken: string) {
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: userAccessToken
-  });
-
-  const drive = google.drive({ version: 'v3', auth: oauth2Client });
+export async function downloadBackupFromDrive(fileId: string) {
+  const drive = await getUncachableGoogleDriveClient();
 
   try {
     const response = await drive.files.get({
@@ -133,13 +104,6 @@ export async function downloadBackupFromDrive(fileId: string, userAccessToken: s
     return response.data;
   } catch (error: any) {
     console.error('Error downloading from Google Drive:', error);
-    const status = Number(error.response?.status ?? error.status ?? error.code);
-    if (status === 401 || status === 403 || error.code === '401' || error.code === '403') {
-      const authError: any = new Error('Google Drive authentication failed');
-      authError.authError = true;
-      authError.status = status || 401;
-      throw authError;
-    }
     throw error;
   }
 }
