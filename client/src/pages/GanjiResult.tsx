@@ -388,6 +388,12 @@ export default function GanjiResult() {
     }
   };
 
+  // 생일 변경 핸들러 (간지 입력에서는 사용 안 함, 에러 방지용)
+  const handleBirthDateChange = (year: number, month: number, day: number) => {
+    // 간지 입력 페이지에서는 날짜 변경 불가
+    console.log('간지 입력 페이지에서는 날짜 변경이 지원되지 않습니다.');
+  };
+
   // 파라미터 검증
   useEffect(() => {
     if (!yearSky || !yearEarth || !monthSky || !monthEarth || !daySky || !dayEarth || !hourSky || !hourEarth) {
@@ -699,6 +705,7 @@ export default function GanjiResult() {
           onSaeunClick={handleSaeunClick}
           onSaeunScroll={handleSaeunScroll}
           onBirthTimeChange={handleBirthTimeChange}
+          onBirthDateChange={handleBirthDateChange}
         />
       </div>
     </div>
