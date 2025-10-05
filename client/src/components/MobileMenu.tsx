@@ -1,23 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
-  Database, 
   Download, 
   Upload, 
   Bell, 
   MessageSquare, 
   X,
   Info,
-  Type,
-  LogIn,
-  LogOut,
-  Cloud
+  Type
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { signOut, auth } from "@/lib/firebase";
 import { useState, useRef } from "react";
 
 interface MobileMenuProps {
@@ -29,44 +23,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { font, setFont } = useFont();
-  const { user, googleAccessToken } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  const handleLogin = () => {
-    setLocation("/login");
-    onClose();
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "로그아웃 완료",
-        description: "성공적으로 로그아웃되었습니다.",
-      });
-    } catch (error) {
-      toast({
-        title: "로그아웃 실패",
-        description: "로그아웃 중 오류가 발생했습니다.",
-        variant: "destructive",
-      });
-    }
-    onClose();
-  };
-
   const handleDriveBackup = async () => {
-    if (!user || !googleAccessToken) {
-      toast({
-        title: "로그인 필요",
-        description: "Google Drive 백업을 위해 로그인이 필요합니다.",
-      });
-      setLocation("/login");
-      onClose();
-      return;
-    }
-
     try {
       toast({
         title: "백업 중...",
@@ -76,7 +37,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const response = await fetch('/api/backup/drive/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: googleAccessToken }),
       });
 
       const result = await response.json();
@@ -87,16 +47,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           description: "Google Drive에 성공적으로 백업되었습니다.",
         });
       } else {
-        if (response.status === 401 || response.status === 403) {
-          toast({
-            title: "인증 만료",
-            description: "Google 인증이 만료되었습니다. 다시 로그인해주세요.",
-          });
-          await signOut();
-          setLocation("/login");
-        } else {
-          throw new Error(result.error || '백업 실패');
-        }
+        throw new Error(result.error || '백업 실패');
       }
     } catch (error) {
       toast({
@@ -109,16 +60,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleDriveRestore = async () => {
-    if (!user || !googleAccessToken) {
-      toast({
-        title: "로그인 필요",
-        description: "Google Drive 불러오기를 위해 로그인이 필요합니다.",
-      });
-      setLocation("/login");
-      onClose();
-      return;
-    }
-
     try {
       toast({
         title: "불러오는 중...",
@@ -128,21 +69,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const listResponse = await fetch('/api/backup/drive/list', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: googleAccessToken }),
       });
 
       const listResult = await listResponse.json();
-      
-      if (listResponse.status === 401 || listResponse.status === 403) {
-        toast({
-          title: "인증 만료",
-          description: "Google 인증이 만료되었습니다. 다시 로그인해주세요.",
-        });
-        await signOut();
-        setLocation("/login");
-        onClose();
-        return;
-      }
       
       if (!listResponse.ok || !listResult.files || listResult.files.length === 0) {
         toast({
@@ -158,21 +87,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const downloadResponse = await fetch('/api/backup/drive/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: googleAccessToken, fileId: latestFile.id }),
+        body: JSON.stringify({ fileId: latestFile.id }),
       });
 
       const downloadResult = await downloadResponse.json();
-      
-      if (downloadResponse.status === 401 || downloadResponse.status === 403) {
-        toast({
-          title: "인증 만료",
-          description: "Google 인증이 만료되었습니다. 다시 로그인해주세요.",
-        });
-        await signOut();
-        setLocation("/login");
-        onClose();
-        return;
-      }
       
       if (!downloadResponse.ok) {
         throw new Error(downloadResult.error || '다운로드 실패');
@@ -310,33 +228,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <Download className="w-4 h-4 mr-1" />
                   DB가져오기
                 </Button>
-              </div>
-            </Card>
-
-            <Card className="p-2">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">계정</h3>
-              <div className="space-y-1">
-                {user ? (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-2"
-                    onClick={handleLogout}
-                    data-testid="button-logout"
-                  >
-                    <LogOut className="w-4 h-4 mr-1" />
-                    로그아웃
-                  </Button>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-2"
-                    onClick={handleLogin}
-                    data-testid="button-login"
-                  >
-                    <LogIn className="w-4 h-4 mr-1" />
-                    로그인
-                  </Button>
-                )}
               </div>
             </Card>
 
