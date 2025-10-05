@@ -8,12 +8,17 @@ import {
   MessageSquare, 
   X,
   Info,
-  Type
+  Type,
+  LogIn,
+  LogOut,
+  Cloud
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
-import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { signOut, auth } from "@/lib/firebase";
+import { useState, useRef } from "react";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -24,90 +29,148 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { font, setFont } = useFont();
+  const { user, googleAccessToken } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  const handleDbBackup = async () => {
+  const handleLogin = () => {
+    setLocation("/login");
+    onClose();
+  };
+
+  const handleLogout = async () => {
     try {
+      await signOut();
       toast({
-        title: "백업 중...",
-        description: "데이터를 백업하는 중입니다.",
-      });
-
-      const response = await fetch('/api/backup/export');
-      if (!response.ok) throw new Error('백업 실패');
-
-      const data = await response.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `saju-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: "백업 완료",
-        description: `${data.sajuRecords.length}개의 사주 기록을 백업했습니다.`,
+        title: "로그아웃 완료",
+        description: "성공적으로 로그아웃되었습니다.",
       });
     } catch (error) {
       toast({
-        title: "백업 실패",
-        description: "데이터 백업 중 오류가 발생했습니다.",
+        title: "로그아웃 실패",
+        description: "로그아웃 중 오류가 발생했습니다.",
         variant: "destructive",
       });
     }
     onClose();
   };
 
-  const handleDbRestore = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = async (e: Event) => {
-      const target = e.target as HTMLInputElement;
-      const file = target.files?.[0];
-      if (!file) return;
+  const handleDriveBackup = async () => {
+    if (!user || !googleAccessToken) {
+      toast({
+        title: "로그인 필요",
+        description: "Google Drive 백업을 위해 로그인이 필요합니다.",
+      });
+      setLocation("/login");
+      onClose();
+      return;
+    }
 
-      try {
+    try {
+      toast({
+        title: "백업 중...",
+        description: "Google Drive에 백업하는 중입니다.",
+      });
+
+      const response = await fetch('/api/backup/drive/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: googleAccessToken }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
         toast({
-          title: "복원 중...",
-          description: "데이터를 복원하는 중입니다.",
+          title: "백업 완료",
+          description: "Google Drive에 성공적으로 백업되었습니다.",
         });
-
-        const text = await file.text();
-        const data = JSON.parse(text);
-
-        const response = await fetch('/api/backup/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-
-        const result = await response.json();
-        
-        if (response.ok) {
-          toast({
-            title: "복원 완료",
-            description: result.message || `${result.imported}개의 데이터를 복원했습니다.`,
-          });
-          // 페이지 새로고침하여 데이터 반영
-          setTimeout(() => window.location.reload(), 1000);
-        } else {
-          throw new Error(result.error || '복원 실패');
-        }
-      } catch (error) {
-        toast({
-          title: "복원 실패",
-          description: error instanceof Error ? error.message : "데이터 복원 중 오류가 발생했습니다.",
-          variant: "destructive",
-        });
+      } else {
+        throw new Error(result.error || '백업 실패');
       }
-    };
-    input.click();
+    } catch (error) {
+      toast({
+        title: "백업 실패",
+        description: error instanceof Error ? error.message : "Google Drive 백업 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+    onClose();
+  };
+
+  const handleDriveRestore = async () => {
+    if (!user || !googleAccessToken) {
+      toast({
+        title: "로그인 필요",
+        description: "Google Drive 불러오기를 위해 로그인이 필요합니다.",
+      });
+      setLocation("/login");
+      onClose();
+      return;
+    }
+
+    try {
+      toast({
+        title: "불러오는 중...",
+        description: "Google Drive에서 백업 파일을 불러오는 중입니다.",
+      });
+
+      const listResponse = await fetch('/api/backup/drive/list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: googleAccessToken }),
+      });
+
+      const listResult = await listResponse.json();
+      
+      if (!listResponse.ok || !listResult.files || listResult.files.length === 0) {
+        toast({
+          title: "백업 파일 없음",
+          description: "Google Drive에 백업 파일이 없습니다.",
+        });
+        onClose();
+        return;
+      }
+
+      const latestFile = listResult.files[0];
+
+      const downloadResponse = await fetch('/api/backup/drive/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: googleAccessToken, fileId: latestFile.id }),
+      });
+
+      const downloadResult = await downloadResponse.json();
+      
+      if (!downloadResponse.ok) {
+        throw new Error(downloadResult.error || '다운로드 실패');
+      }
+
+      const importResponse = await fetch('/api/backup/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(downloadResult.data),
+      });
+
+      const importResult = await importResponse.json();
+      
+      if (importResponse.ok) {
+        toast({
+          title: "복원 완료",
+          description: importResult.message || `${importResult.imported}개의 데이터를 복원했습니다.`,
+        });
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        throw new Error(importResult.error || '복원 실패');
+      }
+    } catch (error) {
+      toast({
+        title: "복원 실패",
+        description: error instanceof Error ? error.message : "Google Drive 복원 중 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
     onClose();
   };
 
@@ -195,29 +258,59 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </div>
             </Card>
 
-            <Card className="p-2">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">데이터 관리</h3>
-              <div className="space-y-1">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-2"
-                  onClick={handleDbBackup}
-                  data-testid="button-db-backup"
-                >
-                  <Upload className="w-4 h-4 mr-1" />
-                  DB백업하기
-                </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-2"
-                  onClick={handleDbRestore}
-                  data-testid="button-db-restore"
-                >
-                  <Download className="w-4 h-4 mr-1" />
-                  DB불러오기
-                </Button>
-              </div>
-            </Card>
+            {user ? (
+              <Card className="p-2">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                  Google Drive 백업
+                </h3>
+                <div className="space-y-1">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-2"
+                    onClick={handleDriveBackup}
+                    data-testid="button-drive-backup"
+                  >
+                    <Cloud className="w-4 h-4 mr-1" />
+                    백업하기
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-2"
+                    onClick={handleDriveRestore}
+                    data-testid="button-drive-restore"
+                  >
+                    <Download className="w-4 h-4 mr-1" />
+                    불러오기
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-2"
+                    onClick={handleLogout}
+                    data-testid="button-logout"
+                  >
+                    <LogOut className="w-4 h-4 mr-1" />
+                    로그아웃
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <Card className="p-2">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                  계정
+                </h3>
+                <div className="space-y-1">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-2"
+                    onClick={handleLogin}
+                    data-testid="button-login"
+                  >
+                    <LogIn className="w-4 h-4 mr-1" />
+                    로그인
+                  </Button>
+                </div>
+              </Card>
+            )}
 
             <Card className="p-2">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">소통</h3>
