@@ -35,6 +35,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
+      
+      if (!user) {
+        setGoogleAccessToken(null);
+        localStorage.removeItem('googleAccessToken');
+      }
     });
 
     getRedirectResult(auth).then((result) => {
