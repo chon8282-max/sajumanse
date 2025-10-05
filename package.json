@@ -57,6 +57,7 @@
     "express-session": "^1.18.2",
     "firebase": "^12.3.0",
     "framer-motion": "^11.13.1",
+    "googleapis": "^161.0.0",
     "html2canvas": "^1.4.1",
     "input-otp": "^1.4.2",
     "korean-lunar-calendar": "^0.3.6",
