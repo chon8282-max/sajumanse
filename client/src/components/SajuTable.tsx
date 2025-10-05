@@ -1368,11 +1368,11 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => {
             const cheonganImage = getCheonganImage(col.sky, showKorean2);
             const isHourPillar = index === 0;
-            const isDayPillar = index === 1;
+            const isMonthPillar = index === 2;
             return (
               <div 
                 key={`sky-${index}`} 
-                className={`text-center font-bold border-r border-border flex items-center justify-center ${isHourPillar || isDayPillar ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
+                className={`text-center font-bold border-r border-border flex items-center justify-center ${isHourPillar || isMonthPillar ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
                 style={{ 
                   backgroundColor: getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
@@ -1380,7 +1380,7 @@ export default function SajuTable({
                   margin: '0',
                   lineHeight: '1'
                 }}
-                onClick={isHourPillar ? handleHourEarthClick : isDayPillar ? handleDayEarthClick : undefined}
+                onClick={isHourPillar ? handleHourEarthClick : isMonthPillar ? handleDayEarthClick : undefined}
                 data-testid={`text-sky-${index}`}
               >
                 {cheonganImage ? (
@@ -1457,13 +1457,13 @@ export default function SajuTable({
           {sajuColumns.map((col, index) => {
             const jijiImage = getJijiImage(col.earth, showKorean2);
             const isHourEarth = index === 0;
-            const isDayEarth = index === 1;
+            const isMonthEarth = index === 2;
             
             return (
               <div 
                 key={`earth-${index}`} 
                 className={`text-center font-bold border-r border-border flex items-center justify-center ${
-                  isHourEarth || isDayEarth ? 'cursor-pointer hover-elevate active-elevate-2' : ''
+                  isHourEarth || isMonthEarth ? 'cursor-pointer hover-elevate active-elevate-2' : ''
                 }`}
                 style={{ 
                   backgroundColor: getWuxingColor(col.earth),
@@ -1474,7 +1474,7 @@ export default function SajuTable({
                   lineHeight: '1'
                 }}
                 data-testid={`text-earth-${index}`}
-                onClick={isHourEarth ? handleHourEarthClick : (isDayEarth ? handleDayEarthClick : undefined)}
+                onClick={isHourEarth ? handleHourEarthClick : (isMonthEarth ? handleDayEarthClick : undefined)}
               >
                 <div 
                   style={{
