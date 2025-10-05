@@ -96,10 +96,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         throw new Error(downloadResult.error || '다운로드 실패');
       }
 
+      const backupData = typeof downloadResult.data === 'string' 
+        ? JSON.parse(downloadResult.data) 
+        : downloadResult.data;
+
       const importResponse = await fetch('/api/backup/import', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(downloadResult.data),
+        body: JSON.stringify(backupData),
       });
 
       const importResult = await importResponse.json();
