@@ -15,6 +15,7 @@ import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 import { calculateCheonganEvent } from "@/lib/cheongan-event-calculator";
 import { useLocation } from "wouter";
+import { calculateEarthlyBranchRelation, convertRelationsToKorean } from "@/lib/earthly-branch-relations";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -631,6 +632,48 @@ export default function SajuTable({
     
     if (!saju?.day?.sky) return defaultArray;
     
+    // 대운/세운 모드일 때 동적 신살 계산
+    if ((displayMode === 'daeun' && focusedDaeun) || (displayMode === 'saeun' && focusedSaeun)) {
+      const baseEarth = displayMode === 'daeun' ? focusedDaeun!.earth : focusedSaeun!.earth;
+      const yearEarth = saju.year.earth;
+      const monthEarth = saju.month.earth;
+      const dayEarth = saju.day.earth;
+      const hourEarth = saju.hour.earth;
+      
+      const result: string[][] = [];
+      
+      // 시주 (있는 경우만)
+      if (hasHourPillar && hourEarth) {
+        const relations = calculateEarthlyBranchRelation(baseEarth, hourEarth);
+        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
+        result.push(displayRelations);
+      }
+      
+      // 일주
+      if (dayEarth) {
+        const relations = calculateEarthlyBranchRelation(baseEarth, dayEarth);
+        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
+        result.push(displayRelations);
+      }
+      
+      // 월주
+      if (monthEarth) {
+        const relations = calculateEarthlyBranchRelation(baseEarth, monthEarth);
+        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
+        result.push(displayRelations);
+      }
+      
+      // 년주
+      if (yearEarth) {
+        const relations = calculateEarthlyBranchRelation(baseEarth, yearEarth);
+        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
+        result.push(displayRelations);
+      }
+      
+      return result;
+    }
+    
+    // 기본 모드일 때 기존 신살 계산
     // 모든 천간과 지지 정보 수집
     const yearSky = saju.year.sky;
     const monthSky = saju.month.sky;
@@ -693,7 +736,7 @@ export default function SajuTable({
     
     return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
-      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean1, showKorean2, sajuColumns]);
+      saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean1, showKorean2, sajuColumns, displayMode, focusedDaeun, focusedSaeun]);
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
