@@ -289,30 +289,34 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </div>
             </Card>
 
-            {user ? (
-              <Card className="p-2">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                  Google Drive 백업
-                </h3>
-                <div className="space-y-1">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-2"
-                    onClick={handleDriveBackup}
-                    data-testid="button-drive-backup"
-                  >
-                    <Cloud className="w-4 h-4 mr-1" />
-                    백업하기
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start px-2"
-                    onClick={handleDriveRestore}
-                    data-testid="button-drive-restore"
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    불러오기
-                  </Button>
+            <Card className="p-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">데이터 관리</h3>
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-2"
+                  onClick={handleDriveBackup}
+                  data-testid="button-db-backup"
+                >
+                  <Upload className="w-4 h-4 mr-1" />
+                  DB백업하기
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-2"
+                  onClick={handleDriveRestore}
+                  data-testid="button-db-restore"
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  가져오기
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">계정</h3>
+              <div className="space-y-1">
+                {user ? (
                   <Button
                     variant="ghost"
                     className="w-full justify-start px-2"
@@ -322,14 +326,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <LogOut className="w-4 h-4 mr-1" />
                     로그아웃
                   </Button>
-                </div>
-              </Card>
-            ) : (
-              <Card className="p-2">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                  계정
-                </h3>
-                <div className="space-y-1">
+                ) : (
                   <Button
                     variant="ghost"
                     className="w-full justify-start px-2"
@@ -339,9 +336,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <LogIn className="w-4 h-4 mr-1" />
                     로그인
                   </Button>
-                </div>
-              </Card>
-            )}
+                )}
+              </div>
+            </Card>
 
             <Card className="p-2">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">소통</h3>
