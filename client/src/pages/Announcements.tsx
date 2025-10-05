@@ -5,10 +5,12 @@ import { useLocation } from "wouter";
 import { type Announcement } from "@shared/schema";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Settings } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Announcements() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
 
   const { data: announcementsData, isLoading } = useQuery<{ success: boolean; data: Announcement[] }>({
     queryKey: ["/api/announcements"],
@@ -17,20 +19,35 @@ export default function Announcements() {
 
   const announcements = announcementsData?.data || [];
 
+  const masterUserIds = import.meta.env.VITE_MASTER_USER_IDS?.split(',') || [];
+  const isMaster = user && masterUserIds.includes(user.uid);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 bg-background border-b">
         <div className="container mx-auto px-4 py-3 max-w-md">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation("/")}
-              data-testid="button-back"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-lg font-bold">알립니다</h1>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLocation("/")}
+                data-testid="button-back"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <h1 className="text-lg font-bold">알립니다</h1>
+            </div>
+            {isMaster && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLocation("/announcement-admin")}
+                data-testid="button-admin"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
