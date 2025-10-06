@@ -5,19 +5,41 @@ import { Calendar, Users, Calculator, Database, ArrowLeft, Sparkles } from "luci
 import { useLocation } from "wouter";
 
 export default function Manseryeok() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [currentSaju, setCurrentSaju] = useState<{ id: string; name: string; timestamp: string } | null>(null);
 
-  // sessionStorage에서 감정중인 사주 확인
+  // sessionStorage에서 감정중인 사주 확인 (페이지 로드 시 + 위치 변경 시)
   useEffect(() => {
-    const sajuId = sessionStorage.getItem('currentSajuId');
-    const sajuName = sessionStorage.getItem('currentSajuName');
-    const sajuTimestamp = sessionStorage.getItem('currentSajuTimestamp');
-    
-    if (sajuId && sajuName && sajuTimestamp) {
-      setCurrentSaju({ id: sajuId, name: sajuName, timestamp: sajuTimestamp });
-    }
-  }, []);
+    const loadCurrentSaju = () => {
+      const sajuId = sessionStorage.getItem('currentSajuId');
+      const sajuName = sessionStorage.getItem('currentSajuName');
+      const sajuTimestamp = sessionStorage.getItem('currentSajuTimestamp');
+      
+      if (sajuId && sajuName && sajuTimestamp) {
+        setCurrentSaju({ id: sajuId, name: sajuName, timestamp: sajuTimestamp });
+        console.log('[Manseryeok] 감정중인 사주 로드됨:', sajuName);
+      } else {
+        setCurrentSaju(null);
+        console.log('[Manseryeok] 감정중인 사주 없음');
+      }
+    };
+
+    // 페이지 진입 시 로드
+    loadCurrentSaju();
+
+    // storage 이벤트 리스너 (다른 탭에서 변경 시)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.startsWith('currentSaju')) {
+        loadCurrentSaju();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [location]); // location이 변경될 때마다 다시 확인
 
   const handleBackToHome = () => {
     setLocation("/");
