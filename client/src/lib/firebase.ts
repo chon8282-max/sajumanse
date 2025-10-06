@@ -28,35 +28,77 @@ googleProvider.setCustomParameters({
   prompt: 'consent'
 });
 
-// WebView 환경 감지
+// WebView 환경 감지 (Android 및 iOS)
 const isWebView = () => {
   const userAgent = navigator.userAgent.toLowerCase();
-  return (
-    userAgent.includes('wv') || // Android WebView
-    userAgent.includes('webview') ||
-    (userAgent.includes('android') && !userAgent.includes('chrome')) ||
-    /; wv\)/.test(userAgent)
+  
+  // Android WebView 감지
+  const isAndroidWebView = (
+    userAgent.includes('wv') || // Android WebView 표시자
+    /; wv\)/.test(userAgent) || // WebView 패턴
+    (userAgent.includes('android') && userAgent.includes('version/') && !userAgent.includes('chrome')) // 구형 Android WebView
   );
+  
+  // iOS WebView 감지
+  const isIOSDevice = userAgent.includes('iphone') || userAgent.includes('ipad');
+  
+  if (!isIOSDevice) {
+    return isAndroidWebView;
+  }
+  
+  // iOS 정상 브라우저 확인 (이들은 WebView가 아님)
+  const isLegitimateIOSBrowser = (
+    userAgent.includes('crios') || // Chrome iOS
+    userAgent.includes('fxios') || // Firefox iOS
+    userAgent.includes('opios') || // Opera iOS
+    userAgent.includes('edgios') || // Edge iOS
+    (userAgent.includes('safari') && userAgent.includes('version/')) // 정품 Safari
+  );
+  
+  if (isLegitimateIOSBrowser) {
+    return false; // 정상 브라우저는 WebView 아님
+  }
+  
+  // iOS WebView 특정 앱 시그니처 또는 일반 WebView 패턴
+  const hasIOSWebViewSignature = (
+    userAgent.includes('fbios') || // Facebook iOS
+    userAgent.includes('fban') || // Facebook 앱
+    userAgent.includes('instagram') || // Instagram
+    userAgent.includes('line/') || // Line
+    userAgent.includes('kakaotalk') || // KakaoTalk
+    userAgent.includes('twitter') || // Twitter
+    userAgent.includes('gsa/') || // Google App
+    userAgent.includes('messenger') || // Facebook Messenger
+    /mobile\/\d+(?!.*safari)/i.test(navigator.userAgent) // iOS WebView 패턴 (Safari 토큰 없음)
+  );
+  
+  // iOS 디바이스이면서 정상 브라우저가 아니고 WebView 시그니처가 있거나 Safari 토큰이 없으면 WebView
+  return hasIOSWebViewSignature || !userAgent.includes('safari');
 };
 
 export const signInWithGoogle = async () => {
   console.log('[Firebase] signInWithGoogle called');
   
-  // WebView 환경이면 브라우저로 열기 안내
+  // WebView 환경이면 외부 브라우저로 열기
   if (isWebView()) {
-    console.log('[Firebase] WebView detected');
+    console.log('[Firebase] WebView detected, opening in external browser');
     const currentUrl = window.location.href;
     
-    // 클립보드 복사 시도
-    let clipboardSuccess = false;
-    try {
-      await navigator.clipboard.writeText(currentUrl);
-      clipboardSuccess = true;
-    } catch (e) {
-      console.error('[Firebase] Clipboard copy failed:', e);
-    }
+    // 외부 브라우저로 URL 열기 시도
+    const opened = window.open(currentUrl, '_system') || window.open(currentUrl, '_blank');
     
-    return Promise.reject(new Error(clipboardSuccess ? 'WEBVIEW_CLIPBOARD_SUCCESS' : 'WEBVIEW_CLIPBOARD_FAILED'));
+    if (opened) {
+      return Promise.reject(new Error('WEBVIEW_EXTERNAL_BROWSER_OPENED'));
+    } else {
+      // 외부 브라우저 열기 실패 시 클립보드 복사 시도
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        return Promise.reject(new Error('WEBVIEW_CLIPBOARD_SUCCESS'));
+      } catch (e) {
+        console.error('[Firebase] Clipboard copy failed:', e);
+        return Promise.reject(new Error('WEBVIEW_CLIPBOARD_FAILED'));
+      }
+    }
   }
   
   console.log('[Firebase] Starting redirect to Google login');
