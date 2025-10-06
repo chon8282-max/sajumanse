@@ -27,7 +27,10 @@ export default function MobileHeader({
   const [, setLocation] = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleAuthClick = async () => {
+  const handleAuthClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log('[MobileHeader] Auth button clicked');
     console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated, 'isProcessing:', isProcessing);
     

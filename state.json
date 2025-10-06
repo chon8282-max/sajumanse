@@ -1,0 +1,59 @@
+{
+  "cookies": [
+    {
+      "name": "__cf_bm",
+      "value": "fpkM4tAcZHk.jlXcBChPTw8gEvTOthRArPGmYI0DqzI-1759744400-1.0.1.1-94sssqxPjPY5plDZi.lh_1.2yFp9I4UqqHeEWqD9PkJyND5adZB7tSDSVZBKNoy2LTP7drtSaaRzmqkSlJ71et2GaLNR.3k7sn.1f1_UuuI",
+      "domain": ".replit.com",
+      "path": "/",
+      "expires": 1759746200.835106,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "_cfuvid",
+      "value": "Ob0VhOJ81SSx9awZnTWgeVKVUFTvJq9pN2hLmgWOMPU-1759744400828-0.0.1.1-604800000",
+      "domain": ".replit.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "__Host-GAPS",
+      "value": "1:tsj9KUnOPIfs5KXnVVuLOpOgkV68vw:KneJYGQbiB_XWVVs",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1794304439.578918,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "NID",
+      "value": "525=VcmatM8_b9Yo4m-scIuVw3J3vI0qvDcGEqHrN2TA6ApGcMQDOmF4Qr7nr6tYiBi9qugTd6tlrItGYpM2ruyW2gALI-U3GKQuXymVWqNR2v_DI8ADsn6bUCVvc1u4mdO5_c9ZRcw3Hhq--RBncX6FeErOiqzwBPcYV9wsp7PWW6gJ_8YcMBzC-yZSp_4MKH6RM2c27A",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1775555639.892096,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://307b5d36-52e0-4c24-96f2-0e64f48158bb-00-3686h95ehnctb.janeway.replit.dev",
+      "localStorage": [
+        {
+          "name": "replitDevBannerClosed-307b5d36-52e0-4c24-96f2-0e64f48158bb-00-3686h95ehnctb.janeway.replit.dev",
+          "value": "true"
+        },
+        {
+          "name": "ganji-font",
+          "value": "chosungs"
+        }
+      ]
+    }
+  ]
+}
