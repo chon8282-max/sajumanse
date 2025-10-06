@@ -149,19 +149,25 @@ export default function MobileHeader({
 
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={handleAuthClick}
             data-testid="button-auth"
-            className={`h-8 w-8 ${
+            className={`h-8 px-2 gap-1 ${
               isAuthenticated 
                 ? 'text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400' 
                 : 'text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400'
             }`}
           >
             {isAuthenticated ? (
-              <LogOut className="w-4 h-4" />
+              <>
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">로그아웃</span>
+              </>
             ) : (
-              <LogIn className="w-4 h-4" />
+              <>
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">로그인</span>
+              </>
             )}
           </Button>
         </div>
