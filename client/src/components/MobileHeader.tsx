@@ -24,14 +24,43 @@ export default function MobileHeader({
   const { toast } = useToast();
 
   const handleAuthClick = async () => {
-    console.log('Auth click - isAuthenticated:', isAuthenticated, 'loading:', loading, 'user:', user);
+    console.log('[MobileHeader] Auth button clicked');
+    console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated);
     
-    if (!isAuthenticated && !loading) {
-      console.log('로그인 시도');
+    // 로딩 중이면 아무것도 하지 않음
+    if (loading) {
+      console.log('[MobileHeader] Still loading, ignoring click');
+      return;
+    }
+    
+    // 로그인 상태면 로그아웃
+    if (isAuthenticated && user) {
+      console.log('[MobileHeader] Attempting logout for user:', user.email);
+      try {
+        await signOut();
+        toast({
+          title: "로그아웃 완료",
+          description: "정상적으로 로그아웃되었습니다.",
+          duration: 3000
+        });
+      } catch (error) {
+        console.error('[MobileHeader] Logout error:', error);
+        toast({
+          title: "로그아웃 실패",
+          description: "로그아웃 중 오류가 발생했습니다.",
+          variant: "destructive",
+          duration: 3000
+        });
+      }
+    } 
+    // 로그인 안된 상태면 로그인
+    else {
+      console.log('[MobileHeader] Attempting login');
       try {
         await signInWithGoogle();
+        // 리다이렉트가 시작되면 이 코드는 실행되지 않음
       } catch (error: any) {
-        console.error('로그인 오류:', error);
+        console.error('[MobileHeader] Login error:', error);
         if (error.message && error.message.includes('WebView')) {
           // WebView 환경에서는 이미 alert로 안내했으므로 추가 toast 불필요
         } else {
@@ -43,26 +72,6 @@ export default function MobileHeader({
           });
         }
       }
-    } else if (isAuthenticated) {
-      console.log('로그아웃 시도');
-      try {
-        await signOut();
-        toast({
-          title: "로그아웃 완료",
-          description: "정상적으로 로그아웃되었습니다.",
-          duration: 3000
-        });
-      } catch (error) {
-        console.error('로그아웃 오류:', error);
-        toast({
-          title: "로그아웃 실패",
-          description: "로그아웃 중 오류가 발생했습니다.",
-          variant: "destructive",
-          duration: 3000
-        });
-      }
-    } else {
-      console.log('로딩 중이므로 아무 작업도 하지 않음');
     }
   };
 

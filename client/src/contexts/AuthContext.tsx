@@ -34,42 +34,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-      
-      if (!user) {
-        setGoogleAccessToken(null);
-        localStorage.removeItem('googleAccessToken');
-      }
-    });
-
-    getRedirectResult(auth).then((result) => {
-      if (result?.user) {
-        const tokenResponse = (result as any)._tokenResponse;
-        if (tokenResponse?.oauthAccessToken) {
-          const token = tokenResponse.oauthAccessToken;
-          setGoogleAccessToken(token);
-          localStorage.setItem('googleAccessToken', token);
+    console.log('[AuthContext] Initializing auth state');
+    
+    // 1. 먼저 리다이렉트 결과 확인
+    getRedirectResult(auth)
+      .then((result) => {
+        console.log('[AuthContext] Redirect result:', result ? 'User found' : 'No result');
+        if (result?.user) {
+          console.log('[AuthContext] Redirect login successful:', result.user.email);
+          const tokenResponse = (result as any)._tokenResponse;
+          if (tokenResponse?.oauthAccessToken) {
+            const token = tokenResponse.oauthAccessToken;
+            setGoogleAccessToken(token);
+            localStorage.setItem('googleAccessToken', token);
+            console.log('[AuthContext] Access token saved');
+          }
+        } else {
+          // 리다이렉트 결과가 없으면 저장된 토큰 확인
+          const storedToken = localStorage.getItem('googleAccessToken');
+          if (storedToken) {
+            setGoogleAccessToken(storedToken);
+            console.log('[AuthContext] Loaded stored token');
+          }
         }
-      } else {
+      })
+      .catch((error) => {
+        console.error('[AuthContext] Redirect error:', error);
+        // 에러가 발생해도 저장된 토큰 확인
         const storedToken = localStorage.getItem('googleAccessToken');
         if (storedToken) {
           setGoogleAccessToken(storedToken);
         }
-      }
-    }).catch((error) => {
-      console.error('Error getting redirect result:', error);
-      const storedToken = localStorage.getItem('googleAccessToken');
-      if (storedToken) {
-        setGoogleAccessToken(storedToken);
+      });
+
+    // 2. Auth 상태 변화 감지
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log('[AuthContext] Auth state changed:', currentUser ? currentUser.email : 'No user');
+      setUser(currentUser);
+      setLoading(false);
+      
+      if (!currentUser) {
+        // 로그아웃 시 토큰도 삭제
+        console.log('[AuthContext] User logged out, clearing tokens');
+        setGoogleAccessToken(null);
+        localStorage.removeItem('googleAccessToken');
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  const isAuthenticated = !loading && !!user;
+  const isAuthenticated = !!user;
 
   return (
     <AuthContext.Provider value={{ user, loading, isAuthenticated, googleAccessToken }}>

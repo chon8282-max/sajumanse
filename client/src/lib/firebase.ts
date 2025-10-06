@@ -40,8 +40,11 @@ const isWebView = () => {
 };
 
 export const signInWithGoogle = async () => {
+  console.log('[Firebase] signInWithGoogle called');
+  
   // WebView 환경이면 브라우저로 열기 안내
   if (isWebView()) {
+    console.log('[Firebase] WebView detected, showing alert');
     const currentUrl = window.location.href;
     const message = `로그인은 일반 브라우저에서만 가능합니다.\n\n아래 주소를 Chrome이나 Safari에서 열어주세요:\n${currentUrl}`;
     
@@ -56,12 +59,20 @@ export const signInWithGoogle = async () => {
     return Promise.reject(new Error('WebView에서는 로그인이 지원되지 않습니다'));
   }
   
+  console.log('[Firebase] Starting redirect to Google login');
   return signInWithRedirect(auth, googleProvider);
 };
 
-export const signOut = () => {
-  localStorage.removeItem('googleAccessToken');
-  return firebaseSignOut(auth);
+export const signOut = async () => {
+  console.log('[Firebase] signOut called');
+  try {
+    localStorage.removeItem('googleAccessToken');
+    await firebaseSignOut(auth);
+    console.log('[Firebase] Sign out successful');
+  } catch (error) {
+    console.error('[Firebase] Sign out error:', error);
+    throw error;
+  }
 };
 
 export { onAuthStateChanged, getRedirectResult };
