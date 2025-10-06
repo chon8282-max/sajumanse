@@ -163,18 +163,22 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   if (!isOpen) return null;
 
   return (
-    <>
+    <div 
+      className="fixed inset-0 z-40"
+      onClick={onClose}
+      data-testid="menu-overlay-wrapper"
+    >
       {/* 배경 오버레이 */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40" 
-        onClick={onClose}
+        className="absolute inset-0 bg-black/50"
         data-testid="menu-overlay"
       />
       
-      {/* 사이드 메뉴 */}
+      {/* 사이드 메뉴 - 클릭 전파 중단 */}
       <div 
         ref={menuRef}
-        className="fixed left-0 top-0 h-full w-[60%] bg-background border-r z-50 transform transition-transform duration-300 ease-in-out"
+        className="absolute left-0 top-0 h-full w-[60%] bg-background border-r z-10 transform transition-transform duration-300 ease-in-out"
+        onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -337,6 +341,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
