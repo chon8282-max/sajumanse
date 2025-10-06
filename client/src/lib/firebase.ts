@@ -28,7 +28,34 @@ googleProvider.setCustomParameters({
   prompt: 'consent'
 });
 
-export const signInWithGoogle = () => {
+// WebView 환경 감지
+const isWebView = () => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  return (
+    userAgent.includes('wv') || // Android WebView
+    userAgent.includes('webview') ||
+    (userAgent.includes('android') && !userAgent.includes('chrome')) ||
+    /; wv\)/.test(userAgent)
+  );
+};
+
+export const signInWithGoogle = async () => {
+  // WebView 환경이면 브라우저로 열기 안내
+  if (isWebView()) {
+    const currentUrl = window.location.href;
+    const message = `로그인은 일반 브라우저에서만 가능합니다.\n\n아래 주소를 Chrome이나 Safari에서 열어주세요:\n${currentUrl}`;
+    
+    // 클립보드 복사 시도
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      alert(message + "\n\n(주소가 클립보드에 복사되었습니다)");
+    } catch (e) {
+      alert(message);
+    }
+    
+    return Promise.reject(new Error('WebView에서는 로그인이 지원되지 않습니다'));
+  }
+  
   return signInWithRedirect(auth, googleProvider);
 };
 

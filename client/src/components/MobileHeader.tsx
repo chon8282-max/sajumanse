@@ -25,7 +25,21 @@ export default function MobileHeader({
 
   const handleAuthClick = async () => {
     if (!isAuthenticated && !loading) {
-      signInWithGoogle();
+      try {
+        await signInWithGoogle();
+      } catch (error: any) {
+        console.error('로그인 오류:', error);
+        if (error.message && error.message.includes('WebView')) {
+          // WebView 환경에서는 이미 alert로 안내했으므로 추가 toast 불필요
+        } else {
+          toast({
+            title: "로그인 실패",
+            description: "로그인 중 오류가 발생했습니다. 다시 시도해주세요.",
+            variant: "destructive",
+            duration: 3000
+          });
+        }
+      }
     } else if (isAuthenticated) {
       try {
         await signOut();
