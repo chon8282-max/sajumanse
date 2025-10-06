@@ -6,6 +6,7 @@ import logoPath from "@assets/만세력로고_1758875108140.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle, signOut } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface MobileHeaderProps {
   currentDate: Date;
@@ -22,6 +23,7 @@ export default function MobileHeader({
 }: MobileHeaderProps) {
   const { user, loading, isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const handleAuthClick = async () => {
     console.log('[MobileHeader] Auth button clicked');
@@ -43,6 +45,8 @@ export default function MobileHeader({
           description: "정상적으로 로그아웃되었습니다.",
           duration: 3000
         });
+        // 홈으로 이동
+        setLocation('/');
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
         toast({
@@ -142,8 +146,8 @@ export default function MobileHeader({
             data-testid="button-auth"
             className={`h-8 w-8 ${
               isAuthenticated 
-                ? 'text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400' 
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400' 
+                : 'text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400'
             }`}
           >
             {isAuthenticated ? (
