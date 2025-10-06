@@ -298,9 +298,6 @@ export default function Home() {
 
         {/* 메뉴 그리드 */}
         <MenuGrid />
-
-        {/* 하단 여백 (네비게이션 공간) */}
-        <div className="h-24" />
       </div>
     </div>
   );
