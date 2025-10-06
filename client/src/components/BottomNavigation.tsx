@@ -91,17 +91,32 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
   };
 
   const downloadImage = (canvas: HTMLCanvasElement, isShareFailed: boolean = false) => {
-    const link = document.createElement('a');
-    link.download = `사주명식_${new Date().toISOString().slice(0, 10)}.jpg`;
-    link.href = canvas.toDataURL('image/jpeg', 0.95);
-    link.click();
-    
-    toast({
-      title: isShareFailed ? "이미지 다운로드됨" : "다운로드 완료",
-      description: isShareFailed 
-        ? "다운로드된 이미지를 갤러리에서 직접 공유하세요." 
-        : "화면이 이미지로 저장되었습니다."
-    });
+    try {
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      const link = document.createElement('a');
+      link.download = `사주명식_${new Date().toISOString().slice(0, 10)}.jpg`;
+      link.href = dataUrl;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setTimeout(() => {
+        toast({
+          title: isShareFailed ? "이미지 다운로드됨" : "다운로드 완료",
+          description: isShareFailed 
+            ? "다운로드된 이미지를 갤러리에서 직접 공유하세요." 
+            : "화면이 이미지로 저장되었습니다."
+        });
+      }, 100);
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast({
+        title: "다운로드 실패",
+        description: "이미지를 저장할 수 없습니다. 다시 시도해주세요.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
