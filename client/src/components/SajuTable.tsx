@@ -1216,7 +1216,7 @@ export default function SajuTable({
         </div>
       )}
       {/* 사주명식 메인 테이블 */}
-      <div className="border border-border">
+      <div className="border border-border" data-testid="saju-main-table">
         {/* 0행: 컬럼 헤더 (모든 모드에서 표시) */}
         <div className="grid grid-cols-6 border-b border-border bg-gray-100 dark:bg-gray-800">
           {displayMode === 'base' && (
