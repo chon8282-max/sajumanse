@@ -40,6 +40,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     getRedirectResult(auth)
       .then((result) => {
         console.log('[AuthContext] Redirect result:', result ? 'User found' : 'No result');
+        console.log('[AuthContext] Full redirect result:', result);
         if (result?.user) {
           console.log('[AuthContext] Redirect login successful:', result.user.email);
           const tokenResponse = (result as any)._tokenResponse;
@@ -60,6 +61,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
       .catch((error) => {
         console.error('[AuthContext] Redirect error:', error);
+        console.error('[AuthContext] Error code:', error?.code);
+        console.error('[AuthContext] Error message:', error?.message);
+        console.error('[AuthContext] Full error object:', JSON.stringify(error, null, 2));
         // 에러가 발생해도 저장된 토큰 확인
         const storedToken = localStorage.getItem('googleAccessToken');
         if (storedToken) {
