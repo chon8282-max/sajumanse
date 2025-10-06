@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Flame, Settings, Globe } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function Guide() {
@@ -23,127 +23,117 @@ export default function Guide() {
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">만세력 소개 및 사용법</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              20년 실전 노하우 집약!<br/>궁극의 통찰 도구, 지천명 만세력 출시
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <section>
-              <h2 className="text-xl font-semibold mb-3 text-primary">만세력이란?</h2>
               <p className="text-muted-foreground leading-relaxed">
-                만세력(萬歲曆)은 한국 전통 역술에서 사용하는 달력으로, 양력과 음력을 함께 표시하며 
-                천간(天干)과 지지(地支)의 조합인 60갑자를 기준으로 년, 월, 일, 시를 표현합니다. 
-                사주팔자 분석의 기본이 되는 중요한 도구입니다.
+                지천명 만세력은 20여 년간 명리학 실전 감정을 이어온 전문가의 경험과 지혜를 바탕으로 탄생했습니다. 
+                기존 만세력 앱들의 한계를 뛰어넘어, 전문가의 깊은 통찰과 일반인의 쉬운 접근을 완벽하게 조화시킨 실전형 명리 도구입니다.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-3">
+                이 앱은 단순한 계산기를 넘어, 실제 사주 감정에 필요한 핵심 기능만을 응축하여 사용자 경험(UX/UI)과 기능성 모두를 혁신합니다.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3 text-primary">주요 기능</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <Flame className="w-6 h-6 text-orange-500" />
+                <h2 className="text-xl font-semibold text-primary">전문가의 시선을 담다: 압도적인 사용 편의성 (UI/UX)</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                지천명 만세력의 인터페이스는 수많은 실전 경험을 통해 가장 효율적이라고 판단된 방식으로 구현되었습니다.
+              </p>
               <div className="space-y-3">
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">1. 사주명식 조회</h3>
+                  <h3 className="font-semibold mb-2">다차원 명식 입력</h3>
                   <p className="text-sm text-muted-foreground">
-                    생년월일시를 입력하면 천간, 지지, 육친, 오행 등 상세한 사주 정보를 확인할 수 있습니다.
+                    기본적인 생년월일시 입력은 물론, 전문가의 빠른 작업을 위해 간지(干支) 사주 직접 입력 기능까지 지원합니다.
                   </p>
                 </div>
 
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">2. 대운(大運) 분석</h3>
+                  <h3 className="font-semibold mb-2">즉각적인 명식 탐색</h3>
                   <p className="text-sm text-muted-foreground">
-                    10년 주기로 변화하는 대운을 확인하고, 현재 나이의 대운을 강조 표시합니다.
+                    사주 명식 화면에서 생시나 생년월일을 간단한 클릭만으로 즉시 변경할 수 있어, 다양한 케이스와 가정을 신속하게 검토할 수 있습니다.
                   </p>
                 </div>
 
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">3. 세운(歲運) 및 월운(月運)</h3>
+                  <h3 className="font-semibold mb-2">직관적인 오행 구분</h3>
                   <p className="text-sm text-muted-foreground">
-                    매년, 매월의 운세 흐름을 천간과 지지로 확인할 수 있습니다.
+                    명리 초보자도 사주의 기운을 한눈에 파악하도록 오행을 색상으로 명료하게 구분했습니다.
                   </p>
                 </div>
 
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">4. 신살(神殺) 분석</h3>
+                  <h3 className="font-semibold mb-2">토(土)의 실전적 분류</h3>
                   <p className="text-sm text-muted-foreground">
-                    천덕귀인, 월덕귀인, 12신살 등 다양한 신살 정보를 확인할 수 있습니다.
+                    지지(地支)의 토(辰, 未, 戌, 丑)를 계절별 특성에 따라 세분화하여, 단순한 육친 분석을 넘어 <strong>오행의 대세(大勢)</strong>를 정밀하게 읽어낼 수 있도록 구현되었습니다.
                   </p>
                 </div>
               </div>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3 text-primary">사용 방법</h2>
+              <div className="flex items-center gap-2 mb-4">
+                <Settings className="w-6 h-6 text-blue-500" />
+                <h2 className="text-xl font-semibold text-primary">실전 감정의 정확도를 높이는 정밀 분석 기능</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                지천명 만세력은 20년 전문가가 감정 시 실질적으로 알고 활용해야 편한 방식으로 기능을 구현했습니다.
+              </p>
               <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">만세력 메뉴 선택</h3>
-                    <p className="text-sm text-muted-foreground">
-                      홈 화면에서 '만세력' 메뉴를 선택합니다.
-                    </p>
-                  </div>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">다양한 표현 옵션</h3>
+                  <p className="text-sm text-muted-foreground">
+                    한글과 한자 변환 기능을 제공하여, 학습이나 감정 스타일에 맞춰 자유롭게 선택할 수 있습니다.
+                  </p>
                 </div>
 
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">생년월일시 입력</h3>
-                    <p className="text-sm text-muted-foreground">
-                      이름, 성별, 생년월일(양력/음력), 생시를 입력합니다.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">사주명식 확인</h3>
-                    <p className="text-sm text-muted-foreground">
-                      계산된 사주팔자와 대운, 세운, 월운 정보를 확인합니다.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                    4
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">저장 및 관리</h3>
-                    <p className="text-sm text-muted-foreground">
-                      '저장' 버튼을 눌러 사주 정보를 저장하고, '사주불러오기' 메뉴에서 언제든지 다시 확인할 수 있습니다.
-                    </p>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">운로(運路)의 정밀 분석</h3>
+                  <div className="space-y-2 text-sm text-muted-foreground mt-2">
+                    <p><strong>• 대운 기준:</strong> 원국(原局)과의 합·충·형·파·해 및 주요 신살(神殺) 관계를 명확히 표시합니다.</p>
+                    <p><strong>• 세운 기준:</strong> 대운뿐 아니라 <strong>세운(歲運)</strong>을 기준으로 한 원국과 대운의 복잡한 합충형파해 및 각종 신살 관계를 입체적으로 분석하여, 실질적인 운의 흐름을 놓치지 않도록 설계되었습니다.</p>
                   </div>
                 </div>
               </div>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold mb-3 text-primary">화면 설명</h2>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p><strong>• 사주원국:</strong> 년월일시의 천간과 지지로 구성된 기본 사주</p>
-                <p><strong>• 육친:</strong> 천간과 지지의 상호 관계 (비견, 겁재, 식신, 상관 등)</p>
-                <p><strong>• 오행:</strong> 목(木), 화(火), 토(土), 금(金), 수(水)의 다섯 가지 기운</p>
-                <p><strong>• 지장간:</strong> 지지 속에 숨어있는 천간</p>
-                <p><strong>• 대운:</strong> 10년 주기로 변화하는 인생의 큰 흐름</p>
-                <p><strong>• 세운:</strong> 매년 변화하는 운세</p>
-                <p><strong>• 월운:</strong> 매월 변화하는 운세</p>
+              <div className="flex items-center gap-2 mb-4">
+                <Globe className="w-6 h-6 text-green-500" />
+                <h2 className="text-xl font-semibold text-primary">미래를 위한 준비: 데이터 관리와 확장성</h2>
+              </div>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                지천명 만세력은 당신의 명리 데이터를 안전하게 보관하고 성장을 지원할 계획을 갖고 있습니다.
+              </p>
+              <div className="space-y-3">
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">구글 클라우드 백업</h3>
+                  <p className="text-sm text-muted-foreground">
+                    구글 로그인을 통해 사용자의 소중한 감정 자료를 개인 구글 클라우드에 백업하고 관리할 수 있는 기능을 제공합니다.
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">웹-앱 연동 및 AI 학습</h3>
+                  <p className="text-sm text-muted-foreground">
+                    향후 PC 웹 서비스를 출시하여 앱과 연동할 계획입니다. 또한, 어플리케이션을 통해 그때그때 물어보고 학습할 수 있는 AI 기능 구현을 통해 사용자의 깊이 있는 연구를 지속적으로 지원할 예정입니다.
+                  </p>
+                </div>
               </div>
             </section>
 
-            <section>
-              <h2 className="text-xl font-semibold mb-3 text-primary">팁</h2>
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p>• 생시를 정확히 모르는 경우, 낮 12시(午時)를 기준으로 입력하시면 됩니다.</p>
-                <p>• 한자/한글 토글 버튼으로 편한 방식을 선택할 수 있습니다.</p>
-                <p>• 대운과 세운을 클릭하면 해당 시기의 운세를 강조 표시합니다.</p>
-                <p>• 3행 3열(일지)을 클릭하면 생년월일을 변경할 수 있습니다.</p>
-                <p>• 시지(첫 번째 칸)를 클릭하면 생시를 변경할 수 있습니다.</p>
-              </div>
-            </section>
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 p-6 rounded-lg">
+              <p className="text-base font-medium text-center leading-relaxed">
+                지천명 만세력은 20년 실전 전문가의 지혜를 손안에 담은 결과물입니다.<br/>
+                이제 복잡함에서 벗어나 정확하고 깊이 있는 통찰에 집중하세요.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
