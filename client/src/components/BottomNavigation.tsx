@@ -55,7 +55,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
       console.log('Capturing Saju table card');
       
       // html2canvas로 사주 표 카드만 캡처
-      const canvas = await html2canvas(sajuCard, {
+      const originalCanvas = await html2canvas(sajuCard, {
         allowTaint: false,
         useCORS: true,
         scale: 2,
@@ -63,7 +63,54 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
         backgroundColor: '#ffffff'
       });
       
-      console.log('Canvas captured:', canvas.width, 'x', canvas.height);
+      console.log('Original canvas:', originalCanvas.width, 'x', originalCanvas.height);
+      
+      // 빈 공간 제거: 위쪽 여백 감지 및 제거
+      const ctx = originalCanvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Canvas context error');
+      }
+      
+      const imageData = ctx.getImageData(0, 0, originalCanvas.width, originalCanvas.height);
+      const pixels = imageData.data;
+      
+      // 위에서부터 스캔해서 첫 번째 비어있지 않은 행 찾기
+      let topCrop = 0;
+      for (let y = 0; y < originalCanvas.height; y++) {
+        let hasContent = false;
+        for (let x = 0; x < originalCanvas.width; x++) {
+          const i = (y * originalCanvas.width + x) * 4;
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          // 흰색(#ffffff)이 아니면 콘텐츠가 있음
+          if (r < 250 || g < 250 || b < 250) {
+            hasContent = true;
+            break;
+          }
+        }
+        if (hasContent) {
+          topCrop = y;
+          break;
+        }
+      }
+      
+      // 여백 제거한 새 캔버스 생성
+      const croppedHeight = originalCanvas.height - topCrop;
+      const canvas = document.createElement('canvas');
+      canvas.width = originalCanvas.width;
+      canvas.height = croppedHeight;
+      const croppedCtx = canvas.getContext('2d');
+      
+      if (croppedCtx) {
+        croppedCtx.drawImage(
+          originalCanvas,
+          0, topCrop, originalCanvas.width, croppedHeight,
+          0, 0, originalCanvas.width, croppedHeight
+        );
+      }
+      
+      console.log('Cropped canvas:', canvas.width, 'x', canvas.height, 'removed top:', topCrop);
 
       // Canvas를 Blob으로 변환 (JPEG 형식으로 변경 - 더 나은 호환성)
       canvas.toBlob(async (blob) => {
