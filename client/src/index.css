@@ -284,8 +284,8 @@
     font-family: 'ChosunGanjiFont', 'ChosunKim', serif !important;
   }
 
-  /* 한국어 폰트 적용 */
-  body {
-    font-family: 'ChosunGsFont', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* 한자(간지) 폰트만 사용자 설정 적용, body는 시스템 기본 폰트 */
+  .font-ganji-data {
+    font-family: var(--ganji-font-family);
   }
 }
