@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } from "lucide-react";
@@ -24,20 +25,22 @@ export default function MobileHeader({
   const { user, loading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleAuthClick = async () => {
     console.log('[MobileHeader] Auth button clicked');
-    console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated);
+    console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated, 'isProcessing:', isProcessing);
     
-    // 로딩 중이면 아무것도 하지 않음
-    if (loading) {
-      console.log('[MobileHeader] Still loading, ignoring click');
+    // 로딩 중이거나 처리 중이면 아무것도 하지 않음
+    if (loading || isProcessing) {
+      console.log('[MobileHeader] Still loading or processing, ignoring click');
       return;
     }
     
     // 로그인 상태면 로그아웃
     if (isAuthenticated && user) {
       console.log('[MobileHeader] Attempting logout for user:', user.email);
+      setIsProcessing(true);
       try {
         await signOut();
         toast({
@@ -53,16 +56,20 @@ export default function MobileHeader({
           variant: "destructive",
           duration: 3000
         });
+      } finally {
+        setTimeout(() => setIsProcessing(false), 1000);
       }
     } 
     // 로그인 안된 상태면 로그인
     else {
       console.log('[MobileHeader] Attempting login');
+      setIsProcessing(true);
       try {
         await signInWithGoogle();
         // 리다이렉트가 시작되면 이 코드는 실행되지 않음
       } catch (error: any) {
         console.error('[MobileHeader] Login error:', error);
+        setIsProcessing(false);
         if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
           toast({
             title: "앱에서는 로그인 불가",
@@ -141,16 +148,6 @@ export default function MobileHeader({
             variant="ghost"
             size="icon"
             onClick={handleAuthClick}
-            onTouchStart={(e) => {
-              e.preventDefault();
-              console.log('[MobileHeader] Auth button touchstart');
-              handleAuthClick();
-            }}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              console.log('[MobileHeader] Auth button pointerdown');
-              handleAuthClick();
-            }}
             data-testid="button-auth"
             className={`h-8 w-8 ${
               isAuthenticated 
