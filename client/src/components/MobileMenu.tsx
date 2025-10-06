@@ -144,19 +144,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   // 스와이프 감지
   const handleTouchStart = (e: React.TouchEvent) => {
-    e.stopPropagation();
     setTouchStart(e.targetTouches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation();
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    e.stopPropagation();
     if (touchStart - touchEnd > 50) {
       // 왼쪽으로 50px 이상 스와이프하면 닫기
+      e.stopPropagation();
       onClose();
     }
     setTouchStart(0);
