@@ -71,6 +71,8 @@ function AppContent() {
   
   const previousLocation = useRef<string>("");
   const justCameFromOtherPage = useRef(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
@@ -80,6 +82,48 @@ function AppContent() {
   const handleCloseMenu = () => {
     setShowMobileMenu(false);
   };
+
+  // 왼쪽 가장자리에서 스와이프로 메뉴 열기
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartX.current) return;
+      
+      // 왼쪽 가장자리에서 시작했는지 확인 (30px 이내)
+      if (touchStartX.current > 30) return;
+      
+      const touchCurrentX = e.touches[0].clientX;
+      const touchCurrentY = e.touches[0].clientY;
+      const diffX = touchCurrentX - touchStartX.current;
+      const diffY = touchCurrentY - touchStartY.current;
+      
+      // 오른쪽으로 50px 이상 스와이프하고, 수평 이동이 수직 이동보다 클 때
+      if (diffX > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+        setShowMobileMenu(true);
+        touchStartX.current = 0;
+        touchStartY.current = 0;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      touchStartX.current = 0;
+      touchStartY.current = 0;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, []);
 
   const handleTabChange = (tab: string) => {
     console.log(`Navigation changed to: ${tab}`);
