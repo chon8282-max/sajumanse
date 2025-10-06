@@ -18,10 +18,10 @@ export function FontProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('ganji-font', font);
     
-    // CSS 변수 업데이트 (한글 폴백 폰트 추가)
+    // CSS 변수 업데이트
     const fontFamily = font === 'chosungs' 
-      ? "'ChosunGsFont', Pretendard, -apple-system, sans-serif"
-      : "'ChosunKmFont', Pretendard, -apple-system, sans-serif";
+      ? "'ChosunGsFont', -apple-system, sans-serif"
+      : "'ChosunKmFont', -apple-system, sans-serif";
     
     document.documentElement.style.setProperty('--ganji-font-family', fontFamily);
   }, [font]);
