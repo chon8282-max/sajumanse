@@ -24,7 +24,10 @@ export default function MobileHeader({
   const { toast } = useToast();
 
   const handleAuthClick = async () => {
+    console.log('Auth click - isAuthenticated:', isAuthenticated, 'loading:', loading, 'user:', user);
+    
     if (!isAuthenticated && !loading) {
+      console.log('로그인 시도');
       try {
         await signInWithGoogle();
       } catch (error: any) {
@@ -41,6 +44,7 @@ export default function MobileHeader({
         }
       }
     } else if (isAuthenticated) {
+      console.log('로그아웃 시도');
       try {
         await signOut();
         toast({
@@ -50,7 +54,15 @@ export default function MobileHeader({
         });
       } catch (error) {
         console.error('로그아웃 오류:', error);
+        toast({
+          title: "로그아웃 실패",
+          description: "로그아웃 중 오류가 발생했습니다.",
+          variant: "destructive",
+          duration: 3000
+        });
       }
+    } else {
+      console.log('로딩 중이므로 아무 작업도 하지 않음');
     }
   };
 
