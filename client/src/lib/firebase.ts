@@ -46,14 +46,13 @@ export const signInWithGoogle = async () => {
   if (isWebView()) {
     console.log('[Firebase] WebView detected, showing alert');
     const currentUrl = window.location.href;
-    const message = `로그인은 일반 브라우저에서만 가능합니다.\n\n아래 주소를 Chrome이나 Safari에서 열어주세요:\n${currentUrl}`;
     
     // 클립보드 복사 시도
     try {
       await navigator.clipboard.writeText(currentUrl);
-      alert(message + "\n\n(주소가 클립보드에 복사되었습니다)");
+      alert('앱 내부 브라우저에서는 로그인이 불가능합니다.\n\nChrome이나 Safari에서 열어주세요.\n\n(주소가 복사되었습니다)');
     } catch (e) {
-      alert(message);
+      alert('앱 내부 브라우저에서는 로그인이 불가능합니다.\n\nChrome이나 Safari에서 열어주세요.');
     }
     
     return Promise.reject(new Error('WebView에서는 로그인이 지원되지 않습니다'));
