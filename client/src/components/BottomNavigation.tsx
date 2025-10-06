@@ -34,13 +34,13 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     console.log('Screen share button clicked');
     
     try {
-      // 메인 콘텐츠만 캡처 (헤더와 하단 네비게이션 제외)
-      const mainElement = document.querySelector('main') as HTMLElement;
+      // 실제 콘텐츠 영역 찾기 (사주 표가 있는 div)
+      const contentElement = document.querySelector('main > div > div') as HTMLElement;
       
-      if (!mainElement) {
+      if (!contentElement) {
         toast({
           title: "캡처 실패",
-          description: "캡처할 영역을 찾을 수 없습니다.",
+          description: "캡처할 콘텐츠를 찾을 수 없습니다.",
           variant: "destructive"
         });
         return;
@@ -48,34 +48,22 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
       
       // 스크롤을 맨 위로 이동
       window.scrollTo(0, 0);
-      if (mainElement.scrollTop !== undefined) {
-        mainElement.scrollTop = 0;
-      }
       
-      // 잠시 대기 (스크롤 완료 및 렌더링 완료)
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 잠시 대기 (렌더링 완료)
+      await new Promise(resolve => setTimeout(resolve, 300));
       
-      // 요소의 정확한 위치와 크기 가져오기
-      const rect = mainElement.getBoundingClientRect();
+      console.log('Capturing content element');
       
-      console.log('Main element rect:', {
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height
-      });
-      
-      // html2canvas로 메인 요소만 캡처
-      const canvas = await html2canvas(mainElement, {
+      // html2canvas로 콘텐츠만 캡처
+      const canvas = await html2canvas(contentElement, {
         allowTaint: false,
         useCORS: true,
         scale: 2,
         logging: false,
-        backgroundColor: null,
-        removeContainer: true
+        backgroundColor: '#ffffff'
       });
       
-      console.log('Canvas captured successfully:', canvas.width, 'x', canvas.height);
+      console.log('Canvas captured:', canvas.width, 'x', canvas.height);
 
       // Canvas를 Blob으로 변환 (JPEG 형식으로 변경 - 더 나은 호환성)
       canvas.toBlob(async (blob) => {
