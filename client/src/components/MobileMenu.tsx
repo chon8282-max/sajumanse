@@ -166,23 +166,20 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   return (
     <div 
       className="fixed inset-0 z-40"
-      onClick={(e) => {
-        // 배경 클릭으로만 닫기
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-      onTouchEnd={(e) => {
-        // 배경 터치로도 닫기 가능
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
       data-testid="menu-overlay-wrapper"
     >
-      {/* 배경 오버레이 */}
+      {/* 배경 오버레이 - 클릭/터치로 닫기 */}
       <div 
-        className="absolute inset-0 bg-black/50 pointer-events-none"
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+        onTouchStart={(e) => {
+          // 배경 터치 시 즉시 닫기 (버튼보다 먼저 처리되지 않도록)
+          if (e.target === e.currentTarget) {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }
+        }}
         data-testid="menu-overlay"
       />
       
@@ -204,6 +201,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               variant="ghost" 
               size="icon"
               onClick={onClose}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
               data-testid="button-close-menu"
             >
               <X className="w-5 h-5" />
@@ -219,6 +221,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleGuide}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleGuide();
+                  }}
                   data-testid="button-guide"
                 >
                   <Info className="w-4 h-4 mr-1" />
@@ -234,6 +241,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleDriveBackup}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDriveBackup();
+                  }}
                   data-testid="button-db-backup"
                 >
                   <Upload className="w-4 h-4 mr-1" />
@@ -243,6 +255,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleDriveRestore}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDriveRestore();
+                  }}
                   data-testid="button-db-restore"
                 >
                   <Download className="w-4 h-4 mr-1" />
@@ -258,6 +275,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleNotifications}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleNotifications();
+                  }}
                   data-testid="button-notifications"
                 >
                   <Bell className="w-4 h-4 mr-1" />
@@ -267,6 +289,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleFeedback}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleFeedback();
+                  }}
                   data-testid="button-feedback"
                 >
                   <MessageSquare className="w-4 h-4 mr-1" />
@@ -282,6 +309,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'chosungs' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chosungs')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('chosungs');
+                  }}
                   data-testid="button-font-chosungs"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -291,6 +323,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'chosunkm' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chosunkm')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('chosunkm');
+                  }}
                   data-testid="button-font-chosunkm"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -300,6 +337,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'togebara' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('togebara')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('togebara');
+                  }}
                   data-testid="button-font-togebara"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -309,6 +351,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'mingti' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('mingti')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('mingti');
+                  }}
                   data-testid="button-font-mingti"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -318,6 +365,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'chinesemingti' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chinesemingti')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('chinesemingti');
+                  }}
                   data-testid="button-font-chinesemingti"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -327,6 +379,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'chinesecalligraphy' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chinesecalligraphy')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('chinesecalligraphy');
+                  }}
                   data-testid="button-font-chinesecalligraphy"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -336,6 +393,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variant={font === 'chinesecalligraphy2' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chinesecalligraphy2')}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFont('chinesecalligraphy2');
+                  }}
                   data-testid="button-font-chinesecalligraphy2"
                 >
                   <Type className="w-4 h-4 mr-1" />

@@ -16,23 +16,38 @@ const tabs = [
   { id: "compatibility", label: "궁합", icon: Heart }
 ];
 
+// WebView 환경 감지
+const isWebView = () => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  return (
+    userAgent.includes('wv') || // Android WebView
+    userAgent.includes('webview') ||
+    (userAgent.includes('android') && !userAgent.includes('chrome')) ||
+    /; wv\)/.test(userAgent)
+  );
+};
+
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
   const { toast } = useToast();
 
   const handleScreenShare = async () => {
+    console.log('Screen share button clicked');
+    
     try {
       // 네비게이션 바 제외하고 캡처
       const element = document.body;
       
       // html2canvas로 화면 캡처
       const canvas = await html2canvas(element, {
-        allowTaint: true,
+        allowTaint: false, // WebView 호환성 향상
         useCORS: true,
         scale: 2, // 고화질
-        logging: false,
+        logging: true, // 디버깅용
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight
       });
+      
+      console.log('Canvas captured successfully');
 
       // Canvas를 Blob으로 변환 (JPEG 형식으로 변경 - 더 나은 호환성)
       canvas.toBlob(async (blob) => {
@@ -140,6 +155,12 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                 console.log(`Tab ${tab.id} clicked`);
                 onTabChange(tab.id);
               }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`Tab ${tab.id} touched`);
+                onTabChange(tab.id);
+              }}
               data-testid={`button-tab-${tab.id}`}
             >
               <div className="relative">
@@ -156,6 +177,12 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
           size="sm"
           className="flex-1 flex flex-col items-center gap-1 h-auto py-2 px-1 text-muted-foreground hover:text-foreground"
           onClick={handleScreenShare}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Screen share button touched');
+            handleScreenShare();
+          }}
           data-testid="button-screen-share"
         >
           <div className="relative">
