@@ -34,10 +34,10 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     console.log('Screen share button clicked');
     
     try {
-      // 사주 표 카드만 정확하게 찾기
-      const sajuCard = document.querySelector('[data-testid="card-saju-table"]') as HTMLElement;
+      // 사주 메인 테이블만 찾기 (메모 제외)
+      const sajuTable = document.querySelector('[data-testid="saju-main-table"]') as HTMLElement;
       
-      if (!sajuCard) {
+      if (!sajuTable) {
         toast({
           title: "캡처 실패",
           description: "사주 표를 찾을 수 없습니다.",
@@ -52,10 +52,10 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
       // 잠시 대기 (렌더링 완료)
       await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('Capturing Saju table card');
+      console.log('Capturing Saju main table');
       
-      // html2canvas로 사주 표 카드만 캡처
-      const originalCanvas = await html2canvas(sajuCard, {
+      // html2canvas로 사주 메인 테이블만 캡처 (메모 제외)
+      const originalCanvas = await html2canvas(sajuTable, {
         allowTaint: false,
         useCORS: true,
         scale: 2,
