@@ -166,7 +166,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   return (
     <div 
       className="fixed inset-0 z-40"
-      onClick={onClose}
+      onClick={(e) => {
+        // 배경 클릭으로만 닫기
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
       onTouchEnd={(e) => {
         // 배경 터치로도 닫기 가능
         if (e.target === e.currentTarget) {
