@@ -144,14 +144,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   // 스와이프 감지
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setTouchStart(e.targetTouches[0].clientX);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
     setTouchEnd(e.targetTouches[0].clientX);
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     if (touchStart - touchEnd > 50) {
       // 왼쪽으로 50px 이상 스와이프하면 닫기
       onClose();
@@ -166,11 +169,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     <div 
       className="fixed inset-0 z-40"
       onClick={onClose}
+      onTouchEnd={(e) => {
+        // 배경 터치로도 닫기 가능
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
       data-testid="menu-overlay-wrapper"
     >
       {/* 배경 오버레이 */}
       <div 
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 pointer-events-none"
         data-testid="menu-overlay"
       />
       
