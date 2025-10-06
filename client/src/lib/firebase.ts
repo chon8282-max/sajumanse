@@ -44,18 +44,19 @@ export const signInWithGoogle = async () => {
   
   // WebView 환경이면 브라우저로 열기 안내
   if (isWebView()) {
-    console.log('[Firebase] WebView detected, showing alert');
+    console.log('[Firebase] WebView detected');
     const currentUrl = window.location.href;
     
     // 클립보드 복사 시도
+    let clipboardSuccess = false;
     try {
       await navigator.clipboard.writeText(currentUrl);
-      alert('앱 내부 브라우저에서는 로그인이 불가능합니다.\n\nChrome이나 Safari에서 열어주세요.\n\n(주소가 복사되었습니다)');
+      clipboardSuccess = true;
     } catch (e) {
-      alert('앱 내부 브라우저에서는 로그인이 불가능합니다.\n\nChrome이나 Safari에서 열어주세요.');
+      console.error('[Firebase] Clipboard copy failed:', e);
     }
     
-    return Promise.reject(new Error('WebView에서는 로그인이 지원되지 않습니다'));
+    return Promise.reject(new Error(clipboardSuccess ? 'WEBVIEW_CLIPBOARD_SUCCESS' : 'WEBVIEW_CLIPBOARD_FAILED'));
   }
   
   console.log('[Firebase] Starting redirect to Google login');
