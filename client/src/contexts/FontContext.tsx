@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type FontType = 'chosunkm' | 'chosungs' | 'togebara' | 'mingti' | 'chinesemingti' | 'chinesecalligraphy' | 'chinesecalligraphy2';
+type FontType = 'chosunkm' | 'chosungs';
 
 interface FontContextType {
   font: FontType;
@@ -19,20 +19,9 @@ export function FontProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('ganji-font', font);
     
     // CSS 변수 업데이트 (한글 폴백 폰트 추가)
-    let fontFamily = "'ChosunKmFont', Pretendard, -apple-system, sans-serif";
-    if (font === 'chosungs') {
-      fontFamily = "'ChosunGsFont', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'togebara') {
-      fontFamily = "'TogebaraFont', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'mingti') {
-      fontFamily = "'MingTiFont', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'chinesemingti') {
-      fontFamily = "'ChineseMingTiFont', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'chinesecalligraphy') {
-      fontFamily = "'ChineseCalligraphyFont', Pretendard, -apple-system, sans-serif";
-    } else if (font === 'chinesecalligraphy2') {
-      fontFamily = "'ChineseCalligraphy2Font', Pretendard, -apple-system, sans-serif";
-    }
+    const fontFamily = font === 'chosungs' 
+      ? "'ChosunGsFont', Pretendard, -apple-system, sans-serif"
+      : "'ChosunKmFont', Pretendard, -apple-system, sans-serif";
     
     document.documentElement.style.setProperty('--ganji-font-family', fontFamily);
   }, [font]);
