@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manseryeok-v3';
+const CACHE_NAME = 'manseryeok-v5';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -39,6 +39,23 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
+  // API 요청은 항상 네트워크로 가져오고 캐시하지 않음
+  if (event.request.url.indexOf('/api/') !== -1) {
+    event.respondWith(
+      fetch(event.request).catch(function(error) {
+        // API 요청 실패 시 네트워크 에러 반환 (캐시 사용 안 함)
+        console.error('API request failed:', error);
+        return new Response(JSON.stringify({ error: 'Network error' }), {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      })
+    );
+    return;
+  }
+  
+  // 정적 리소스만 캐시 전략 사용
   event.respondWith(
     caches.match(event.request)
       .then(function(cachedResponse) {
@@ -52,7 +69,8 @@ self.addEventListener('fetch', function(event) {
               return response;
             }
             
-            if (event.request.url.indexOf('http') === 0) {
+            // 정적 리소스만 캐시 (HTML, CSS, JS, 이미지 등)
+            if (event.request.url.indexOf('http') === 0 && event.request.url.indexOf('/api/') === -1) {
               var responseToCache = response.clone();
               caches.open(CACHE_NAME)
                 .then(function(cache) {
@@ -62,8 +80,15 @@ self.addEventListener('fetch', function(event) {
             
             return response;
           })
-          .catch(function() {
-            return caches.match(event.request);
+          .catch(function(error) {
+            // 정적 리소스 네트워크 요청 실패 시만 캐시 폴백 시도
+            console.warn('Static resource fetch failed, checking cache:', error);
+            return caches.match(event.request).then(function(response) {
+              return response || new Response('Offline', {
+                status: 503,
+                statusText: 'Service Unavailable'
+              });
+            });
           });
       })
   );
