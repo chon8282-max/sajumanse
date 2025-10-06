@@ -41,12 +41,10 @@ export default function MobileHeader({
       try {
         await signOut();
         toast({
-          title: "로그아웃 완료",
-          description: "정상적으로 로그아웃되었습니다.",
+          title: "로그아웃",
+          description: "로그아웃되었습니다.",
           duration: 3000
         });
-        // 홈으로 이동
-        setLocation('/');
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
         toast({
