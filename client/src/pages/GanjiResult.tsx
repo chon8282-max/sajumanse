@@ -640,7 +640,7 @@ export default function GanjiResult() {
           <span className="text-sm">뒤로</span>
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="font-bold text-foreground font-tmon text-[20px]">사주명식</h1>
+          <h1 className="font-bold text-foreground font-tmon text-[18px]">사주명식</h1>
         </div>
         <div className="flex items-center gap-0.5 mr-0">
           <Button 
@@ -659,8 +659,8 @@ export default function GanjiResult() {
             data-testid="button-edit"
             className="hover-elevate active-elevate-2 flex items-center gap-0.5"
           >
-            <Edit className="h-3 w-3" />
-            <span className="text-xs">수정</span>
+            <Edit className="h-2.5 w-2.5" />
+            <span className="text-[0.625rem]">수정</span>
           </Button>
           <Button 
             variant="default" 
@@ -670,8 +670,8 @@ export default function GanjiResult() {
             data-testid="button-save"
             className="hover-elevate active-elevate-2 flex items-center gap-0.5"
           >
-            <Save className="h-3 w-3" />
-            <span className="text-xs">
+            <Save className="h-2.5 w-2.5" />
+            <span className="text-[0.625rem]">
               {isEditMode 
                 ? (updateMutation.isPending ? "업데이트중..." : "업데이트")
                 : (saveMutation.isPending ? "저장중..." : "저장")
