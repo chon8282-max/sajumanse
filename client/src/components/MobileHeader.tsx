@@ -65,8 +65,18 @@ export default function MobileHeader({
         // 리다이렉트가 시작되면 이 코드는 실행되지 않음
       } catch (error: any) {
         console.error('[MobileHeader] Login error:', error);
-        if (error.message && error.message.includes('WebView')) {
-          // WebView 환경에서는 이미 alert로 안내했으므로 추가 toast 불필요
+        if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
+          toast({
+            title: "앱에서는 로그인 불가",
+            description: "Chrome이나 Safari에서 열어주세요. (주소 복사됨)",
+            duration: 5000
+          });
+        } else if (error.message === 'WEBVIEW_CLIPBOARD_FAILED') {
+          toast({
+            title: "앱에서는 로그인 불가",
+            description: "Chrome이나 Safari에서 열어주세요.",
+            duration: 5000
+          });
         } else {
           toast({
             title: "로그인 실패",
