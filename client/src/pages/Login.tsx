@@ -1,12 +1,14 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { signInWithGoogle, auth, onAuthStateChanged } from "@/lib/firebase";
-import { LogIn } from "lucide-react";
+import { LogIn, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const [webViewMessage, setWebViewMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -19,10 +21,22 @@ export default function Login() {
   }, [setLocation]);
 
   const handleGoogleSignIn = async () => {
+    setWebViewMessage(null);
+    
     try {
       await signInWithGoogle();
     } catch (error) {
       console.error("Google sign-in error:", error);
+      
+      const errorMessage = (error as Error).message;
+      
+      if (errorMessage === 'WEBVIEW_EXTERNAL_BROWSER_OPENED') {
+        setWebViewMessage('외부 브라우저에서 앱이 열렸습니다. 그곳에서 로그인을 진행해주세요.');
+      } else if (errorMessage === 'WEBVIEW_CLIPBOARD_SUCCESS') {
+        setWebViewMessage('앱 내부 브라우저에서는 로그인이 불가능합니다. URL이 클립보드에 복사되었습니다. Chrome이나 Safari에 붙여넣어 열어주세요.');
+      } else if (errorMessage === 'WEBVIEW_CLIPBOARD_FAILED') {
+        setWebViewMessage('앱 내부 브라우저에서는 로그인이 불가능합니다. Chrome이나 Safari 브라우저에서 직접 열어주세요.');
+      }
     }
   };
 
@@ -36,6 +50,15 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {webViewMessage && (
+            <Alert data-testid="alert-webview-message">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription data-testid="text-webview-message">
+                {webViewMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Button
             className="w-full"
             size="lg"
