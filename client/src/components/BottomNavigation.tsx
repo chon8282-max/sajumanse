@@ -34,35 +34,30 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     console.log('Screen share button clicked');
     
     try {
-      // 메인 콘텐츠 영역만 캡처 (하단 네비게이션 제외)
-      const mainElement = document.querySelector('main') as HTMLElement;
-      
-      if (!mainElement) {
-        toast({
-          title: "캡처 실패",
-          description: "캡처할 영역을 찾을 수 없습니다.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // 전체 화면 캡처 (body 전체)
+      const bodyElement = document.body;
       
       // 스크롤을 맨 위로 이동
       window.scrollTo(0, 0);
-      mainElement.scrollTo(0, 0);
       
-      // 잠시 대기 (스크롤 완료)
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // 잠시 대기 (스크롤 완료 및 렌더링 완료)
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // html2canvas로 화면 캡처
-      const canvas = await html2canvas(mainElement, {
-        allowTaint: false, // WebView 호환성 향상
+      const canvas = await html2canvas(bodyElement, {
+        allowTaint: false,
         useCORS: true,
-        scale: 2, // 고화질
+        scale: 2,
         logging: false,
         scrollX: 0,
-        scrollY: 0,
-        windowWidth: mainElement.scrollWidth,
-        windowHeight: mainElement.scrollHeight
+        scrollY: -window.scrollY,
+        x: 0,
+        y: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        backgroundColor: '#ffffff'
       });
       
       console.log('Canvas captured successfully:', canvas.width, 'x', canvas.height);
