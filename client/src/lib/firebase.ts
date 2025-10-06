@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged, getRedirectResult } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -101,8 +101,26 @@ export const signInWithGoogle = async () => {
     }
   }
   
-  console.log('[Firebase] Starting redirect to Google login');
-  return signInWithRedirect(auth, googleProvider);
+  console.log('[Firebase] Starting popup for Google login');
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log('[Firebase] Popup login successful:', result.user.email);
+    
+    // Access token 저장
+    const tokenResponse = (result as any)._tokenResponse;
+    if (tokenResponse?.oauthAccessToken) {
+      const token = tokenResponse.oauthAccessToken;
+      localStorage.setItem('googleAccessToken', token);
+      console.log('[Firebase] Access token saved from popup');
+    }
+    
+    return result;
+  } catch (error: any) {
+    console.error('[Firebase] Popup login error:', error);
+    console.error('[Firebase] Error code:', error?.code);
+    console.error('[Firebase] Error message:', error?.message);
+    throw error;
+  }
 };
 
 export const signOut = async () => {
