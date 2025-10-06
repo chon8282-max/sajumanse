@@ -24,7 +24,7 @@ export default function MenuGrid() {
     } else if (menuName === "지천명 유튜브") {
       window.open("https://www.youtube.com/@chon8282", "_blank");
     } else if (menuName === "사주공부") {
-      window.open("https://sajuacademy.com", "_blank");
+      window.open("https://www.sajuacademy.com/m/lecture.php?action=divide&category=03&type=package", "_blank");
     } else if (menuName === "감정중인 사주") {
       const currentSajuId = sessionStorage.getItem('currentSajuId');
       if (currentSajuId) {
