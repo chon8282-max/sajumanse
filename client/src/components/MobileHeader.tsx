@@ -129,10 +129,14 @@ export default function MobileHeader({
             variant="ghost"
             size="icon"
             onClick={handleAuthClick}
-            onTouchEnd={(e) => {
+            onTouchStart={(e) => {
               e.preventDefault();
-              e.stopPropagation();
-              console.log('[MobileHeader] Auth button touched');
+              console.log('[MobileHeader] Auth button touchstart');
+              handleAuthClick();
+            }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              console.log('[MobileHeader] Auth button pointerdown');
               handleAuthClick();
             }}
             data-testid="button-auth"

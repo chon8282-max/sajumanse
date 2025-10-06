@@ -190,10 +190,14 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
           size="sm"
           className="flex-1 flex flex-col items-center gap-1 h-auto py-2 px-1 text-muted-foreground hover:text-foreground"
           onClick={handleScreenShare}
-          onTouchEnd={(e) => {
+          onTouchStart={(e) => {
             e.preventDefault();
-            e.stopPropagation();
-            console.log('Screen share button touched');
+            console.log('Screen share button touchstart');
+            handleScreenShare();
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault();
+            console.log('Screen share button pointerdown');
             handleScreenShare();
           }}
           data-testid="button-screen-share"
