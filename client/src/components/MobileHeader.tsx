@@ -83,6 +83,12 @@ export default function MobileHeader({
           variant="ghost" 
           size="icon"
           onClick={onMenuClick}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('[MobileHeader] Menu button touched');
+            onMenuClick();
+          }}
           data-testid="button-menu"
           className="h-8 w-8"
         >
@@ -107,6 +113,12 @@ export default function MobileHeader({
             variant="ghost"
             size="icon"
             onClick={onThemeToggle}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('[MobileHeader] Theme button touched');
+              onThemeToggle();
+            }}
             data-testid="button-theme-toggle"
             className="h-8 w-8"
           >
@@ -117,6 +129,12 @@ export default function MobileHeader({
             variant="ghost"
             size="icon"
             onClick={handleAuthClick}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('[MobileHeader] Auth button touched');
+              handleAuthClick();
+            }}
             data-testid="button-auth"
             className={`h-8 w-8 ${
               isAuthenticated 
