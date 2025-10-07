@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } from "lucide-react";
@@ -25,33 +25,23 @@ export default function MobileHeader({
   const { user, loading, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  // user 상태가 변경되면 processing 상태 리셋
-  useEffect(() => {
-    if (!loading) {
-      setIsProcessing(false);
-      console.log('[MobileHeader] Auth state updated, reset processing state');
-    }
-  }, [user, loading]);
 
   const handleAuthClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     console.log('[MobileHeader] Auth button clicked');
-    console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated, 'isProcessing:', isProcessing);
+    console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated);
     
-    // 로딩 중이거나 처리 중이면 아무것도 하지 않음
-    if (loading || isProcessing) {
-      console.log('[MobileHeader] Still loading or processing, ignoring click');
+    // 로딩 중이면 아무것도 하지 않음
+    if (loading) {
+      console.log('[MobileHeader] Still loading, ignoring click');
       return;
     }
     
     // 로그인 상태면 로그아웃
     if (isAuthenticated && user) {
       console.log('[MobileHeader] Attempting logout for user:', user.email);
-      setIsProcessing(true);
       try {
         await signOut();
         console.log('[MobileHeader] Logout successful');
@@ -60,7 +50,6 @@ export default function MobileHeader({
           description: "로그아웃되었습니다.",
           duration: 500
         });
-        // AuthContext가 자동으로 상태 업데이트함
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
         toast({
@@ -69,22 +58,16 @@ export default function MobileHeader({
           variant: "destructive",
           duration: 500
         });
-      } finally {
-        setIsProcessing(false);
       }
     } 
     // 로그인 안된 상태면 로그인
     else {
       console.log('[MobileHeader] Attempting login');
-      setIsProcessing(true);
       try {
         await signInWithGoogle();
-        console.log('[MobileHeader] Login successful, resetting processing state');
-        // 로그인 성공 - processing 상태 해제
-        setIsProcessing(false);
+        console.log('[MobileHeader] Login successful');
       } catch (error: any) {
         console.error('[MobileHeader] Login error:', error);
-        setIsProcessing(false);
         if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
           toast({
             title: "앱에서는 로그인 불가",
@@ -163,6 +146,7 @@ export default function MobileHeader({
             variant="ghost"
             size="sm"
             onClick={handleAuthClick}
+            disabled={loading}
             data-testid="button-auth"
             className={`h-8 px-2 gap-1 ${
               isAuthenticated 
