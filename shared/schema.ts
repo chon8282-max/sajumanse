@@ -321,9 +321,8 @@ export const fortuneResults = pgTable("fortune_results", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
-  firstName: true,
-  lastName: true,
-  profileImageUrl: true,
+  displayName: true,
+  photoUrl: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
