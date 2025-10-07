@@ -73,6 +73,8 @@ function AppContent() {
   const justCameFromOtherPage = useRef(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+  const backPressedOnce = useRef(false);
+  const backPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
@@ -198,8 +200,32 @@ function AppContent() {
         // 현재 위치를 다시 히스토리에 추가해서 뒤로가기를 방지
         history.pushState(null, "", window.location.pathname);
         
-        // 종료 확인 대화상자 표시
-        setShowExitDialog(true);
+        // 첫 번째 뒤로가기
+        if (!backPressedOnce.current) {
+          backPressedOnce.current = true;
+          
+          toast({
+            title: "한 번 더 누르면 종료됩니다",
+            duration: 2000,
+          });
+          
+          // 2초 후 리셋
+          if (backPressTimer.current) {
+            clearTimeout(backPressTimer.current);
+          }
+          backPressTimer.current = setTimeout(() => {
+            backPressedOnce.current = false;
+          }, 2000);
+        } 
+        // 두 번째 뒤로가기 (2초 이내)
+        else {
+          if (backPressTimer.current) {
+            clearTimeout(backPressTimer.current);
+          }
+          backPressedOnce.current = false;
+          // 앱 종료
+          setLocation("/exit");
+        }
       }
     };
 
@@ -213,8 +239,11 @@ function AppContent() {
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
+      if (backPressTimer.current) {
+        clearTimeout(backPressTimer.current);
+      }
     };
-  }, []);
+  }, [toast, setLocation]);
 
   // 키보드 이벤트로도 뒤로가기 감지 (안드로이드 하드웨어 뒤로가기 버튼)
   useEffect(() => {
@@ -224,8 +253,32 @@ function AppContent() {
           (window.location.pathname === "/" || window.location.pathname === "/home")) {
         event.preventDefault();
         
-        // 종료 확인 대화상자 표시
-        setShowExitDialog(true);
+        // 첫 번째 뒤로가기
+        if (!backPressedOnce.current) {
+          backPressedOnce.current = true;
+          
+          toast({
+            title: "한 번 더 누르면 종료됩니다",
+            duration: 2000,
+          });
+          
+          // 2초 후 리셋
+          if (backPressTimer.current) {
+            clearTimeout(backPressTimer.current);
+          }
+          backPressTimer.current = setTimeout(() => {
+            backPressedOnce.current = false;
+          }, 2000);
+        } 
+        // 두 번째 뒤로가기 (2초 이내)
+        else {
+          if (backPressTimer.current) {
+            clearTimeout(backPressTimer.current);
+          }
+          backPressedOnce.current = false;
+          // 앱 종료
+          setLocation("/exit");
+        }
       }
     };
 
@@ -234,7 +287,7 @@ function AppContent() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [toast, setLocation]);
 
   // 궁합 페이지인지 확인
   const isCompatibilityPage = location === "/compatibility";
