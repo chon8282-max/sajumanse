@@ -94,38 +94,12 @@ const isWebView = () => {
 export const signInWithGoogle = async () => {
   console.log('[Firebase] ===== 로그인 시작 =====');
   console.log('[Firebase] User Agent:', navigator.userAgent);
-  
-  // PWA 체크를 먼저 실행
-  const pwaDetected = isPWA();
-  const webViewDetected = isWebView();
-  
-  console.log('[Firebase] PWA 감지:', pwaDetected);
-  console.log('[Firebase] WebView 감지:', webViewDetected);
   console.log('[Firebase] display-mode standalone:', window.matchMedia('(display-mode: standalone)').matches);
   console.log('[Firebase] navigator.standalone:', (navigator as any).standalone);
   console.log('[Firebase] document.referrer:', document.referrer);
   
-  // WebView 환경이면 외부 브라우저로 열기 (단, PWA가 아닐 때만)
-  if (webViewDetected && !pwaDetected) {
-    console.log('[Firebase] WebView (NOT PWA) detected, opening in external browser');
-    const currentUrl = window.location.href;
-    
-    // 외부 브라우저로 URL 열기 시도
-    const opened = window.open(currentUrl, '_system') || window.open(currentUrl, '_blank');
-    
-    if (opened) {
-      return Promise.reject(new Error('WEBVIEW_EXTERNAL_BROWSER_OPENED'));
-    } else {
-      // 외부 브라우저 열기 실패 시 클립보드 복사 시도
-      try {
-        await navigator.clipboard.writeText(currentUrl);
-        return Promise.reject(new Error('WEBVIEW_CLIPBOARD_SUCCESS'));
-      } catch (e) {
-        console.error('[Firebase] Clipboard copy failed:', e);
-        return Promise.reject(new Error('WEBVIEW_CLIPBOARD_FAILED'));
-      }
-    }
-  }
+  // WebView 체크 비활성화 - 모든 환경에서 popup 시도
+  console.log('[Firebase] WebView 체크 비활성화됨 - 바로 로그인 시도');
   
   // PWA에서도 일단 popup 시도
   console.log('[Firebase] ===== 로그인 방식: popup 시도 =====');
