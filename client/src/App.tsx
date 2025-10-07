@@ -54,8 +54,6 @@ function AppContent() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [location, setLocation] = useLocation();
   
-  const previousLocation = useRef<string>("");
-  const justCameFromOtherPage = useRef(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
@@ -144,83 +142,6 @@ function AppContent() {
     }
     // 기타 경로는 기본값 유지
   }, [location]);
-
-  // 위치 변경 시 페이지 전환 감지
-  useEffect(() => {
-    // 이전 위치가 홈이 아닌 곳에서 홈으로 온 경우
-    const cameFromOtherPage = previousLocation.current !== "" && 
-                              previousLocation.current !== "/" && 
-                              previousLocation.current !== "/home" &&
-                              (location === "/" || location === "/home");
-    
-    if (cameFromOtherPage) {
-      // 다른 페이지에서 홈으로 온 경우, pushState를 건너뛰도록 플래그 설정
-      justCameFromOtherPage.current = true;
-      
-      // 잠깐 후 플래그 초기화
-      setTimeout(() => {
-        justCameFromOtherPage.current = false;
-      }, 100);
-    }
-    
-    // 이전 위치 업데이트
-    previousLocation.current = location;
-  }, [location]);
-
-  // 뒤로가기 이벤트 처리 - 메인 화면에서 뒤로가기 시 바로 종료
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      const currentPath = window.location.pathname;
-      
-      // 홈 페이지에서 뒤로가기 시 즉시 앱 종료
-      if (currentPath === "/" || currentPath === "/home") {
-        event.preventDefault();
-        // PWA나 WebView에서 앱 종료
-        if (window.close) {
-          window.close();
-        }
-        // 일반 브라우저에서는 이전 페이지로 이동 방지
-        history.pushState(null, "", window.location.pathname);
-      }
-    };
-
-    // 현재 위치를 히스토리에 추가하여 뒤로가기 이벤트를 감지할 수 있게 함
-    // 단, 다른 페이지에서 방금 온 경우에는 건너뛰기
-    if (!justCameFromOtherPage.current) {
-      history.pushState(null, "", window.location.pathname);
-    }
-    
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [setLocation]);
-
-  // 키보드 이벤트로도 뒤로가기 감지 (안드로이드 하드웨어 뒤로가기 버튼)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      const currentPath = window.location.pathname;
-      
-      // 안드로이드 하드웨어 뒤로가기 버튼 (keyCode 4)
-      if (event.key === 'GoBack' || event.keyCode === 4) {
-        event.preventDefault();
-        
-        // 홈 페이지에서는 즉시 앱 종료
-        if (currentPath === "/" || currentPath === "/home") {
-          if (window.close) {
-            window.close();
-          }
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
 
   // 궁합 페이지인지 확인
   const isCompatibilityPage = location === "/compatibility";
