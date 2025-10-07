@@ -30,30 +30,21 @@ export default function MobileHeader({
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('[MobileHeader] ===== AUTH BUTTON CLICKED =====');
-    console.log('[MobileHeader] Event:', e.type);
-    console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated);
-    console.log('[MobileHeader] User Agent:', navigator.userAgent);
-    
     // 로딩 중이면 아무것도 하지 않음
     if (loading) {
-      console.log('[MobileHeader] Still loading, ignoring click');
       return;
     }
     
     // 로그인 상태면 로그아웃
     if (isAuthenticated && user) {
-      console.log('[MobileHeader] Attempting logout for user:', user.email);
       try {
         await signOut();
-        console.log('[MobileHeader] Logout successful');
         toast({
           title: "로그아웃",
           description: "로그아웃되었습니다.",
           duration: 500
         });
       } catch (error) {
-        console.error('[MobileHeader] Logout error:', error);
         toast({
           title: "로그아웃 실패",
           description: "로그아웃 중 오류가 발생했습니다.",
@@ -64,22 +55,9 @@ export default function MobileHeader({
     } 
     // 로그인 안된 상태면 로그인
     else {
-      console.log('[MobileHeader] ===== STARTING LOGIN PROCESS =====');
-      console.log('[MobileHeader] Calling signInWithGoogle...');
       try {
-        const result = await signInWithGoogle();
-        console.log('[MobileHeader] Login successful, result:', result);
+        await signInWithGoogle();
       } catch (error: any) {
-        console.error('[MobileHeader] ===== LOGIN ERROR =====');
-        console.error('[MobileHeader] Error:', error);
-        console.error('[MobileHeader] Error message:', error?.message);
-        console.error('[MobileHeader] Error code:', error?.code);
-        console.error('[MobileHeader] Error stack:', error?.stack);
-        
-        // 에러 메시지를 alert로 표시 (확실하게 보이도록)
-        const errorMsg = `에러: ${error?.message || '알 수 없는 오류'}\n코드: ${error?.code || 'N/A'}`;
-        alert(errorMsg);
-        
         if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
           toast({
             title: "앱에서는 로그인 불가",
@@ -118,12 +96,6 @@ export default function MobileHeader({
           variant="ghost" 
           size="icon"
           onClick={onMenuClick}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('[MobileHeader] Menu button touched');
-            onMenuClick();
-          }}
           data-testid="button-menu"
           className="h-8 w-8"
         >
@@ -148,12 +120,6 @@ export default function MobileHeader({
             variant="ghost"
             size="icon"
             onClick={onThemeToggle}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('[MobileHeader] Theme button touched');
-              onThemeToggle();
-            }}
             data-testid="button-theme-toggle"
             className="h-8 w-8"
           >

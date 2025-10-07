@@ -11,8 +11,7 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
-        return cache.addAll(urlsToCache).catch(err => {
-          console.log('Cache install error:', err);
+        return cache.addAll(urlsToCache).catch(() => {
           return cache.addAll(['/manifest.json']);
         });
       })
@@ -42,9 +41,8 @@ self.addEventListener('fetch', function(event) {
   // API 요청은 항상 네트워크로 가져오고 캐시하지 않음
   if (event.request.url.indexOf('/api/') !== -1) {
     event.respondWith(
-      fetch(event.request).catch(function(error) {
+      fetch(event.request).catch(function() {
         // API 요청 실패 시 네트워크 에러 반환 (캐시 사용 안 함)
-        console.error('API request failed:', error);
         return new Response(JSON.stringify({ error: 'Network error' }), {
           status: 503,
           statusText: 'Service Unavailable',
@@ -83,9 +81,8 @@ self.addEventListener('fetch', function(event) {
             
             return response;
           })
-          .catch(function(error) {
+          .catch(function() {
             // 정적 리소스 네트워크 요청 실패 시만 캐시 폴백 시도
-            console.warn('Static resource fetch failed, checking cache:', error);
             return caches.match(event.request).then(function(response) {
               return response || new Response('Offline', {
                 status: 503,

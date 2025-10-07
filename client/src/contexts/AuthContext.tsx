@@ -34,14 +34,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('[AuthContext] Initializing auth state');
-    
     let redirectCheckCompleted = false;
     
     // Auth 상태 변화 감지
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      console.log('[AuthContext] Auth state changed:', currentUser ? currentUser.email : 'No user');
-      
       // Redirect 결과 확인 (PWA에서 redirect 로그인 후 돌아왔을 때)
       // Auth가 ready된 후 한 번만 실행
       if (!redirectCheckCompleted) {
@@ -49,7 +45,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         
         try {
           const result = await getRedirectResult(auth);
-          console.log('[AuthContext] Redirect result:', result ? 'User found' : 'No result');
           
           if (result) {
             // Redirect 로그인 성공 시 Access token 저장
@@ -58,11 +53,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
               const token = tokenResponse.oauthAccessToken;
               localStorage.setItem('googleAccessToken', token);
               setGoogleAccessToken(token);
-              console.log('[AuthContext] Access token saved from redirect');
             }
           }
         } catch (error) {
-          console.error('[AuthContext] Redirect result error:', error);
+          // Redirect 에러 발생 시 무시
         }
       }
       
@@ -71,7 +65,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       if (!currentUser) {
         // 로그아웃 시 토큰도 삭제
-        console.log('[AuthContext] User logged out, clearing tokens');
         setGoogleAccessToken(null);
         localStorage.removeItem('googleAccessToken');
       } else {
@@ -87,7 +80,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const storedToken = localStorage.getItem('googleAccessToken');
     if (storedToken) {
       setGoogleAccessToken(storedToken);
-      console.log('[AuthContext] Loaded stored token');
     }
 
     return () => unsubscribe();

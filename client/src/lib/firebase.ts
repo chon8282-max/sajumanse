@@ -9,13 +9,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-console.log("Firebase Config Check:", {
-  hasApiKey: !!firebaseConfig.apiKey,
-  hasProjectId: !!firebaseConfig.projectId,
-  hasAppId: !!firebaseConfig.appId,
-  authDomain: firebaseConfig.authDomain,
-});
-
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -41,7 +34,6 @@ const isPWA = () => {
 const isWebView = () => {
   // PWA는 WebView가 아님
   if (isPWA()) {
-    console.log('[Firebase] PWA detected - not a WebView');
     return false;
   }
   
@@ -92,14 +84,8 @@ const isWebView = () => {
 };
 
 export const signInWithGoogle = async () => {
-  console.log('[Firebase] signInWithGoogle called');
-  console.log('[Firebase] User Agent:', navigator.userAgent);
-  console.log('[Firebase] isPWA:', isPWA());
-  console.log('[Firebase] isWebView:', isWebView());
-  
   // WebView 환경이면 외부 브라우저로 열기
   if (isWebView()) {
-    console.log('[Firebase] WebView detected, opening in external browser');
     const currentUrl = window.location.href;
     
     // 외부 브라우저로 URL 열기 시도
@@ -113,40 +99,29 @@ export const signInWithGoogle = async () => {
         await navigator.clipboard.writeText(currentUrl);
         return Promise.reject(new Error('WEBVIEW_CLIPBOARD_SUCCESS'));
       } catch (e) {
-        console.error('[Firebase] Clipboard copy failed:', e);
         return Promise.reject(new Error('WEBVIEW_CLIPBOARD_FAILED'));
       }
     }
   }
   
-  console.log('[Firebase] Starting popup for Google login');
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    console.log('[Firebase] Popup login successful:', result.user.email);
     
     // Access token 저장
     const tokenResponse = (result as any)._tokenResponse;
     if (tokenResponse?.oauthAccessToken) {
       const token = tokenResponse.oauthAccessToken;
       localStorage.setItem('googleAccessToken', token);
-      console.log('[Firebase] Access token saved from popup');
     }
     
     return result;
   } catch (error: any) {
-    console.error('[Firebase] Popup login error:', error);
-    console.error('[Firebase] Error code:', error?.code);
-    console.error('[Firebase] Error message:', error?.message);
-    
     // 팝업 실패 시 리디렉션 시도 (모바일에서 자주 발생)
     if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
-      console.log('[Firebase] Popup failed, trying redirect...');
       try {
         await signInWithRedirect(auth, googleProvider);
-        console.log('[Firebase] Redirect initiated');
         return;
       } catch (redirectError: any) {
-        console.error('[Firebase] Redirect also failed:', redirectError);
         throw redirectError;
       }
     }
@@ -156,13 +131,10 @@ export const signInWithGoogle = async () => {
 };
 
 export const signOut = async () => {
-  console.log('[Firebase] signOut called');
   try {
     localStorage.removeItem('googleAccessToken');
     await firebaseSignOut(auth);
-    console.log('[Firebase] Sign out successful');
   } catch (error) {
-    console.error('[Firebase] Sign out error:', error);
     throw error;
   }
 };

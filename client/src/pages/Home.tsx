@@ -10,12 +10,10 @@ import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo, type Announcement } from "@shared/schema";
-import { RefreshCw, Sparkles, Save, ChevronRight, Bug, X } from "lucide-react";
+import { RefreshCw, Sparkles, Save, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useLocation } from "wouter";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
@@ -30,8 +28,6 @@ export default function Home() {
     isLunar: boolean;
   } | null>(null);
   const [, setLocation] = useLocation();
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [showDebugSheet, setShowDebugSheet] = useState(false);
 
   // 최신 공지사항 조회
   const { data: announcementsData } = useQuery<{ success: boolean; data: Announcement[] }>({
@@ -54,7 +50,6 @@ export default function Home() {
         }) as any;
         return response;
       } catch (error) {
-        console.log('음력 API 실패 - 오프라인 모드에서는 양력 정보만 표시됩니다');
         return null;
       }
     },
@@ -72,33 +67,6 @@ export default function Home() {
 
     return { solarDate };
   };
-
-  // 콘솔 로그를 가로채서 화면에 표시
-  useEffect(() => {
-    const originalLog = console.log;
-    const originalError = console.error;
-    
-    console.log = (...args) => {
-      originalLog(...args);
-      const message = args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-      ).join(' ');
-      setDebugLogs(prev => [...prev, `[LOG] ${message}`].slice(-100)); // 최근 100개만 유지
-    };
-    
-    console.error = (...args) => {
-      originalError(...args);
-      const message = args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-      ).join(' ');
-      setDebugLogs(prev => [...prev, `[ERROR] ${message}`].slice(-100));
-    };
-
-    return () => {
-      console.log = originalLog;
-      console.error = originalError;
-    };
-  }, []);
 
   // 현재 시각 자동 업데이트 (1초마다 실시간)
   useEffect(() => {
@@ -123,13 +91,7 @@ export default function Home() {
         }
         return response.data;
       } catch (error) {
-        console.log('서버 API 실패, 오프라인 모드로 계산합니다:', error);
-        
         // 2. 오프라인일 때는 클라이언트에서 직접 계산
-        if (data.isLunar) {
-          // 음력인 경우 경고 메시지와 함께 양력으로 간주하여 계산
-          console.warn('오프라인 모드에서는 음력-양력 변환이 제한적입니다. 입력한 날짜를 양력으로 간주하여 계산합니다.');
-        }
         
         // 클라이언트 사주 계산 (음력인 경우에도 양력으로 간주)
         const offlineSaju = calculateSaju(
@@ -154,8 +116,7 @@ export default function Home() {
           : "개인 사주팔자가 성공적으로 계산되었습니다."
       });
     },
-    onError: (error) => {
-      console.error('Saju calculation error:', error);
+    onError: () => {
       toast({
         title: "계산 오류",
         description: "사주팔자 계산 중 오류가 발생했습니다.",
@@ -188,8 +149,7 @@ export default function Home() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/manse"] });
     },
-    onError: (error) => {
-      console.error('Save error:', error);
+    onError: () => {
       toast({
         title: "저장 오류",
         description: "만세력 정보 저장 중 오류가 발생했습니다.",
@@ -206,12 +166,10 @@ export default function Home() {
   const handleRefresh = () => {
     setCurrentSaju(getCurrentSaju());
     setLastUpdated(new Date());
-    console.log('Current saju refreshed');
   };
 
   const handleNewInput = () => {
     setShowDatePicker(true);
-    console.log('Date picker opened');
   };
 
   const getDominantElement = (saju: SajuInfo) => {
@@ -314,10 +272,7 @@ export default function Home() {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => {
-                setCustomSaju(null);
-                console.log('Custom saju cleared');
-              }}
+              onClick={() => setCustomSaju(null)}
               data-testid="button-clear-custom"
               className="w-full"
             >
@@ -330,63 +285,6 @@ export default function Home() {
         {/* 메뉴 그리드 */}
         <MenuGrid />
       </div>
-
-      {/* 디버그 로그 플로팅 버튼 */}
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={() => setShowDebugSheet(true)}
-        data-testid="button-debug-toggle"
-        className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full shadow-lg"
-      >
-        <Bug className="w-5 h-5" />
-      </Button>
-
-      {/* 디버그 로그 Sheet */}
-      <Sheet open={showDebugSheet} onOpenChange={setShowDebugSheet}>
-        <SheetContent side="bottom" className="h-[80vh]">
-          <SheetHeader>
-            <SheetTitle>디버그 로그</SheetTitle>
-            <SheetDescription>앱 내부 로그 정보 (개발자용)</SheetDescription>
-          </SheetHeader>
-          <div className="mt-4 space-y-2">
-            <ScrollArea className="h-[calc(80vh-180px)] w-full rounded border p-4">
-              <div className="space-y-1 font-mono text-xs">
-                {debugLogs.length === 0 ? (
-                  <p className="text-muted-foreground">로그가 없습니다. 로그인을 시도해보세요.</p>
-                ) : (
-                  debugLogs.map((log, i) => (
-                    <div 
-                      key={i} 
-                      className={log.includes('[ERROR]') ? 'text-red-500' : 'text-foreground'}
-                    >
-                      {log}
-                    </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-            <div className="flex gap-2">
-              <Button
-                className="flex-1"
-                variant="outline"
-                size="sm"
-                onClick={() => setDebugLogs([])}
-              >
-                로그 지우기
-              </Button>
-              <Button
-                className="flex-1"
-                variant="default"
-                size="sm"
-                onClick={() => setShowDebugSheet(false)}
-              >
-                닫기
-              </Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
     </div>
   );
 }

@@ -3,37 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { signInWithGoogle, auth, onAuthStateChanged } from "@/lib/firebase";
-import { LogIn, AlertCircle, Bug } from "lucide-react";
+import { LogIn, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const [webViewMessage, setWebViewMessage] = useState<string | null>(null);
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
-    // 콘솔 로그를 가로채서 화면에 표시
-    const originalLog = console.log;
-    const originalError = console.error;
-    
-    console.log = (...args) => {
-      originalLog(...args);
-      const message = args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-      ).join(' ');
-      setDebugLogs(prev => [...prev, `[LOG] ${message}`].slice(-50)); // 최근 50개만 유지
-    };
-    
-    console.error = (...args) => {
-      originalError(...args);
-      const message = args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-      ).join(' ');
-      setDebugLogs(prev => [...prev, `[ERROR] ${message}`].slice(-50));
-    };
-    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setLocation("/");
@@ -41,27 +18,16 @@ export default function Login() {
     });
 
     return () => {
-      console.log = originalLog;
-      console.error = originalError;
       unsubscribe();
     };
   }, [setLocation]);
 
   const handleGoogleSignIn = async () => {
-    console.log('[Login] 로그인 버튼 클릭됨');
     setWebViewMessage(null);
     
     try {
-      console.log('[Login] signInWithGoogle 호출 시작');
-      const result = await signInWithGoogle();
-      console.log('[Login] 로그인 성공:', result);
+      await signInWithGoogle();
     } catch (error) {
-      console.error("[Login] Google sign-in error:", error);
-      console.error("[Login] Error details:", {
-        message: (error as Error).message,
-        code: (error as any).code,
-        stack: (error as Error).stack
-      });
       
       const errorMessage = (error as Error).message;
       
@@ -108,16 +74,6 @@ export default function Login() {
               Google로 로그인
             </Button>
             
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => setShowDebug(!showDebug)}
-              data-testid="button-toggle-debug"
-            >
-              <Bug className="w-4 h-4 mr-2" />
-              {showDebug ? '로그 숨기기' : '로그 보기 (개발자용)'}
-            </Button>
-            
             <div className="text-center">
               <Button
                 variant="ghost"
@@ -129,41 +85,6 @@ export default function Login() {
             </div>
           </CardContent>
         </Card>
-        
-        {showDebug && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">디버그 로그</CardTitle>
-              <CardDescription>앱 내부 로그 정보</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px] w-full rounded border p-4">
-                <div className="space-y-1 font-mono text-xs">
-                  {debugLogs.length === 0 ? (
-                    <p className="text-muted-foreground">로그가 없습니다. 로그인을 시도해보세요.</p>
-                  ) : (
-                    debugLogs.map((log, i) => (
-                      <div 
-                        key={i} 
-                        className={log.includes('[ERROR]') ? 'text-red-500' : 'text-foreground'}
-                      >
-                        {log}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-              <Button
-                className="w-full mt-2"
-                variant="outline"
-                size="sm"
-                onClick={() => setDebugLogs([])}
-              >
-                로그 지우기
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
