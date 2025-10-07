@@ -21,12 +21,20 @@ export default function Login() {
   }, [setLocation]);
 
   const handleGoogleSignIn = async () => {
+    console.log('[Login] 로그인 버튼 클릭됨');
     setWebViewMessage(null);
     
     try {
-      await signInWithGoogle();
+      console.log('[Login] signInWithGoogle 호출 시작');
+      const result = await signInWithGoogle();
+      console.log('[Login] 로그인 성공:', result);
     } catch (error) {
-      console.error("Google sign-in error:", error);
+      console.error("[Login] Google sign-in error:", error);
+      console.error("[Login] Error details:", {
+        message: (error as Error).message,
+        code: (error as any).code,
+        stack: (error as Error).stack
+      });
       
       const errorMessage = (error as Error).message;
       
@@ -36,6 +44,9 @@ export default function Login() {
         setWebViewMessage('앱 내부 브라우저에서는 로그인이 불가능합니다. URL이 클립보드에 복사되었습니다. Chrome이나 Safari에 붙여넣어 열어주세요.');
       } else if (errorMessage === 'WEBVIEW_CLIPBOARD_FAILED') {
         setWebViewMessage('앱 내부 브라우저에서는 로그인이 불가능합니다. Chrome이나 Safari 브라우저에서 직접 열어주세요.');
+      } else {
+        // 기타 에러 메시지 표시
+        setWebViewMessage(`로그인 실패: ${errorMessage || '알 수 없는 오류'}`);
       }
     }
   };
