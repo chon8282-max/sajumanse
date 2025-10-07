@@ -46,16 +46,13 @@ export default function MobileHeader({
       setIsProcessing(true);
       try {
         await signOut();
-        console.log('[MobileHeader] Logout successful, reloading page');
+        console.log('[MobileHeader] Logout successful');
         toast({
           title: "로그아웃",
           description: "로그아웃되었습니다.",
           duration: 500
         });
-        // 로그아웃 후 페이지 새로고침하여 상태 완전히 초기화
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        // AuthContext가 자동으로 상태 업데이트함
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
         toast({
@@ -64,6 +61,7 @@ export default function MobileHeader({
           variant: "destructive",
           duration: 500
         });
+      } finally {
         setIsProcessing(false);
       }
     } 
