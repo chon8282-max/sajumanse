@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } from "lucide-react";
 import { format } from "date-fns";
-import logoPath from "@assets/만세력로고_1758875108140.png";
+import logoPath from "@assets/만세력아이콘1_1759803421455.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { signInWithGoogle, signOut } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
