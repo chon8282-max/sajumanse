@@ -1587,16 +1587,16 @@ export default function SajuTable({
           )}
           {displayMode === 'daeun' && daeunColumnData && (
             <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-              {convertText(daeunColumnData.jijanggan)}
+              {convertTextForRow145(daeunColumnData.jijanggan)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
               <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-                {convertText(saeunColumnData.jijanggan)}
+                {convertTextForRow145(saeunColumnData.jijanggan)}
               </div>
               <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
-                {convertText(daeunColumnData.jijanggan)}
+                {convertTextForRow145(daeunColumnData.jijanggan)}
               </div>
             </>
           )}
@@ -1635,7 +1635,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-jijanggan-${index}`}
               >
-                {convertText(stems)}
+                {convertTextForRow145(stems)}
               </div>
             )))
           )}
