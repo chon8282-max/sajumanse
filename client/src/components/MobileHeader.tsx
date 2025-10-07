@@ -76,30 +76,34 @@ export default function MobileHeader({
         console.error('[MobileHeader] Error code:', error?.code);
         console.error('[MobileHeader] Error stack:', error?.stack);
         
+        // 에러 메시지를 alert로 표시 (확실하게 보이도록)
+        const errorMsg = `에러: ${error?.message || '알 수 없는 오류'}\n코드: ${error?.code || 'N/A'}`;
+        alert(errorMsg);
+        
         if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
           toast({
             title: "앱에서는 로그인 불가",
             description: "Chrome이나 Safari에서 열어주세요. (주소 복사됨)",
-            duration: 3000
+            duration: 10000
           });
         } else if (error.message === 'WEBVIEW_CLIPBOARD_FAILED') {
           toast({
             title: "앱에서는 로그인 불가",
             description: "Chrome이나 Safari에서 열어주세요.",
-            duration: 3000
+            duration: 10000
           });
         } else if (error.message === 'WEBVIEW_EXTERNAL_BROWSER_OPENED') {
           toast({
             title: "외부 브라우저에서 로그인",
             description: "열린 브라우저에서 로그인을 진행해주세요.",
-            duration: 3000
+            duration: 10000
           });
         } else {
           toast({
             title: "로그인 실패",
             description: error?.message || "로그인 중 오류가 발생했습니다.",
             variant: "destructive",
-            duration: 5000
+            duration: 10000
           });
         }
       }
