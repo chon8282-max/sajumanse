@@ -938,10 +938,10 @@ export default function SajuTable({
     return { skies: skies.reverse(), earths: earths.reverse() };
   }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years, saju.year.sky, saju.year.earth]);
 
-  // 월운 월 순서 (16행용 - 13칸, 좌측에서 우측)
+  // 월운 월 순서 (16행용 - 13칸)
   const wolunMonths = useMemo(() => {
-    // 좌측에서 우측: 1월부터 13월까지
-    return Array.from({ length: 13 }, (_, i) => i + 1);
+    // 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
+    return [1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
   }, []);
 
   // 대운 간지 계산 (7행, 8행용)
