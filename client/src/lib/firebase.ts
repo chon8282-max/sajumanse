@@ -91,7 +91,13 @@ const isWebView = () => {
 };
 
 export const signInWithGoogle = async () => {
-  console.log('[Firebase] signInWithGoogle called');
+  console.log('[Firebase] ===== 로그인 시작 =====');
+  console.log('[Firebase] User Agent:', navigator.userAgent);
+  console.log('[Firebase] isPWA():', isPWA());
+  console.log('[Firebase] isWebView():', isWebView());
+  console.log('[Firebase] display-mode:', window.matchMedia('(display-mode: standalone)').matches);
+  console.log('[Firebase] navigator.standalone:', (navigator as any).standalone);
+  console.log('[Firebase] document.referrer:', document.referrer);
   
   // WebView 환경이면 외부 브라우저로 열기
   if (isWebView()) {
@@ -117,20 +123,23 @@ export const signInWithGoogle = async () => {
   
   // PWA 환경에서는 redirect 방식 사용
   if (isPWA()) {
-    console.log('[Firebase] PWA detected, using redirect auth');
+    console.log('[Firebase] ===== PWA 감지: redirect 방식 사용 =====');
     try {
+      console.log('[Firebase] signInWithRedirect 호출 시작...');
       await signInWithRedirect(auth, googleProvider);
-      console.log('[Firebase] Redirect initiated');
+      console.log('[Firebase] Redirect initiated (페이지 전환됨)');
       // redirect는 페이지를 떠나므로 여기서 return하지 않음
       return;
     } catch (error: any) {
       console.error('[Firebase] Redirect error:', error);
+      console.error('[Firebase] Redirect error code:', error?.code);
+      console.error('[Firebase] Redirect error message:', error?.message);
       throw error;
     }
   }
   
   // 일반 브라우저에서는 popup 방식 사용
-  console.log('[Firebase] Starting popup for Google login');
+  console.log('[Firebase] ===== 일반 브라우저: popup 방식 사용 =====');
   try {
     const result = await signInWithPopup(auth, googleProvider);
     console.log('[Firebase] Popup login successful:', result.user.email);
