@@ -71,7 +71,9 @@ export default function MobileHeader({
       setIsProcessing(true);
       try {
         await signInWithGoogle();
-        // 리다이렉트가 시작되면 이 코드는 실행되지 않음
+        console.log('[MobileHeader] Login successful, resetting processing state');
+        // 로그인 성공 - processing 상태 해제
+        setIsProcessing(false);
       } catch (error: any) {
         console.error('[MobileHeader] Login error:', error);
         setIsProcessing(false);
