@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState, useRef } from "react";
 
 interface MobileMenuProps {
@@ -23,11 +24,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { font, setFont } = useFont();
+  const { isAuthenticated } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
   const handleDriveBackup = async () => {
+    // 로그인 체크
+    if (!isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "Google Drive 백업은 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      onClose();
+      setLocation("/login");
+      return;
+    }
+
     try {
       toast({
         title: "백업 중...",
@@ -60,6 +74,18 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleDriveRestore = async () => {
+    // 로그인 체크
+    if (!isAuthenticated) {
+      toast({
+        title: "로그인 필요",
+        description: "Google Drive 복원은 로그인이 필요합니다.",
+        variant: "destructive",
+      });
+      onClose();
+      setLocation("/login");
+      return;
+    }
+
     try {
       toast({
         title: "불러오는 중...",
