@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import SajuTable from "@/components/SajuTable";
@@ -10,10 +10,12 @@ import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo, type Announcement } from "@shared/schema";
-import { RefreshCw, Sparkles, Save, ChevronRight } from "lucide-react";
+import { RefreshCw, Sparkles, Save, ChevronRight, Bug, X } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useLocation } from "wouter";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 export default function Home() {
   const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
@@ -28,6 +30,8 @@ export default function Home() {
     isLunar: boolean;
   } | null>(null);
   const [, setLocation] = useLocation();
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [showDebugSheet, setShowDebugSheet] = useState(false);
 
   // 최신 공지사항 조회
   const { data: announcementsData } = useQuery<{ success: boolean; data: Announcement[] }>({
@@ -68,6 +72,33 @@ export default function Home() {
 
     return { solarDate };
   };
+
+  // 콘솔 로그를 가로채서 화면에 표시
+  useEffect(() => {
+    const originalLog = console.log;
+    const originalError = console.error;
+    
+    console.log = (...args) => {
+      originalLog(...args);
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ');
+      setDebugLogs(prev => [...prev, `[LOG] ${message}`].slice(-100)); // 최근 100개만 유지
+    };
+    
+    console.error = (...args) => {
+      originalError(...args);
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+      ).join(' ');
+      setDebugLogs(prev => [...prev, `[ERROR] ${message}`].slice(-100));
+    };
+
+    return () => {
+      console.log = originalLog;
+      console.error = originalError;
+    };
+  }, []);
 
   // 현재 시각 자동 업데이트 (1초마다 실시간)
   useEffect(() => {
@@ -299,6 +330,63 @@ export default function Home() {
         {/* 메뉴 그리드 */}
         <MenuGrid />
       </div>
+
+      {/* 디버그 로그 플로팅 버튼 */}
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setShowDebugSheet(true)}
+        data-testid="button-debug-toggle"
+        className="fixed bottom-20 right-4 z-40 h-12 w-12 rounded-full shadow-lg"
+      >
+        <Bug className="w-5 h-5" />
+      </Button>
+
+      {/* 디버그 로그 Sheet */}
+      <Sheet open={showDebugSheet} onOpenChange={setShowDebugSheet}>
+        <SheetContent side="bottom" className="h-[80vh]">
+          <SheetHeader>
+            <SheetTitle>디버그 로그</SheetTitle>
+            <SheetDescription>앱 내부 로그 정보 (개발자용)</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4 space-y-2">
+            <ScrollArea className="h-[calc(80vh-180px)] w-full rounded border p-4">
+              <div className="space-y-1 font-mono text-xs">
+                {debugLogs.length === 0 ? (
+                  <p className="text-muted-foreground">로그가 없습니다. 로그인을 시도해보세요.</p>
+                ) : (
+                  debugLogs.map((log, i) => (
+                    <div 
+                      key={i} 
+                      className={log.includes('[ERROR]') ? 'text-red-500' : 'text-foreground'}
+                    >
+                      {log}
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+            <div className="flex gap-2">
+              <Button
+                className="flex-1"
+                variant="outline"
+                size="sm"
+                onClick={() => setDebugLogs([])}
+              >
+                로그 지우기
+              </Button>
+              <Button
+                className="flex-1"
+                variant="default"
+                size="sm"
+                onClick={() => setShowDebugSheet(false)}
+              >
+                닫기
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
