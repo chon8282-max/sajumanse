@@ -115,6 +115,21 @@ export const signInWithGoogle = async () => {
     }
   }
   
+  // PWA 환경에서는 redirect 방식 사용
+  if (isPWA()) {
+    console.log('[Firebase] PWA detected, using redirect auth');
+    try {
+      await signInWithRedirect(auth, googleProvider);
+      console.log('[Firebase] Redirect initiated');
+      // redirect는 페이지를 떠나므로 여기서 return하지 않음
+      return;
+    } catch (error: any) {
+      console.error('[Firebase] Redirect error:', error);
+      throw error;
+    }
+  }
+  
+  // 일반 브라우저에서는 popup 방식 사용
   console.log('[Firebase] Starting popup for Google login');
   try {
     const result = await signInWithPopup(auth, googleProvider);
