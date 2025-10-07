@@ -172,11 +172,18 @@ function AppContent() {
   // 뒤로가기 이벤트 처리 - 메인 화면에서 뒤로가기 시 바로 종료
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
-      // 현재 홈 페이지이거나 루트 경로에 있을 때만 종료 로직 실행
-      if (window.location.pathname === "/" || window.location.pathname === "/home") {
+      const currentPath = window.location.pathname;
+      
+      // Exit 페이지에서 뒤로가기 시 즉시 앱 종료
+      if (currentPath === "/exit") {
         event.preventDefault();
-        
-        // 바로 종료
+        window.close();
+        return;
+      }
+      
+      // 홈 페이지에서 뒤로가기 시 Exit 페이지로 이동
+      if (currentPath === "/" || currentPath === "/home") {
+        event.preventDefault();
         setLocation("/exit");
       }
     };
@@ -197,13 +204,22 @@ function AppContent() {
   // 키보드 이벤트로도 뒤로가기 감지 (안드로이드 하드웨어 뒤로가기 버튼)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      const currentPath = window.location.pathname;
+      
       // 안드로이드 하드웨어 뒤로가기 버튼 (keyCode 4)
-      if ((event.key === 'GoBack' || event.keyCode === 4) && 
-          (window.location.pathname === "/" || window.location.pathname === "/home")) {
+      if (event.key === 'GoBack' || event.keyCode === 4) {
         event.preventDefault();
         
-        // 바로 종료
-        setLocation("/exit");
+        // Exit 페이지에서는 즉시 종료
+        if (currentPath === "/exit") {
+          window.close();
+          return;
+        }
+        
+        // 홈 페이지에서는 Exit 페이지로 이동
+        if (currentPath === "/" || currentPath === "/home") {
+          setLocation("/exit");
+        }
       }
     };
 
