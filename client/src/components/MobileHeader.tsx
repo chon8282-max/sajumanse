@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } from "lucide-react";
@@ -26,6 +26,14 @@ export default function MobileHeader({
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // user 상태가 변경되면 processing 상태 리셋
+  useEffect(() => {
+    if (!loading) {
+      setIsProcessing(false);
+      console.log('[MobileHeader] Auth state updated, reset processing state');
+    }
+  }, [user, loading]);
 
   const handleAuthClick = async (e: React.MouseEvent) => {
     e.preventDefault();
