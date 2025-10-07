@@ -30,8 +30,10 @@ export default function MobileHeader({
     e.preventDefault();
     e.stopPropagation();
     
-    console.log('[MobileHeader] Auth button clicked');
+    console.log('[MobileHeader] ===== AUTH BUTTON CLICKED =====');
+    console.log('[MobileHeader] Event:', e.type);
     console.log('[MobileHeader] Current state - user:', user?.email || 'none', 'loading:', loading, 'isAuthenticated:', isAuthenticated);
+    console.log('[MobileHeader] User Agent:', navigator.userAgent);
     
     // 로딩 중이면 아무것도 하지 않음
     if (loading) {
@@ -62,30 +64,42 @@ export default function MobileHeader({
     } 
     // 로그인 안된 상태면 로그인
     else {
-      console.log('[MobileHeader] Attempting login');
+      console.log('[MobileHeader] ===== STARTING LOGIN PROCESS =====');
+      console.log('[MobileHeader] Calling signInWithGoogle...');
       try {
-        await signInWithGoogle();
-        console.log('[MobileHeader] Login successful');
+        const result = await signInWithGoogle();
+        console.log('[MobileHeader] Login successful, result:', result);
       } catch (error: any) {
-        console.error('[MobileHeader] Login error:', error);
+        console.error('[MobileHeader] ===== LOGIN ERROR =====');
+        console.error('[MobileHeader] Error:', error);
+        console.error('[MobileHeader] Error message:', error?.message);
+        console.error('[MobileHeader] Error code:', error?.code);
+        console.error('[MobileHeader] Error stack:', error?.stack);
+        
         if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
           toast({
             title: "앱에서는 로그인 불가",
             description: "Chrome이나 Safari에서 열어주세요. (주소 복사됨)",
-            duration: 500
+            duration: 3000
           });
         } else if (error.message === 'WEBVIEW_CLIPBOARD_FAILED') {
           toast({
             title: "앱에서는 로그인 불가",
             description: "Chrome이나 Safari에서 열어주세요.",
-            duration: 500
+            duration: 3000
+          });
+        } else if (error.message === 'WEBVIEW_EXTERNAL_BROWSER_OPENED') {
+          toast({
+            title: "외부 브라우저에서 로그인",
+            description: "열린 브라우저에서 로그인을 진행해주세요.",
+            duration: 3000
           });
         } else {
           toast({
             title: "로그인 실패",
-            description: "로그인 중 오류가 발생했습니다. 다시 시도해주세요.",
+            description: error?.message || "로그인 중 오류가 발생했습니다.",
             variant: "destructive",
-            duration: 3000
+            duration: 5000
           });
         }
       }
