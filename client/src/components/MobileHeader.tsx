@@ -46,11 +46,16 @@ export default function MobileHeader({
       setIsProcessing(true);
       try {
         await signOut();
+        console.log('[MobileHeader] Logout successful, reloading page');
         toast({
           title: "로그아웃",
           description: "로그아웃되었습니다.",
           duration: 500
         });
+        // 로그아웃 후 페이지 새로고침하여 상태 완전히 초기화
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
         toast({
@@ -59,8 +64,7 @@ export default function MobileHeader({
           variant: "destructive",
           duration: 500
         });
-      } finally {
-        setTimeout(() => setIsProcessing(false), 1000);
+        setIsProcessing(false);
       }
     } 
     // 로그인 안된 상태면 로그인
