@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User } from "firebase/auth";
-import { auth, onAuthStateChanged } from "@/lib/firebase";
+import { auth, onAuthStateChanged, getRedirectResult } from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -35,6 +35,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     console.log('[AuthContext] Initializing auth state');
+    
+    // Redirect 결과 확인 (PWA에서 redirect 로그인 후 돌아왔을 때)
+    const checkRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        console.log('[AuthContext] Redirect result:', result ? 'User found' : 'No result');
+        
+        if (result) {
+          // Redirect 로그인 성공 시 Access token 저장
+          const tokenResponse = (result as any)._tokenResponse;
+          if (tokenResponse?.oauthAccessToken) {
+            const token = tokenResponse.oauthAccessToken;
+            localStorage.setItem('googleAccessToken', token);
+            setGoogleAccessToken(token);
+            console.log('[AuthContext] Access token saved from redirect');
+          }
+        }
+      } catch (error) {
+        console.error('[AuthContext] Redirect result error:', error);
+      }
+    };
+    
+    checkRedirectResult();
     
     // 저장된 토큰 확인 (팝업 방식에서는 signInWithGoogle에서 직접 저장함)
     const storedToken = localStorage.getItem('googleAccessToken');
