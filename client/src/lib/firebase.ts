@@ -24,6 +24,7 @@ googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
 googleProvider.addScope('https://www.googleapis.com/auth/drive.appdata');
 
 googleProvider.setCustomParameters({
+  client_id: '910226841507-7h9ecupr3cd3sctqivsbaev8k8erogds.apps.googleusercontent.com',
   access_type: 'offline',
   prompt: 'consent'
 });
