@@ -38,10 +38,9 @@ const isPWA = () => {
 
 // WebView 환경 감지 (Android 및 iOS) - PWA 제외
 const isWebView = () => {
-  // PWA는 절대 WebView가 아님 (가장 먼저 체크!)
-  const pwaCheck = isPWA();
-  if (pwaCheck) {
-    console.log('[Firebase] PWA detected - NOT a WebView');
+  // PWA는 WebView가 아님
+  if (isPWA()) {
+    console.log('[Firebase] PWA detected - not a WebView');
     return false;
   }
   
@@ -92,17 +91,31 @@ const isWebView = () => {
 };
 
 export const signInWithGoogle = async () => {
-  console.log('[Firebase] ===== 로그인 시작 =====');
-  console.log('[Firebase] User Agent:', navigator.userAgent);
-  console.log('[Firebase] display-mode standalone:', window.matchMedia('(display-mode: standalone)').matches);
-  console.log('[Firebase] navigator.standalone:', (navigator as any).standalone);
-  console.log('[Firebase] document.referrer:', document.referrer);
+  console.log('[Firebase] signInWithGoogle called');
   
-  // WebView 체크 비활성화 - 모든 환경에서 popup 시도
-  console.log('[Firebase] WebView 체크 비활성화됨 - 바로 로그인 시도');
+  // WebView 환경이면 외부 브라우저로 열기
+  if (isWebView()) {
+    console.log('[Firebase] WebView detected, opening in external browser');
+    const currentUrl = window.location.href;
+    
+    // 외부 브라우저로 URL 열기 시도
+    const opened = window.open(currentUrl, '_system') || window.open(currentUrl, '_blank');
+    
+    if (opened) {
+      return Promise.reject(new Error('WEBVIEW_EXTERNAL_BROWSER_OPENED'));
+    } else {
+      // 외부 브라우저 열기 실패 시 클립보드 복사 시도
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+        return Promise.reject(new Error('WEBVIEW_CLIPBOARD_SUCCESS'));
+      } catch (e) {
+        console.error('[Firebase] Clipboard copy failed:', e);
+        return Promise.reject(new Error('WEBVIEW_CLIPBOARD_FAILED'));
+      }
+    }
+  }
   
-  // PWA에서도 일단 popup 시도
-  console.log('[Firebase] ===== 로그인 방식: popup 시도 =====');
+  console.log('[Firebase] Starting popup for Google login');
   try {
     const result = await signInWithPopup(auth, googleProvider);
     console.log('[Firebase] Popup login successful:', result.user.email);
@@ -120,20 +133,6 @@ export const signInWithGoogle = async () => {
     console.error('[Firebase] Popup login error:', error);
     console.error('[Firebase] Error code:', error?.code);
     console.error('[Firebase] Error message:', error?.message);
-    
-    // Popup이 차단되었고 PWA 환경이면 redirect 시도
-    if (error?.code === 'auth/popup-blocked' && isPWA()) {
-      console.log('[Firebase] Popup blocked in PWA, trying redirect...');
-      try {
-        await signInWithRedirect(auth, googleProvider);
-        console.log('[Firebase] Redirect initiated');
-        return;
-      } catch (redirectError: any) {
-        console.error('[Firebase] Redirect also failed:', redirectError);
-        throw redirectError;
-      }
-    }
-    
     throw error;
   }
 };
