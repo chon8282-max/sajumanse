@@ -49,7 +49,7 @@ export default function MobileHeader({
         toast({
           title: "로그아웃",
           description: "로그아웃되었습니다.",
-          duration: 3000
+          duration: 5000
         });
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
@@ -57,7 +57,7 @@ export default function MobileHeader({
           title: "로그아웃 실패",
           description: "로그아웃 중 오류가 발생했습니다.",
           variant: "destructive",
-          duration: 3000
+          duration: 5000
         });
       } finally {
         setTimeout(() => setIsProcessing(false), 1000);
