@@ -49,7 +49,7 @@ export default function MobileHeader({
         toast({
           title: "로그아웃",
           description: "로그아웃되었습니다.",
-          duration: 5000
+          duration: 500
         });
       } catch (error) {
         console.error('[MobileHeader] Logout error:', error);
@@ -57,7 +57,7 @@ export default function MobileHeader({
           title: "로그아웃 실패",
           description: "로그아웃 중 오류가 발생했습니다.",
           variant: "destructive",
-          duration: 5000
+          duration: 500
         });
       } finally {
         setTimeout(() => setIsProcessing(false), 1000);
@@ -77,13 +77,13 @@ export default function MobileHeader({
           toast({
             title: "앱에서는 로그인 불가",
             description: "Chrome이나 Safari에서 열어주세요. (주소 복사됨)",
-            duration: 5000
+            duration: 500
           });
         } else if (error.message === 'WEBVIEW_CLIPBOARD_FAILED') {
           toast({
             title: "앱에서는 로그인 불가",
             description: "Chrome이나 Safari에서 열어주세요.",
-            duration: 5000
+            duration: 500
           });
         } else {
           toast({

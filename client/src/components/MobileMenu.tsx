@@ -36,7 +36,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         title: "로그인 필요",
         description: "Google Drive 백업은 로그인이 필요합니다.",
         variant: "destructive",
-        duration: 5000,
+        duration: 500,
       });
       onClose();
       setLocation("/login");
@@ -47,7 +47,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       toast({
         title: "백업 중...",
         description: "Google Drive에 백업하는 중입니다.",
-        duration: 5000,
+        duration: 500,
       });
 
       const response = await fetch('/api/backup/drive/upload', {
@@ -61,7 +61,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         toast({
           title: "백업 완료",
           description: "Google Drive에 성공적으로 백업되었습니다.",
-          duration: 5000,
+          duration: 500,
         });
       } else {
         throw new Error(result.error || '백업 실패');
@@ -71,7 +71,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         title: "백업 실패",
         description: error instanceof Error ? error.message : "Google Drive 백업 중 오류가 발생했습니다.",
         variant: "destructive",
-        duration: 5000,
+        duration: 500,
       });
     }
     onClose();
@@ -84,7 +84,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         title: "로그인 필요",
         description: "Google Drive 복원은 로그인이 필요합니다.",
         variant: "destructive",
-        duration: 5000,
+        duration: 500,
       });
       onClose();
       setLocation("/login");
@@ -95,7 +95,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       toast({
         title: "불러오는 중...",
         description: "Google Drive에서 백업 파일을 불러오는 중입니다.",
-        duration: 5000,
+        duration: 500,
       });
 
       const listResponse = await fetch('/api/backup/drive/list', {
@@ -109,7 +109,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         toast({
           title: "백업 파일 없음",
           description: "Google Drive에 백업 파일이 없습니다.",
-          duration: 5000,
+          duration: 500,
         });
         onClose();
         return;
@@ -145,7 +145,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         toast({
           title: "복원 완료",
           description: importResult.message || `${importResult.imported}개의 데이터를 복원했습니다.`,
-          duration: 5000,
+          duration: 500,
         });
         setTimeout(() => window.location.reload(), 1000);
       } else {
@@ -156,7 +156,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         title: "복원 실패",
         description: error instanceof Error ? error.message : "Google Drive 복원 중 오류가 발생했습니다.",
         variant: "destructive",
-        duration: 5000,
+        duration: 500,
       });
     }
     onClose();
