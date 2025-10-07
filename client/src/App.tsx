@@ -4,20 +4,9 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { FontProvider } from "@/contexts/FontContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
 import MobileHeader from "@/components/MobileHeader";
 import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -65,16 +54,12 @@ function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("home");
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showExitDialog, setShowExitDialog] = useState(false);
-  const { toast } = useToast();
   const [location, setLocation] = useLocation();
   
   const previousLocation = useRef<string>("");
   const justCameFromOtherPage = useRef(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
-  const backPressedOnce = useRef(false);
-  const backPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
@@ -184,48 +169,15 @@ function AppContent() {
     previousLocation.current = location;
   }, [location]);
 
-  // 종료 처리 함수
-  const handleExit = () => {
-    // Exit 페이지로 이동하여 친절한 종료 메시지 표시
-    setLocation("/exit");
-  };
-
-  // 뒤로가기 이벤트 처리
+  // 뒤로가기 이벤트 처리 - 메인 화면에서 뒤로가기 시 바로 종료
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       // 현재 홈 페이지이거나 루트 경로에 있을 때만 종료 로직 실행
       if (window.location.pathname === "/" || window.location.pathname === "/home") {
         event.preventDefault();
         
-        // 현재 위치를 다시 히스토리에 추가해서 뒤로가기를 방지
-        history.pushState(null, "", window.location.pathname);
-        
-        // 첫 번째 뒤로가기
-        if (!backPressedOnce.current) {
-          backPressedOnce.current = true;
-          
-          toast({
-            title: "한 번 더 누르면 종료됩니다",
-            duration: 2000,
-          });
-          
-          // 2초 후 리셋
-          if (backPressTimer.current) {
-            clearTimeout(backPressTimer.current);
-          }
-          backPressTimer.current = setTimeout(() => {
-            backPressedOnce.current = false;
-          }, 2000);
-        } 
-        // 두 번째 뒤로가기 (2초 이내)
-        else {
-          if (backPressTimer.current) {
-            clearTimeout(backPressTimer.current);
-          }
-          backPressedOnce.current = false;
-          // 앱 종료
-          setLocation("/exit");
-        }
+        // 바로 종료
+        setLocation("/exit");
       }
     };
 
@@ -239,11 +191,8 @@ function AppContent() {
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      if (backPressTimer.current) {
-        clearTimeout(backPressTimer.current);
-      }
     };
-  }, [toast, setLocation]);
+  }, [setLocation]);
 
   // 키보드 이벤트로도 뒤로가기 감지 (안드로이드 하드웨어 뒤로가기 버튼)
   useEffect(() => {
@@ -253,32 +202,8 @@ function AppContent() {
           (window.location.pathname === "/" || window.location.pathname === "/home")) {
         event.preventDefault();
         
-        // 첫 번째 뒤로가기
-        if (!backPressedOnce.current) {
-          backPressedOnce.current = true;
-          
-          toast({
-            title: "한 번 더 누르면 종료됩니다",
-            duration: 2000,
-          });
-          
-          // 2초 후 리셋
-          if (backPressTimer.current) {
-            clearTimeout(backPressTimer.current);
-          }
-          backPressTimer.current = setTimeout(() => {
-            backPressedOnce.current = false;
-          }, 2000);
-        } 
-        // 두 번째 뒤로가기 (2초 이내)
-        else {
-          if (backPressTimer.current) {
-            clearTimeout(backPressTimer.current);
-          }
-          backPressedOnce.current = false;
-          // 앱 종료
-          setLocation("/exit");
-        }
+        // 바로 종료
+        setLocation("/exit");
       }
     };
 
@@ -287,7 +212,7 @@ function AppContent() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [toast, setLocation]);
+  }, [setLocation]);
 
   // 궁합 페이지인지 확인
   const isCompatibilityPage = location === "/compatibility";
@@ -323,33 +248,6 @@ function AppContent() {
           onClose={handleCloseMenu}
         />
       )}
-      
-      {/* 종료 확인 대화상자 */}
-      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-center text-lg font-bold">지천명 만세력 종료</AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-base">
-              앱을 종료 하겠습니까?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row gap-2 justify-center">
-            <AlertDialogCancel 
-              className="flex-1"
-              data-testid="button-exit-cancel"
-            >
-              아니오
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleExit}
-              className="flex-1"
-              data-testid="button-exit-confirm"
-            >
-              예
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       
       <Toaster />
     </div>
