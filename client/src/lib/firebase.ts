@@ -38,9 +38,10 @@ const isPWA = () => {
 
 // WebView 환경 감지 (Android 및 iOS) - PWA 제외
 const isWebView = () => {
-  // PWA는 WebView가 아님
-  if (isPWA()) {
-    console.log('[Firebase] PWA detected - not a WebView');
+  // PWA는 절대 WebView가 아님 (가장 먼저 체크!)
+  const pwaCheck = isPWA();
+  if (pwaCheck) {
+    console.log('[Firebase] PWA detected - NOT a WebView');
     return false;
   }
   
@@ -93,15 +94,20 @@ const isWebView = () => {
 export const signInWithGoogle = async () => {
   console.log('[Firebase] ===== 로그인 시작 =====');
   console.log('[Firebase] User Agent:', navigator.userAgent);
-  console.log('[Firebase] isPWA():', isPWA());
-  console.log('[Firebase] isWebView():', isWebView());
-  console.log('[Firebase] display-mode:', window.matchMedia('(display-mode: standalone)').matches);
+  
+  // PWA 체크를 먼저 실행
+  const pwaDetected = isPWA();
+  const webViewDetected = isWebView();
+  
+  console.log('[Firebase] PWA 감지:', pwaDetected);
+  console.log('[Firebase] WebView 감지:', webViewDetected);
+  console.log('[Firebase] display-mode standalone:', window.matchMedia('(display-mode: standalone)').matches);
   console.log('[Firebase] navigator.standalone:', (navigator as any).standalone);
   console.log('[Firebase] document.referrer:', document.referrer);
   
-  // WebView 환경이면 외부 브라우저로 열기
-  if (isWebView()) {
-    console.log('[Firebase] WebView detected, opening in external browser');
+  // WebView 환경이면 외부 브라우저로 열기 (단, PWA가 아닐 때만)
+  if (webViewDetected && !pwaDetected) {
+    console.log('[Firebase] WebView (NOT PWA) detected, opening in external browser');
     const currentUrl = window.location.href;
     
     // 외부 브라우저로 URL 열기 시도
