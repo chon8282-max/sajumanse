@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manseryeok-v5';
+const CACHE_NAME = 'manseryeok-v6-nocache';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -69,8 +69,11 @@ self.addEventListener('fetch', function(event) {
               return response;
             }
             
-            // 정적 리소스만 캐시 (HTML, CSS, JS, 이미지 등)
-            if (event.request.url.indexOf('http') === 0 && event.request.url.indexOf('/api/') === -1) {
+            // JavaScript 제외하고 정적 리소스만 캐시 (HTML, CSS, 이미지 등)
+            // JS 파일은 항상 최신 버전을 가져오도록 캐시하지 않음
+            if (event.request.url.indexOf('http') === 0 && 
+                event.request.url.indexOf('/api/') === -1 &&
+                !event.request.url.match(/\.js$|\.ts$|\.jsx$|\.tsx$/)) {
               var responseToCache = response.clone();
               caches.open(CACHE_NAME)
                 .then(function(cache) {
