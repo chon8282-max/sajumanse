@@ -11,7 +11,6 @@ import MobileHeader from "@/components/MobileHeader";
 import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
 import Home from "@/pages/Home";
-import Exit from "@/pages/Exit";
 import Manseryeok from "@/pages/Manseryeok";
 import Calendar from "@/pages/Calendar";
 import SajuInput from "@/pages/SajuInput";
@@ -44,7 +43,6 @@ function Router() {
       <Route path="/announcements" component={Announcements} />
       <Route path="/announcements/:id" component={AnnouncementDetail} />
       <Route path="/announcement-admin" component={AnnouncementAdmin} />
-      <Route path="/exit" component={Exit} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -174,17 +172,15 @@ function AppContent() {
     const handlePopState = (event: PopStateEvent) => {
       const currentPath = window.location.pathname;
       
-      // Exit 페이지에서 뒤로가기 시 즉시 앱 종료
-      if (currentPath === "/exit") {
-        event.preventDefault();
-        window.close();
-        return;
-      }
-      
-      // 홈 페이지에서 뒤로가기 시 Exit 페이지로 이동
+      // 홈 페이지에서 뒤로가기 시 즉시 앱 종료
       if (currentPath === "/" || currentPath === "/home") {
         event.preventDefault();
-        setLocation("/exit");
+        // PWA나 WebView에서 앱 종료
+        if (window.close) {
+          window.close();
+        }
+        // 일반 브라우저에서는 이전 페이지로 이동 방지
+        history.pushState(null, "", window.location.pathname);
       }
     };
 
@@ -210,15 +206,11 @@ function AppContent() {
       if (event.key === 'GoBack' || event.keyCode === 4) {
         event.preventDefault();
         
-        // Exit 페이지에서는 즉시 종료
-        if (currentPath === "/exit") {
-          window.close();
-          return;
-        }
-        
-        // 홈 페이지에서는 Exit 페이지로 이동
+        // 홈 페이지에서는 즉시 앱 종료
         if (currentPath === "/" || currentPath === "/home") {
-          setLocation("/exit");
+          if (window.close) {
+            window.close();
+          }
         }
       }
     };
@@ -228,7 +220,7 @@ function AppContent() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [setLocation]);
+  }, []);
 
   // 궁합 페이지인지 확인
   const isCompatibilityPage = location === "/compatibility";
