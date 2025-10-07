@@ -92,6 +92,9 @@ const isWebView = () => {
 
 export const signInWithGoogle = async () => {
   console.log('[Firebase] signInWithGoogle called');
+  console.log('[Firebase] User Agent:', navigator.userAgent);
+  console.log('[Firebase] isPWA:', isPWA());
+  console.log('[Firebase] isWebView:', isWebView());
   
   // WebView 환경이면 외부 브라우저로 열기
   if (isWebView()) {
@@ -133,6 +136,20 @@ export const signInWithGoogle = async () => {
     console.error('[Firebase] Popup login error:', error);
     console.error('[Firebase] Error code:', error?.code);
     console.error('[Firebase] Error message:', error?.message);
+    
+    // 팝업 실패 시 리디렉션 시도 (모바일에서 자주 발생)
+    if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+      console.log('[Firebase] Popup failed, trying redirect...');
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        console.log('[Firebase] Redirect initiated');
+        return;
+      } catch (redirectError: any) {
+        console.error('[Firebase] Redirect also failed:', redirectError);
+        throw redirectError;
+      }
+    }
+    
     throw error;
   }
 };
