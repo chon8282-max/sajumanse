@@ -28,8 +28,22 @@ googleProvider.setCustomParameters({
   prompt: 'consent'
 });
 
-// WebView 환경 감지 (Android 및 iOS)
+// PWA (Progressive Web App) 환경 감지
+const isPWA = () => {
+  // Standalone 모드 (홈 화면에 추가된 상태)
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         (navigator as any).standalone === true ||
+         document.referrer.includes('android-app://');
+};
+
+// WebView 환경 감지 (Android 및 iOS) - PWA 제외
 const isWebView = () => {
+  // PWA는 WebView가 아님
+  if (isPWA()) {
+    console.log('[Firebase] PWA detected - not a WebView');
+    return false;
+  }
+  
   const userAgent = navigator.userAgent.toLowerCase();
   
   // Android WebView 감지
