@@ -179,20 +179,23 @@ router.get("/callback", async (req: AuthRequest, res) => {
       isMaster: false,
     });
 
-    // 세션에 사용자 ID 저장
-    req.session.userId = user.id;
+    // 서명된 쿠키에 사용자 ID 저장 (배포 환경에서 안정적)
+    const isReplit = !!process.env.REPLIT_DOMAINS;
+    res.cookie("userId", user.id, {
+      signed: true,
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
+    });
+
+    // OAuth 임시 데이터 정리
     req.session.codeVerifier = undefined;
     req.session.state = undefined;
 
-    // 세션 명시적 저장 후 리다이렉트
-    req.session.save((err) => {
-      if (err) {
-        console.error("Session save error after login:", err);
-      }
-      console.log("Login successful, user ID:", user.id);
-      // 프론트엔드로 리다이렉트
-      res.redirect("/");
-    });
+    console.log("✅ Login successful, user ID:", user.id);
+    // 프론트엔드로 리다이렉트
+    res.redirect("/");
   } catch (error) {
     console.error("OAuth callback error:", error);
     console.error("Error details:", error instanceof Error ? error.message : String(error));
@@ -203,10 +206,13 @@ router.get("/callback", async (req: AuthRequest, res) => {
 
 // 로그아웃
 router.post("/logout", (req: AuthRequest, res) => {
+  // 서명된 쿠키 삭제
+  res.clearCookie("userId");
+  
+  // 세션도 정리 (OAuth 임시 데이터용)
   req.session.destroy((err: any) => {
     if (err) {
       console.error("Logout error:", err);
-      return res.status(500).json({ error: "로그아웃 중 오류가 발생했습니다." });
     }
     res.json({ success: true });
   });
@@ -215,7 +221,8 @@ router.post("/logout", (req: AuthRequest, res) => {
 // 현재 사용자 정보
 router.get("/user", async (req: AuthRequest, res) => {
   try {
-    const userId = req.session.userId;
+    // 서명된 쿠키에서 userId 읽기
+    const userId = req.signedCookies.userId;
     
     if (!userId) {
       return res.json({ user: null });
@@ -224,7 +231,8 @@ router.get("/user", async (req: AuthRequest, res) => {
     const user = await storage.getUser(userId);
     
     if (!user) {
-      req.session.destroy(() => {});
+      // 쿠키 삭제
+      res.clearCookie("userId");
       return res.json({ user: null });
     }
 

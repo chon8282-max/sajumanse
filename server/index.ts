@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import path from "path";
@@ -28,10 +29,12 @@ if (!process.env.SESSION_SECRET) {
 // 환경 감지: Replit 도메인 감지 (개발/배포 모두 HTTPS 사용)
 const isReplit = !!process.env.REPLIT_DOMAINS;
 
-console.log(`🔒 Session cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
+console.log(`🔒 Cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
 
-// 세션 설정: 메모리 스토어 (빠른 시작, OAuth 재로그인 필요)
-// TODO: 배포 성공 후 DB 세션 스토어로 복원 예정
+// 서명된 쿠키 파서 (OAuth userId 저장용)
+app.use(cookieParser(process.env.SESSION_SECRET));
+
+// 세션 설정 (OAuth state/verifier 임시 저장용만 사용)
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -42,12 +45,12 @@ app.use(
       secure: isReplit,
       httpOnly: true,
       sameSite: isReplit ? "none" : "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
+      maxAge: 10 * 60 * 1000, // OAuth 플로우용 10분만 유지
     },
   })
 );
 
-console.log("⚠️  Using memory session store (sessions lost on restart)");
+console.log("✅ Using signed cookies for auth + memory session for OAuth flow");
 
 app.use((req, res, next) => {
   const start = Date.now();
