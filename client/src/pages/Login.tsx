@@ -1,14 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
-import { LogIn } from "lucide-react";
+import { LogIn, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
+  const [isStandalone] = useState(() => 
+    window.matchMedia('(display-mode: standalone)').matches || 
+    (window.navigator as any).standalone
+  );
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -77,6 +82,16 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isStandalone && (
+              <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
+                <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>앱 사용자 안내:</strong> 로그인 버튼을 누르면 브라우저가 열립니다. 
+                  로그인 완료 후 <strong>이 앱으로 다시 돌아오면</strong> 자동으로 로그인됩니다.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <Button
               className="w-full"
               size="lg"
