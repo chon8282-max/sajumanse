@@ -23,10 +23,12 @@ function getRedirectUri(req?: Request) {
   }
   
   // Fallback: Replit 환경에서는 REPLIT_DOMAINS 환경 변수 사용
-  const replitDomain = process.env.REPLIT_DOMAINS;
+  const replitDomains = process.env.REPLIT_DOMAINS;
   
-  if (replitDomain) {
-    const uri = `https://${replitDomain}/api/auth/callback`;
+  if (replitDomains) {
+    // REPLIT_DOMAINS는 쉼표로 구분된 여러 도메인을 포함할 수 있음
+    const firstDomain = replitDomains.split(',')[0].trim();
+    const uri = `https://${firstDomain}/api/auth/callback`;
     console.log("OAuth Redirect URI from env:", uri);
     return uri;
   }
@@ -198,16 +200,25 @@ router.get("/callback", async (req: Request, res) => {
     res.clearCookie("oauth_state", clearCookieOptions);
 
     console.log("✅ Login successful, user ID:", user.id);
-    // 프론트엔드로 리다이렉트
-    res.redirect("/");
+    
+    // 프론트엔드로 리다이렉트 (완전한 URL 사용)
+    const host = req.get('host');
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const redirectUrl = `${protocol}://${host}/`;
+    console.log("Redirecting to:", redirectUrl);
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error("OAuth callback error:", error);
     console.error("Error details:", error instanceof Error ? error.message : String(error));
     console.error("Stack:", error instanceof Error ? error.stack : "");
     
-    // 디버깅: 오류 메시지를 URL에 포함
+    // 디버깅: 오류 메시지를 URL에 포함 (완전한 URL 사용)
     const errorMsg = error instanceof Error ? error.message : String(error);
-    res.redirect(`/?error=auth_failed&details=${encodeURIComponent(errorMsg)}`);
+    const host = req.get('host');
+    const protocol = host?.includes('localhost') ? 'http' : 'https';
+    const redirectUrl = `${protocol}://${host}/?error=auth_failed&details=${encodeURIComponent(errorMsg)}`;
+    console.log("Redirecting to (error):", redirectUrl);
+    res.redirect(redirectUrl);
   }
 });
 
