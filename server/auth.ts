@@ -140,7 +140,7 @@ router.get("/callback", async (req: AuthRequest, res) => {
 
     // DB에 사용자 저장/업데이트
     const user = await storage.upsertUser({
-      id: userinfo.id,
+      id: userinfo.sub, // Google User ID는 'sub' 필드
       email: userinfo.email,
       displayName: userinfo.name || userinfo.email,
       photoUrl: userinfo.picture,
