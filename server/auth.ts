@@ -164,19 +164,19 @@ router.get("/user", async (req: AuthRequest, res) => {
     const userId = req.session.userId;
     
     if (!userId) {
-      return res.status(401).json({ error: "로그인이 필요합니다." });
+      return res.status(401).json({ user: null });
     }
 
     const user = await storage.getUser(userId);
     
     if (!user) {
       req.session.destroy(() => {});
-      return res.status(401).json({ error: "사용자를 찾을 수 없습니다." });
+      return res.status(401).json({ user: null });
     }
 
     // 토큰 제외하고 반환
     const { accessToken, refreshToken, ...userWithoutTokens } = user;
-    res.json(userWithoutTokens);
+    res.json({ user: userWithoutTokens });
   } catch (error) {
     console.error("Get user error:", error);
     res.status(500).json({ error: "사용자 정보 조회 중 오류가 발생했습니다." });

@@ -18,6 +18,12 @@ import { z } from "zod";
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // ========================================
+  // 인증 API 라우트
+  // ========================================
+  const authRouter = (await import('./auth')).default;
+  app.use("/api/auth", authRouter);
+  
+  // ========================================
   // 그룹 관련 API 라우트
   // ========================================
 
