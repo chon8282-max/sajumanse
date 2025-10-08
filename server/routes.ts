@@ -1611,7 +1611,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Google Drive 백업 업로드
   app.post("/api/backup/drive/upload", async (req: any, res) => {
     try {
-      const userId = req.session?.userId;
+      const userId = req.signedCookies.userId;
       
       if (!userId) {
         return res.status(401).json({ 
@@ -1651,7 +1651,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Google Drive 백업 목록 조회
   app.post("/api/backup/drive/list", async (req: any, res) => {
     try {
-      const userId = req.session?.userId;
+      const userId = req.signedCookies.userId;
       
       if (!userId) {
         return res.status(401).json({ 
@@ -1685,7 +1685,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Google Drive 백업 다운로드
   app.post("/api/backup/drive/download", async (req: any, res) => {
     try {
-      const userId = req.session?.userId;
+      const userId = req.signedCookies.userId;
       
       if (!userId) {
         return res.status(401).json({ 
