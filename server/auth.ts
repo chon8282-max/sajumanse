@@ -21,9 +21,16 @@ const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
 function getRedirectUri() {
-  return process.env.NODE_ENV === "production"
-    ? "https://manseryeog-chon8282.replit.app/api/auth/callback"
-    : "http://localhost:5000/api/auth/callback";
+  // Replit 환경에서는 REPLIT_DOMAINS 환경 변수 사용
+  const replitDomain = process.env.REPLIT_DOMAINS;
+  
+  if (replitDomain) {
+    // Replit 환경 (개발 및 프로덕션)
+    return `https://${replitDomain}/api/auth/callback`;
+  }
+  
+  // 로컬 개발 환경
+  return "http://localhost:5000/api/auth/callback";
 }
 
 // PKCE code verifier 생성
