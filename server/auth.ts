@@ -100,17 +100,26 @@ router.get("/callback", async (req: AuthRequest, res) => {
   try {
     const { code, state } = req.query;
 
+    console.log("=== OAuth Callback Debug ===");
+    console.log("Received state:", state);
+    console.log("Session state:", req.session.state);
+    console.log("Session ID:", req.sessionID);
+    console.log("Has codeVerifier:", !!req.session.codeVerifier);
+
     // State 검증
     if (!state || state !== req.session.state) {
+      console.error("State mismatch!", { received: state, expected: req.session.state });
       throw new Error("Invalid state parameter");
     }
 
     if (!code || typeof code !== "string") {
+      console.error("No code received");
       throw new Error("No authorization code received");
     }
 
     const codeVerifier = req.session.codeVerifier;
     if (!codeVerifier) {
+      console.error("No codeVerifier in session");
       throw new Error("Code verifier not found in session");
     }
 
@@ -175,8 +184,15 @@ router.get("/callback", async (req: AuthRequest, res) => {
     req.session.codeVerifier = undefined;
     req.session.state = undefined;
 
-    // 프론트엔드로 리다이렉트
-    res.redirect("/");
+    // 세션 명시적 저장 후 리다이렉트
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error after login:", err);
+      }
+      console.log("Login successful, user ID:", user.id);
+      // 프론트엔드로 리다이렉트
+      res.redirect("/");
+    });
   } catch (error) {
     console.error("OAuth callback error:", error);
     console.error("Error details:", error instanceof Error ? error.message : String(error));

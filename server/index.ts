@@ -26,7 +26,7 @@ app.use(
     store: new PgSession({
       pool: pool,
       tableName: "session",
-      createTableIfMissing: false, // 이미 스키마에서 생성됨
+      createTableIfMissing: true, // 배포 환경에서 자동 생성
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
