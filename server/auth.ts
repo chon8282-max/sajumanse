@@ -22,8 +22,8 @@ const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
 function getRedirectUri() {
   return process.env.NODE_ENV === "production"
-    ? "https://manseryeog-chon8282.replit.app/auth/callback"
-    : "http://localhost:5000/auth/callback";
+    ? "https://manseryeog-chon8282.replit.app/api/auth/callback"
+    : "http://localhost:5000/api/auth/callback";
 }
 
 // PKCE code verifier 생성
