@@ -3,12 +3,14 @@ import { pgTable, text, varchar, integer, date, boolean, timestamp, jsonb, index
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User storage table (Firebase Auth)
+// User storage table (Google OAuth)
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey(), // Firebase UID
-  email: varchar("email").unique(),
+  id: varchar("id").primaryKey(), // Google User ID (sub)
+  email: varchar("email").unique().notNull(),
   displayName: varchar("display_name"),
   photoUrl: varchar("photo_url"),
+  accessToken: text("access_token"), // Google OAuth access token (for Drive API)
+  refreshToken: text("refresh_token"), // Google OAuth refresh token
   isMaster: boolean("is_master").notNull().default(false), // 마스터 권한
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -319,10 +321,19 @@ export const fortuneResults = pgTable("fortune_results", {
 //   password: text("password").notNull(),
 // });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  email: true,
-  displayName: true,
-  photoUrl: true,
+// Session storage table (for express-session with connect-pg-simple)
+export const sessions = pgTable("session", {
+  sid: varchar("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+}, (table) => ({
+  expireIdx: index("IDX_session_expire").on(table.expire),
+}));
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
