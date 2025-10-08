@@ -1,12 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import { pool } from "./db";
 
 const app = express();
 
@@ -32,16 +30,10 @@ const isReplit = !!process.env.REPLIT_DOMAINS;
 
 console.log(`🔒 Session cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
 
-// Session store 설정 (connect-pg-simple은 lazy connection 사용)
-const PgSession = connectPgSimple(session);
-
+// 세션 설정: 메모리 스토어 (빠른 시작, OAuth 재로그인 필요)
+// TODO: 배포 성공 후 DB 세션 스토어로 복원 예정
 app.use(
   session({
-    store: new PgSession({
-      pool: pool,
-      tableName: "session",
-      createTableIfMissing: true,
-    }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -54,6 +46,8 @@ app.use(
     },
   })
 );
+
+console.log("⚠️  Using memory session store (sessions lost on restart)");
 
 app.use((req, res, next) => {
   const start = Date.now();
