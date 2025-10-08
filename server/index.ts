@@ -35,6 +35,7 @@ app.use(
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // OAuth 리다이렉트를 위해 lax 필요
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
     },
   })
