@@ -54,20 +54,28 @@ router.get("/login", (req: AuthRequest, res) => {
     req.session.codeVerifier = codeVerifier;
     req.session.state = state;
 
-    const params = new URLSearchParams({
-      client_id: process.env.GOOGLE_CLIENT_ID!,
-      redirect_uri: getRedirectUri(),
-      response_type: "code",
-      scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
-      code_challenge: codeChallenge,
-      code_challenge_method: "S256",
-      state,
-      access_type: "offline", // refresh token을 받기 위해
-      prompt: "consent", // 항상 consent 화면 표시 (refresh token 받기 위해)
-    });
+    // 세션을 명시적으로 저장 후 리다이렉트
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.status(500).json({ error: "세션 저장 중 오류가 발생했습니다." });
+      }
 
-    const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
-    res.redirect(authUrl);
+      const params = new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID!,
+        redirect_uri: getRedirectUri(),
+        response_type: "code",
+        scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
+        code_challenge: codeChallenge,
+        code_challenge_method: "S256",
+        state,
+        access_type: "offline", // refresh token을 받기 위해
+        prompt: "consent", // 항상 consent 화면 표시 (refresh token 받기 위해)
+      });
+
+      const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
+      res.redirect(authUrl);
+    });
   } catch (error) {
     console.error("OAuth login error:", error);
     res.status(500).json({ error: "로그인 시작 중 오류가 발생했습니다." });
