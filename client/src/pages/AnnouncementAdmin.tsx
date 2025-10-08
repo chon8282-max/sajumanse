@@ -29,19 +29,18 @@ import { ko } from "date-fns/locale";
 import { ChevronLeft, Plus, Edit, Trash2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { auth } from "@/lib/firebase";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function AnnouncementAdmin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  const currentUser = auth.currentUser;
 
   const { data: announcementsData, isLoading } = useQuery<{ success: boolean; data: Announcement[] }>({
     queryKey: ["/api/announcements"],
@@ -138,7 +137,7 @@ export default function AnnouncementAdmin() {
   });
 
   const handleCreate = () => {
-    if (!currentUser?.uid) {
+    if (!currentUser?.id) {
       toast({
         title: "권한 오류",
         description: "로그인이 필요합니다.",
@@ -159,7 +158,7 @@ export default function AnnouncementAdmin() {
     createMutation.mutate({
       title: title.trim(),
       content: content.trim(),
-      authorId: currentUser.uid,
+      authorId: currentUser.id,
     });
   };
 

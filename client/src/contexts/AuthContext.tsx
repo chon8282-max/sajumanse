@@ -1,19 +1,26 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User } from "firebase/auth";
-import { auth, onAuthStateChanged, getRedirectResult } from "@/lib/firebase";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, getQueryFn } from "@/lib/queryClient";
+
+interface User {
+  id: string;
+  email: string;
+  displayName: string | null;
+  photoUrl: string | null;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
-  googleAccessToken: string | null;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isAuthenticated: false,
-  googleAccessToken: null,
+  logout: async () => {},
 });
 
 export const useAuth = () => {
@@ -30,48 +37,47 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
+
+  const { data, isLoading } = useQuery<{ user: User | null } | null>({
+    queryKey: ['/api/auth/user'],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
-    // 최대 2초 후 강제로 로딩 해제
-    const loadingTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 2000);
-    
-    // Auth 상태 변화 감지
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      clearTimeout(loadingTimeout);
-      setUser(currentUser);
-      setLoading(false);
-      
-      if (!currentUser) {
-        setGoogleAccessToken(null);
-        localStorage.removeItem('googleAccessToken');
-      } else {
-        const token = localStorage.getItem('googleAccessToken');
-        if (token) {
-          setGoogleAccessToken(token);
-        }
-      }
-    });
-
-    // 저장된 토큰 확인
-    const storedToken = localStorage.getItem('googleAccessToken');
-    if (storedToken) {
-      setGoogleAccessToken(storedToken);
+    if (data?.user) {
+      setUser(data.user);
+    } else {
+      setUser(null);
     }
+  }, [data]);
 
-    return () => {
-      clearTimeout(loadingTimeout);
-      unsubscribe();
-    };
-  }, []);
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Logout failed');
+      }
+    },
+    onSuccess: () => {
+      setUser(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+  });
+
+  const logout = async () => {
+    await logoutMutation.mutateAsync();
+  };
 
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated, googleAccessToken }}>
+    <AuthContext.Provider value={{ user, loading: isLoading, isAuthenticated, logout }}>
       {children}
     </AuthContext.Provider>
   );

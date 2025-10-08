@@ -5,7 +5,6 @@ import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } 
 import { format } from "date-fns";
 import logoPath from "@assets/만세력아이콘1_1759804001975.png";
 import { useAuth } from "@/contexts/AuthContext";
-import { signInWithGoogle, signOut } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -22,7 +21,7 @@ export default function MobileHeader({
   onThemeToggle, 
   onMenuClick
 }: MobileHeaderProps) {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -38,7 +37,8 @@ export default function MobileHeader({
     // 로그인 상태면 로그아웃
     if (isAuthenticated && user) {
       try {
-        await signOut();
+        await logout();
+        setLocation('/');
         toast({
           title: "로그아웃",
           description: "로그아웃되었습니다.",
@@ -55,36 +55,7 @@ export default function MobileHeader({
     } 
     // 로그인 안된 상태면 로그인
     else {
-      try {
-        await signInWithGoogle();
-      } catch (error: any) {
-        if (error.message === 'WEBVIEW_CLIPBOARD_SUCCESS') {
-          toast({
-            title: "앱에서는 로그인 불가",
-            description: "Chrome이나 Safari에서 열어주세요. (주소 복사됨)",
-            duration: 10000
-          });
-        } else if (error.message === 'WEBVIEW_CLIPBOARD_FAILED') {
-          toast({
-            title: "앱에서는 로그인 불가",
-            description: "Chrome이나 Safari에서 열어주세요.",
-            duration: 10000
-          });
-        } else if (error.message === 'WEBVIEW_EXTERNAL_BROWSER_OPENED') {
-          toast({
-            title: "외부 브라우저에서 로그인",
-            description: "열린 브라우저에서 로그인을 진행해주세요.",
-            duration: 10000
-          });
-        } else {
-          toast({
-            title: "로그인 실패",
-            description: error?.message || "로그인 중 오류가 발생했습니다.",
-            variant: "destructive",
-            duration: 10000
-          });
-        }
-      }
+      window.location.href = '/api/auth/login';
     }
   };
 
