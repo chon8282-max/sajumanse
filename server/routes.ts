@@ -1601,8 +1601,11 @@ export async function registerRoutes(app: Express): Promise<void> {
       res.json({
         success: true,
         imported: result.imported,
+        sajuRecordsCount: result.sajuRecordsCount,
+        groupsCount: result.groupsCount,
+        fortuneResultsCount: result.fortuneResultsCount,
         errors: result.errors,
-        message: `${result.imported}개의 데이터를 성공적으로 복원했습니다.`
+        message: `${result.sajuRecordsCount}개의 사주 기록을 성공적으로 복원했습니다.`
       });
     } catch (error) {
       console.error('Import error:', error);
