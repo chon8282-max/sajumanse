@@ -76,7 +76,7 @@ app.use((req, res, next) => {
 
 (async () => {
   // Auth routes 등록
-  app.use("/auth", authRouter);
+  app.use("/api/auth", authRouter);
   
   const server = await registerRoutes(app);
 
