@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
@@ -15,7 +14,7 @@ import {
 import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<void> {
   
   // ========================================
   // 인증 API 라우트
@@ -1890,6 +1889,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // 라우트 등록만 수행 (서버는 index.ts에서 생성)
 }

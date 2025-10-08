@@ -13,8 +13,17 @@ const app = express();
 // Trust all proxies for secure cookies behind Replit multi-hop proxy
 app.set("trust proxy", true);
 
+// Health check endpoint (DB 의존성 없음, 즉시 응답)
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 // Session secret 검증
 if (!process.env.SESSION_SECRET) {
+  console.error("❌ SESSION_SECRET is not set!");
   throw new Error("SESSION_SECRET must be set. Please add it to your environment variables.");
 }
 
@@ -23,7 +32,7 @@ const isReplit = !!process.env.REPLIT_DOMAINS;
 
 console.log(`🔒 Session cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
 
-// Session store 설정
+// Session store 설정 (connect-pg-simple은 lazy connection 사용)
 const PgSession = connectPgSimple(session);
 
 app.use(
@@ -31,23 +40,20 @@ app.use(
     store: new PgSession({
       pool: pool,
       tableName: "session",
-      createTableIfMissing: true, // 배포 환경에서 자동 생성
+      createTableIfMissing: true,
     }),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    proxy: true, // Trust upstream proxy for secure cookies
+    proxy: true,
     cookie: {
-      secure: isReplit, // Replit은 HTTPS, localhost는 HTTP
+      secure: isReplit,
       httpOnly: true,
-      sameSite: isReplit ? "none" : "lax", // Replit: 크로스 사이트 OAuth, localhost: lax
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
+      sameSite: isReplit ? "none" : "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     },
   })
 );
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -80,58 +86,73 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
-
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    // Production: serve static files from dist/public
-    // Try multiple path resolution strategies for Replit deployment
-    const possiblePaths = [
-      path.resolve(import.meta.dirname, "..", "dist", "public"),
-      path.resolve(import.meta.dirname, "public"),
-      path.resolve(process.cwd(), "dist", "public"),
-      path.join("/app", "dist", "public")
-    ];
+  try {
+    // 1️⃣ 먼저 HTTP 서버 생성
+    const { createServer } = await import("http");
+    const server = createServer(app);
     
-    let distPath: string | null = null;
-    for (const testPath of possiblePaths) {
-      if (fs.existsSync(testPath)) {
-        distPath = testPath;
-        log(`Found static files at: ${distPath}`);
-        break;
-      }
-    }
+    const port = parseInt(process.env.PORT || '5000', 10);
     
-    if (!distPath) {
-      const errorMsg = `Could not find build directory. Tried: ${possiblePaths.join(", ")}`;
-      log(errorMsg);
-      throw new Error(errorMsg);
-    }
-    
-    app.use(express.static(distPath));
-    app.use("*", (_req, res) => {
-      res.sendFile(path.resolve(distPath!, "index.html"));
+    // 2️⃣ 즉시 서버 시작 (헬스 체크 응답 가능)
+    server.listen(port, "0.0.0.0", () => {
+      log(`✅ Server listening on port ${port} (health check ready)`);
     });
-  }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen(port, "0.0.0.0", () => {
-    log(`serving on port ${port}`);
-  });
+    // 3️⃣ 백그라운드에서 라우트 및 정적 파일 설정
+    (async () => {
+      try {
+        // 라우트 등록 (비동기 작업)
+        await registerRoutes(app);
+        log("✅ Routes registered");
+
+        // 에러 핸들러
+        app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+          const status = err.status || err.statusCode || 500;
+          const message = err.message || "Internal Server Error";
+          res.status(status).json({ message });
+          throw err;
+        });
+
+        // 정적 파일 설정
+        if (app.get("env") === "development") {
+          await setupVite(app, server);
+          log("✅ Vite dev server ready");
+        } else {
+          const possiblePaths = [
+            path.resolve(import.meta.dirname, "..", "dist", "public"),
+            path.resolve(import.meta.dirname, "public"),
+            path.resolve(process.cwd(), "dist", "public"),
+            path.join("/app", "dist", "public")
+          ];
+          
+          let distPath: string | null = null;
+          for (const testPath of possiblePaths) {
+            if (fs.existsSync(testPath)) {
+              distPath = testPath;
+              log(`Found static files at: ${distPath}`);
+              break;
+            }
+          }
+          
+          if (!distPath) {
+            const errorMsg = `Could not find build directory. Tried: ${possiblePaths.join(", ")}`;
+            log(errorMsg);
+            throw new Error(errorMsg);
+          }
+          
+          app.use(express.static(distPath));
+          app.use("*", (_req, res) => {
+            res.sendFile(path.resolve(distPath!, "index.html"));
+          });
+          log("✅ Static files ready");
+        }
+      } catch (error) {
+        console.error("⚠️  Background initialization error:", error);
+      }
+    })();
+
+  } catch (error) {
+    console.error("❌ Fatal startup error:", error);
+    process.exit(1);
+  }
 })();
