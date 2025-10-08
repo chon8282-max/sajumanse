@@ -1604,14 +1604,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Google Drive 백업 업로드
-  app.post("/api/backup/drive/upload", async (req, res) => {
+  app.post("/api/backup/drive/upload", async (req: any, res) => {
     try {
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ 
+          error: "로그인이 필요합니다." 
+        });
+      }
+
       const data = await storage.exportAllData();
       const fileName = `saju-backup-${data.exportDate.split('T')[0]}.json`;
       const fileContent = JSON.stringify(data, null, 2);
 
       const { uploadBackupToDrive } = await import('./google-drive');
-      const result = await uploadBackupToDrive(fileName, fileContent);
+      const result = await uploadBackupToDrive(userId, fileName, fileContent);
       
       res.json({
         success: true,
@@ -1622,6 +1630,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Google Drive upload error:', error);
       
+      if (error.message === "AUTH_EXPIRED") {
+        return res.status(401).json({ 
+          error: "인증 만료",
+          code: "AUTH_EXPIRED"
+        });
+      }
+      
       res.status(500).json({ 
         error: "Google Drive 백업 중 오류가 발생했습니다." 
       });
@@ -1629,10 +1644,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Google Drive 백업 목록 조회
-  app.post("/api/backup/drive/list", async (req, res) => {
+  app.post("/api/backup/drive/list", async (req: any, res) => {
     try {
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ 
+          error: "로그인이 필요합니다." 
+        });
+      }
+
       const { listBackupsFromDrive } = await import('./google-drive');
-      const files = await listBackupsFromDrive();
+      const files = await listBackupsFromDrive(userId);
       
       res.json({
         success: true,
@@ -1641,6 +1664,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Google Drive list error:', error);
       
+      if (error.message === "AUTH_EXPIRED") {
+        return res.status(401).json({ 
+          error: "인증 만료",
+          code: "AUTH_EXPIRED"
+        });
+      }
+      
       res.status(500).json({ 
         error: "Google Drive 목록 조회 중 오류가 발생했습니다." 
       });
@@ -1648,8 +1678,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Google Drive 백업 다운로드
-  app.post("/api/backup/drive/download", async (req, res) => {
+  app.post("/api/backup/drive/download", async (req: any, res) => {
     try {
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ 
+          error: "로그인이 필요합니다." 
+        });
+      }
+
       const { fileId } = req.body;
       
       if (!fileId || typeof fileId !== 'string' || fileId.length === 0) {
@@ -1659,7 +1697,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { downloadBackupFromDrive } = await import('./google-drive');
-      const data = await downloadBackupFromDrive(fileId);
+      const data = await downloadBackupFromDrive(userId, fileId);
       
       res.json({
         success: true,
@@ -1667,6 +1705,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error('Google Drive download error:', error);
+      
+      if (error.message === "AUTH_EXPIRED") {
+        return res.status(401).json({ 
+          error: "인증 만료",
+          code: "AUTH_EXPIRED"
+        });
+      }
       
       res.status(500).json({ 
         error: "Google Drive 다운로드 중 오류가 발생했습니다." 

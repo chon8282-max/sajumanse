@@ -29,9 +29,10 @@ import { randomUUID } from "crypto";
 
 // 만세력 데이터를 위한 스토리지 인터페이스 확장
 export interface IStorage {
-  // 사용자 관련 (Replit Auth)
+  // 사용자 관련 (Google OAuth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  updateUserTokens(id: string, tokens: { accessToken: string; refreshToken?: string }): Promise<void>;
   
   // 만세력 관련 (기존 호환성)
   getManseRyeok(id: string): Promise<ManseRyeok | undefined>;
@@ -111,6 +112,17 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  async updateUserTokens(id: string, tokens: { accessToken: string; refreshToken?: string }): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        accessToken: tokens.accessToken,
+        ...(tokens.refreshToken && { refreshToken: tokens.refreshToken }),
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
   }
 
   // 만세력 관련 메서드
@@ -607,11 +619,29 @@ export class MemStorage implements IStorage {
     const user: User = { 
       ...userData, 
       id,
+      email: userData.email || '',
+      displayName: userData.displayName || null,
+      photoUrl: userData.photoUrl || null,
+      accessToken: userData.accessToken || null,
+      refreshToken: userData.refreshToken || null,
+      isMaster: userData.isMaster || false,
       createdAt: this.users.get(id)?.createdAt || new Date(),
       updatedAt: new Date(),
     };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUserTokens(id: string, tokens: { accessToken: string; refreshToken?: string }): Promise<void> {
+    const user = this.users.get(id);
+    if (user) {
+      user.accessToken = tokens.accessToken;
+      if (tokens.refreshToken) {
+        user.refreshToken = tokens.refreshToken;
+      }
+      user.updatedAt = new Date();
+      this.users.set(id, user);
+    }
   }
 
   async getManseRyeok(id: string): Promise<ManseRyeok | undefined> {
