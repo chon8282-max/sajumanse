@@ -18,7 +18,7 @@ interface AuthRequest extends ExpressRequest {
 // Google OAuth 설정
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
+const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"; // v3는 sub 필드를 사용
 
 function getRedirectUri() {
   // Replit 환경에서는 REPLIT_DOMAINS 환경 변수 사용
