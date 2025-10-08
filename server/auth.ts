@@ -102,6 +102,9 @@ router.get("/callback", async (req: Request, res) => {
     console.log("Received state:", state);
     console.log("Saved state (cookie):", savedState);
     console.log("Has codeVerifier (cookie):", !!codeVerifier);
+    console.log("All cookies:", req.cookies);
+    console.log("All signed cookies:", req.signedCookies);
+    console.log("Cookie header:", req.headers.cookie);
 
     // State 검증
     if (!state || state !== savedState) {
@@ -206,7 +209,10 @@ router.get("/callback", async (req: Request, res) => {
     console.error("OAuth callback error:", error);
     console.error("Error details:", error instanceof Error ? error.message : String(error));
     console.error("Stack:", error instanceof Error ? error.stack : "");
-    res.redirect("/?error=auth_failed");
+    
+    // 디버깅: 오류 메시지를 URL에 포함
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    res.redirect(`/?error=auth_failed&details=${encodeURIComponent(errorMsg)}`);
   }
 });
 
