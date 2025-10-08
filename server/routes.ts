@@ -149,16 +149,18 @@ export async function registerRoutes(app: Express): Promise<void> {
           let sajuCalculationMonth = validatedData.birthMonth;
           let sajuCalculationDay = validatedData.birthDay;
           
-          if (validatedData.calendarType === "양력") {
+          if (validatedData.calendarType === "양력" || validatedData.calendarType === "ganji") {
             try {
               const birthDate = new Date(validatedData.birthYear, validatedData.birthMonth - 1, validatedData.birthDay);
               lunarConversion = await convertSolarToLunarServer(birthDate);
-              console.log(`양력 ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
+              console.log(`${validatedData.calendarType} → 양력 ${validatedData.birthYear}-${validatedData.birthMonth}-${validatedData.birthDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
               
-              // 사주 계산은 음력 날짜를 사용
-              sajuCalculationYear = lunarConversion.year;
-              sajuCalculationMonth = lunarConversion.month;
-              sajuCalculationDay = lunarConversion.day;
+              // 사주 계산은 음력 날짜를 사용 (ganji는 제외 - 이미 간지로 계산됨)
+              if (validatedData.calendarType === "양력") {
+                sajuCalculationYear = lunarConversion.year;
+                sajuCalculationMonth = lunarConversion.month;
+                sajuCalculationDay = lunarConversion.day;
+              }
             } catch (lunarError) {
               console.error('Solar to lunar conversion error:', lunarError);
               // 음력 변환 실패시에도 사주 저장은 계속 진행 (양력으로 계산)
@@ -190,8 +192,8 @@ export async function registerRoutes(app: Express): Promise<void> {
           };
 
           // 음력 정보 저장
-          if (validatedData.calendarType === "양력" && lunarConversion) {
-            // 양력 입력 시: 변환된 음력 정보 저장
+          if ((validatedData.calendarType === "양력" || validatedData.calendarType === "ganji") && lunarConversion) {
+            // 양력/ganji 입력 시: 변환된 음력 정보 저장
             updateData.lunarYear = lunarConversion.year;
             updateData.lunarMonth = lunarConversion.month;
             updateData.lunarDay = lunarConversion.day;
@@ -387,16 +389,18 @@ export async function registerRoutes(app: Express): Promise<void> {
           let sajuCalculationMonth = finalMonth;
           let sajuCalculationDay = finalDay;
           
-          if (finalCalendarType === "양력") {
+          if (finalCalendarType === "양력" || finalCalendarType === "ganji") {
             try {
               const birthDate = new Date(finalYear, finalMonth - 1, finalDay);
               lunarConversion = await convertSolarToLunarServer(birthDate);
-              console.log(`양력 ${finalYear}-${finalMonth}-${finalDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
+              console.log(`${finalCalendarType} → 양력 ${finalYear}-${finalMonth}-${finalDay} → 음력 ${lunarConversion.year}-${lunarConversion.month}-${lunarConversion.day}`);
               
-              // 사주 계산은 음력 날짜를 사용
-              sajuCalculationYear = lunarConversion.year;
-              sajuCalculationMonth = lunarConversion.month;
-              sajuCalculationDay = lunarConversion.day;
+              // 사주 계산은 음력 날짜를 사용 (ganji는 제외 - 이미 간지로 계산됨)
+              if (finalCalendarType === "양력") {
+                sajuCalculationYear = lunarConversion.year;
+                sajuCalculationMonth = lunarConversion.month;
+                sajuCalculationDay = lunarConversion.day;
+              }
             } catch (lunarError) {
               console.error('Solar to lunar conversion error:', lunarError);
               // 음력 변환 실패시에도 사주 저장은 계속 진행 (양력으로 계산)
@@ -426,8 +430,8 @@ export async function registerRoutes(app: Express): Promise<void> {
           const updateData: any = {};
 
           // 음력 정보 저장
-          if (finalCalendarType === "양력" && lunarConversion) {
-            // 양력 입력 시: 변환된 음력 정보 저장
+          if ((finalCalendarType === "양력" || finalCalendarType === "ganji") && lunarConversion) {
+            // 양력/ganji 입력 시: 변환된 음력 정보 저장
             updateData.lunarYear = lunarConversion.year;
             updateData.lunarMonth = lunarConversion.month;
             updateData.lunarDay = lunarConversion.day;

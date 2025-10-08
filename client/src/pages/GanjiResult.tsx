@@ -246,8 +246,9 @@ export default function GanjiResult() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
       
-      if (data.data?.id) {
-        setLocation(`/saju-result/${data.data.id}`);
+      const recordId = data.data?.record?.id || data.data?.id;
+      if (recordId) {
+        setLocation(`/saju-result/${recordId}`);
       } else {
         toast({
           title: "저장 완료",
