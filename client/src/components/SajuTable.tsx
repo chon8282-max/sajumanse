@@ -16,6 +16,7 @@ import { getWuxingColor, getWuxingTextColor } from "@/lib/wuxing-colors";
 import { calculateCheonganEvent } from "@/lib/cheongan-event-calculator";
 import { useLocation } from "wouter";
 import { calculateEarthlyBranchRelation, convertRelationsToKorean } from "@/lib/earthly-branch-relations";
+import { useToast } from "@/hooks/use-toast";
 
 interface SajuTableProps {
   saju: SajuInfo;
@@ -273,6 +274,7 @@ export default function SajuTable({
   onMemoChange
 }: SajuTableProps) {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // 나이 계산 (간지년 기준)
   const age = useMemo(() => {
@@ -481,8 +483,18 @@ export default function SajuTable({
   }, [onBirthTimeChange]);
 
   const handleDayEarthClick = useCallback(() => {
+    // 음력/윤달인데 lunar 필드가 없으면 경고
+    if ((calendarType === '음력' || calendarType === '윤달') && (!lunarYear || !lunarMonth || !lunarDay)) {
+      toast({
+        title: "날짜 정보 오류",
+        description: "음력 날짜 정보가 없습니다. 수정 버튼을 눌러 다시 입력해주세요.",
+        variant: "destructive",
+        duration: 3000
+      });
+      return;
+    }
     setIsBirthDateSelectorOpen(true);
-  }, []);
+  }, [calendarType, lunarYear, lunarMonth, lunarDay, toast]);
 
   const handleBirthDateSelect = useCallback((year: number, month: number, day: number) => {
     console.log('SajuTable - handleBirthDateSelect 호출됨:', year, month, day);
@@ -2103,9 +2115,10 @@ export default function SajuTable({
         isOpen={isBirthDateSelectorOpen}
         onClose={() => setIsBirthDateSelectorOpen(false)}
         onSelect={handleBirthDateSelect}
-        currentYear={birthYear}
-        currentMonth={birthMonth}
-        currentDay={birthDay}
+        currentYear={(calendarType === '음력' || calendarType === '윤달') && lunarYear ? lunarYear : birthYear}
+        currentMonth={(calendarType === '음력' || calendarType === '윤달') && lunarMonth ? lunarMonth : birthMonth}
+        currentDay={(calendarType === '음력' || calendarType === '윤달') && lunarDay ? lunarDay : birthDay}
+        calendarType={calendarType}
       />
     </Card>
   );

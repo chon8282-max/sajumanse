@@ -10,6 +10,7 @@ interface BirthDateSelectorProps {
   currentYear?: number;
   currentMonth?: number;
   currentDay?: number;
+  calendarType?: string; // "양력" | "음력" | "윤달" | "ganji"
 }
 
 export default function BirthDateSelector({ 
@@ -18,7 +19,8 @@ export default function BirthDateSelector({
   onSelect,
   currentYear,
   currentMonth,
-  currentDay
+  currentDay,
+  calendarType = "양력"
 }: BirthDateSelectorProps) {
   const today = new Date();
   
@@ -67,7 +69,7 @@ export default function BirthDateSelector({
       <DialogContent className="sm:max-w-[400px] p-6">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-left text-base font-semibold">
-            생년월일 변경
+            생년월일 변경 ({calendarType === 'ganji' ? '양력' : calendarType})
           </DialogTitle>
         </DialogHeader>
         
