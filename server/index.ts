@@ -10,8 +10,8 @@ import { pool } from "./db";
 
 const app = express();
 
-// Trust proxy for secure cookies behind Replit proxy
-app.set("trust proxy", 1);
+// Trust all proxies for secure cookies behind Replit multi-hop proxy
+app.set("trust proxy", true);
 
 // Session secret 검증
 if (!process.env.SESSION_SECRET) {
@@ -33,7 +33,7 @@ app.use(
     saveUninitialized: false,
     proxy: true, // Trust upstream proxy for secure cookies
     cookie: {
-      secure: true, // Replit은 개발/배포 모두 HTTPS 사용
+      secure: "auto", // HTTPS 자동 감지 (프록시 환경 지원)
       httpOnly: true,
       sameSite: "lax", // OAuth 리다이렉트를 위해 lax 필요
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
