@@ -51,17 +51,15 @@ export default function Login() {
   }, []);
 
   const handleGoogleSignIn = () => {
-    // Webview 감지 (Google OAuth가 차단하는 환경)
-    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const isWebView = /wv|WebView|; wv\)/.test(userAgent);
+    // PWA standalone 모드 감지
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                         (window.navigator as any).standalone;
     
-    if (isWebView || isStandalone) {
-      // Webview/PWA 모드: 시스템 브라우저에서 열기 (Google webview 차단 우회)
-      // opener 참조를 유지하여 postMessage 통신 가능하도록 함
-      const loginUrl = `${window.location.origin}/api/auth/login`;
-      window.open(loginUrl, '_blank');
+    if (isStandalone) {
+      // PWA 모드: location.href로 시스템 브라우저에서 열기
+      // window.open()은 여전히 PWA WebView에서 열려서 Google이 차단함
+      // location.href로 이동하면 시스템 브라우저가 열리고 로그인 후 앱으로 돌아옴
+      window.location.href = '/api/auth/login';
     } else {
       // 일반 브라우저: 현재 창에서 리다이렉트
       window.location.href = '/api/auth/login';

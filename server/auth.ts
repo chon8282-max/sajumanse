@@ -206,12 +206,13 @@ router.get("/callback", async (req: Request, res) => {
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const homeUrl = `${protocol}://${host}/`;
     
-    // 항상 브릿지 페이지를 렌더링 (PWA와 일반 브라우저 모두 처리)
+    // 브릿지 페이지 렌더링 (PWA와 일반 브라우저 모두 처리)
     res.send(`
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>로그인 완료</title>
         <style>
           body { 
@@ -226,39 +227,76 @@ router.get("/callback", async (req: Request, res) => {
           .container {
             text-align: center;
             padding: 2rem;
+            max-width: 400px;
           }
-          .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3d2c1a;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+          .success {
+            font-size: 48px;
+            margin-bottom: 1rem;
           }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+          h1 {
+            color: #3d2c1a;
+            margin-bottom: 1rem;
+          }
+          .message {
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+          }
+          .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #3d2c1a;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+          }
+          .pwa-hint {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #fff3cd;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 14px;
           }
         </style>
       </head>
       <body>
         <div class="container">
-          <div class="spinner"></div>
-          <p>로그인 완료! 잠시만 기다려주세요...</p>
+          <div class="success">✅</div>
+          <h1>로그인 완료!</h1>
+          <p class="message" id="message">로그인이 성공적으로 완료되었습니다.</p>
+          <a href="${homeUrl}" class="btn" id="returnBtn">홈으로 이동</a>
+          <div class="pwa-hint" id="pwaHint" style="display: none;">
+            📱 앱을 사용 중이시라면, <strong>앱으로 돌아가서</strong> 새로고침해주세요.
+          </div>
         </div>
         <script>
+          // PWA standalone 모드 감지
+          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                              window.navigator.standalone;
+          
           // opener가 있으면 (새 탭) 닫고 opener에 메시지 전송
           if (window.opener) {
             try {
               window.opener.postMessage({ type: 'auth_success' }, '${homeUrl}');
+              document.getElementById('message').textContent = '창을 닫는 중...';
+              setTimeout(() => window.close(), 500);
             } catch (e) {
               console.error('postMessage failed:', e);
+              window.location.href = '${homeUrl}';
             }
-            setTimeout(() => window.close(), 500);
-          } else {
-            // opener가 없으면 (일반 리다이렉트) 홈으로 이동
+          } else if (isStandalone) {
+            // PWA standalone 모드인데 opener가 없음 - 이건 불가능한 상황
+            // 그냥 홈으로 이동
             window.location.href = '${homeUrl}';
+          } else {
+            // 일반 브라우저에서 열림 - PWA 사용자를 위한 힌트 표시
+            // User-Agent로 모바일 감지
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+              document.getElementById('pwaHint').style.display = 'block';
+            }
           }
         </script>
       </body>
