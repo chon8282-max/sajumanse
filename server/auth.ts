@@ -54,20 +54,17 @@ router.get("/login", (req: Request, res) => {
 
     // PKCE verifier와 state를 서명된 쿠키에 저장 (다중 인스턴스 환경 지원)
     const isReplit = !!process.env.REPLIT_DOMAINS;
-    res.cookie("oauth_verifier", codeVerifier, {
+    const cookieOptions = {
       signed: true,
       httpOnly: true,
       secure: isReplit,
-      sameSite: isReplit ? "none" : "lax",
+      sameSite: (isReplit ? "none" : "lax") as "none" | "lax",
+      path: "/", // 명시적으로 path 설정
       maxAge: 10 * 60 * 1000, // 10분
-    });
-    res.cookie("oauth_state", state, {
-      signed: true,
-      httpOnly: true,
-      secure: isReplit,
-      sameSite: isReplit ? "none" : "lax",
-      maxAge: 10 * 60 * 1000, // 10분
-    });
+    };
+    
+    res.cookie("oauth_verifier", codeVerifier, cookieOptions);
+    res.cookie("oauth_state", state, cookieOptions);
 
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID!,
@@ -185,22 +182,20 @@ router.get("/callback", async (req: Request, res) => {
       httpOnly: true,
       secure: isReplit,
       sameSite: isReplit ? "none" : "lax",
+      path: "/", // 명시적으로 path 설정
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
     });
 
     // OAuth 임시 쿠키 삭제 (설정과 동일한 옵션 필요)
-    res.clearCookie("oauth_verifier", {
+    const clearCookieOptions = {
       httpOnly: true,
       secure: isReplit,
-      sameSite: isReplit ? "none" : "lax",
+      sameSite: (isReplit ? "none" : "lax") as "none" | "lax",
+      path: "/", // 명시적으로 path 설정
       signed: true,
-    });
-    res.clearCookie("oauth_state", {
-      httpOnly: true,
-      secure: isReplit,
-      sameSite: isReplit ? "none" : "lax",
-      signed: true,
-    });
+    };
+    res.clearCookie("oauth_verifier", clearCookieOptions);
+    res.clearCookie("oauth_state", clearCookieOptions);
 
     console.log("✅ Login successful, user ID:", user.id);
     // 프론트엔드로 리다이렉트
@@ -224,6 +219,7 @@ router.post("/logout", (req: Request, res) => {
     httpOnly: true,
     secure: isReplit,
     sameSite: isReplit ? "none" : "lax",
+    path: "/", // 명시적으로 path 설정
     signed: true,
   });
   
@@ -249,6 +245,7 @@ router.get("/user", async (req: Request, res) => {
         httpOnly: true,
         secure: isReplit,
         sameSite: isReplit ? "none" : "lax",
+        path: "/", // 명시적으로 path 설정
         signed: true,
       });
       return res.json({ user: null });
