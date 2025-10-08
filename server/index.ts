@@ -7,7 +7,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import { pool } from "./db";
-import authRouter from "./auth";
 
 const app = express();
 
@@ -75,9 +74,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Auth routes 등록
-  app.use("/api/auth", authRouter);
-  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
