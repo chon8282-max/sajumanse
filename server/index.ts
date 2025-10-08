@@ -1,5 +1,4 @@
 import express, { type Request, Response, NextFunction } from "express";
-import session from "express-session";
 import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
@@ -31,26 +30,10 @@ const isReplit = !!process.env.REPLIT_DOMAINS;
 
 console.log(`🔒 Cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
 
-// 서명된 쿠키 파서 (OAuth userId 저장용)
+// 서명된 쿠키 파서 (OAuth 완전 stateless 인증)
 app.use(cookieParser(process.env.SESSION_SECRET));
 
-// 세션 설정 (OAuth state/verifier 임시 저장용만 사용)
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    proxy: true,
-    cookie: {
-      secure: isReplit,
-      httpOnly: true,
-      sameSite: isReplit ? "none" : "lax",
-      maxAge: 10 * 60 * 1000, // OAuth 플로우용 10분만 유지
-    },
-  })
-);
-
-console.log("✅ Using signed cookies for auth + memory session for OAuth flow");
+console.log("✅ Using stateless signed cookies for OAuth authentication");
 
 app.use((req, res, next) => {
   const start = Date.now();

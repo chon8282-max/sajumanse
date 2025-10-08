@@ -1,26 +1,15 @@
-import { Router, type Request as ExpressRequest } from "express";
+import { Router, type Request } from "express";
 import { storage } from "./storage";
 import crypto from "crypto";
 
 const router = Router();
-
-// 세션 타입 확장
-interface SessionData {
-  userId?: string;
-  codeVerifier?: string;
-  state?: string;
-}
-
-interface AuthRequest extends ExpressRequest {
-  session: SessionData & ExpressRequest["session"];
-}
 
 // Google OAuth 설정
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"; // v3는 sub 필드를 사용
 
-function getRedirectUri(req?: ExpressRequest) {
+function getRedirectUri(req?: Request) {
   // Request의 Host 헤더를 사용해서 정확한 도메인 감지
   if (req) {
     const host = req.get('host');
@@ -57,38 +46,43 @@ function generateCodeChallenge(verifier: string) {
 }
 
 // Google 로그인 시작
-router.get("/login", (req: AuthRequest, res) => {
+router.get("/login", (req: Request, res) => {
   try {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = generateCodeChallenge(codeVerifier);
     const state = crypto.randomBytes(16).toString("hex");
 
-    // PKCE verifier와 state를 세션에 저장
-    req.session.codeVerifier = codeVerifier;
-    req.session.state = state;
-
-    // 세션을 명시적으로 저장 후 리다이렉트
-    req.session.save((err) => {
-      if (err) {
-        console.error("Session save error:", err);
-        return res.status(500).json({ error: "세션 저장 중 오류가 발생했습니다." });
-      }
-
-      const params = new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID!,
-        redirect_uri: getRedirectUri(req),
-        response_type: "code",
-        scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
-        code_challenge: codeChallenge,
-        code_challenge_method: "S256",
-        state,
-        access_type: "offline", // refresh token을 받기 위해
-        prompt: "consent", // 항상 consent 화면 표시 (refresh token 받기 위해)
-      });
-
-      const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
-      res.redirect(authUrl);
+    // PKCE verifier와 state를 서명된 쿠키에 저장 (다중 인스턴스 환경 지원)
+    const isReplit = !!process.env.REPLIT_DOMAINS;
+    res.cookie("oauth_verifier", codeVerifier, {
+      signed: true,
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      maxAge: 10 * 60 * 1000, // 10분
     });
+    res.cookie("oauth_state", state, {
+      signed: true,
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      maxAge: 10 * 60 * 1000, // 10분
+    });
+
+    const params = new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID!,
+      redirect_uri: getRedirectUri(req),
+      response_type: "code",
+      scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
+      state,
+      access_type: "offline", // refresh token을 받기 위해
+      prompt: "consent", // 항상 consent 화면 표시 (refresh token 받기 위해)
+    });
+
+    const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
+    res.redirect(authUrl);
   } catch (error) {
     console.error("OAuth login error:", error);
     res.status(500).json({ error: "로그인 시작 중 오류가 발생했습니다." });
@@ -96,19 +90,22 @@ router.get("/login", (req: AuthRequest, res) => {
 });
 
 // Google OAuth 콜백
-router.get("/callback", async (req: AuthRequest, res) => {
+router.get("/callback", async (req: Request, res) => {
   try {
     const { code, state } = req.query;
 
+    // 서명된 쿠키에서 PKCE 데이터 읽기 (다중 인스턴스 환경 지원)
+    const savedState = req.signedCookies.oauth_state;
+    const codeVerifier = req.signedCookies.oauth_verifier;
+
     console.log("=== OAuth Callback Debug ===");
     console.log("Received state:", state);
-    console.log("Session state:", req.session.state);
-    console.log("Session ID:", req.sessionID);
-    console.log("Has codeVerifier:", !!req.session.codeVerifier);
+    console.log("Saved state (cookie):", savedState);
+    console.log("Has codeVerifier (cookie):", !!codeVerifier);
 
     // State 검증
-    if (!state || state !== req.session.state) {
-      console.error("State mismatch!", { received: state, expected: req.session.state });
+    if (!state || state !== savedState) {
+      console.error("State mismatch!", { received: state, expected: savedState });
       throw new Error("Invalid state parameter");
     }
 
@@ -117,10 +114,9 @@ router.get("/callback", async (req: AuthRequest, res) => {
       throw new Error("No authorization code received");
     }
 
-    const codeVerifier = req.session.codeVerifier;
     if (!codeVerifier) {
-      console.error("No codeVerifier in session");
-      throw new Error("Code verifier not found in session");
+      console.error("No codeVerifier in cookies");
+      throw new Error("Code verifier not found");
     }
 
     // 토큰 교환
@@ -189,9 +185,19 @@ router.get("/callback", async (req: AuthRequest, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
     });
 
-    // OAuth 임시 데이터 정리
-    req.session.codeVerifier = undefined;
-    req.session.state = undefined;
+    // OAuth 임시 쿠키 삭제 (설정과 동일한 옵션 필요)
+    res.clearCookie("oauth_verifier", {
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      signed: true,
+    });
+    res.clearCookie("oauth_state", {
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      signed: true,
+    });
 
     console.log("✅ Login successful, user ID:", user.id);
     // 프론트엔드로 리다이렉트
@@ -205,21 +211,21 @@ router.get("/callback", async (req: AuthRequest, res) => {
 });
 
 // 로그아웃
-router.post("/logout", (req: AuthRequest, res) => {
-  // 서명된 쿠키 삭제
-  res.clearCookie("userId");
-  
-  // 세션도 정리 (OAuth 임시 데이터용)
-  req.session.destroy((err: any) => {
-    if (err) {
-      console.error("Logout error:", err);
-    }
-    res.json({ success: true });
+router.post("/logout", (req: Request, res) => {
+  // 서명된 쿠키 삭제 (설정과 동일한 옵션 필요)
+  const isReplit = !!process.env.REPLIT_DOMAINS;
+  res.clearCookie("userId", {
+    httpOnly: true,
+    secure: isReplit,
+    sameSite: isReplit ? "none" : "lax",
+    signed: true,
   });
+  
+  res.json({ success: true });
 });
 
 // 현재 사용자 정보
-router.get("/user", async (req: AuthRequest, res) => {
+router.get("/user", async (req: Request, res) => {
   try {
     // 서명된 쿠키에서 userId 읽기
     const userId = req.signedCookies.userId;
@@ -231,8 +237,14 @@ router.get("/user", async (req: AuthRequest, res) => {
     const user = await storage.getUser(userId);
     
     if (!user) {
-      // 쿠키 삭제
-      res.clearCookie("userId");
+      // 쿠키 삭제 (설정과 동일한 옵션 필요)
+      const isReplit = !!process.env.REPLIT_DOMAINS;
+      res.clearCookie("userId", {
+        httpOnly: true,
+        secure: isReplit,
+        sameSite: isReplit ? "none" : "lax",
+        signed: true,
+      });
       return res.json({ user: null });
     }
 
