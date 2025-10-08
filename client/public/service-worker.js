@@ -1,9 +1,7 @@
-const CACHE_NAME = 'manseryeok-v6-nocache';
+const CACHE_NAME = 'manseryeok-v7-nocache';
 const urlsToCache = [
   '/',
-  '/manifest.json',
-  '/attached_assets/만세력로고_1758875108140.png',
-  '/attached_assets/바탕로고png_1759021446229.png'
+  '/manifest.json'
 ];
 
 self.addEventListener('install', function(event) {
