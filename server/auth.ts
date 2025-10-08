@@ -138,12 +138,17 @@ router.get("/callback", async (req: AuthRequest, res) => {
 
     const userinfo = await userinfoResponse.json();
     
-    // 디버깅: userinfo 내용 확인
-    console.log("Google userinfo:", JSON.stringify(userinfo, null, 2));
+    // Google ID 추출 (v2는 id, v3는 sub 사용)
+    const googleId = userinfo.sub || userinfo.id;
+    
+    if (!googleId) {
+      console.error("No Google ID found in userinfo:", userinfo);
+      throw new Error("Google ID not found");
+    }
 
     // DB에 사용자 저장/업데이트
     const user = await storage.upsertUser({
-      id: userinfo.sub, // Google User ID는 'sub' 필드
+      id: googleId,
       email: userinfo.email,
       displayName: userinfo.name || userinfo.email,
       photoUrl: userinfo.picture,
