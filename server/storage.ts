@@ -104,7 +104,7 @@ export class DatabaseStorage implements IStorage {
       .insert(users)
       .values(userData)
       .onConflictDoUpdate({
-        target: users.id,
+        target: users.email, // email을 기준으로 upsert
         set: {
           ...userData,
           updatedAt: new Date(),
