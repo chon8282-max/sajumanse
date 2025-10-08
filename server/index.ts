@@ -1,18 +1,45 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { pool } from "./db";
+import authRouter from "./auth";
 
 const app = express();
 
-// Firebase popup을 위해 COOP 헤더 제거
-app.use((req, res, next) => {
-  res.removeHeader('Cross-Origin-Opener-Policy');
-  res.removeHeader('Cross-Origin-Embedder-Policy');
-  next();
-});
+// Trust proxy for secure cookies behind Replit proxy
+app.set("trust proxy", 1);
+
+// Session secret 검증
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be set. Please add it to your environment variables.");
+}
+
+// Session store 설정
+const PgSession = connectPgSimple(session);
+
+app.use(
+  session({
+    store: new PgSession({
+      pool: pool,
+      tableName: "session",
+      createTableIfMissing: false, // 이미 스키마에서 생성됨
+    }),
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    proxy: true, // Trust upstream proxy for secure cookies
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
+    },
+  })
+);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -48,6 +75,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Auth routes 등록
+  app.use("/auth", authRouter);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
