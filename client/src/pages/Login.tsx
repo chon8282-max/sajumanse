@@ -16,7 +16,6 @@ export default function Login() {
     window.matchMedia('(display-mode: standalone)').matches || 
     (window.navigator as any).standalone
   );
-  const [showUrlCopy, setShowUrlCopy] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -58,56 +57,66 @@ export default function Login() {
     }
   }, []);
 
-  const handleGoogleSignIn = () => {
-    // PWA standalone 모드 감지
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                        (window.navigator as any).standalone;
-    
-    if (isStandalone) {
-      // PWA 모드: 시스템 브라우저로 강제 열기 시도
-      const loginUrl = `${window.location.origin}/api/auth/login`;
-      
-      try {
-        // 1. window.open with noopener 시도 (일부 환경에서 시스템 브라우저 열림)
-        const opened = window.open(loginUrl, '_blank', 'noopener,noreferrer');
-        
-        // 2. 실패 시 location.assign 시도
-        if (!opened) {
-          window.location.assign(loginUrl);
-        }
-        
-        // 3초 후에도 페이지 변경 없으면 URL 복사 옵션 표시
-        setTimeout(() => {
-          if (window.location.pathname === '/login') {
-            setShowUrlCopy(true);
-          }
-        }, 3000);
-      } catch (error) {
-        // 모든 자동 방법 실패 시 URL 복사 옵션 표시
-        setShowUrlCopy(true);
-      }
-    } else {
-      // 일반 브라우저: 현재 창에서 리다이렉트
-      window.location.href = '/api/auth/login';
-    }
+  const handleGoogleSignIn = async () => {
+    // 일반 브라우저: 현재 창에서 리다이렉트
+    window.location.href = '/api/auth/login';
   };
 
   const handleCopyUrl = async () => {
     const loginUrl = `${window.location.origin}/api/auth/login`;
-    try {
-      await navigator.clipboard.writeText(loginUrl);
-      toast({
-        title: "URL 복사 완료",
-        description: "브라우저 주소창에 붙여넣고 로그인하세요.",
-        duration: 3000,
-      });
-    } catch (error) {
-      toast({
-        title: "복사 실패",
-        description: loginUrl,
-        duration: 5000,
-      });
+    
+    // clipboard API 시도
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(loginUrl);
+        toast({
+          title: "URL 복사 완료",
+          description: "브라우저 주소창에 붙여넣고 로그인하세요.",
+          duration: 3000,
+        });
+        return;
+      } catch (error) {
+        // clipboard 실패 - fallback으로 진행
+      }
     }
+    
+    // clipboard 미지원 또는 실패 시: input 요소로 수동 복사
+    const input = document.createElement('input');
+    input.value = loginUrl;
+    input.style.position = 'fixed';
+    input.style.top = '50%';
+    input.style.left = '50%';
+    input.style.transform = 'translate(-50%, -50%)';
+    input.style.width = '80%';
+    input.style.padding = '12px';
+    input.style.fontSize = '14px';
+    input.style.border = '2px solid #3b82f6';
+    input.style.borderRadius = '8px';
+    input.style.zIndex = '9999';
+    input.style.backgroundColor = 'white';
+    input.readOnly = true;
+    
+    document.body.appendChild(input);
+    input.focus(); // 모바일 호환성 향상
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+    
+    toast({
+      title: "URL이 표시되었습니다",
+      description: "파란색 입력창에서 URL을 복사하세요. (길게 눌러서 복사 또는 탭하여 닫기)",
+      duration: 5000,
+    });
+    
+    // 10초 후 또는 클릭/포커스 잃으면 제거 (충분한 시간 제공)
+    const removeInput = () => {
+      if (document.body.contains(input)) {
+        document.body.removeChild(input);
+      }
+    };
+    
+    setTimeout(removeInput, 10000);
+    input.addEventListener('blur', removeInput);
+    input.addEventListener('click', removeInput); // 클릭해도 닫기
   };
 
   return (
@@ -121,22 +130,14 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {isStandalone && !showUrlCopy && (
+            {isStandalone && (
               <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
                 <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>앱 사용자 안내:</strong> 로그인 버튼을 누르면 브라우저가 열립니다. 
-                  로그인 완료 후 <strong>이 앱으로 다시 돌아오면</strong> 자동으로 로그인됩니다.
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            {isStandalone && showUrlCopy && (
-              <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
-                <ExternalLink className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <AlertDescription className="text-sm text-amber-800 dark:text-amber-200">
-                  <strong>브라우저에서 직접 로그인:</strong><br/>
-                  아래 버튼으로 URL을 복사한 후, 브라우저 주소창에 붙여넣고 로그인하세요.
+                  <strong>앱 사용자 로그인 방법:</strong><br/>
+                  1. "로그인 URL 복사" 버튼 클릭<br/>
+                  2. 브라우저(Chrome, Safari 등)를 열고 주소창에 붙여넣기<br/>
+                  3. Google 로그인 완료 후 <strong>이 앱으로 돌아오면 자동 로그인</strong>
                 </AlertDescription>
               </Alert>
             )}
@@ -144,25 +145,21 @@ export default function Login() {
             <Button
               className="w-full"
               size="lg"
-              onClick={handleGoogleSignIn}
-              data-testid="button-google-signin"
+              onClick={isStandalone ? handleCopyUrl : handleGoogleSignIn}
+              data-testid={isStandalone ? "button-copy-login-url" : "button-google-signin"}
             >
-              <LogIn className="w-5 h-5 mr-2" />
-              Google로 로그인
+              {isStandalone ? (
+                <>
+                  <Copy className="w-5 h-5 mr-2" />
+                  로그인 URL 복사
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Google로 로그인
+                </>
+              )}
             </Button>
-            
-            {isStandalone && showUrlCopy && (
-              <Button
-                className="w-full"
-                size="lg"
-                variant="outline"
-                onClick={handleCopyUrl}
-                data-testid="button-copy-login-url"
-              >
-                <Copy className="w-5 h-5 mr-2" />
-                로그인 URL 복사
-              </Button>
-            )}
             
             <div className="text-center">
               <Button

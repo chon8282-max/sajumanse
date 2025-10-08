@@ -121,6 +121,21 @@ Preferred communication style: Simple, everyday language.
   - OAuth tokens (accessToken, refreshToken) stored in users table
   - Token refresh logic in Google Drive API calls
   - Automatic token cleanup on logout
+- **PWA OAuth Login Flow**: Special handling for PWA standalone mode
+  - **Issue**: Google blocks OAuth in PWA WebView (403 disallowed_useragent)
+  - **Solution**: 2-tier URL copy strategy
+    1. **Clipboard API**: Automatic copy if supported
+    2. **Manual Fallback**: Read-only input with pre-selected URL if clipboard fails
+  - **User Flow** (PWA mode):
+    1. Click "로그인 URL 복사" → clipboard copy attempt
+    2. If clipboard fails → centered input with URL appears (10s timeout)
+    3. User copies URL manually (long-press or click to dismiss)
+    4. Paste in external browser → Google OAuth → login
+    5. Return to app → visibilitychange auto-login check
+  - **User Flow** (normal browser):
+    1. Click "Google로 로그인" → direct redirect to /api/auth/login
+  - **Implementation**: Login.tsx detects standalone mode via matchMedia
+  - **Callback Enhancement**: Mobile-friendly guidance after OAuth completion
 
 ### Backup & Restore System
 - **Google Drive Backup**: Server-side backup to user's Google Drive appDataFolder
