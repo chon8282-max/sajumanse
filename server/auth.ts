@@ -24,8 +24,9 @@ function getRedirectUri(req?: ExpressRequest) {
   // Request의 Host 헤더를 사용해서 정확한 도메인 감지
   if (req) {
     const host = req.get('host');
-    const protocol = req.protocol || 'https';
     if (host) {
+      // Replit은 항상 HTTPS를 사용 (프록시 뒤에서 req.protocol이 http일 수 있음)
+      const protocol = host.includes('localhost') ? 'http' : 'https';
       const uri = `${protocol}://${host}/api/auth/callback`;
       console.log("OAuth Redirect URI from request:", uri);
       return uri;
