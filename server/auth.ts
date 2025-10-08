@@ -26,7 +26,9 @@ function getRedirectUri() {
   
   if (replitDomain) {
     // Replit 환경 (개발 및 프로덕션)
-    return `https://${replitDomain}/api/auth/callback`;
+    const uri = `https://${replitDomain}/api/auth/callback`;
+    console.log("OAuth Redirect URI:", uri);
+    return uri;
   }
   
   // 로컬 개발 환경
@@ -166,6 +168,8 @@ router.get("/callback", async (req: AuthRequest, res) => {
     res.redirect("/");
   } catch (error) {
     console.error("OAuth callback error:", error);
+    console.error("Error details:", error instanceof Error ? error.message : String(error));
+    console.error("Stack:", error instanceof Error ? error.stack : "");
     res.redirect("/?error=auth_failed");
   }
 });
