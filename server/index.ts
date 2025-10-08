@@ -25,10 +25,13 @@ if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be set. Please add it to your environment variables.");
 }
 
-// 환경 감지: Replit 도메인 감지 (개발/배포 모두 HTTPS 사용)
+// 환경 감지: Replit 환경 감지 (개발/배포 모두 HTTPS 사용)
 const isReplit = !!process.env.REPLIT_DOMAINS;
+const isDeployment = process.env.REPLIT_DEPLOYMENT === '1';
 
-console.log(`🔒 Cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
+console.log(`🔒 Environment: ${isDeployment ? 'DEPLOYMENT' : (isReplit ? 'DEVELOPMENT' : 'LOCALHOST')}`);
+console.log(`🔒 Cookie mode: ${isReplit ? 'secure:true, sameSite:none' : 'secure:false, sameSite:lax'}`);
+console.log(`🔒 REPLIT_DOMAINS: ${process.env.REPLIT_DOMAINS || 'not set'}`);
 
 // 서명된 쿠키 파서 (OAuth 완전 stateless 인증)
 app.use(cookieParser(process.env.SESSION_SECRET));
