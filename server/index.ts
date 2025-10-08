@@ -1,6 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, log } from "./vite";
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 
 const app = express();
 
@@ -61,7 +64,34 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Production: serve static files from dist/public
+    // Try multiple path resolution strategies for Replit deployment
+    const possiblePaths = [
+      path.resolve(import.meta.dirname, "..", "dist", "public"),
+      path.resolve(import.meta.dirname, "public"),
+      path.resolve(process.cwd(), "dist", "public"),
+      path.join("/app", "dist", "public")
+    ];
+    
+    let distPath: string | null = null;
+    for (const testPath of possiblePaths) {
+      if (fs.existsSync(testPath)) {
+        distPath = testPath;
+        log(`Found static files at: ${distPath}`);
+        break;
+      }
+    }
+    
+    if (!distPath) {
+      const errorMsg = `Could not find build directory. Tried: ${possiblePaths.join(", ")}`;
+      log(errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    app.use(express.static(distPath));
+    app.use("*", (_req, res) => {
+      res.sendFile(path.resolve(distPath!, "index.html"));
+    });
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
