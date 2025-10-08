@@ -20,14 +20,24 @@ const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"; // v3는 sub 필드를 사용
 
-function getRedirectUri() {
-  // Replit 환경에서는 REPLIT_DOMAINS 환경 변수 사용
+function getRedirectUri(req?: ExpressRequest) {
+  // Request의 Host 헤더를 사용해서 정확한 도메인 감지
+  if (req) {
+    const host = req.get('host');
+    const protocol = req.protocol || 'https';
+    if (host) {
+      const uri = `${protocol}://${host}/api/auth/callback`;
+      console.log("OAuth Redirect URI from request:", uri);
+      return uri;
+    }
+  }
+  
+  // Fallback: Replit 환경에서는 REPLIT_DOMAINS 환경 변수 사용
   const replitDomain = process.env.REPLIT_DOMAINS;
   
   if (replitDomain) {
-    // Replit 환경 (개발 및 프로덕션)
     const uri = `https://${replitDomain}/api/auth/callback`;
-    console.log("OAuth Redirect URI:", uri);
+    console.log("OAuth Redirect URI from env:", uri);
     return uri;
   }
   
@@ -65,7 +75,7 @@ router.get("/login", (req: AuthRequest, res) => {
 
       const params = new URLSearchParams({
         client_id: process.env.GOOGLE_CLIENT_ID!,
-        redirect_uri: getRedirectUri(),
+        redirect_uri: getRedirectUri(req),
         response_type: "code",
         scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
         code_challenge: codeChallenge,
@@ -113,7 +123,7 @@ router.get("/callback", async (req: AuthRequest, res) => {
         client_id: process.env.GOOGLE_CLIENT_ID!,
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         code,
-        redirect_uri: getRedirectUri(),
+        redirect_uri: getRedirectUri(req),
         grant_type: "authorization_code",
         code_verifier: codeVerifier,
       }),
