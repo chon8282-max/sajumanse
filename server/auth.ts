@@ -137,6 +137,9 @@ router.get("/callback", async (req: AuthRequest, res) => {
     }
 
     const userinfo = await userinfoResponse.json();
+    
+    // 디버깅: userinfo 내용 확인
+    console.log("Google userinfo:", JSON.stringify(userinfo, null, 2));
 
     // DB에 사용자 저장/업데이트
     const user = await storage.upsertUser({
