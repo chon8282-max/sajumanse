@@ -2,11 +2,11 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDMl9CzedCUX9RlvuD_gG9v3zFuZXQ_Sfw",
+  apiKey: "AIzaSyCRd2cll1CHIm0C-SExgHdUUz6Q0SuHlWE",
   authDomain: "sajuacademy-9c161.firebaseapp.com",
   projectId: "sajuacademy-9c161",
   storageBucket: "sajuacademy-9c161.firebasestorage.app",
-  appId: "1:910226841507:web:3e788e4cf8b8d5aa",
+  appId: "1:910226841507:web:532fffb471f6ccd549c416",
 };
 
 const app = initializeApp(firebaseConfig);
