@@ -2,11 +2,11 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut as firebaseSignOut, onAuthStateChanged, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDMl9CzedCUX9RlvuD_gG9v3zFuZXQ_Sfw",
+  authDomain: "sajuacademy-9c161.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "sajuacademy-9c161",
+  storageBucket: "sajuacademy-9c161.firebasestorage.app",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:910226841507:web:3e788e4cf8b8d5aa",
 };
 
 const app = initializeApp(firebaseConfig);
