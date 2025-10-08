@@ -36,32 +36,42 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let redirectCheckCompleted = false;
     
-    // Auth 상태 변화 감지
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      // Redirect 결과 확인 (PWA에서 redirect 로그인 후 돌아왔을 때)
-      // Auth가 ready된 후 한 번만 실행
-      if (!redirectCheckCompleted) {
-        redirectCheckCompleted = true;
+    // Redirect 결과 확인 (최대 3초 대기, timeout으로 로딩 지연 방지)
+    const checkRedirectResult = async () => {
+      try {
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Redirect check timeout')), 3000)
+        );
         
-        try {
-          const result = await getRedirectResult(auth);
-          
-          if (result) {
-            // Redirect 로그인 성공 시 Access token 저장
-            const tokenResponse = (result as any)._tokenResponse;
-            if (tokenResponse?.oauthAccessToken) {
-              const token = tokenResponse.oauthAccessToken;
-              localStorage.setItem('googleAccessToken', token);
-              setGoogleAccessToken(token);
-            }
+        const result = await Promise.race([
+          getRedirectResult(auth),
+          timeoutPromise
+        ]) as any;
+        
+        if (result) {
+          const tokenResponse = result._tokenResponse;
+          if (tokenResponse?.oauthAccessToken) {
+            const token = tokenResponse.oauthAccessToken;
+            localStorage.setItem('googleAccessToken', token);
+            setGoogleAccessToken(token);
           }
-        } catch (error) {
-          // Redirect 에러 발생 시 무시
         }
+      } catch (error) {
+        // Timeout 또는 redirect 에러 발생 시 무시
       }
-      
+    };
+    
+    // Auth 상태 변화 감지
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      // 첫 번째 auth 상태 확인 시 즉시 로딩 해제
       setUser(currentUser);
       setLoading(false);
+      
+      // Redirect 결과는 한 번만 확인 (비동기로 처리)
+      if (!redirectCheckCompleted) {
+        redirectCheckCompleted = true;
+        checkRedirectResult();
+      }
       
       if (!currentUser) {
         // 로그아웃 시 토큰도 삭제
