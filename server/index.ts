@@ -33,9 +33,9 @@ app.use(
     saveUninitialized: false,
     proxy: true, // Trust upstream proxy for secure cookies
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Replit은 개발/배포 모두 HTTPS 사용
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax", // OAuth 리다이렉트를 위해 lax 필요
+      sameSite: "lax", // OAuth 리다이렉트를 위해 lax 필요
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
     },
   })
