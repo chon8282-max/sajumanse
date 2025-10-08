@@ -493,12 +493,26 @@ export default function SajuResult() {
     if (sajuData?.data) {
       const record = sajuData.data;
       
-      // 모든 경우에 사주입력 페이지로 이동 (간지 입력도 역산된 날짜가 저장되어 있음)
+      // calendarType에 따라 올바른 날짜 사용
+      let year: string, month: string, day: string;
+      
+      if (record.calendarType === '음력' || record.calendarType === '윤달') {
+        // 음력/윤달: lunarYear/Month/Day 사용 (원래 입력한 음력 날짜)
+        year = record.lunarYear?.toString() || record.birthYear.toString();
+        month = record.lunarMonth?.toString() || record.birthMonth?.toString() || '';
+        day = record.lunarDay?.toString() || record.birthDay?.toString() || '';
+      } else {
+        // 양력/간지: birthYear/Month/Day 사용
+        year = record.birthYear.toString();
+        month = record.birthMonth?.toString() || '';
+        day = record.birthDay?.toString() || '';
+      }
+      
       const queryParams = new URLSearchParams({
         name: record.name || '',
-        year: record.birthYear.toString(),
-        month: record.birthMonth?.toString() || '',
-        day: record.birthDay?.toString() || '',
+        year,
+        month,
+        day,
         birthTime: record.birthTime || '',
         calendarType: record.calendarType === 'ganji' ? '양력' : (record.calendarType || '양력'),
         gender: record.gender || '남자',
