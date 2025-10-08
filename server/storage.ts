@@ -81,6 +81,9 @@ export interface IStorage {
     fortuneResults?: FortuneResult[];
   }): Promise<{
     imported: number;
+    sajuRecordsCount: number;
+    groupsCount: number;
+    fortuneResultsCount: number;
     errors: string[];
   }>;
   
@@ -429,10 +432,16 @@ export class DatabaseStorage implements IStorage {
     fortuneResults?: FortuneResult[];
   }): Promise<{
     imported: number;
+    sajuRecordsCount: number;
+    groupsCount: number;
+    fortuneResultsCount: number;
     errors: string[];
   }> {
     const errors: string[] = [];
     let imported = 0;
+    let sajuRecordsCount = 0;
+    let groupsCount = 0;
+    let fortuneResultsCount = 0;
 
     // Date 변환 헬퍼 함수 (null/undefined는 그대로 유지)
     const parseDate = (dateStr: any): Date | null => {
@@ -464,6 +473,7 @@ export class DatabaseStorage implements IStorage {
               }
             })
             .returning({ id: groups.id });
+          groupsCount = result.length;
           imported += result.length;
         }
 
@@ -505,6 +515,7 @@ export class DatabaseStorage implements IStorage {
                 }
               })
               .returning({ id: sajuRecords.id });
+            sajuRecordsCount += result.length;
             imported += result.length;
           }
         }
@@ -535,6 +546,7 @@ export class DatabaseStorage implements IStorage {
                 }
               })
               .returning({ id: fortuneResults.id });
+            fortuneResultsCount += result.length;
             imported += result.length;
           }
         }
@@ -544,7 +556,7 @@ export class DatabaseStorage implements IStorage {
       }
     });
 
-    return { imported, errors };
+    return { imported, sajuRecordsCount, groupsCount, fortuneResultsCount, errors };
   }
 
   // 공지사항 관련 메서드
@@ -932,10 +944,16 @@ export class MemStorage implements IStorage {
     fortuneResults?: FortuneResult[];
   }): Promise<{
     imported: number;
+    sajuRecordsCount: number;
+    groupsCount: number;
+    fortuneResultsCount: number;
     errors: string[];
   }> {
     const errors: string[] = [];
     let imported = 0;
+    let sajuRecordsCount = 0;
+    let groupsCount = 0;
+    let fortuneResultsCount = 0;
 
     try {
       // 그룹 먼저 import
@@ -943,6 +961,7 @@ export class MemStorage implements IStorage {
         for (const group of data.groups) {
           if (!this.groups.has(group.id)) {
             this.groups.set(group.id, group);
+            groupsCount++;
             imported++;
           }
         }
@@ -953,6 +972,7 @@ export class MemStorage implements IStorage {
         for (const record of data.sajuRecords) {
           if (!this.sajuRecords.has(record.id)) {
             this.sajuRecords.set(record.id, record);
+            sajuRecordsCount++;
             imported++;
           }
         }
@@ -963,15 +983,16 @@ export class MemStorage implements IStorage {
         for (const result of data.fortuneResults) {
           if (!this.fortuneResults.has(result.id)) {
             this.fortuneResults.set(result.id, result);
+            fortuneResultsCount++;
             imported++;
           }
         }
       }
 
-      return { imported, errors };
+      return { imported, sajuRecordsCount, groupsCount, fortuneResultsCount, errors };
     } catch (error) {
       errors.push(`Import failed: ${error}`);
-      return { imported, errors };
+      return { imported, sajuRecordsCount, groupsCount, fortuneResultsCount, errors };
     }
   }
 

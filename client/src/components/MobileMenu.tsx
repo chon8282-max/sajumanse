@@ -144,8 +144,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       if (importResponse.ok) {
         toast({
           title: "복원 완료",
-          description: importResult.message || `${importResult.imported}개의 데이터를 복원했습니다.`,
-          duration: 500,
+          description: importResult.message || `${importResult.sajuRecordsCount}개의 사주 기록을 복원했습니다.`,
+          duration: 800,
         });
         setTimeout(() => window.location.reload(), 1000);
       } else {
