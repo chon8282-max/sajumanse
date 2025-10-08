@@ -201,12 +201,69 @@ router.get("/callback", async (req: Request, res) => {
 
     console.log("✅ Login successful, user ID:", user.id);
     
-    // 프론트엔드로 리다이렉트 (완전한 URL 사용)
+    // opener가 있는 경우 (PWA에서 새 탭으로 열린 경우) 브릿지 페이지 렌더링
     const host = req.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
-    const redirectUrl = `${protocol}://${host}/`;
-    console.log("Redirecting to:", redirectUrl);
-    res.redirect(redirectUrl);
+    const homeUrl = `${protocol}://${host}/`;
+    
+    // 항상 브릿지 페이지를 렌더링 (PWA와 일반 브라우저 모두 처리)
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>로그인 완료</title>
+        <style>
+          body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+            background: #f5f5f5;
+          }
+          .container {
+            text-align: center;
+            padding: 2rem;
+          }
+          .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3d2c1a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="spinner"></div>
+          <p>로그인 완료! 잠시만 기다려주세요...</p>
+        </div>
+        <script>
+          // opener가 있으면 (새 탭) 닫고 opener에 메시지 전송
+          if (window.opener) {
+            try {
+              window.opener.postMessage({ type: 'auth_success' }, '${homeUrl}');
+            } catch (e) {
+              console.error('postMessage failed:', e);
+            }
+            setTimeout(() => window.close(), 500);
+          } else {
+            // opener가 없으면 (일반 리다이렉트) 홈으로 이동
+            window.location.href = '${homeUrl}';
+          }
+        </script>
+      </body>
+      </html>
+    `);
   } catch (error) {
     console.error("OAuth callback error:", error);
     console.error("Error details:", error instanceof Error ? error.message : String(error));
