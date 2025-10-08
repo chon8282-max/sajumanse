@@ -18,6 +18,11 @@ if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be set. Please add it to your environment variables.");
 }
 
+// 환경 감지: Replit 도메인 감지 (개발/배포 모두 HTTPS 사용)
+const isReplit = !!process.env.REPLIT_DOMAINS;
+
+console.log(`🔒 Session cookie mode: ${isReplit ? 'REPLIT (secure:true, sameSite:none)' : 'LOCALHOST (secure:false, sameSite:lax)'}`);
+
 // Session store 설정
 const PgSession = connectPgSimple(session);
 
@@ -33,9 +38,9 @@ app.use(
     saveUninitialized: false,
     proxy: true, // Trust upstream proxy for secure cookies
     cookie: {
-      secure: "auto", // HTTPS 자동 감지 (프록시 환경 지원)
+      secure: isReplit, // Replit은 HTTPS, localhost는 HTTP
       httpOnly: true,
-      sameSite: "lax", // OAuth 리다이렉트를 위해 lax 필요
+      sameSite: isReplit ? "none" : "lax", // Replit: 크로스 사이트 OAuth, localhost: lax
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
     },
   })
