@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               }
 
-              const finalUsePreviousMonthPillar = validatedData.usePreviousMonthPillar ?? updatedRecord.usePreviousMonthPillar;
+              const finalUsePreviousMonthPillar = validatedData.usePreviousMonthPillar ?? false;
               console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
               const sajuResult = calculateSaju(
                 sajuCalculationYear,      // 년월주는 음력
@@ -976,40 +976,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 운세 계산 관련 API 라우트
   // ========================================
 
-  // 정확한 대운수 계산 API
-  app.post("/api/fortune/daeun-number", async (req, res) => {
-    try {
-      const { preciseDaeunNumberRequestSchema } = await import('@shared/schema');
-      
-      // Zod 스키마를 사용한 입력 검증
-      const validatedData = preciseDaeunNumberRequestSchema.parse(req.body);
+  // 정확한 대운수 계산 API (현재 미구현)
+  // app.post("/api/fortune/daeun-number", async (req, res) => {
+  //   try {
+  //     const { preciseDaeunNumberRequestSchema } = await import('@shared/schema');
+  //     
+  //     // Zod 스키마를 사용한 입력 검증
+  //     const validatedData = preciseDaeunNumberRequestSchema.parse(req.body);
 
-      const { calculatePreciseDaeunNumber } = await import('../lib/solar-terms-service');
-      
-      // 정확한 대운수 계산
-      const result = await calculatePreciseDaeunNumber(
-        new Date(validatedData.birthDate),
-        validatedData.gender,
-        validatedData.yearSky
-      );
+  //     const { calculatePreciseDaeunNumber } = await import('./lib/solar-terms-service');
+  //     
+  //     // 정확한 대운수 계산
+  //     const result = await calculatePreciseDaeunNumber(
+  //       new Date(validatedData.birthDate),
+  //       validatedData.gender,
+  //       validatedData.yearSky
+  //     );
 
-      res.json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          error: "입력 데이터가 올바르지 않습니다.", 
-          details: error.errors 
-        });
-      }
-      console.error('Precise daeun number calculation error:', error);
-      res.status(500).json({ 
-        error: "대운수 계산 중 오류가 발생했습니다." 
-      });
-    }
-  });
+  //     res.json({
+  //       success: true,
+  //       data: result
+  //     });
+  //   } catch (error) {
+  //     if (error instanceof z.ZodError) {
+  //       return res.status(400).json({ 
+  //         error: "입력 데이터가 올바르지 않습니다.", 
+  //         details: error.errors 
+  //       });
+  //     }
+  //     console.error('Precise daeun number calculation error:', error);
+  //     res.status(500).json({ 
+  //       error: "대운수 계산 중 오류가 발생했습니다." 
+  //     });
+  //   }
+  // });
 
   // 전체 운세 계산 API
   app.post("/api/fortune/calculate", async (req, res) => {
@@ -1023,7 +1023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // 전체 운세 계산
       const result = calculateFullFortune(
-        validatedData.saju,
+        validatedData.saju as any,
         new Date(validatedData.birthDate),
         validatedData.gender
       );
@@ -1062,7 +1062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         daeunStartAge: validatedData.fortuneData.daeunStartAge,
         daeunList: JSON.stringify(validatedData.fortuneData.daeunList),
         saeunStartYear: validatedData.fortuneData.saeunStartYear,
-        calculationDate: validatedData.fortuneData.calculationDate,
+        calculationDate: new Date(validatedData.fortuneData.calculationDate),
         algorithmVersion: validatedData.fortuneData.algorithmVersion
       });
 
