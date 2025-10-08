@@ -164,14 +164,14 @@ router.get("/user", async (req: AuthRequest, res) => {
     const userId = req.session.userId;
     
     if (!userId) {
-      return res.status(401).json({ user: null });
+      return res.json({ user: null });
     }
 
     const user = await storage.getUser(userId);
     
     if (!user) {
       req.session.destroy(() => {});
-      return res.status(401).json({ user: null });
+      return res.json({ user: null });
     }
 
     // 토큰 제외하고 반환
