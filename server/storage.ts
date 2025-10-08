@@ -106,7 +106,11 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoUpdate({
         target: users.email, // email을 기준으로 upsert
         set: {
-          ...userData,
+          // id는 절대 업데이트하지 않음 (외래 키 제약 조건 위반 방지)
+          displayName: userData.displayName,
+          photoUrl: userData.photoUrl,
+          accessToken: userData.accessToken,
+          refreshToken: userData.refreshToken,
           updatedAt: new Date(),
         },
       })
