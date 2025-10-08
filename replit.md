@@ -107,25 +107,34 @@ Preferred communication style: Simple, everyday language.
 - **Development**: Replit-specific plugins for development environment integration
 
 ### Authentication & Sessions
-- **Firebase Authentication**: Google OAuth for user authentication with Drive API scopes
-- **Google Drive Integration**: Backup and restore functionality using Google Drive API
-- **Token Management**: OAuth access tokens stored securely in AuthContext with automatic cleanup on logout
-- **Session Management**: connect-pg-simple for PostgreSQL-backed session storage
-- **Security**: Built-in Express session handling with secure cookie configuration
+- **Google OAuth 2.0**: Direct OAuth implementation for user authentication with Google Drive API scopes
+  - Backend OAuth flow: /api/auth/login → Google consent → /api/auth/callback → session creation
+  - Credentials stored in Replit Secrets: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET
+- **Session Management**: Express-session with PostgreSQL-backed storage (connect-pg-simple)
+  - Secure cookie configuration with proxy trust for Replit deployment
+  - Session data includes userId for user identification
+- **Frontend Auth**: TanStack Query-based AuthContext
+  - Fetches user from /api/auth/user with credentials
+  - Mutation-based logout without page reloads
+  - SPA routing with Wouter after authentication state changes
+- **Token Management**: 
+  - OAuth tokens (accessToken, refreshToken) stored in users table
+  - Token refresh logic in Google Drive API calls
+  - Automatic token cleanup on logout
 
 ### Backup & Restore System
-- **Google Drive Backup**: Automatic database backup to user's Google Drive appDataFolder
-  - Authentication required: Users must login with Google OAuth to access backup/restore features
+- **Google Drive Backup**: Server-side backup to user's Google Drive appDataFolder
+  - Authentication: Backend manages OAuth tokens from users table
   - Format: JSON backup files with timestamp naming (saju-backup-YYYY-MM-DD.json)
   - Storage: Stored in Google Drive appDataFolder (hidden from user's main Drive)
   - API endpoints: /api/backup/drive/upload, /api/backup/drive/list, /api/backup/drive/download
 - **Error Handling**: Comprehensive auth error detection and automatic re-login prompts
-  - Drive API 401/403 errors trigger automatic logout and re-authentication flow
-  - Clear user guidance with "인증 만료" messages
-  - Server-side error normalization (string/number status codes) for reliable detection
-- **Token Security**: 
-  - Access tokens cleared from both memory and localStorage on logout
-  - Tokens extracted from OAuth redirect using getRedirectResult
-  - Automatic token cleanup when auth state changes to null
+  - Drive API 401/403 errors trigger AUTH_EXPIRED response
+  - Frontend detects AUTH_EXPIRED and prompts re-authentication
+  - Token refresh attempts before failing
+- **Security**: 
+  - Access tokens stored server-side in database
+  - Session-based authentication for API requests
+  - Automatic token refresh on expiry
 
 The application uses a monorepo structure with shared TypeScript definitions between client and server, ensuring type safety across the full stack. The design system follows Korean cultural aesthetics with warm color palettes and traditional typography choices suitable for displaying Korean characters and traditional calendar information.
