@@ -23,6 +23,9 @@ Preferred communication style: Simple, everyday language.
 - **UI Framework**: shadcn/ui components built on top of Radix UI primitives with Tailwind CSS for styling
 - **Mobile-First Design**: Responsive design optimized for mobile devices with touch-friendly interactions
 - **Theme System**: Custom theme provider supporting light/dark modes with CSS custom properties
+- **PWA Configuration**: 
+  - manifest.json id: "/" (CRITICAL - NEVER CHANGE - ensures app updates instead of reinstalling as new app)
+  - Service Worker auto-update: 10-second polling + visibility change detection
 
 ## Backend Architecture
 - **Server Framework**: Express.js with TypeScript
