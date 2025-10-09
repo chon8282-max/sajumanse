@@ -4,6 +4,23 @@ import crypto from "crypto";
 
 const router = Router();
 
+// 임시 토큰 저장소 (메모리 기반, 5분 자동 만료)
+interface TempToken {
+  userId: string;
+  expiry: number;
+}
+const tempTokens = new Map<string, TempToken>();
+
+// 만료된 토큰 정리 (1분마다)
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, data] of tempTokens.entries()) {
+    if (now > data.expiry) {
+      tempTokens.delete(token);
+    }
+  }
+}, 60000);
+
 // Google OAuth 설정
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -201,10 +218,17 @@ router.get("/callback", async (req: Request, res) => {
 
     console.log("✅ Login successful, user ID:", user.id);
     
-    // opener가 있는 경우 (PWA에서 새 탭으로 열린 경우) 브릿지 페이지 렌더링
+    // PWA용 임시 토큰 생성 및 메모리에 저장 (5분 유효)
+    const authToken = crypto.randomBytes(32).toString('hex');
+    tempTokens.set(authToken, {
+      userId: user.id,
+      expiry: Date.now() + 5 * 60 * 1000, // 5분
+    });
+    
     const host = req.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const homeUrl = `${protocol}://${host}/`;
+    const authRedirectUrl = `${protocol}://${host}/?auth_token=${authToken}`;
     
     // 브릿지 페이지 렌더링 (PWA와 일반 브라우저 모두 처리)
     res.send(`
@@ -301,14 +325,14 @@ router.get("/callback", async (req: Request, res) => {
             // PWA standalone 모드인데 opener가 없음 - 홈으로 리다이렉트
             window.location.href = '${homeUrl}';
           } else if (isMobile) {
-            // 모바일 브라우저 - PWA 안내 표시 + 3초 후 자동 리다이렉트
+            // 모바일 브라우저 - PWA 안내 표시 + 3초 후 auth_token과 함께 리다이렉트
             document.getElementById('pwaHint').style.display = 'block';
             document.getElementById('message').textContent = '로그인이 완료되었습니다!';
             document.getElementById('returnBtn').style.display = 'inline-block';
             
-            // 3초 후 자동으로 홈으로 이동
+            // 3초 후 자동으로 auth_token과 함께 리다이렉트 (PWA 세션 생성용)
             setTimeout(() => {
-              window.location.href = '${homeUrl}';
+              window.location.href = '${authRedirectUrl}';
             }, 3000);
           } else {
             // 데스크톱 - 홈으로 이동 버튼 표시
@@ -330,6 +354,50 @@ router.get("/callback", async (req: Request, res) => {
     const redirectUrl = `${protocol}://${host}/?error=auth_failed&details=${encodeURIComponent(errorMsg)}`;
     console.log("Redirecting to (error):", redirectUrl);
     res.redirect(redirectUrl);
+  }
+});
+
+// PWA 임시 토큰으로 세션 생성
+router.post("/exchange-token", (req: Request, res) => {
+  try {
+    const { authToken } = req.body;
+    
+    if (!authToken) {
+      return res.status(400).json({ error: "Token required" });
+    }
+    
+    // 메모리에서 토큰 정보 가져오기
+    const tokenData = tempTokens.get(authToken);
+    
+    if (!tokenData) {
+      return res.status(401).json({ error: "Token expired or invalid" });
+    }
+    
+    // 만료 확인
+    if (Date.now() > tokenData.expiry) {
+      tempTokens.delete(authToken);
+      return res.status(401).json({ error: "Token expired" });
+    }
+    
+    // 세션 쿠키 생성 (메인 세션)
+    const isReplit = !!process.env.REPLIT_DOMAINS;
+    res.cookie("userId", tokenData.userId, {
+      signed: true,
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
+    });
+    
+    // 사용된 토큰 삭제 (일회용)
+    tempTokens.delete(authToken);
+    
+    console.log("✅ Token exchanged successfully for user:", tokenData.userId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Token exchange error:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
