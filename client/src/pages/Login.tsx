@@ -77,65 +77,43 @@ export default function Login() {
   }, []);
 
   const handleGoogleSignIn = async () => {
-    // 일반 브라우저: 현재 창에서 리다이렉트
-    window.location.href = '/api/auth/login';
-  };
-
-  const handleCopyUrl = async () => {
-    const loginUrl = `${window.location.origin}/api/auth/login`;
-    
-    // clipboard API 시도
-    if (navigator.clipboard && navigator.clipboard.writeText) {
+    if (isStandalone) {
+      // PWA standalone 모드: 새 탭에서 OAuth 진행 (Google 정책 준수)
+      const authUrl = `${window.location.origin}/api/auth/login`;
+      
       try {
-        await navigator.clipboard.writeText(loginUrl);
+        // 새 탭 열기 (사용자 클릭에 직접 반응해야 팝업 차단 방지)
+        const authWindow = window.open(authUrl, 'oauth-login', 'width=500,height=700');
+        
+        if (!authWindow) {
+          // 팝업 차단됨
+          toast({
+            title: "팝업이 차단되었습니다",
+            description: "브라우저 설정에서 팝업을 허용해주세요.",
+            variant: "destructive",
+            duration: 3000,
+          });
+          return;
+        }
+        
         toast({
-          title: "URL 복사 완료",
-          description: "브라우저 주소창에 붙여넣고 로그인하세요.",
+          title: "로그인 창이 열렸습니다",
+          description: "새 창에서 Google 로그인을 진행하세요.",
           duration: 3000,
         });
-        return;
       } catch (error) {
-        // clipboard 실패 - fallback으로 진행
+        console.error('OAuth window open error:', error);
+        toast({
+          title: "로그인 실패",
+          description: "로그인 창을 열 수 없습니다.",
+          variant: "destructive",
+          duration: 3000,
+        });
       }
+    } else {
+      // 일반 브라우저: 현재 창에서 리다이렉트
+      window.location.href = '/api/auth/login';
     }
-    
-    // clipboard 미지원 또는 실패 시: input 요소로 수동 복사
-    const input = document.createElement('input');
-    input.value = loginUrl;
-    input.style.position = 'fixed';
-    input.style.top = '50%';
-    input.style.left = '50%';
-    input.style.transform = 'translate(-50%, -50%)';
-    input.style.width = '80%';
-    input.style.padding = '12px';
-    input.style.fontSize = '14px';
-    input.style.border = '2px solid #3b82f6';
-    input.style.borderRadius = '8px';
-    input.style.zIndex = '9999';
-    input.style.backgroundColor = 'white';
-    input.readOnly = true;
-    
-    document.body.appendChild(input);
-    input.focus(); // 모바일 호환성 향상
-    input.select();
-    input.setSelectionRange(0, input.value.length);
-    
-    toast({
-      title: "URL이 표시되었습니다",
-      description: "파란색 입력창에서 URL을 복사하세요. (길게 눌러서 복사 또는 탭하여 닫기)",
-      duration: 5000,
-    });
-    
-    // 10초 후 또는 클릭/포커스 잃으면 제거 (충분한 시간 제공)
-    const removeInput = () => {
-      if (document.body.contains(input)) {
-        document.body.removeChild(input);
-      }
-    };
-    
-    setTimeout(removeInput, 10000);
-    input.addEventListener('blur', removeInput);
-    input.addEventListener('click', removeInput); // 클릭해도 닫기
   };
 
   return (
@@ -154,8 +132,8 @@ export default function Login() {
               <Alert className="bg-yellow-50 border-yellow-300 dark:bg-yellow-950 dark:border-yellow-800">
                 <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                 <AlertDescription className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>현재 앱 내 브라우저를 사용 중입니다</strong><br/>
-                  Google 정책상 앱 내 브라우저에서는 로그인할 수 없습니다.<br/><br/>
+                  <strong>앱 내 브라우저에서는 로그인할 수 없습니다</strong><br/>
+                  Google 보안 정책상 제한됩니다.<br/><br/>
                   <strong>해결 방법:</strong><br/>
                   1. 화면 우측 상단 메뉴(⋯) 클릭<br/>
                   2. "Safari에서 열기" 또는 "Chrome에서 열기" 선택<br/>
@@ -169,11 +147,9 @@ export default function Login() {
               <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
                 <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>앱 사용자 로그인 방법:</strong><br/>
-                  1. "로그인 URL 복사" 버튼 클릭<br/>
-                  2. 시스템 브라우저(Chrome, Safari 등) 열기<br/>
-                  3. 주소창에 붙여넣고 Google 로그인<br/>
-                  4. 로그인 완료 후 이 앱으로 돌아오기
+                  <strong>PWA 앱 모드 로그인:</strong><br/>
+                  버튼 클릭 시 새 창에서 Google 로그인이 진행됩니다.<br/>
+                  로그인 후 창이 자동으로 닫히고 앱으로 돌아옵니다.
                 </AlertDescription>
               </Alert>
             )}
@@ -181,21 +157,19 @@ export default function Login() {
             <Button
               className="w-full"
               size="lg"
-              onClick={isStandalone || isEmbedded ? handleCopyUrl : handleGoogleSignIn}
-              data-testid={isStandalone || isEmbedded ? "button-copy-login-url" : "button-google-signin"}
+              onClick={handleGoogleSignIn}
+              data-testid="button-google-signin"
+              disabled={isEmbedded && !isStandalone}
             >
-              {isStandalone || isEmbedded ? (
-                <>
-                  <Copy className="w-5 h-5 mr-2" />
-                  로그인 URL 복사
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-5 h-5 mr-2" />
-                  Google로 로그인
-                </>
-              )}
+              <LogIn className="w-5 h-5 mr-2" />
+              Google로 로그인
             </Button>
+            
+            {isEmbedded && !isStandalone && (
+              <p className="text-xs text-center text-muted-foreground">
+                시스템 브라우저(Chrome/Safari)로 이동 후 로그인하세요
+              </p>
+            )}
             
             <div className="text-center">
               <Button
