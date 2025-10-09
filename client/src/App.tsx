@@ -51,7 +51,7 @@ function Router() {
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("home");
-  const [showMobileMenu, setShowMobileMenu] = useState(false); // 항상 닫힌 상태로 시작
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [location, setLocation] = useLocation();
   
   const touchStartX = useRef(0);
@@ -73,11 +73,6 @@ function AppContent() {
     // 첫 렌더링 후 약간의 지연을 두고 로딩 화면 숨김
     const timer = setTimeout(hideLoadingScreen, 200);
     return () => clearTimeout(timer);
-  }, []);
-
-  // 앱 시작 시 메뉴가 확실히 닫힌 상태로 시작
-  useEffect(() => {
-    setShowMobileMenu(false);
   }, []);
 
   const handleMenuClick = () => {
