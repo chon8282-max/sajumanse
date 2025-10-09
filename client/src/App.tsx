@@ -57,6 +57,24 @@ function AppContent() {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
+  // React 렌더링 완료 후 로딩 화면 숨기기
+  useEffect(() => {
+    const hideLoadingScreen = () => {
+      const loadingScreen = document.getElementById('loading-screen');
+      if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        loadingScreen.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => {
+          loadingScreen.style.display = 'none';
+        }, 300);
+      }
+    };
+    
+    // 첫 렌더링 후 약간의 지연을 두고 로딩 화면 숨김
+    const timer = setTimeout(hideLoadingScreen, 200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
     console.log('Mobile menu toggled');
