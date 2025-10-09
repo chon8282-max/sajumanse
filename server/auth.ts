@@ -253,11 +253,17 @@ router.get("/callback", async (req: Request, res) => {
           }
           .pwa-hint {
             margin-top: 2rem;
-            padding: 1rem;
-            background: #fff3cd;
-            border-radius: 8px;
-            color: #856404;
-            font-size: 14px;
+            padding: 1.5rem;
+            background: #d1ecf1;
+            border: 2px solid #0c5460;
+            border-radius: 12px;
+            color: #0c5460;
+            font-size: 15px;
+            line-height: 1.6;
+          }
+          .pwa-hint strong {
+            color: #0c5460;
+            font-weight: 700;
           }
         </style>
       </head>
@@ -266,15 +272,20 @@ router.get("/callback", async (req: Request, res) => {
           <div class="success">✅</div>
           <h1>로그인 완료!</h1>
           <p class="message" id="message">로그인이 성공적으로 완료되었습니다.</p>
-          <a href="${homeUrl}" class="btn" id="returnBtn">홈으로 이동</a>
+          <a href="${homeUrl}" class="btn" id="returnBtn" style="display: none;">홈으로 이동</a>
           <div class="pwa-hint" id="pwaHint" style="display: none;">
-            📱 앱을 사용 중이시라면, <strong>앱으로 돌아가서</strong> 새로고침해주세요.
+            <strong>📱 PWA 앱 사용자</strong><br/>
+            이 브라우저 창을 닫고 <strong>만세력 앱으로 돌아가세요</strong>.<br/>
+            앱에서 자동으로 로그인됩니다.
           </div>
         </div>
         <script>
           // PWA standalone 모드 감지
           const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
                               window.navigator.standalone;
+          
+          // User-Agent로 모바일 감지
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
           
           // opener가 있으면 (새 탭) 닫고 opener에 메시지 전송
           if (window.opener) {
@@ -287,16 +298,21 @@ router.get("/callback", async (req: Request, res) => {
               window.location.href = '${homeUrl}';
             }
           } else if (isStandalone) {
-            // PWA standalone 모드인데 opener가 없음 - 이건 불가능한 상황
-            // 그냥 홈으로 이동
+            // PWA standalone 모드인데 opener가 없음 - 홈으로 리다이렉트
             window.location.href = '${homeUrl}';
+          } else if (isMobile) {
+            // 모바일 브라우저 - PWA 안내 표시 + 3초 후 자동 리다이렉트
+            document.getElementById('pwaHint').style.display = 'block';
+            document.getElementById('message').textContent = '로그인이 완료되었습니다!';
+            document.getElementById('returnBtn').style.display = 'inline-block';
+            
+            // 3초 후 자동으로 홈으로 이동
+            setTimeout(() => {
+              window.location.href = '${homeUrl}';
+            }, 3000);
           } else {
-            // 일반 브라우저에서 열림 - PWA 사용자를 위한 힌트 표시
-            // User-Agent로 모바일 감지
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            if (isMobile) {
-              document.getElementById('pwaHint').style.display = 'block';
-            }
+            // 데스크톱 - 홈으로 이동 버튼 표시
+            document.getElementById('returnBtn').style.display = 'inline-block';
           }
         </script>
       </body>
