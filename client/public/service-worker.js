@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manseryeok-v7-nocache';
+const CACHE_NAME = 'manseryeok-v8-fresh';
 const urlsToCache = [
   '/',
   '/manifest.json'
@@ -51,7 +51,24 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
-  // 정적 리소스만 캐시 전략 사용
+  // HTML과 JS는 항상 네트워크에서 가져오기 (최신 버전 보장)
+  const isHtmlOrScript = event.request.url.match(/\/$|\.html$|\.js$|\.ts$|\.jsx$|\.tsx$/);
+  
+  if (isHtmlOrScript) {
+    event.respondWith(
+      fetch(event.request).catch(function() {
+        return caches.match(event.request).then(function(response) {
+          return response || new Response('Offline', {
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        });
+      })
+    );
+    return;
+  }
+  
+  // 정적 리소스만 캐시 전략 사용 (CSS, 이미지, 폰트 등)
   event.respondWith(
     caches.match(event.request)
       .then(function(cachedResponse) {
@@ -65,11 +82,9 @@ self.addEventListener('fetch', function(event) {
               return response;
             }
             
-            // JavaScript 제외하고 정적 리소스만 캐시 (HTML, CSS, 이미지 등)
-            // JS 파일은 항상 최신 버전을 가져오도록 캐시하지 않음
+            // 정적 리소스만 캐시 (CSS, 이미지, 폰트 등)
             if (event.request.url.indexOf('http') === 0 && 
-                event.request.url.indexOf('/api/') === -1 &&
-                !event.request.url.match(/\.js$|\.ts$|\.jsx$|\.tsx$/)) {
+                event.request.url.indexOf('/api/') === -1) {
               var responseToCache = response.clone();
               caches.open(CACHE_NAME)
                 .then(function(cache) {

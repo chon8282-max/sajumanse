@@ -75,18 +75,34 @@
         console.error('Global error:', e.error);
       });
       
-      // Fallback loading screen removal
-      window.addEventListener('load', function() {
+      // 빠른 fallback - DOMContentLoaded 후 1초
+      document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
           var loadingScreen = document.getElementById('loading-screen');
           if (loadingScreen && loadingScreen.style.display !== 'none') {
+            console.log('Hiding loading screen (DOMContentLoaded fallback)');
             loadingScreen.style.opacity = '0';
             loadingScreen.style.transition = 'opacity 0.3s';
             setTimeout(function() {
               loadingScreen.style.display = 'none';
             }, 300);
           }
-        }, 2000);
+        }, 1000);
+      });
+      
+      // 최종 fallback - window load 후 즉시
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen && loadingScreen.style.display !== 'none') {
+            console.log('Hiding loading screen (window load fallback)');
+            loadingScreen.style.opacity = '0';
+            loadingScreen.style.transition = 'opacity 0.3s';
+            setTimeout(function() {
+              loadingScreen.style.display = 'none';
+            }, 300);
+          }
+        }, 100);
       });
     </script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
