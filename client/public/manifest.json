@@ -1,9 +1,9 @@
 {
-  "id": "com.manseryeog.app",
+  "id": "/",
   "name": "만세력 - 전통 사주명리",
   "short_name": "만세력",
   "description": "한국 전통 만세력 - 사주명리학 기반 운세 정보 제공",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "fullscreen"],

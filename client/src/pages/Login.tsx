@@ -4,9 +4,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
-import { LogIn, Info, Copy, ExternalLink } from "lucide-react";
+import { LogIn, Info, Copy, ExternalLink, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+
+// Embedded browser 감지 함수
+function isEmbeddedBrowser(): boolean {
+  const ua = navigator.userAgent || navigator.vendor;
+  
+  const embeddedBrowsers = [
+    'Instagram',
+    'FBAN', 'FBAV',        // Facebook
+    'LinkedIn',
+    'Twitter',
+    'Line/',
+    'Messenger',
+    'KAKAOTALK',          // KakaoTalk
+    'wv'                   // WebView indicator
+  ];
+  
+  return embeddedBrowsers.some(browser => ua.includes(browser));
+}
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -16,6 +34,7 @@ export default function Login() {
     window.matchMedia('(display-mode: standalone)').matches || 
     (window.navigator as any).standalone
   );
+  const [isEmbedded] = useState(() => isEmbeddedBrowser());
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -130,14 +149,31 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Embedded browser 경고 (최우선) */}
+            {isEmbedded && !isStandalone && (
+              <Alert className="bg-yellow-50 border-yellow-300 dark:bg-yellow-950 dark:border-yellow-800">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                <AlertDescription className="text-sm text-yellow-800 dark:text-yellow-200">
+                  <strong>현재 앱 내 브라우저를 사용 중입니다</strong><br/>
+                  Google 정책상 앱 내 브라우저에서는 로그인할 수 없습니다.<br/><br/>
+                  <strong>해결 방법:</strong><br/>
+                  1. 화면 우측 상단 메뉴(⋯) 클릭<br/>
+                  2. "Safari에서 열기" 또는 "Chrome에서 열기" 선택<br/>
+                  3. 시스템 브라우저에서 로그인
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {/* PWA standalone 모드 안내 */}
             {isStandalone && (
               <Alert className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
                 <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <AlertDescription className="text-sm text-blue-800 dark:text-blue-200">
                   <strong>앱 사용자 로그인 방법:</strong><br/>
                   1. "로그인 URL 복사" 버튼 클릭<br/>
-                  2. 브라우저(Chrome, Safari 등)를 열고 주소창에 붙여넣기<br/>
-                  3. Google 로그인 완료 후 <strong>이 앱으로 돌아오면 자동 로그인</strong>
+                  2. 시스템 브라우저(Chrome, Safari 등) 열기<br/>
+                  3. 주소창에 붙여넣고 Google 로그인<br/>
+                  4. 로그인 완료 후 이 앱으로 돌아오기
                 </AlertDescription>
               </Alert>
             )}
@@ -145,10 +181,11 @@ export default function Login() {
             <Button
               className="w-full"
               size="lg"
-              onClick={isStandalone ? handleCopyUrl : handleGoogleSignIn}
-              data-testid={isStandalone ? "button-copy-login-url" : "button-google-signin"}
+              onClick={isStandalone || isEmbedded ? handleCopyUrl : handleGoogleSignIn}
+              data-testid={isStandalone || isEmbedded ? "button-copy-login-url" : "button-google-signin"}
+              disabled={isEmbedded && !isStandalone}
             >
-              {isStandalone ? (
+              {isStandalone || isEmbedded ? (
                 <>
                   <Copy className="w-5 h-5 mr-2" />
                   로그인 URL 복사
@@ -160,6 +197,12 @@ export default function Login() {
                 </>
               )}
             </Button>
+            
+            {isEmbedded && !isStandalone && (
+              <p className="text-xs text-center text-muted-foreground">
+                시스템 브라우저로 이동한 후 다시 시도해주세요
+              </p>
+            )}
             
             <div className="text-center">
               <Button
