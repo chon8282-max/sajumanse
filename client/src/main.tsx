@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Register Service Worker for PWA with auto-update
+// Register Service Worker for PWA with immediate auto-update
 if ('serviceWorker' in navigator) {
   let refreshing = false;
   
@@ -20,10 +20,22 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         console.log('✅ SW registered:', registration.scope);
         
-        // 새 SW 업데이트 확인 (1분마다)
+        // 즉시 업데이트 확인
+        registration.update();
+        
+        // 정기적으로 업데이트 확인 (10초마다)
         setInterval(() => {
+          console.log('🔍 Checking for updates...');
           registration.update();
-        }, 60000);
+        }, 10000);
+        
+        // 페이지 포커스될 때마다 업데이트 확인
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            console.log('👀 Page focused - checking for updates...');
+            registration.update();
+          }
+        });
         
         // 새 SW 발견 시 즉시 활성화
         registration.addEventListener('updatefound', () => {
@@ -33,7 +45,6 @@ if ('serviceWorker' in navigator) {
             
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // 새 SW가 설치됨 - skipWaiting()이 호출되면 자동으로 활성화
                 console.log('📦 New Service Worker installed - will activate soon');
               }
             });

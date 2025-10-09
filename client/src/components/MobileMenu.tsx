@@ -7,7 +7,8 @@ import {
   MessageSquare, 
   X,
   Info,
-  Type
+  Type,
+  RefreshCw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -373,9 +374,22 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
 
           {/* 푸터 */}
-          <div className="p-4 border-t">
+          <div className="p-4 border-t space-y-2">
+            <Button
+              onClick={() => {
+                console.log('🔄 Force refresh requested');
+                window.location.reload();
+              }}
+              variant="outline"
+              size="sm"
+              className="w-full"
+              data-testid="button-force-refresh"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              앱 새로고침
+            </Button>
             <p className="text-xs text-muted-foreground text-center">
-              V.1.25.10.7
+              V.1.25.10.8
             </p>
           </div>
         </div>
