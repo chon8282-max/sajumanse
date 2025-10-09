@@ -375,7 +375,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {/* 푸터 */}
           <div className="p-4 border-t">
             <p className="text-xs text-muted-foreground text-center">
-              지천명 만세력 v1.0
+              V.1.25.10.3
             </p>
           </div>
         </div>
