@@ -183,7 +183,6 @@ export default function Login() {
               size="lg"
               onClick={isStandalone || isEmbedded ? handleCopyUrl : handleGoogleSignIn}
               data-testid={isStandalone || isEmbedded ? "button-copy-login-url" : "button-google-signin"}
-              disabled={isEmbedded && !isStandalone}
             >
               {isStandalone || isEmbedded ? (
                 <>
@@ -197,12 +196,6 @@ export default function Login() {
                 </>
               )}
             </Button>
-            
-            {isEmbedded && !isStandalone && (
-              <p className="text-xs text-center text-muted-foreground">
-                시스템 브라우저로 이동한 후 다시 시도해주세요
-              </p>
-            )}
             
             <div className="text-center">
               <Button
