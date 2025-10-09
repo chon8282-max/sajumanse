@@ -42,47 +42,6 @@ export default function Login() {
     }
   }, [isAuthenticated, setLocation]);
 
-  // URL에서 auth_token 감지하고 세션 생성 (PWA 로그인용)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const authToken = params.get('auth_token');
-    
-    if (authToken) {
-      // URL에서 토큰 제거
-      window.history.replaceState({}, '', '/');
-      
-      // 토큰을 세션으로 교환
-      fetch('/api/auth/exchange-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ authToken })
-      })
-        .then(res => {
-          if (res.ok) {
-            // 성공 시 사용자 정보 갱신
-            queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-            toast({
-              title: "로그인 성공 ✓",
-              description: "환영합니다!",
-              duration: 2000,
-            });
-          } else {
-            throw new Error('Token exchange failed');
-          }
-        })
-        .catch(err => {
-          console.error('Token exchange error:', err);
-          toast({
-            title: "로그인 실패",
-            description: "다시 시도해주세요.",
-            variant: "destructive",
-            duration: 3000,
-          });
-        });
-    }
-  }, [toast]);
-
   // postMessage로 OAuth 성공 메시지 받기 (새 탭에서 로그인 완료 시)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {

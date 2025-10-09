@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manseryeok-v1.25.10.6';
+const CACHE_NAME = 'manseryeok-v1.25.10.7';
 const urlsToCache = [
   '/',
   '/manifest.json'
