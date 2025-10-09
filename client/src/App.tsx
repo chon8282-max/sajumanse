@@ -57,6 +57,40 @@ function AppContent() {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
+  // PWA 로그인: URL에서 auth_token 감지하고 세션 생성
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authToken = params.get('auth_token');
+    
+    if (authToken) {
+      console.log('🔑 Auth token detected, exchanging for session...');
+      
+      // URL에서 토큰 제거
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      
+      // 토큰을 세션으로 교환
+      fetch('/api/auth/exchange-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ authToken })
+      })
+        .then(res => {
+          if (res.ok) {
+            console.log('✅ Token exchange successful');
+            // 성공 시 사용자 정보 갱신
+            queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+          } else {
+            throw new Error('Token exchange failed');
+          }
+        })
+        .catch(err => {
+          console.error('❌ Token exchange error:', err);
+        });
+    }
+  }, []);
+
   // React 렌더링 완료 후 로딩 화면 숨기기
   useEffect(() => {
     const hideLoadingScreen = () => {
