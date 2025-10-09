@@ -27,11 +27,12 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Render React app and hide loading screen
+// Render React app and hide loading screen immediately
 const rootElement = document.getElementById("root");
 if (rootElement) {
   createRoot(rootElement).render(<App />);
-  setTimeout(hideLoadingScreen, 500);
+  // 로딩 화면을 즉시 숨김 (React 렌더링 시작과 동시에)
+  setTimeout(hideLoadingScreen, 100);
 } else {
   console.error('Root element not found');
   hideLoadingScreen();
