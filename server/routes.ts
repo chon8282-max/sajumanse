@@ -1257,15 +1257,15 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
-      // 로컬 라이브러리로 변환 (fallback)
-      const localResult = convertLunarToSolarServer(
+      // 로컬 라이브러리로 변환 (async 함수이므로 await 필요)
+      const localResultDate = await convertLunarToSolarServer(
         lunYear,
         lunMonth,
         lunDay,
         isLeapMonth || false
       );
 
-      if (!localResult) {
+      if (!localResultDate) {
         throw new Error('음력→양력 변환 실패');
       }
 
@@ -1273,9 +1273,9 @@ export async function registerRoutes(app: Express): Promise<void> {
         success: true,
         source: "local",
         data: {
-          solYear: localResult.year,
-          solMonth: localResult.month,
-          solDay: localResult.day,
+          solYear: localResultDate.getFullYear(),
+          solMonth: localResultDate.getMonth() + 1,  // 0-based to 1-based
+          solDay: localResultDate.getDate(),
           lunYear: lunYear,
           lunMonth: lunMonth,
           lunDay: lunDay,
