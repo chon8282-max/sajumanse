@@ -58,46 +58,43 @@ function checkDSTPeriod(year: number, month: number, day: number): { isDST: bool
   return { isDST: false };
 }
 
-// 12절기 데이터 (2024년 기준)
-const TWELVE_SOLAR_TERMS_2024 = [
-  { term: "입춘", month: 2, day: 4, hour: 16, minute: 27 },
-  { term: "경칩", month: 3, day: 5, hour: 10, minute: 23 },
-  { term: "청명", month: 4, day: 4, hour: 15, minute: 2 },
-  { term: "입하", month: 5, day: 5, hour: 8, minute: 10 },
-  { term: "망종", month: 6, day: 5, hour: 12, minute: 10 },
-  { term: "소서", month: 7, day: 6, hour: 22, minute: 20 },
-  { term: "입추", month: 8, day: 7, hour: 9, minute: 11 },
-  { term: "백로", month: 9, day: 7, hour: 11, minute: 11 },
-  { term: "한로", month: 10, day: 8, hour: 3, minute: 56 },
-  { term: "입동", month: 11, day: 7, hour: 12, minute: 20 },
-  { term: "대설", month: 12, day: 7, hour: 0, minute: 17 },
-  { term: "소한", month: 1, day: 5, hour: 23, minute: 49 },
-];
-
-// 절입일 체크 함수 (범위 기반 체크로 모든 연도 지원)
-function checkSolarTermDay(year: number, month: number, day: number): { isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } } {
-  // 각 절기가 발생할 수 있는 날짜 범위 (±2일 허용)
-  for (const term of TWELVE_SOLAR_TERMS_2024) {
-    // 입력한 월과 절기의 월이 같은지 확인
-    if (month === term.month) {
-      // 절기 날짜 ±2일 범위 내에 있는지 확인
-      const minDay = term.day - 2;
-      const maxDay = term.day + 2;
+// 절입일 체크 함수 (서버 API 사용)
+async function checkSolarTermDay(year: number, month: number, day: number): Promise<{ isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } }> {
+  try {
+    const response = await fetch(`/api/solar-terms/${year}`);
+    const result = await response.json();
+    
+    if (!result.success || !result.data) {
+      console.error('절입일 데이터 로드 실패:', result);
+      return { isSolarTerm: false };
+    }
+    
+    // 해당 년도의 모든 절기 중에서 입력한 날짜와 일치하는지 확인
+    const solarTerms = result.data;
+    for (const term of solarTerms) {
+      // Date 객체가 JSON으로 변환된 ISO 문자열 파싱
+      const termDate = new Date(term.date);
+      const termMonth = termDate.getMonth() + 1; // 0-based to 1-based
+      const termDay = termDate.getDate();
       
-      if (day >= minDay && day <= maxDay) {
+      // 월과 일이 모두 일치하면 절입일
+      if (termMonth === month && termDay === day) {
         return {
           isSolarTerm: true,
           termInfo: {
-            name: term.term,
-            hour: term.hour,
-            minute: term.minute
+            name: term.name,
+            hour: termDate.getHours(),
+            minute: termDate.getMinutes()
           }
         };
       }
     }
+    
+    return { isSolarTerm: false };
+  } catch (error) {
+    console.error('절입일 체크 중 오류:', error);
+    return { isSolarTerm: false };
   }
-  
-  return { isSolarTerm: false };
 }
 
 export default function SajuInput() {
@@ -267,7 +264,7 @@ export default function SajuInput() {
 
       // 변환된 양력 날짜로 절입일 체크
       console.log(`🔍 절입일 체크: ${solarYear}-${solarMonth}-${solarDay}`);
-      const solarTermCheck = checkSolarTermDay(solarYear, solarMonth, solarDay);
+      const solarTermCheck = await checkSolarTermDay(solarYear, solarMonth, solarDay);
       console.log('📊 절입일 체크 결과:', solarTermCheck);
       
       if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
