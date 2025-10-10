@@ -72,10 +72,11 @@ async function checkSolarTermDay(year: number, month: number, day: number): Prom
     // 해당 년도의 모든 절기 중에서 입력한 날짜와 일치하는지 확인
     const solarTerms = result.data;
     for (const term of solarTerms) {
-      // Date 객체가 JSON으로 변환된 ISO 문자열 파싱
+      // Date 객체가 JSON으로 변환된 ISO 문자열 파싱 (UTC로 파싱)
       const termDate = new Date(term.date);
-      const termMonth = termDate.getMonth() + 1; // 0-based to 1-based
-      const termDay = termDate.getDate();
+      // UTC 날짜 사용 (시간대 문제 방지)
+      const termMonth = termDate.getUTCMonth() + 1; // 0-based to 1-based
+      const termDay = termDate.getUTCDate();
       
       // 월과 일이 모두 일치하면 절입일
       if (termMonth === month && termDay === day) {
@@ -83,8 +84,8 @@ async function checkSolarTermDay(year: number, month: number, day: number): Prom
           isSolarTerm: true,
           termInfo: {
             name: term.name,
-            hour: termDate.getHours(),
-            minute: termDate.getMinutes()
+            hour: termDate.getUTCHours(),
+            minute: termDate.getUTCMinutes()
           }
         };
       }
