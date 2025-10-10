@@ -239,6 +239,7 @@ export default function SajuInput() {
       // 음력/윤달인 경우 양력으로 변환 후 체크
       if (formData.calendarType === "음력" || formData.calendarType === "윤달") {
         try {
+          console.log(`🔄 음력→양력 변환 시작: ${yearNum}-${monthNum}-${dayNum} (${formData.calendarType})`);
           const response = await fetch('/api/lunar-solar/convert/solar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -250,24 +251,32 @@ export default function SajuInput() {
             })
           });
           const result = await response.json();
+          console.log('📅 변환 결과:', result);
           
           if (result.success && result.data) {
             solarYear = result.data.solYear;
             solarMonth = result.data.solMonth;
             solarDay = result.data.solDay;
+            console.log(`✅ 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
           }
         } catch (error) {
-          console.error('음력→양력 변환 실패:', error);
+          console.error('❌ 음력→양력 변환 실패:', error);
           // 변환 실패시 그냥 진행
         }
       }
 
       // 변환된 양력 날짜로 절입일 체크
+      console.log(`🔍 절입일 체크: ${solarYear}-${solarMonth}-${solarDay}`);
       const solarTermCheck = checkSolarTermDay(solarYear, solarMonth, solarDay);
+      console.log('📊 절입일 체크 결과:', solarTermCheck);
+      
       if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
+        console.log('🎯 절입일 발견! 다이얼로그 표시');
         setSolarTermInfo(solarTermCheck.termInfo);
         setShowSolarTermDialog(true);
         return; // 대화상자 표시 후 여기서 멈춤
+      } else {
+        console.log('❎ 절입일 아님');
       }
     }
 
