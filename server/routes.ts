@@ -1249,7 +1249,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   // 음력 → 양력 변환
   app.post("/api/lunar-solar/convert/solar", async (req, res) => {
     try {
-      const { lunYear, lunMonth, lunDay, lunLeapMonth } = req.body;
+      const { lunYear, lunMonth, lunDay, isLeapMonth } = req.body;
       
       if (!lunYear || !lunMonth || !lunDay) {
         return res.status(400).json({ 
@@ -1257,24 +1257,28 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
-      console.log(`Calling data.go.kr API for lunar ${lunYear}-${lunMonth}-${lunDay} (leap: ${lunLeapMonth})`);
-      const apiData = await getSolarCalInfo(lunYear, lunMonth, lunDay, lunLeapMonth);
-      
-      const item = apiData.response.body.items.item;
-      
+      // 로컬 라이브러리로 변환 (fallback)
+      const localResult = convertLunarToSolarServer(
+        lunYear,
+        lunMonth,
+        lunDay,
+        isLeapMonth || false
+      );
+
+      if (!localResult) {
+        throw new Error('음력→양력 변환 실패');
+      }
+
       res.json({
         success: true,
-        source: "api",
+        source: "local",
         data: {
-          solYear: parseInt(item.solYear),
-          solMonth: parseInt(item.solMonth),
-          solDay: parseInt(item.solDay),
-          lunYear: parseInt(item.lunYear),
-          lunMonth: parseInt(item.lunMonth),
-          lunDay: parseInt(item.lunDay),
-          lunLeapMonth: item.lunLeapMonth,
-          lunWolban: item.lunWolban,
-          lunSecha: item.lunSecha,
+          solYear: localResult.year,
+          solMonth: localResult.month,
+          solDay: localResult.day,
+          lunYear: lunYear,
+          lunMonth: lunMonth,
+          lunDay: lunDay,
         }
       });
     } catch (error) {
