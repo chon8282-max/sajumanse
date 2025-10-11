@@ -232,7 +232,7 @@ async function fetchSolarTermsFromDistBe(year: number): Promise<SolarTermInfo[] 
 }
 
 /**
- * 특정 년도의 24절기 날짜들을 가져오기 (외부 API 우선, fallback으로 근사치)
+ * 특정 년도의 24절기 날짜들을 가져오기 (DB 우선, fallback으로 API/근사치)
  * @param year 년도
  * @returns 24절기 정보 배열
  */
@@ -245,37 +245,87 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTermsCache.get(year)!;
   }
   
-  // 1. data.go.kr API 먼저 시도 (정확한 절입시간 포함)
+  // 1. DB에서 먼저 조회 (가장 정확한 데이터)
+  const { storage } = await import('../storage');
+  const dbTerms = await storage.getSolarTerms(year);
+  if (dbTerms && dbTerms.length > 0) {
+    console.log(`✅ DB에서 ${year}년 절입일 데이터 로드 성공 (${dbTerms.length}개)`);
+    const solarTerms = dbTerms.map(term => ({
+      name: term.name,
+      date: term.date,
+      sajuMonth: SOLAR_TERM_TO_SAJU_MONTH[term.name] || 0
+    }));
+    solarTermsCache.set(year, solarTerms);
+    return solarTerms;
+  }
+  
+  // 2. data.go.kr API 시도 (정확한 절입시간 포함) - DB에 저장
   const dataGovTerms = await fetchSolarTermsFromDataGovKr(year);
   if (dataGovTerms && dataGovTerms.length > 0) {
     console.log(`✅ data.go.kr API에서 ${year}년 절입일 데이터 로드 성공`);
+    // DB에 저장
+    await saveSolarTermsToDb(year, dataGovTerms, 'data.go.kr');
     solarTermsCache.set(year, dataGovTerms);
     return dataGovTerms;
   }
   
-  // 2. holidays.dist.be API 시도 (2006년 이후)
+  // 3. holidays.dist.be API 시도 (2006년 이후) - DB에 저장
   if (year >= 2006) {
     const distBeTerms = await fetchSolarTermsFromDistBe(year);
     if (distBeTerms && distBeTerms.length > 0) {
       console.log(`✅ holidays.dist.be API에서 ${year}년 절입일 데이터 로드 성공`);
+      // DB에 저장
+      await saveSolarTermsToDb(year, distBeTerms, 'holidays.dist.be');
       solarTermsCache.set(year, distBeTerms);
       return distBeTerms;
     }
   }
   
-  // 3. 하드코딩 데이터 확인 (정확한 절입일이 있는 경우)
+  // 4. 하드코딩 데이터 확인 (정확한 절입일이 있는 경우) - DB에 저장
   if (HARDCODED_SOLAR_TERMS[year]) {
     console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년`);
     const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
+    // DB에 저장
+    await saveSolarTermsToDb(year, hardcodedTerms, 'hardcoded');
     solarTermsCache.set(year, hardcodedTerms);
     return hardcodedTerms;
   }
   
-  // 4. Fallback: 로컬 근사치 계산
+  // 5. Fallback: 로컬 근사치 계산 - DB에 저장
   console.log(`⚠️ 모든 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
   const all24Terms = getAll24SolarTermsForYear(year);
+  // DB에 저장
+  await saveSolarTermsToDb(year, all24Terms, 'approximation');
   solarTermsCache.set(year, all24Terms);
   return all24Terms.sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+/**
+ * 24절기 데이터를 DB에 저장
+ * @param year 년도
+ * @param terms 절기 정보 배열
+ * @param source 데이터 출처
+ */
+async function saveSolarTermsToDb(year: number, terms: SolarTermInfo[], source: string): Promise<void> {
+  try {
+    const { storage } = await import('../storage');
+    const insertData = terms.map(term => {
+      // KST 시간 추출
+      const kstDate = new Date(term.date.getTime() + 9 * 60 * 60 * 1000);
+      return {
+        year,
+        name: term.name,
+        date: term.date, // UTC
+        kstHour: kstDate.getUTCHours(),
+        kstMinute: kstDate.getUTCMinutes(),
+        source,
+      };
+    });
+    await storage.bulkCreateSolarTerms(insertData);
+    console.log(`💾 ${year}년 절입일 데이터 DB 저장 완료 (${terms.length}개, source: ${source})`);
+  } catch (error) {
+    console.error(`❌ ${year}년 절입일 데이터 DB 저장 실패:`, error);
+  }
 }
 
 /**

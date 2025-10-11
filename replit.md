@@ -70,11 +70,14 @@ Preferred communication style: Simple, everyday language.
   - Example for 1988-03-05 (경칩): "전월 간지" → 정묘년 갑인월, "절입 후 간지" → 무진년 을묘월
   - SajuResult page prioritizes server-calculated pillars (saved in database) over client-side recalculation
   - isLichunAdjusted flag tracks whether year adjustment already occurred during lunar conversion to prevent double adjustments
-  - **4-Tier Solar Term Data System** (2025-01-11 Updated):
-    - Tier 1: data.go.kr API (공공데이터포털 24절기 API, most accurate KST times)
-    - Tier 2: holidays.dist.be API for 2006-현재 (provides exact times)
-    - Tier 3: Hardcoded accurate data for critical years (1958: 입춘 16:49, 경칩 11:05, 청명 16:12 KST)
-    - Tier 4: Local approximation fallback for other years
+  - **5-Tier Solar Term Data System with Database Caching** (2025-10-11 Updated):
+    - Tier 1: **Database Query** (Primary source, fastest)
+    - Tier 2: data.go.kr API (공공데이터포털 24절기 API) → saves to DB
+    - Tier 3: holidays.dist.be API for 2006-현재 (provides exact times) → saves to DB
+    - Tier 4: Hardcoded accurate data for critical years (1958: 입춘 16:49, 경칩 11:05, 청명 16:12 KST) → saves to DB
+    - Tier 5: Local approximation fallback for other years → saves to DB
+    - **Database Storage**: All solar term data (from any source) is saved to `solar_terms` table for future queries
+    - **Data Coverage**: 2006-2025 stored from holidays.dist.be (accurate times), other years use approximation or hardcoded data
     - **KST/UTC Conversion**: Server stores UTC (API KST - 9h), client displays KST (UTC + 9h)
     - Frontend detection: UTC date comparison (getUTCMonth/getUTCDate) to avoid timezone issues
 - **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
