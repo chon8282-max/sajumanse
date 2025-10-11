@@ -58,17 +58,76 @@ export interface DaeunNumberResult {
 const solarTermsCache = new Map<number, SolarTermInfo[]>();
 
 /**
- * 외부 API에서 24절기 데이터 가져오기
+ * data.go.kr API에서 24절기 데이터 가져오기
  * @param year 년도
  * @returns 24절기 정보 배열 또는 null (실패시)
  */
-async function fetchSolarTermsFromAPI(year: number): Promise<SolarTermInfo[] | null> {
+async function fetchSolarTermsFromDataGovKr(year: number): Promise<SolarTermInfo[] | null> {
   try {
-    console.log(`🌐 외부 API에서 ${year}년 절입일 데이터 가져오는 중...`);
+    console.log(`🌐 data.go.kr에서 ${year}년 절입일 데이터 가져오는 중...`);
+    
+    // data-gov-kr-service의 get24DivisionsInfo 사용
+    const { get24DivisionsInfo } = await import('./data-gov-kr-service');
+    const apiResponse = await get24DivisionsInfo(year);
+    
+    // 디버깅: 응답 구조 확인
+    console.log(`📋 응답 키:`, Object.keys(apiResponse || {}));
+    console.log(`📋 response 키:`, Object.keys(apiResponse?.response || {}));  
+    console.log(`📋 header:`, apiResponse?.response?.header);
+    console.log(`📋 body 키:`, Object.keys(apiResponse?.response?.body || {}));
+    console.log(`📋 items:`, apiResponse?.response?.body?.items);
+    console.log(`📋 items 타입:`, typeof apiResponse?.response?.body?.items);
+    
+    // 응답 구조: response.body.items.item (배열 또는 단일 객체)
+    const items = apiResponse?.response?.body?.items?.item;
+    if (!items) {
+      console.log(`❌ data.go.kr API 응답 데이터 없음 (items.item이 없음)`);
+      return null;
+    }
+    
+    const itemsArray = Array.isArray(items) ? items : [items];
+    const terms: SolarTermInfo[] = [];
+    
+    for (const item of itemsArray) {
+      // locdate: "YYYYMMDD", dateName: "소한", kst: "HH:mm"
+      const dateStr = item.locdate;
+      const year = parseInt(dateStr.substring(0, 4));
+      const month = parseInt(dateStr.substring(4, 6));
+      const day = parseInt(dateStr.substring(6, 8));
+      
+      const timeStr = item.kst || "00:00";
+      const [hour, minute] = timeStr.split(':').map((s: string) => parseInt(s));
+      
+      const termDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
+      const sajuMonth = SOLAR_TERM_TO_SAJU_MONTH[item.dateName] ?? 0;
+      
+      terms.push({
+        name: item.dateName,
+        date: termDate,
+        sajuMonth
+      });
+    }
+    
+    console.log(`✅ data.go.kr에서 ${terms.length}개 절입일 데이터 로드 성공`);
+    return terms.sort((a, b) => a.date.getTime() - b.date.getTime());
+  } catch (error) {
+    console.error(`❌ data.go.kr API 호출 실패:`, error);
+    return null;
+  }
+}
+
+/**
+ * 외부 API에서 24절기 데이터 가져오기 (holidays.dist.be - 2010년 이후만)
+ * @param year 년도
+ * @returns 24절기 정보 배열 또는 null (실패시)
+ */
+async function fetchSolarTermsFromDistBe(year: number): Promise<SolarTermInfo[] | null> {
+  try {
+    console.log(`🌐 holidays.dist.be에서 ${year}년 절입일 데이터 가져오는 중...`);
     const response = await fetch(`https://holidays.dist.be/${year}.json`);
     
     if (!response.ok) {
-      console.log(`❌ 외부 API 응답 실패: ${response.status}`);
+      console.log(`❌ holidays.dist.be API 응답 실패: ${response.status}`);
       return null;
     }
     
@@ -100,10 +159,10 @@ async function fetchSolarTermsFromAPI(year: number): Promise<SolarTermInfo[] | n
       });
     }
     
-    console.log(`✅ 외부 API에서 ${terms.length}개 절입일 데이터 로드 성공`);
+    console.log(`✅ holidays.dist.be에서 ${terms.length}개 절입일 데이터 로드 성공`);
     return terms.sort((a, b) => a.date.getTime() - b.date.getTime());
   } catch (error) {
-    console.error(`❌ 외부 API 호출 실패:`, error);
+    console.error(`❌ holidays.dist.be API 호출 실패:`, error);
     return null;
   }
 }
@@ -122,15 +181,24 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTermsCache.get(year)!;
   }
   
-  // 1. 외부 API 시도
-  const apiTerms = await fetchSolarTermsFromAPI(year);
-  if (apiTerms && apiTerms.length > 0) {
-    solarTermsCache.set(year, apiTerms);
-    return apiTerms;
+  // 1. data.go.kr API 시도 (모든 년도)
+  const dataGovTerms = await fetchSolarTermsFromDataGovKr(year);
+  if (dataGovTerms && dataGovTerms.length > 0) {
+    solarTermsCache.set(year, dataGovTerms);
+    return dataGovTerms;
   }
   
-  // 2. Fallback: 로컬 근사치 계산
-  console.log(`⚠️ 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
+  // 2. holidays.dist.be API 시도 (2010년 이후만)
+  if (year >= 2010) {
+    const distBeTerms = await fetchSolarTermsFromDistBe(year);
+    if (distBeTerms && distBeTerms.length > 0) {
+      solarTermsCache.set(year, distBeTerms);
+      return distBeTerms;
+    }
+  }
+  
+  // 3. Fallback: 로컬 근사치 계산
+  console.log(`⚠️ 모든 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
   const all24Terms = getAll24SolarTermsForYear(year);
   solarTermsCache.set(year, all24Terms);
   return all24Terms.sort((a, b) => a.date.getTime() - b.date.getTime());

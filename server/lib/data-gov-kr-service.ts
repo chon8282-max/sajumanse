@@ -6,7 +6,7 @@ const BASE_URL = "http://apis.data.go.kr/B090041/openapi/service/LrsrCldInfoServ
 const SERVICE_KEY = process.env.DATA_GOV_KR_API_KEY;
 
 if (!SERVICE_KEY) {
-  throw new Error("DATA_GOV_KR_API_KEY environment variable is required");
+  console.warn("⚠️ DATA_GOV_KR_API_KEY not found - some features will use fallback methods");
 }
 
 // API 공통 요청 함수
@@ -177,4 +177,52 @@ export async function getLunarDataForYearRange(startYear: number, endYear: numbe
   
   console.log(`Batch collection completed: ${allResults.length} total records`);
   return allResults;
+}
+
+// 24절기 정보 조회
+export async function get24DivisionsInfo(year: number): Promise<any> {
+  if (!SERVICE_KEY) {
+    console.log("⚠️ DATA_GOV_KR_API_KEY 없음 - 24절기 API 사용 불가");
+    return null; // throw 대신 null 반환
+  }
+
+  const SPCDE_BASE_URL = "http://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService";
+  
+  const urlParams = new URLSearchParams({
+    serviceKey: SERVICE_KEY,
+    solYear: year.toString(),
+    numOfRows: '100',
+    dataType: "XML"
+  });
+
+  const url = `${SPCDE_BASE_URL}/get24DivisionsInfo?${urlParams}`;
+  
+  try {
+    console.log(`🌐 Calling 24절기 API for year ${year}...`);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const xmlData = await response.text();
+    
+    // XML을 JSON으로 변환
+    const jsonData = await new Promise((resolve, reject) => {
+      parseString(xmlData, { explicitArray: false }, (err, result) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(result);
+        }
+      });
+    });
+    
+    console.log(`✅ 24절기 API 호출 성공 (${year}년)`);
+    return jsonData;
+  } catch (error) {
+    console.error(`❌ 24절기 API 호출 실패 (${year}년):`, error);
+    throw error;
+  }
 }
