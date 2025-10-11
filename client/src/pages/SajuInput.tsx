@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { calculateSaju } from "@/lib/saju-calculator";
 
 interface Group {
   id: string;
@@ -58,7 +59,7 @@ function checkDSTPeriod(year: number, month: number, day: number): { isDST: bool
   return { isDST: false };
 }
 
-// 절입일 체크 함수 (서버 API 사용)
+// 절입일 체크 함수 (서버 API 사용, ±1일 범위 체크)
 async function checkSolarTermDay(year: number, month: number, day: number): Promise<{ isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } }> {
   try {
     const response = await fetch(`/api/solar-terms/${year}`);
@@ -69,17 +70,21 @@ async function checkSolarTermDay(year: number, month: number, day: number): Prom
       return { isSolarTerm: false };
     }
     
-    // 해당 년도의 모든 절기 중에서 입력한 날짜와 일치하는지 확인
+    // 입력 날짜의 Date 객체 생성 (UTC 기준)
+    const inputDate = new Date(Date.UTC(year, month - 1, day));
+    
+    // 해당 년도의 모든 절기 중에서 ±1일 범위 내 절입일 찾기
     const solarTerms = result.data;
     for (const term of solarTerms) {
       // Date 객체가 JSON으로 변환된 ISO 문자열 파싱 (UTC로 파싱)
       const termDate = new Date(term.date);
-      // UTC 날짜 사용 (시간대 문제 방지)
-      const termMonth = termDate.getUTCMonth() + 1; // 0-based to 1-based
-      const termDay = termDate.getUTCDate();
       
-      // 월과 일이 모두 일치하면 절입일
-      if (termMonth === month && termDay === day) {
+      // 날짜 차이 계산 (일 단위)
+      const diffTime = Math.abs(inputDate.getTime() - termDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      // ±1일 범위 내에 있으면 절입일로 간주
+      if (diffDays <= 1) {
         return {
           isSolarTerm: true,
           termInfo: {
@@ -106,7 +111,7 @@ export default function SajuInput() {
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [showSolarTermDialog, setShowSolarTermDialog] = useState(false);
-  const [solarTermInfo, setSolarTermInfo] = useState<{ name: string; hour: number; minute: number } | null>(null);
+  const [solarTermInfo, setSolarTermInfo] = useState<{ name: string; hour: number; minute: number; previousGanji?: string; afterGanji?: string } | null>(null);
   
   // 편집 모드 확인 (URL 파라미터로 edit=true와 id 존재 여부)
   const urlParams = new URLSearchParams(window.location.search);
@@ -270,7 +275,20 @@ export default function SajuInput() {
       
       if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
         console.log('🎯 절입일 발견! 다이얼로그 표시');
-        setSolarTermInfo(solarTermCheck.termInfo);
+        
+        // 전월 간지와 절입 후 간지 계산
+        const birthHour = 12; // 기본값 (시간 정보 없음)
+        const sajuWithPrevious = calculateSaju(solarYear, solarMonth, solarDay, birthHour, true); // 전월 간지
+        const sajuAfter = calculateSaju(solarYear, solarMonth, solarDay, birthHour, false); // 절입 후 간지
+        
+        const previousGanji = `${sajuWithPrevious.monthSky}${sajuWithPrevious.monthEarth}`;
+        const afterGanji = `${sajuAfter.monthSky}${sajuAfter.monthEarth}`;
+        
+        setSolarTermInfo({
+          ...solarTermCheck.termInfo,
+          previousGanji,
+          afterGanji
+        });
         setShowSolarTermDialog(true);
         return; // 대화상자 표시 후 여기서 멈춤
       } else {
@@ -686,8 +704,8 @@ export default function SajuInput() {
               </p>
             </div>
             <div className="space-y-2 text-sm text-muted-foreground px-2">
-              <p><strong>전월 간지:</strong> 절입 전 월주 (정축)</p>
-              <p><strong>절입 후 간지:</strong> 절입 후 새 월주 (무인)</p>
+              <p><strong>전월 간지:</strong> 절입 전 월주 ({solarTermInfo?.previousGanji || ''})</p>
+              <p><strong>절입 후 간지:</strong> 절입 후 새 월주 ({solarTermInfo?.afterGanji || ''})</p>
             </div>
           </div>
           <div className="flex gap-2">
