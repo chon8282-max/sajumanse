@@ -54,124 +54,94 @@ export interface DaeunNumberResult {
   calculationMethod: "미래절" | "과거절"; // 계산 방법
 }
 
+// 캐시 저장소
+const solarTermsCache = new Map<number, SolarTermInfo[]>();
+
 /**
- * 특정 년도의 24절기 날짜들을 근사치로 계산
+ * 외부 API에서 24절기 데이터 가져오기
+ * @param year 년도
+ * @returns 24절기 정보 배열 또는 null (실패시)
+ */
+async function fetchSolarTermsFromAPI(year: number): Promise<SolarTermInfo[] | null> {
+  try {
+    console.log(`🌐 외부 API에서 ${year}년 절입일 데이터 가져오는 중...`);
+    const response = await fetch(`https://holidays.dist.be/${year}.json`);
+    
+    if (!response.ok) {
+      console.log(`❌ 외부 API 응답 실패: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    const terms: SolarTermInfo[] = [];
+    
+    // kind가 3인 항목만 필터링 (24절기)
+    const solarTermsData = data.filter((item: any) => item.kind === 3);
+    
+    for (const item of solarTermsData) {
+      // date: "YYYY-MM-DD", time: "HH:mm" 또는 null
+      const [yearStr, monthStr, dayStr] = item.date.split('-');
+      const [hourStr, minuteStr] = item.time ? item.time.split(':') : ['0', '0'];
+      
+      const termDate = new Date(Date.UTC(
+        parseInt(yearStr),
+        parseInt(monthStr) - 1,
+        parseInt(dayStr),
+        parseInt(hourStr),
+        parseInt(minuteStr)
+      ));
+      
+      const sajuMonth = SOLAR_TERM_TO_SAJU_MONTH[item.name] ?? 0;
+      
+      terms.push({
+        name: item.name,
+        date: termDate,
+        sajuMonth
+      });
+    }
+    
+    console.log(`✅ 외부 API에서 ${terms.length}개 절입일 데이터 로드 성공`);
+    return terms.sort((a, b) => a.date.getTime() - b.date.getTime());
+  } catch (error) {
+    console.error(`❌ 외부 API 호출 실패:`, error);
+    return null;
+  }
+}
+
+/**
+ * 특정 년도의 24절기 날짜들을 가져오기 (외부 API 우선, fallback으로 근사치)
  * @param year 년도
  * @returns 24절기 정보 배열
  */
 export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[]> {
-  const terms: SolarTermInfo[] = [];
+  console.log(`Fetching solar terms for year: ${year}`);
   
-  // 24절기 모두를 근사치로 계산
-  const all24Terms = getAll24SolarTermsForYear(year);
-  
-  for (const termInfo of all24Terms) {
-    terms.push(termInfo);
+  // 캐시 확인
+  if (solarTermsCache.has(year)) {
+    console.log(`📦 캐시에서 ${year}년 절입일 데이터 반환`);
+    return solarTermsCache.get(year)!;
   }
   
-  return terms.sort((a, b) => a.date.getTime() - b.date.getTime());
+  // 1. 외부 API 시도
+  const apiTerms = await fetchSolarTermsFromAPI(year);
+  if (apiTerms && apiTerms.length > 0) {
+    solarTermsCache.set(year, apiTerms);
+    return apiTerms;
+  }
+  
+  // 2. Fallback: 로컬 근사치 계산
+  console.log(`⚠️ 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
+  const all24Terms = getAll24SolarTermsForYear(year);
+  solarTermsCache.set(year, all24Terms);
+  return all24Terms.sort((a, b) => a.date.getTime() - b.date.getTime());
 }
 
 /**
- * 특정 년도의 24절기 모두 계산
+ * 특정 년도의 24절기 모두 계산 (근사치 - Fallback용)
  * @param year 년도
  * @returns 24절기 정보 배열
  */
 function getAll24SolarTermsForYear(year: number): SolarTermInfo[] {
-  // 정확한 만세력 데이터 (주요 연도)
-  const exactYearData: Record<number, Array<{name: string, month: number, day: number, hour?: number, minute?: number}>> = {
-    1958: [
-      { name: "소한", month: 1, day: 6, hour: 12, minute: 0 },
-      { name: "대한", month: 1, day: 20, hour: 18, minute: 0 },
-      { name: "입춘", month: 2, day: 4, hour: 18, minute: 0 },
-      { name: "우수", month: 2, day: 19, hour: 12, minute: 0 },
-      { name: "경칩", month: 3, day: 6, hour: 12, minute: 0 },
-      { name: "춘분", month: 3, day: 21, hour: 12, minute: 0 },
-      { name: "청명", month: 4, day: 5, hour: 17, minute: 0 },
-      { name: "곡우", month: 4, day: 20, hour: 6, minute: 0 },
-      { name: "입하", month: 5, day: 5, hour: 6, minute: 0 },
-      { name: "소만", month: 5, day: 20, hour: 0, minute: 0 },
-      { name: "망종", month: 6, day: 5, hour: 12, minute: 0 },
-      { name: "하지", month: 6, day: 21, hour: 6, minute: 0 },
-      { name: "소서", month: 7, day: 7, hour: 6, minute: 0 },
-      { name: "대서", month: 7, day: 23, hour: 12, minute: 0 },
-      { name: "입추", month: 8, day: 8, hour: 6, minute: 0 },
-      { name: "처서", month: 8, day: 23, hour: 0, minute: 0 },
-      { name: "백로", month: 9, day: 8, hour: 12, minute: 0 },
-      { name: "추분", month: 9, day: 23, hour: 18, minute: 0 },
-      { name: "한로", month: 10, day: 9, hour: 0, minute: 0 },
-      { name: "상강", month: 10, day: 24, hour: 12, minute: 0 },
-      { name: "입동", month: 11, day: 8, hour: 6, minute: 0 },
-      { name: "소설", month: 11, day: 22, hour: 6, minute: 0 },
-      { name: "대설", month: 12, day: 7, hour: 18, minute: 0 },
-      { name: "동지", month: 12, day: 22, hour: 12, minute: 0 }
-    ],
-    1957: [
-      { name: "소한", month: 1, day: 6, hour: 5, minute: 0 },
-      { name: "대한", month: 1, day: 21, hour: 0, minute: 0 },
-      { name: "입춘", month: 2, day: 5, hour: 0, minute: 0 },
-      { name: "우수", month: 2, day: 19, hour: 18, minute: 0 },
-      { name: "경칩", month: 3, day: 6, hour: 18, minute: 0 },
-      { name: "춘분", month: 3, day: 21, hour: 18, minute: 0 },
-      { name: "청명", month: 4, day: 5, hour: 23, minute: 0 },
-      { name: "곡우", month: 4, day: 21, hour: 0, minute: 0 },
-      { name: "입하", month: 5, day: 6, hour: 12, minute: 0 },
-      { name: "소만", month: 5, day: 22, hour: 6, minute: 0 },
-      { name: "망종", month: 6, day: 6, hour: 18, minute: 0 },
-      { name: "하지", month: 6, day: 22, hour: 12, minute: 0 },
-      { name: "소서", month: 7, day: 8, hour: 0, minute: 0 },
-      { name: "대서", month: 7, day: 23, hour: 18, minute: 0 },
-      { name: "입추", month: 8, day: 8, hour: 12, minute: 0 },
-      { name: "처서", month: 8, day: 24, hour: 6, minute: 0 },
-      { name: "백로", month: 9, day: 8, hour: 18, minute: 0 },
-      { name: "추분", month: 9, day: 24, hour: 0, minute: 0 },
-      { name: "한로", month: 10, day: 9, hour: 6, minute: 0 },
-      { name: "상강", month: 10, day: 24, hour: 18, minute: 0 },
-      { name: "입동", month: 11, day: 8, hour: 18, minute: 0 },
-      { name: "소설", month: 11, day: 23, hour: 12, minute: 0 },
-      { name: "대설", month: 12, day: 8, hour: 0, minute: 0 },
-      { name: "동지", month: 12, day: 22, hour: 18, minute: 0 }
-    ],
-    1944: [
-      { name: "소한", month: 1, day: 6, hour: 12, minute: 0 },
-      { name: "대한", month: 1, day: 21, hour: 6, minute: 0 },
-      { name: "입춘", month: 2, day: 5, hour: 6, minute: 0 },
-      { name: "우수", month: 2, day: 20, hour: 0, minute: 0 },
-      { name: "경칩", month: 3, day: 6, hour: 0, minute: 0 },
-      { name: "춘분", month: 3, day: 21, hour: 0, minute: 0 },
-      { name: "청명", month: 4, day: 5, hour: 6, minute: 0 },
-      { name: "곡우", month: 4, day: 20, hour: 6, minute: 0 },
-      { name: "입하", month: 5, day: 5, hour: 18, minute: 0 },
-      { name: "소만", month: 5, day: 21, hour: 12, minute: 0 },
-      { name: "망종", month: 6, day: 6, hour: 0, minute: 0 },
-      { name: "하지", month: 6, day: 21, hour: 18, minute: 0 },
-      { name: "소서", month: 7, day: 7, hour: 6, minute: 0 },
-      { name: "대서", month: 7, day: 23, hour: 0, minute: 0 },
-      { name: "입추", month: 8, day: 7, hour: 18, minute: 0 },
-      { name: "처서", month: 8, day: 23, hour: 12, minute: 0 },
-      { name: "백로", month: 9, day: 8, hour: 0, minute: 0 },
-      { name: "추분", month: 9, day: 23, hour: 6, minute: 0 },
-      { name: "한로", month: 10, day: 8, hour: 12, minute: 0 },
-      { name: "상강", month: 10, day: 24, hour: 0, minute: 0 },
-      { name: "입동", month: 11, day: 8, hour: 0, minute: 0 },
-      { name: "소설", month: 11, day: 22, hour: 18, minute: 0 },
-      { name: "대설", month: 12, day: 7, hour: 6, minute: 0 },
-      { name: "동지", month: 12, day: 22, hour: 0, minute: 0 }
-    ]
-  };
-
-  // 정확한 데이터가 있으면 사용
-  if (exactYearData[year]) {
-    const terms: SolarTermInfo[] = [];
-    for (const termData of exactYearData[year]) {
-      terms.push({
-        name: termData.name,
-        date: new Date(year, termData.month - 1, termData.day, termData.hour || 12, termData.minute || 0),
-        sajuMonth: SOLAR_TERM_TO_SAJU_MONTH[termData.name] || 0
-      });
-    }
-    return terms;
-  }
 
   // 2024년 기준 24절기 날짜 (시각 포함)
   const baseSolarTerms2024 = [
