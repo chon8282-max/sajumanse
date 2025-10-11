@@ -8,6 +8,7 @@ import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
 import { getCheonganImage, getJijiImage, isCheongan, isJiji } from "@/lib/cheongan-images";
 import { calculateAllShinSal, calculateFirstRowShinSal, formatShinSal, formatShinSalArray } from "@/lib/shinsal-calculator";
+import { calculateTwelveUnseong } from "@/lib/twelve-unseong";
 import BirthTimeSelector from "@/components/BirthTimeSelector";
 import BirthDateSelector from "@/components/BirthDateSelector";
 import { Button } from "@/components/ui/button";
@@ -723,27 +724,31 @@ export default function SajuTable({
       return sinsal;
     };
     
-    // 각 주별로 세 결과를 합침 (12신살 맨 위 + 천을귀인/문창귀인 + 나머지 신살)
+    // 각 주별로 세 결과를 합침 (12신살 맨 위 + 12운성 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
     if (hasHourPillar) {
       result.push([
         convert12Sinsal(sibiSinsalArray[0] || ''),
+        calculateTwelveUnseong(daySky, hourEarth) || '',
         ...formatShinSalArray(secondRowResult.hourPillar, showKorean1),
         ...formatShinSalArray(firstRowResult.hourPillar, showKorean1)
       ].filter(s => s !== ''));
     }
     result.push([
       convert12Sinsal(sibiSinsalArray[hasHourPillar ? 1 : 0] || ''),
+      calculateTwelveUnseong(daySky, dayEarth) || '',
       ...formatShinSalArray(secondRowResult.dayPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.dayPillar, showKorean1)
     ].filter(s => s !== ''));
     result.push([
       convert12Sinsal(sibiSinsalArray[hasHourPillar ? 2 : 1] || ''),
+      calculateTwelveUnseong(daySky, monthEarth) || '',
       ...formatShinSalArray(secondRowResult.monthPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.monthPillar, showKorean1)
     ].filter(s => s !== ''));
     result.push([
       convert12Sinsal(sibiSinsalArray[hasHourPillar ? 3 : 2] || ''),
+      calculateTwelveUnseong(daySky, yearEarth) || '',
       ...formatShinSalArray(secondRowResult.yearPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.yearPillar, showKorean1)
     ].filter(s => s !== ''));
