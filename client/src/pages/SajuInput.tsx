@@ -285,8 +285,14 @@ export default function SajuInput() {
         const sajuWithPrevious = calculateSaju(solarYear, solarMonth, solarDay, birthHour, 0, false, undefined, undefined, true); // 전월 간지
         const sajuAfter = calculateSaju(solarYear, solarMonth, solarDay, birthHour, 0, false, undefined, undefined, false); // 절입 후 간지
         
-        const previousGanji = `${sajuWithPrevious.monthSky}${sajuWithPrevious.monthEarth}`;
-        const afterGanji = `${sajuAfter.monthSky}${sajuAfter.monthEarth}`;
+        // 연주 + 월주를 함께 표시 (예: 정묘년 계축월)
+        const previousYearGanji = `${sajuWithPrevious.year.sky}${sajuWithPrevious.year.earth}`;
+        const previousMonthGanji = `${sajuWithPrevious.month.sky}${sajuWithPrevious.month.earth}`;
+        const previousGanji = `${previousYearGanji}년 ${previousMonthGanji}월`;
+        
+        const afterYearGanji = `${sajuAfter.year.sky}${sajuAfter.year.earth}`;
+        const afterMonthGanji = `${sajuAfter.month.sky}${sajuAfter.month.earth}`;
+        const afterGanji = `${afterYearGanji}년 ${afterMonthGanji}월`;
         
         setSolarTermInfo({
           ...solarTermCheck.termInfo,
@@ -707,9 +713,13 @@ export default function SajuInput() {
                 어떤 월주를 사용하시겠습니까?
               </p>
             </div>
-            <div className="space-y-2 text-sm text-muted-foreground px-2">
-              <p><strong>전월 간지:</strong> 절입 전 월주 ({solarTermInfo?.previousGanji || ''})</p>
-              <p><strong>절입 후 간지:</strong> 절입 후 새 월주 ({solarTermInfo?.afterGanji || ''})</p>
+            <div className="space-y-2 text-sm px-2">
+              <p className="text-foreground">
+                <strong className="text-primary">절입 전:</strong> {solarTermInfo?.previousGanji || ''}
+              </p>
+              <p className="text-foreground">
+                <strong className="text-primary">절입 후:</strong> {solarTermInfo?.afterGanji || ''}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -722,7 +732,7 @@ export default function SajuInput() {
               }}
               data-testid="button-solar-term-previous"
             >
-              전월 간지
+              절입 전 사용
             </Button>
             <Button
               className="flex-1"
@@ -732,7 +742,7 @@ export default function SajuInput() {
               }}
               data-testid="button-solar-term-after"
             >
-              절입 후 간지
+              절입 후 사용
             </Button>
           </div>
         </DialogContent>
