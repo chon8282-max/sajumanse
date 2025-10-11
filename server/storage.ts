@@ -6,6 +6,7 @@ import {
   lunarSolarCalendar,
   fortuneResults,
   announcements,
+  solarTerms,
   type User, 
   type UpsertUser,
   type InsertUser, 
@@ -21,6 +22,8 @@ import {
   type InsertFortuneResult,
   type Announcement,
   type InsertAnnouncement,
+  type SolarTerms,
+  type InsertSolarTerms,
   DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
@@ -93,6 +96,13 @@ export interface IStorage {
   createAnnouncement(data: InsertAnnouncement): Promise<Announcement>;
   updateAnnouncement(id: string, data: Partial<Announcement>): Promise<Announcement | undefined>;
   deleteAnnouncement(id: string): Promise<boolean>;
+  
+  // 24절기 데이터 관련
+  getSolarTerms(year: number): Promise<SolarTerms[]>;
+  getSolarTermsByDate(date: Date): Promise<SolarTerms | undefined>;
+  createSolarTerm(data: InsertSolarTerms): Promise<SolarTerms>;
+  bulkCreateSolarTerms(dataList: InsertSolarTerms[]): Promise<SolarTerms[]>;
+  checkSolarTermsExist(year: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -601,6 +611,80 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result.length > 0;
   }
+  
+  // 24절기 데이터 관련 메서드
+  async getSolarTerms(year: number): Promise<SolarTerms[]> {
+    const result = await db
+      .select()
+      .from(solarTerms)
+      .where(eq(solarTerms.year, year))
+      .orderBy(solarTerms.date);
+    return result;
+  }
+  
+  async getSolarTermsByDate(date: Date): Promise<SolarTerms | undefined> {
+    // 날짜 범위: ±1일
+    const startDate = new Date(date);
+    startDate.setDate(startDate.getDate() - 1);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    
+    const [solarTerm] = await db
+      .select()
+      .from(solarTerms)
+      .where(and(
+        gte(solarTerms.date, startDate),
+        lte(solarTerms.date, endDate)
+      ))
+      .limit(1);
+    return solarTerm || undefined;
+  }
+  
+  async createSolarTerm(data: InsertSolarTerms): Promise<SolarTerms> {
+    const [solarTerm] = await db
+      .insert(solarTerms)
+      .values(data)
+      .onConflictDoUpdate({
+        target: [solarTerms.year, solarTerms.name],
+        set: {
+          date: data.date,
+          kstHour: data.kstHour,
+          kstMinute: data.kstMinute,
+          source: data.source,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return solarTerm;
+  }
+  
+  async bulkCreateSolarTerms(dataList: InsertSolarTerms[]): Promise<SolarTerms[]> {
+    if (dataList.length === 0) return [];
+    
+    const result = await db
+      .insert(solarTerms)
+      .values(dataList)
+      .onConflictDoUpdate({
+        target: [solarTerms.year, solarTerms.name],
+        set: {
+          date: sql`EXCLUDED.date`,
+          kstHour: sql`EXCLUDED.kst_hour`,
+          kstMinute: sql`EXCLUDED.kst_minute`,
+          source: sql`EXCLUDED.source`,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  }
+  
+  async checkSolarTermsExist(year: number): Promise<boolean> {
+    const result = await db
+      .select({ count: count() })
+      .from(solarTerms)
+      .where(eq(solarTerms.year, year));
+    return result[0]?.count > 0;
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -612,6 +696,7 @@ export class MemStorage implements IStorage {
   private lunarSolarData: Map<string, LunarSolarCalendar>;
   private fortuneResults: Map<string, FortuneResult>;
   private announcements: Map<string, Announcement>;
+  private solarTermsData: Map<string, SolarTerms>;
 
   constructor() {
     this.users = new Map();
@@ -621,6 +706,7 @@ export class MemStorage implements IStorage {
     this.lunarSolarData = new Map();
     this.fortuneResults = new Map();
     this.announcements = new Map();
+    this.solarTermsData = new Map();
     
     // 기본 그룹 초기화
     this.initializeDefaultGroups();
@@ -1038,6 +1124,64 @@ export class MemStorage implements IStorage {
 
   async deleteAnnouncement(id: string): Promise<boolean> {
     return this.announcements.delete(id);
+  }
+  
+  // 24절기 데이터 관련 메서드 (MemStorage)
+  async getSolarTerms(year: number): Promise<SolarTerms[]> {
+    return Array.from(this.solarTermsData.values())
+      .filter(term => term.year === year)
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+  }
+  
+  async getSolarTermsByDate(date: Date): Promise<SolarTerms | undefined> {
+    const dayBefore = new Date(date);
+    dayBefore.setDate(dayBefore.getDate() - 1);
+    const dayAfter = new Date(date);
+    dayAfter.setDate(dayAfter.getDate() + 1);
+    
+    return Array.from(this.solarTermsData.values())
+      .find(term => term.date >= dayBefore && term.date <= dayAfter);
+  }
+  
+  async createSolarTerm(data: InsertSolarTerms): Promise<SolarTerms> {
+    const id = randomUUID();
+    const now = new Date();
+    const solarTerm: SolarTerms = {
+      id,
+      year: data.year,
+      name: data.name,
+      date: data.date,
+      kstHour: data.kstHour,
+      kstMinute: data.kstMinute,
+      source: data.source,
+      createdAt: now,
+      updatedAt: now,
+    };
+    
+    // 기존 데이터 있으면 덮어쓰기
+    const existingKey = `${data.year}-${data.name}`;
+    const existing = Array.from(this.solarTermsData.values())
+      .find(t => t.year === data.year && t.name === data.name);
+    if (existing) {
+      this.solarTermsData.delete(existing.id);
+    }
+    
+    this.solarTermsData.set(id, solarTerm);
+    return solarTerm;
+  }
+  
+  async bulkCreateSolarTerms(dataList: InsertSolarTerms[]): Promise<SolarTerms[]> {
+    const created: SolarTerms[] = [];
+    for (const data of dataList) {
+      const solarTerm = await this.createSolarTerm(data);
+      created.push(solarTerm);
+    }
+    return created;
+  }
+  
+  async checkSolarTermsExist(year: number): Promise<boolean> {
+    return Array.from(this.solarTermsData.values())
+      .some(term => term.year === year);
   }
 }
 

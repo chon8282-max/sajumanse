@@ -1900,5 +1900,33 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
 
+  // ========================================
+  // 테스트 엔드포인트 - API 응답 구조 확인
+  // ========================================
+  
+  app.get("/api/test/lunar-api/:year/:month/:day", async (req, res) => {
+    try {
+      const { year, month, day } = req.params;
+      
+      console.log(`\n========== API 응답 구조 확인 ==========`);
+      console.log(`날짜: ${year}-${month}-${day}`);
+      
+      const apiResponse = await getLunarCalInfo(parseInt(year), parseInt(month), parseInt(day));
+      
+      console.log(`\n전체 API 응답:`);
+      console.log(JSON.stringify(apiResponse, null, 2));
+      
+      res.json({
+        success: true,
+        data: apiResponse
+      });
+    } catch (error) {
+      console.error('테스트 API 호출 실패:', error);
+      res.status(500).json({ 
+        error: "테스트 API 호출 실패" 
+      });
+    }
+  });
+
   // 라우트 등록만 수행 (서버는 index.ts에서 생성)
 }
