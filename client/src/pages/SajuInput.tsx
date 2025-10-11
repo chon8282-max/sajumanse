@@ -85,12 +85,16 @@ async function checkSolarTermDay(year: number, month: number, day: number): Prom
       
       // ±1일 범위 내에 있으면 절입일로 간주
       if (diffDays <= 1) {
+        // UTC 시간을 KST(UTC+9)로 변환
+        const kstHour = (termDate.getUTCHours() + 9) % 24;
+        const kstMinute = termDate.getUTCMinutes();
+        
         return {
           isSolarTerm: true,
           termInfo: {
             name: term.name,
-            hour: termDate.getUTCHours(),
-            minute: termDate.getUTCMinutes()
+            hour: kstHour,
+            minute: kstMinute
           }
         };
       }
@@ -278,8 +282,8 @@ export default function SajuInput() {
         
         // 전월 간지와 절입 후 간지 계산
         const birthHour = 12; // 기본값 (시간 정보 없음)
-        const sajuWithPrevious = calculateSaju(solarYear, solarMonth, solarDay, birthHour, true); // 전월 간지
-        const sajuAfter = calculateSaju(solarYear, solarMonth, solarDay, birthHour, false); // 절입 후 간지
+        const sajuWithPrevious = calculateSaju(solarYear, solarMonth, solarDay, birthHour, 0, false, undefined, undefined, true); // 전월 간지
+        const sajuAfter = calculateSaju(solarYear, solarMonth, solarDay, birthHour, 0, false, undefined, undefined, false); // 절입 후 간지
         
         const previousGanji = `${sajuWithPrevious.monthSky}${sajuWithPrevious.monthEarth}`;
         const afterGanji = `${sajuAfter.monthSky}${sajuAfter.monthEarth}`;
