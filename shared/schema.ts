@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, date, boolean, timestamp, jsonb, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, date, boolean, timestamp, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -379,6 +379,37 @@ export const insertLunarSolarCalendarSchema = createInsertSchema(lunarSolarCalen
 
 export type InsertLunarSolarCalendar = z.infer<typeof insertLunarSolarCalendarSchema>;
 export type LunarSolarCalendar = typeof lunarSolarCalendar.$inferSelect;
+
+// 24절기 데이터 테이블
+export const solarTerms = pgTable("solar_terms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // 절기 정보
+  year: integer("year").notNull(),
+  name: text("name").notNull(), // 절기 이름 (입춘, 경칩 등)
+  date: timestamp("date", { withTimezone: true }).notNull(), // 절입일시 (UTC)
+  kstHour: integer("kst_hour").notNull(), // KST 시간
+  kstMinute: integer("kst_minute").notNull(), // KST 분
+  
+  // 메타데이터
+  source: text("source").notNull().default("api"), // "api" | "hardcoded" | "calculated"
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  // 연도별, 절기명별 유니크 제약
+  yearNameIdx: uniqueIndex("solar_terms_year_name_idx").on(table.year, table.name),
+  // 날짜 검색을 위한 인덱스
+  dateIdx: index("solar_terms_date_idx").on(table.date),
+}));
+
+export const insertSolarTermsSchema = createInsertSchema(solarTerms).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSolarTerms = z.infer<typeof insertSolarTermsSchema>;
+export type SolarTerms = typeof solarTerms.$inferSelect;
 
 // 대운 세그먼트 타입
 export interface DaeunSegment {
