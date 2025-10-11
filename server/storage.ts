@@ -27,7 +27,7 @@ import {
   DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lte, count, sql } from "drizzle-orm";
+import { eq, and, gte, lte, count, sql, asc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 // 만세력 데이터를 위한 스토리지 인터페이스 확장
@@ -618,7 +618,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(solarTerms)
       .where(eq(solarTerms.year, year))
-      .orderBy(solarTerms.date);
+      .orderBy(asc(solarTerms.date)); // 시간순 정렬 (asc 명시)
     return result;
   }
   
