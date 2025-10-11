@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manseryeok-v1.25.10.11';
+const CACHE_NAME = 'manseryeok-v1.25.10.11.3';
 const urlsToCache = [
   '/',
   '/manifest.json'
@@ -9,8 +9,55 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
+        // 기본 리소스 캐싱
         return cache.addAll(urlsToCache).catch(() => {
           return cache.addAll(['/manifest.json']);
+        });
+      })
+      .then(function() {
+        // 메인 페이지를 fetch해서 참조하는 모든 리소스 캐싱
+        return fetch('/').then(function(response) {
+          if (!response.ok) return;
+          
+          return response.text().then(function(html) {
+            return caches.open(CACHE_NAME).then(function(cache) {
+              // HTML 자체를 캐싱
+              const htmlCachePromise = cache.put('/', new Response(html, {
+                headers: { 'Content-Type': 'text/html' }
+              }));
+              
+              // HTML에서 참조하는 JS/CSS 리소스 추출
+              const scriptMatches = html.matchAll(/<script[^>]+src=["']([^"']+)["']/g);
+              const linkMatches = html.matchAll(/<link[^>]+href=["']([^"']+)["']/g);
+              
+              const resourceUrls = [];
+              for (const match of scriptMatches) {
+                resourceUrls.push(match[1]);
+              }
+              for (const match of linkMatches) {
+                const href = match[1];
+                if (href.endsWith('.css') || href.includes('/assets/')) {
+                  resourceUrls.push(href);
+                }
+              }
+              
+              // 리소스들을 fetch하고 캐싱하는 Promise 배열
+              const resourcePromises = resourceUrls.map(function(url) {
+                return fetch(url).then(function(res) {
+                  if (res.ok) {
+                    return cache.put(url, res.clone());
+                  }
+                }).catch(function(err) {
+                  console.log('Failed to cache resource:', url, err);
+                });
+              });
+              
+              // HTML과 모든 리소스 캐싱이 완료될 때까지 대기
+              return Promise.all([htmlCachePromise, ...resourcePromises]);
+            });
+          });
+        }).catch(function(err) {
+          console.log('Failed to precache resources:', err);
         });
       })
   );
@@ -51,14 +98,36 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
-  // HTML과 JS는 항상 네트워크에서 가져오기 (최신 버전 보장)
+  // HTML과 JS는 캐시 우선 전략 (오프라인 실행 지원)
   const isHtmlOrScript = event.request.url.match(/\/$|\.html$|\.js$|\.ts$|\.jsx$|\.tsx$/);
   
   if (isHtmlOrScript) {
     event.respondWith(
-      fetch(event.request).catch(function() {
-        return caches.match(event.request).then(function(response) {
-          return response || new Response('Offline', {
+      caches.match(event.request).then(function(cachedResponse) {
+        // 캐시가 있으면 즉시 반환하고, 백그라운드에서 업데이트
+        if (cachedResponse) {
+          // 백그라운드에서 최신 버전 가져오기
+          fetch(event.request).then(function(response) {
+            if (response && response.status === 200) {
+              caches.open(CACHE_NAME).then(function(cache) {
+                cache.put(event.request, response);
+              });
+            }
+          }).catch(() => {});
+          return cachedResponse;
+        }
+        
+        // 캐시가 없으면 네트워크에서 가져오기
+        return fetch(event.request).then(function(response) {
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        }).catch(function() {
+          return new Response('Offline', {
             status: 503,
             statusText: 'Service Unavailable'
           });
