@@ -1,4 +1,4 @@
-import { getLunarCalInfo } from './data-gov-kr-service';
+import { getLunarCalInfo, get24DivisionsInfo } from './data-gov-kr-service';
 
 /**
  * 24절기 및 대운수 계산을 위한 절기 서비스
@@ -15,14 +15,14 @@ export const TWENTY_FOUR_SOLAR_TERMS = [
 // 정확한 절입일 하드코딩 데이터 (API 실패 시 사용)
 const HARDCODED_SOLAR_TERMS: Record<number, SolarTermInfo[]> = {
   1958: [
-    // 1958년 정확한 절입일 (UTC 기준)
+    // 1958년 정확한 절입일 (UTC 기준 = KST - 9시간)
     { name: "소한", date: new Date("1958-01-05T23:49:00Z"), sajuMonth: 11 },
     { name: "대한", date: new Date("1958-01-20T10:07:00Z"), sajuMonth: 0 },
-    { name: "입춘", date: new Date("1958-02-04T18:00:00Z"), sajuMonth: 0 },  // ← 정확한 입춘 시각
+    { name: "입춘", date: new Date("1958-02-04T07:49:00Z"), sajuMonth: 0 },  // KST 16:49
     { name: "우수", date: new Date("1958-02-19T06:13:00Z"), sajuMonth: 0 },
-    { name: "경칩", date: new Date("1958-03-05T10:23:00Z"), sajuMonth: 1 },
+    { name: "경칩", date: new Date("1958-03-05T02:05:00Z"), sajuMonth: 1 },  // KST 11:05
     { name: "춘분", date: new Date("1958-03-20T09:06:00Z"), sajuMonth: 0 },
-    { name: "청명", date: new Date("1958-04-04T15:02:00Z"), sajuMonth: 2 },
+    { name: "청명", date: new Date("1958-04-04T07:12:00Z"), sajuMonth: 2 },  // KST 16:12
     { name: "곡우", date: new Date("1958-04-20T04:27:00Z"), sajuMonth: 0 },
     { name: "입하", date: new Date("1958-05-05T08:10:00Z"), sajuMonth: 3 },
     { name: "소만", date: new Date("1958-05-20T20:59:00Z"), sajuMonth: 0 },
@@ -149,7 +149,7 @@ async function fetchSolarTermsFromDataGovKr(year: number): Promise<SolarTermInfo
     const terms: SolarTermInfo[] = [];
     
     for (const item of solarTermItems) {
-      // locdate: "YYYYMMDD", dateName: "소한", kst: "HH:mm"
+      // locdate: "YYYYMMDD", dateName: "소한", kst: "HH:mm" (한국 시간)
       const dateStr = item.locdate;
       const year = parseInt(dateStr.substring(0, 4));
       const month = parseInt(dateStr.substring(4, 6));
@@ -158,7 +158,8 @@ async function fetchSolarTermsFromDataGovKr(year: number): Promise<SolarTermInfo
       const timeStr = item.kst || "00:00";
       const [hour, minute] = timeStr.split(':').map((s: string) => parseInt(s));
       
-      const termDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
+      // KST(UTC+9)를 UTC로 변환: 9시간을 빼야 함
+      const termDate = new Date(Date.UTC(year, month - 1, day, hour - 9, minute));
       const sajuMonth = SOLAR_TERM_TO_SAJU_MONTH[item.dateName] ?? 0;
       
       terms.push({
@@ -244,17 +245,10 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTermsCache.get(year)!;
   }
   
-  // 0. 하드코딩 데이터 확인 (정확한 절입일이 있는 경우)
-  if (HARDCODED_SOLAR_TERMS[year]) {
-    console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년`);
-    const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
-    solarTermsCache.set(year, hardcodedTerms);
-    return hardcodedTerms;
-  }
-  
-  // 1. data.go.kr API 시도 (모든 년도) - 현재 공휴일만 반환하므로 실패
+  // 1. data.go.kr API 먼저 시도 (정확한 절입시간 포함)
   const dataGovTerms = await fetchSolarTermsFromDataGovKr(year);
   if (dataGovTerms && dataGovTerms.length > 0) {
+    console.log(`✅ data.go.kr API에서 ${year}년 절입일 데이터 로드 성공`);
     solarTermsCache.set(year, dataGovTerms);
     return dataGovTerms;
   }
@@ -263,12 +257,21 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
   if (year >= 2006) {
     const distBeTerms = await fetchSolarTermsFromDistBe(year);
     if (distBeTerms && distBeTerms.length > 0) {
+      console.log(`✅ holidays.dist.be API에서 ${year}년 절입일 데이터 로드 성공`);
       solarTermsCache.set(year, distBeTerms);
       return distBeTerms;
     }
   }
   
-  // 3. Fallback: 로컬 근사치 계산
+  // 3. 하드코딩 데이터 확인 (정확한 절입일이 있는 경우)
+  if (HARDCODED_SOLAR_TERMS[year]) {
+    console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년`);
+    const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
+    solarTermsCache.set(year, hardcodedTerms);
+    return hardcodedTerms;
+  }
+  
+  // 4. Fallback: 로컬 근사치 계산
   console.log(`⚠️ 모든 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
   const all24Terms = getAll24SolarTermsForYear(year);
   solarTermsCache.set(year, all24Terms);
