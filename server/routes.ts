@@ -2,14 +2,15 @@ import type { Express } from "express";
 import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
-import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, insertAnnouncementSchema, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
+import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, insertAnnouncementSchema, TRADITIONAL_TIME_PERIODS, type InsertSolarTerms } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
 import { convertSolarToLunarServer, convertLunarToSolarServer } from "./lib/lunar-converter";
 import { 
   getLunarCalInfo, 
   getSolarCalInfo, 
   getLunarDataForYear, 
-  getLunarDataForYearRange 
+  getLunarDataForYearRange,
+  get24DivisionsInfo
 } from "./lib/data-gov-kr-service";
 import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
@@ -1895,6 +1896,212 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.error('Delete announcement error:', error);
       res.status(500).json({ 
         error: "공지사항 삭제 중 오류가 발생했습니다." 
+      });
+    }
+  });
+
+  // ========================================
+  // 24절기 데이터 수집 엔드포인트 (관리자 전용)
+  // ========================================
+  
+  // 특정 연도 24절기 데이터 수집
+  app.post("/api/admin/solar-terms/collect/:year", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "인증이 필요합니다." });
+      }
+
+      const user = await storage.getUser(req.user!.id);
+      if (!user?.isMaster) {
+        return res.status(403).json({ error: "관리자 권한이 필요합니다." });
+      }
+
+      const year = parseInt(req.params.year);
+      if (isNaN(year) || year < 1900 || year > 2100) {
+        return res.status(400).json({ error: "올바른 연도를 입력해주세요 (1900-2100)." });
+      }
+
+      console.log(`📅 ${year}년 24절기 데이터 수집 시작...`);
+
+      const apiResponse = await get24DivisionsInfo(year);
+      
+      if (!apiResponse) {
+        return res.status(500).json({ error: "API 키가 설정되지 않았습니다." });
+      }
+
+      // API 응답 파싱
+      const items = apiResponse.response?.body?.items?.item;
+      if (!items) {
+        return res.status(500).json({ error: "24절기 데이터를 가져올 수 없습니다." });
+      }
+
+      // 배열이 아닌 경우 배열로 변환
+      const solarTermItems = Array.isArray(items) ? items : [items];
+      
+      const solarTermsData: InsertSolarTerms[] = [];
+      
+      for (const item of solarTermItems) {
+        const dateName = item.dateName;
+        const locdate = item.locdate; // YYYYMMDD 형식
+        const kstTime = item.kst; // HHMMSS 형식
+        
+        // 날짜 파싱
+        const dateYear = parseInt(locdate.substring(0, 4));
+        const dateMonth = parseInt(locdate.substring(4, 6)) - 1; // 0-based
+        const dateDay = parseInt(locdate.substring(6, 8));
+        
+        // 시간 파싱
+        const hour = parseInt(kstTime.substring(0, 2));
+        const minute = parseInt(kstTime.substring(2, 4));
+        
+        // KST → UTC 변환 (KST - 9시간)
+        const kstDate = new Date(dateYear, dateMonth, dateDay, hour, minute, 0);
+        const utcDate = new Date(kstDate.getTime() - 9 * 60 * 60 * 1000);
+        
+        solarTermsData.push({
+          year,
+          name: dateName,
+          date: utcDate,
+          kstHour: hour,
+          kstMinute: minute,
+          source: 'data.go.kr',
+        });
+      }
+      
+      // DB에 저장 (bulk insert with upsert)
+      const savedTerms = await storage.bulkCreateSolarTerms(solarTermsData);
+      
+      console.log(`✅ ${year}년 24절기 ${savedTerms.length}개 저장 완료`);
+      
+      res.json({
+        success: true,
+        year,
+        count: savedTerms.length,
+        data: savedTerms,
+      });
+      
+    } catch (error) {
+      console.error('24절기 수집 오류:', error);
+      res.status(500).json({ 
+        error: "24절기 데이터 수집 중 오류가 발생했습니다.",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
+  // 연도 범위 24절기 데이터 수집
+  app.post("/api/admin/solar-terms/collect-range", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "인증이 필요합니다." });
+      }
+
+      const user = await storage.getUser(req.user!.id);
+      if (!user?.isMaster) {
+        return res.status(403).json({ error: "관리자 권한이 필요합니다." });
+      }
+
+      const { startYear, endYear } = req.body;
+      
+      if (!startYear || !endYear) {
+        return res.status(400).json({ error: "시작 연도와 종료 연도를 입력해주세요." });
+      }
+      
+      if (startYear < 1900 || endYear > 2100 || startYear > endYear) {
+        return res.status(400).json({ 
+          error: "올바른 연도 범위를 입력해주세요 (1900-2100)." 
+        });
+      }
+
+      console.log(`📅 ${startYear}~${endYear}년 24절기 데이터 수집 시작...`);
+
+      const results = {
+        success: [] as number[],
+        failed: [] as { year: number, error: string }[],
+        totalCount: 0,
+      };
+
+      for (let year = startYear; year <= endYear; year++) {
+        try {
+          // 이미 데이터가 있는지 확인
+          const exists = await storage.checkSolarTermsExist(year);
+          if (exists) {
+            console.log(`⏭️ ${year}년 데이터는 이미 존재함 - 스킵`);
+            results.success.push(year);
+            continue;
+          }
+
+          const apiResponse = await get24DivisionsInfo(year);
+          
+          if (!apiResponse) {
+            results.failed.push({ year, error: "API 키 없음" });
+            continue;
+          }
+
+          const items = apiResponse.response?.body?.items?.item;
+          if (!items) {
+            results.failed.push({ year, error: "데이터 없음" });
+            continue;
+          }
+
+          const solarTermItems = Array.isArray(items) ? items : [items];
+          const solarTermsData: InsertSolarTerms[] = [];
+          
+          for (const item of solarTermItems) {
+            const dateName = item.dateName;
+            const locdate = item.locdate;
+            const kstTime = item.kst;
+            
+            const dateYear = parseInt(locdate.substring(0, 4));
+            const dateMonth = parseInt(locdate.substring(4, 6)) - 1;
+            const dateDay = parseInt(locdate.substring(6, 8));
+            
+            const hour = parseInt(kstTime.substring(0, 2));
+            const minute = parseInt(kstTime.substring(2, 4));
+            
+            const kstDate = new Date(dateYear, dateMonth, dateDay, hour, minute, 0);
+            const utcDate = new Date(kstDate.getTime() - 9 * 60 * 60 * 1000);
+            
+            solarTermsData.push({
+              year,
+              name: dateName,
+              date: utcDate,
+              kstHour: hour,
+              kstMinute: minute,
+              source: 'data.go.kr',
+            });
+          }
+          
+          await storage.bulkCreateSolarTerms(solarTermsData);
+          results.success.push(year);
+          results.totalCount += solarTermsData.length;
+          
+          console.log(`✅ ${year}년 24절기 저장 완료 (${solarTermsData.length}개)`);
+          
+          // API 요청 제한 고려 딜레이
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+        } catch (error) {
+          console.error(`❌ ${year}년 수집 실패:`, error);
+          results.failed.push({ 
+            year, 
+            error: error instanceof Error ? error.message : String(error) 
+          });
+        }
+      }
+
+      console.log(`🎉 24절기 데이터 수집 완료 - 성공: ${results.success.length}년, 실패: ${results.failed.length}년`);
+      
+      res.json({
+        success: true,
+        results,
+      });
+      
+    } catch (error) {
+      console.error('24절기 범위 수집 오류:', error);
+      res.status(500).json({ 
+        error: "24절기 데이터 수집 중 오류가 발생했습니다.",
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });
