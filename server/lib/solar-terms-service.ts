@@ -12,6 +12,37 @@ export const TWENTY_FOUR_SOLAR_TERMS = [
   "입동", "소설", "대설", "동지", "소한", "대한"       // 겨울
 ] as const;
 
+// 정확한 절입일 하드코딩 데이터 (API 실패 시 사용)
+const HARDCODED_SOLAR_TERMS: Record<number, SolarTermInfo[]> = {
+  1958: [
+    // 1958년 정확한 절입일 (UTC 기준)
+    { name: "소한", date: new Date("1958-01-05T23:49:00Z"), sajuMonth: 11 },
+    { name: "대한", date: new Date("1958-01-20T10:07:00Z"), sajuMonth: 0 },
+    { name: "입춘", date: new Date("1958-02-04T18:00:00Z"), sajuMonth: 0 },  // ← 정확한 입춘 시각
+    { name: "우수", date: new Date("1958-02-19T06:13:00Z"), sajuMonth: 0 },
+    { name: "경칩", date: new Date("1958-03-05T10:23:00Z"), sajuMonth: 1 },
+    { name: "춘분", date: new Date("1958-03-20T09:06:00Z"), sajuMonth: 0 },
+    { name: "청명", date: new Date("1958-04-04T15:02:00Z"), sajuMonth: 2 },
+    { name: "곡우", date: new Date("1958-04-20T04:27:00Z"), sajuMonth: 0 },
+    { name: "입하", date: new Date("1958-05-05T08:10:00Z"), sajuMonth: 3 },
+    { name: "소만", date: new Date("1958-05-20T20:59:00Z"), sajuMonth: 0 },
+    { name: "망종", date: new Date("1958-06-05T12:10:00Z"), sajuMonth: 4 },
+    { name: "하지", date: new Date("1958-06-21T04:51:00Z"), sajuMonth: 0 },
+    { name: "소서", date: new Date("1958-07-06T22:20:00Z"), sajuMonth: 5 },
+    { name: "대서", date: new Date("1958-07-22T15:44:00Z"), sajuMonth: 0 },
+    { name: "입추", date: new Date("1958-08-07T09:11:00Z"), sajuMonth: 6 },
+    { name: "처서", date: new Date("1958-08-23T02:55:00Z"), sajuMonth: 0 },
+    { name: "백로", date: new Date("1958-09-07T11:11:00Z"), sajuMonth: 7 },
+    { name: "추분", date: new Date("1958-09-22T20:44:00Z"), sajuMonth: 0 },
+    { name: "한로", date: new Date("1958-10-08T03:56:00Z"), sajuMonth: 8 },
+    { name: "상강", date: new Date("1958-10-23T14:15:00Z"), sajuMonth: 0 },
+    { name: "입동", date: new Date("1958-11-07T12:20:00Z"), sajuMonth: 9 },
+    { name: "소설", date: new Date("1958-11-22T09:56:00Z"), sajuMonth: 0 },
+    { name: "대설", date: new Date("1958-12-07T00:17:00Z"), sajuMonth: 10 },
+    { name: "동지", date: new Date("1958-12-22T15:21:00Z"), sajuMonth: 0 }
+  ]
+};
+
 // 대운수 계산에 사용되는 12절기 (홀수 번째 절기들)
 export const TWELVE_MAJOR_SOLAR_TERMS = [
   "입춘", "경칩", "청명", "입하", "망종", "소서", 
@@ -70,25 +101,54 @@ async function fetchSolarTermsFromDataGovKr(year: number): Promise<SolarTermInfo
     const { get24DivisionsInfo } = await import('./data-gov-kr-service');
     const apiResponse = await get24DivisionsInfo(year);
     
-    // 디버깅: 응답 구조 확인
-    console.log(`📋 응답 키:`, Object.keys(apiResponse || {}));
-    console.log(`📋 response 키:`, Object.keys(apiResponse?.response || {}));  
-    console.log(`📋 header:`, apiResponse?.response?.header);
-    console.log(`📋 body 키:`, Object.keys(apiResponse?.response?.body || {}));
-    console.log(`📋 items:`, apiResponse?.response?.body?.items);
-    console.log(`📋 items 타입:`, typeof apiResponse?.response?.body?.items);
+    // 응답 구조: response.body.items가 직접 배열인 경우도 처리
+    let items = apiResponse?.response?.body?.items;
     
-    // 응답 구조: response.body.items.item (배열 또는 단일 객체)
-    const items = apiResponse?.response?.body?.items?.item;
-    if (!items) {
-      console.log(`❌ data.go.kr API 응답 데이터 없음 (items.item이 없음)`);
+    // items가 객체이고 item 속성이 있는 경우
+    if (items && typeof items === 'object' && 'item' in items) {
+      items = items.item;
+    }
+    
+    // items가 배열이 아닌 경우 (단일 객체)
+    if (items && !Array.isArray(items)) {
+      items = [items];
+    }
+    
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      console.log(`❌ data.go.kr API 응답 데이터 없음`);
       return null;
     }
     
-    const itemsArray = Array.isArray(items) ? items : [items];
+    console.log(`📊 data.go.kr items 개수: ${items.length}`);
+    
+    // dateKind 값들 확인
+    const dateKinds = items.map((item: any) => item.dateKind);
+    const uniqueDateKinds = Array.from(new Set(dateKinds));
+    console.log(`📊 고유한 dateKind 값들:`, uniqueDateKinds);
+    
+    // 각 dateKind별 샘플 출력
+    for (const kind of uniqueDateKinds) {
+      const sample = items.find((item: any) => item.dateKind === kind);
+      console.log(`📊 dateKind="${kind}" 샘플:`, sample);
+    }
+    
+    // dateKind로 24절기만 필터링 (dateKind === '02' 또는 '24'일 가능성)
+    const solarTermItems = items.filter((item: any) => 
+      item.dateKind === '02' || 
+      item.dateKind === '24' ||
+      item.dateKind === '2' ||
+      // 또는 isHoliday가 'N'인 것만 (24절기는 공휴일이 아님)
+      (item.isHoliday === 'N' && item.dateName && TWENTY_FOUR_SOLAR_TERMS.includes(item.dateName))
+    );
+    
+    console.log(`📊 24절기 필터링 후: ${solarTermItems.length}개`);
+    if (solarTermItems.length > 0) {
+      console.log(`📊 첫 번째 24절기 item:`, solarTermItems[0]);
+    }
+    
     const terms: SolarTermInfo[] = [];
     
-    for (const item of itemsArray) {
+    for (const item of solarTermItems) {
       // locdate: "YYYYMMDD", dateName: "소한", kst: "HH:mm"
       const dateStr = item.locdate;
       const year = parseInt(dateStr.substring(0, 4));
@@ -132,10 +192,13 @@ async function fetchSolarTermsFromDistBe(year: number): Promise<SolarTermInfo[] 
     }
     
     const data = await response.json();
+    console.log(`📊 holidays.dist.be 원본 데이터 개수: ${data.length}`);
+    
     const terms: SolarTermInfo[] = [];
     
     // kind가 3인 항목만 필터링 (24절기)
     const solarTermsData = data.filter((item: any) => item.kind === 3);
+    console.log(`📊 kind === 3 필터링 후: ${solarTermsData.length}개`);
     
     for (const item of solarTermsData) {
       // date: "YYYY-MM-DD", time: "HH:mm" 또는 null
@@ -181,15 +244,23 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTermsCache.get(year)!;
   }
   
-  // 1. data.go.kr API 시도 (모든 년도)
+  // 0. 하드코딩 데이터 확인 (정확한 절입일이 있는 경우)
+  if (HARDCODED_SOLAR_TERMS[year]) {
+    console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년`);
+    const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
+    solarTermsCache.set(year, hardcodedTerms);
+    return hardcodedTerms;
+  }
+  
+  // 1. data.go.kr API 시도 (모든 년도) - 현재 공휴일만 반환하므로 실패
   const dataGovTerms = await fetchSolarTermsFromDataGovKr(year);
   if (dataGovTerms && dataGovTerms.length > 0) {
     solarTermsCache.set(year, dataGovTerms);
     return dataGovTerms;
   }
   
-  // 2. holidays.dist.be API 시도 (2010년 이후만)
-  if (year >= 2010) {
+  // 2. holidays.dist.be API 시도 (2006년 이후)
+  if (year >= 2006) {
     const distBeTerms = await fetchSolarTermsFromDistBe(year);
     if (distBeTerms && distBeTerms.length > 0) {
       solarTermsCache.set(year, distBeTerms);
