@@ -74,16 +74,21 @@ Preferred communication style: Simple, everyday language.
     - Tier 1: **Database Query** (Primary source, fastest)
     - Tier 2: data.go.kr API (공공데이터포털 24절기 API) → saves to DB
     - Tier 3: holidays.dist.be API for 2006-현재 (provides exact times) → saves to DB
-    - Tier 4: Hardcoded accurate data for critical years (1958: 입춘 16:49, 경칩 11:05, 청명 16:12 KST) → saves to DB
+    - Tier 4: **bebeyam.com 역서 데이터** (한국천문연구원 기반, 1946-2005년 입춘 정확한 시각) → saved to DB
     - Tier 5: Local approximation fallback for other years → saves to DB
     - **Database Storage**: All solar term data (from any source) is saved to `solar_terms` table for future queries
-    - **Data Coverage**: 2006-2025 stored from holidays.dist.be (accurate times), other years use approximation or hardcoded data
+    - **Data Coverage**: 
+      - 1946-2005: bebeyam.com 역서 (입춘 정확한 시각, source='bebeyam')
+      - 2006-2025: holidays.dist.be (모든 절기 정확한 시각)
+      - 기타 연도: 근사치 계산
     - **KST/UTC Conversion**: Server stores UTC (API KST - 9h), client displays KST (UTC + 9h)
     - Frontend detection: UTC date comparison (getUTCMonth/getUTCDate) to avoid timezone issues
-  - **2024-2025 Accurate Solar Terms** (Client-side calculation):
-    - `TWELVE_SOLAR_TERMS_2024`: 2024년 12절기 정확한 시각 (예: 입춘 2월 4일 16:27)
-    - `TWELVE_SOLAR_TERMS_2025`: 2025년 12절기 정확한 시각 (예: 입춘 2월 3일 23:10)
-    - `generateSolarTermsForYear()`: 2024, 2025는 정확한 데이터 사용, 기타 연도는 근사치 계산
+  - **Historical Accurate Solar Terms** (Client-side hardcoded):
+    - `TWELVE_SOLAR_TERMS_1950`: 1950년 12절기 (입춘 2월 4일 18:22 KST bebeyam 역서)
+    - `TWELVE_SOLAR_TERMS_2024`: 2024년 12절기 (입춘 2월 4일 16:27)
+    - `TWELVE_SOLAR_TERMS_2025`: 2025년 12절기 (입춘 2월 3일 23:10)
+    - `generateSolarTermsForYear()`: 1950, 2024, 2025는 정확한 데이터 사용, 기타 연도는 근사치 계산
+    - 예시: 1950-02-04 18:21 입춘 전 → 기축년 을축월, 18:22 입춘 후 → 경인년 무인월
     - 예시: 2025-02-03 23:09 입춘 전 → 갑진년 정축월, 23:10 입춘 후 → 을사년 무인월
 - **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
   - When birth time is unknown, hourSky and hourEarth are stored as empty strings
