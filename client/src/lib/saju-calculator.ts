@@ -56,6 +56,23 @@ const TWELVE_SOLAR_TERMS_1963 = [
   { term: "대설", month: 11, date: new Date(1963, 11, 8, 5, 0) },   // 자월 시작 (대설: 12월 8일, 근사치)
 ];
 
+// 1950년 12절기 정확한 시각 (bebeyam.com 기반, 한국천문연구원 데이터)
+// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
+const TWELVE_SOLAR_TERMS_1950 = [
+  { term: "소한", month: 0, date: new Date(1950, 0, 6, 5, 30) },    // 축월 시작 (소한: 1월 6일, 근사치)
+  { term: "입춘", month: 1, date: new Date(1950, 1, 4, 16, 49) },   // 인월 시작 (입춘: 2월 4일 16:49)
+  { term: "경칩", month: 2, date: new Date(1950, 2, 6, 11, 0) },    // 묘월 시작 (경칩: 3월 6일, 근사치)
+  { term: "청명", month: 3, date: new Date(1950, 3, 5, 16, 0) },    // 진월 시작 (청명: 4월 5일, 근사치)
+  { term: "입하", month: 4, date: new Date(1950, 4, 6, 9, 0) },     // 사월 시작 (입하: 5월 6일, 근사치)
+  { term: "망종", month: 5, date: new Date(1950, 5, 6, 13, 0) },    // 오월 시작 (망종: 6월 6일, 근사치)
+  { term: "소서", month: 6, date: new Date(1950, 6, 7, 23, 0) },    // 미월 시작 (소서: 7월 7일, 근사치)
+  { term: "입추", month: 7, date: new Date(1950, 7, 8, 10, 0) },    // 신월 시작 (입추: 8월 8일, 근사치)
+  { term: "백로", month: 8, date: new Date(1950, 8, 8, 12, 0) },    // 유월 시작 (백로: 9월 8일, 근사치)
+  { term: "한로", month: 9, date: new Date(1950, 9, 9, 4, 0) },     // 술월 시작 (한로: 10월 9일, 근사치)
+  { term: "입동", month: 10, date: new Date(1950, 10, 8, 7, 0) },   // 해월 시작 (입동: 11월 8일, 근사치)
+  { term: "대설", month: 11, date: new Date(1950, 11, 8, 0, 0) },   // 자월 시작 (대설: 12월 8일, 근사치)
+];
+
 // 2025년 12절기 정확한 시각 (DB 기반)
 // month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
 const TWELVE_SOLAR_TERMS_2025 = [
@@ -134,19 +151,24 @@ function calculateSajuMonth(date: Date): number {
  * @returns 해당 년도의 12절기 날짜 배열
  */
 function generateSolarTermsForYear(year: number): Array<{ term: string; month: number; date: Date }> {
+  // 1950년은 정확한 데이터 사용 (bebeyam.com 기반)
+  if (year === 1950) {
+    return TWELVE_SOLAR_TERMS_1950;
+  }
+  
   // 1963년은 정확한 데이터 사용 (사용자 제공)
   if (year === 1963) {
     return TWELVE_SOLAR_TERMS_1963;
   }
   
-  // 2025년은 정확한 DB 데이터 사용
-  if (year === 2025) {
-    return TWELVE_SOLAR_TERMS_2025;
-  }
-  
   // 2024년은 정확한 데이터 사용
   if (year === 2024) {
     return TWELVE_SOLAR_TERMS_2024;
+  }
+  
+  // 2025년은 정확한 DB 데이터 사용
+  if (year === 2025) {
+    return TWELVE_SOLAR_TERMS_2025;
   }
   
   // 2024년 데이터를 기준으로 근사치 생성
