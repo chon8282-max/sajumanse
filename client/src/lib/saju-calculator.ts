@@ -97,8 +97,8 @@ function getLichunDate(year: number): Date {
 
 /**
  * 12절기 기준으로 사주 월 계산
- * @param date 계산할 날짜
- * @returns 사주 월 (0:인월, 1:묘월, ..., 11:축월)
+ * @param date 계산할 날짜 (시/분 포함)
+ * @returns 사주 월 (0:축월, 1:인월, 2:묘월..., 11:자월)
  */
 function calculateSajuMonth(date: Date): number {
   const year = date.getFullYear();
