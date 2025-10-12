@@ -320,6 +320,12 @@ export async function registerRoutes(app: Express): Promise<void> {
                       sajuCalculationDay = reconverted.day;
                     }
                   }
+                  
+                  // 입춘 년주 변경 처리: "절입 후" 선택 시 입춘이면 년주 +1 (시간 조정 여부 무관)
+                  if (!validatedData.usePreviousMonthPillar && closestTerm.term.name === "입춘") {
+                    console.log(`  → 입춘 절입 후 선택: 년주 +1 (${sajuCalculationYear} → ${sajuCalculationYear + 1})`);
+                    sajuCalculationYear = sajuCalculationYear + 1;
+                  }
                 }
               } catch (termError) {
                 console.error('절입 시각 조정 실패:', termError);
@@ -612,6 +618,12 @@ export async function registerRoutes(app: Express): Promise<void> {
                       } else {
                         console.log(`  → 이미 절입 후, 조정 불필요`);
                       }
+                    }
+                    
+                    // 입춘 년주 변경 처리: "절입 후" 선택 시 입춘이면 년주 +1 (시간 조정 여부 무관)
+                    if (!validatedData.usePreviousMonthPillar && closestTerm.term.name === "입춘") {
+                      console.log(`  → 입춘 절입 후 선택: 년주 +1 (${sajuCalculationYear} → ${sajuCalculationYear + 1})`);
+                      sajuCalculationYear = sajuCalculationYear + 1;
                     }
                   }
                 } catch (termError) {
