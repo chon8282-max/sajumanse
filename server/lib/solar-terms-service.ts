@@ -39,30 +39,18 @@ const HARDCODED_SOLAR_TERMS: Record<number, SolarTermInfo[]> = {
     { name: "동지", date: new Date("1946-12-22T10:54:00Z"), sajuMonth: 0 }
   ],
   1950: [
-    { name: "소한", date: new Date("1950-01-05T21:40:00Z"), sajuMonth: 11 },
-    { name: "대한", date: new Date("1950-01-20T15:00:00Z"), sajuMonth: 0 },
-    { name: "입춘", date: new Date("1950-02-04T07:49:00Z"), sajuMonth: 0 },   // KST 2/4 16:49 (bebeyam.com)
-    { name: "우수", date: new Date("1950-02-19T05:18:00Z"), sajuMonth: 0 },
-    { name: "경칩", date: new Date("1950-03-06T03:36:00Z"), sajuMonth: 1 },
-    { name: "춘분", date: new Date("1950-03-21T04:36:00Z"), sajuMonth: 0 },
-    { name: "청명", date: new Date("1950-04-05T08:45:00Z"), sajuMonth: 2 },
-    { name: "곡우", date: new Date("1950-04-20T16:00:00Z"), sajuMonth: 0 },
-    { name: "입하", date: new Date("1950-05-06T02:25:00Z"), sajuMonth: 3 },
-    { name: "소만", date: new Date("1950-05-21T15:28:00Z"), sajuMonth: 0 },
-    { name: "망종", date: new Date("1950-06-06T06:52:00Z"), sajuMonth: 4 },
-    { name: "하지", date: new Date("1950-06-21T23:37:00Z"), sajuMonth: 0 },
-    { name: "소서", date: new Date("1950-07-07T17:14:00Z"), sajuMonth: 5 },
-    { name: "대서", date: new Date("1950-07-23T10:30:00Z"), sajuMonth: 0 },
-    { name: "입추", date: new Date("1950-08-08T02:56:00Z"), sajuMonth: 6 },
-    { name: "처서", date: new Date("1950-08-23T17:24:00Z"), sajuMonth: 0 },
-    { name: "백로", date: new Date("1950-09-08T05:34:00Z"), sajuMonth: 7 },
-    { name: "추분", date: new Date("1950-09-23T14:44:00Z"), sajuMonth: 0 },
-    { name: "한로", date: new Date("1950-10-08T20:52:00Z"), sajuMonth: 8 },
-    { name: "상강", date: new Date("1950-10-23T23:45:00Z"), sajuMonth: 0 },
-    { name: "입동", date: new Date("1950-11-07T23:44:00Z"), sajuMonth: 9 },
-    { name: "소설", date: new Date("1950-11-22T21:03:00Z"), sajuMonth: 0 },
-    { name: "대설", date: new Date("1950-12-07T16:22:00Z"), sajuMonth: 10 },
-    { name: "동지", date: new Date("1950-12-22T10:14:00Z"), sajuMonth: 0 }
+    { name: "입춘", date: new Date("1950-02-04T09:22:00Z"), sajuMonth: 0 },   // KST 2/4 18:22 (bebeyam역서)
+    { name: "경칩", date: new Date("1950-03-06T00:00:00Z"), sajuMonth: 1 },
+    { name: "청명", date: new Date("1950-04-05T00:00:00Z"), sajuMonth: 2 },
+    { name: "입하", date: new Date("1950-05-06T00:00:00Z"), sajuMonth: 3 },
+    { name: "망종", date: new Date("1950-06-06T00:00:00Z"), sajuMonth: 4 },
+    { name: "소서", date: new Date("1950-07-07T00:00:00Z"), sajuMonth: 5 },
+    { name: "입추", date: new Date("1950-08-08T00:00:00Z"), sajuMonth: 6 },
+    { name: "백로", date: new Date("1950-09-08T00:00:00Z"), sajuMonth: 7 },
+    { name: "한로", date: new Date("1950-10-08T00:00:00Z"), sajuMonth: 8 },
+    { name: "입동", date: new Date("1950-11-07T00:00:00Z"), sajuMonth: 9 },
+    { name: "대설", date: new Date("1950-12-07T00:00:00Z"), sajuMonth: 10 },
+    { name: "소한", date: new Date("1950-01-05T00:00:00Z"), sajuMonth: 11 }
   ],
   1958: [
     { name: "소한", date: new Date("1958-01-05T23:49:00Z"), sajuMonth: 11 },
