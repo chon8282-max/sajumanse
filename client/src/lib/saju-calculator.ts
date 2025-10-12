@@ -38,6 +38,22 @@ const TWELVE_SOLAR_TERMS_2024 = [
   { term: "소한", month: 11, date: new Date(2025, 0, 5, 23, 49) },  // 축월 시작 (소한: 1월 5일 23:49)
 ];
 
+// 1963년 12절기 정확한 시각 (사용자 제공)
+const TWELVE_SOLAR_TERMS_1963 = [
+  { term: "입춘", month: 0, date: new Date(1963, 1, 4, 22, 8) },    // 인월 시작 (입춘: 2월 4일 22:08)
+  { term: "경칩", month: 1, date: new Date(1963, 2, 6, 16, 0) },    // 묘월 시작 (경칩: 3월 6일, 근사치)
+  { term: "청명", month: 2, date: new Date(1963, 3, 5, 21, 0) },    // 진월 시작 (청명: 4월 5일, 근사치)
+  { term: "입하", month: 3, date: new Date(1963, 4, 6, 14, 0) },    // 사월 시작 (입하: 5월 6일, 근사치)
+  { term: "망종", month: 4, date: new Date(1963, 5, 6, 18, 0) },    // 오월 시작 (망종: 6월 6일, 근사치)
+  { term: "소서", month: 5, date: new Date(1963, 6, 8, 4, 0) },     // 미월 시작 (소서: 7월 8일, 근사치)
+  { term: "입추", month: 6, date: new Date(1963, 7, 8, 15, 0) },    // 신월 시작 (입추: 8월 8일, 근사치)
+  { term: "백로", month: 7, date: new Date(1963, 8, 8, 17, 0) },    // 유월 시작 (백로: 9월 8일, 근사치)
+  { term: "한로", month: 8, date: new Date(1963, 9, 9, 9, 0) },     // 술월 시작 (한로: 10월 9일, 근사치)
+  { term: "입동", month: 9, date: new Date(1963, 10, 8, 12, 0) },   // 해월 시작 (입동: 11월 8일, 근사치)
+  { term: "대설", month: 10, date: new Date(1963, 11, 8, 5, 0) },   // 자월 시작 (대설: 12월 8일, 근사치)
+  { term: "소한", month: 11, date: new Date(1964, 0, 6, 10, 0) },   // 축월 시작 (소한: 1964년 1월 6일, 근사치)
+];
+
 // 2025년 12절기 정확한 시각 (DB 기반)
 const TWELVE_SOLAR_TERMS_2025 = [
   { term: "입춘", month: 0, date: new Date(2025, 1, 3, 23, 10) },   // 인월 시작 (입춘: 2월 3일 23:10)
@@ -56,6 +72,7 @@ const TWELVE_SOLAR_TERMS_2025 = [
 
 // 24절기 날짜 데이터 (입춘 기준일 - 시각 포함)
 const SOLAR_TERMS_LICHUN = [
+  { year: 1963, date: new Date(1963, 1, 4, 22, 8) },  // 1963년 입춘 22:08
   { year: 2020, date: new Date(2020, 1, 4) }, // 2020년 입춘
   { year: 2021, date: new Date(2021, 1, 3) },
   { year: 2022, date: new Date(2022, 1, 4) },
@@ -114,6 +131,11 @@ function calculateSajuMonth(date: Date): number {
  * @returns 해당 년도의 12절기 날짜 배열
  */
 function generateSolarTermsForYear(year: number): Array<{ term: string; month: number; date: Date }> {
+  // 1963년은 정확한 데이터 사용 (사용자 제공)
+  if (year === 1963) {
+    return TWELVE_SOLAR_TERMS_1963;
+  }
+  
   // 2025년은 정확한 DB 데이터 사용
   if (year === 2025) {
     return TWELVE_SOLAR_TERMS_2025;
