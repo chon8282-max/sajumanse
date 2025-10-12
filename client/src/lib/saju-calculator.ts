@@ -242,7 +242,10 @@ export function calculateSaju(
   }
   
   // 입춘 조정: 음력 변환이 이미 된 경우 추가 조정하지 않음
-  const checkDate = solarDate ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay) : calcDate;
+  // 시간까지 포함하여 정확한 비교
+  const checkDate = solarDate 
+    ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay, hour || 12, minute || 0)
+    : calcDate;
   // 음력 변환이 이미 되어 year가 baseYear와 다르면 이미 조정된 것으로 간주
   if (checkDate < lichunDate && year === baseYear) {
     sajuYear = year - 1;
@@ -267,8 +270,8 @@ export function calculateSaju(
     // 12절기 기준 월주 계산 (양력 기준) - solarDate 우선 사용
     let monthCalcDate: Date;
     if (solarDate) {
-      // 서버에서 제공한 정확한 양력 날짜 사용
-      monthCalcDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay);
+      // 서버에서 제공한 정확한 양력 날짜 사용 (시간 포함)
+      monthCalcDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay, hour || 12, minute || 0);
     } else {
       // 기존 방식
       monthCalcDate = calcDate;
@@ -276,23 +279,9 @@ export function calculateSaju(
     sajuMonth = calculateSajuMonth(monthCalcDate); // 0=축월, 1=인월, 2=묘월...
   }
   
-  // 절입일 간지 적용
+  // usePreviousMonthPillar는 서버에서 시간 조정으로 처리되므로 클라이언트에서는 사용하지 않음
   let adjustedYearSkyIndex = yearSkyIndex;
   let adjustedYearEarthIndex = yearEarthIndex;
-  
-  if (usePreviousMonthPillar !== undefined) {
-    if (usePreviousMonthPillar) {
-      // "전월 간지" 선택: 월주만 -1 (절입 전 월주 사용)
-      sajuMonth = (sajuMonth - 1 + 12) % 12;
-    } else {
-      // "절입 후 간지" 선택: 입춘(인월=1)만 년주를 바꿈
-      if (sajuMonth === 1) { // 인월
-        adjustedYearSkyIndex = (yearSkyIndex + 1) % 10;
-        adjustedYearEarthIndex = (yearEarthIndex + 1) % 12;
-      }
-      // 다른 절기는 기본 계산 그대로 (아무것도 하지 않음)
-    }
-  }
   
   // sajuMonth를 인월 기준 인덱스로 변환 (월간표는 인월 기준)
   // 0(축월) -> 11, 1(인월) -> 0, 2(묘월) -> 1...
