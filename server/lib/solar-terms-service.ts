@@ -14,6 +14,33 @@ export const TWENTY_FOUR_SOLAR_TERMS = [
 
 // 정확한 절입일 하드코딩 데이터 (API 실패 시 사용)
 const HARDCODED_SOLAR_TERMS: Record<number, SolarTermInfo[]> = {
+  1950: [
+    // 1950년 정확한 절입일 (UTC 기준 = KST - 9시간, 출처: 한국천문연구원 역서)
+    { name: "소한", date: new Date("1950-01-05T21:40:00Z"), sajuMonth: 11 },  // KST 1/6 6:40
+    { name: "대한", date: new Date("1950-01-20T15:00:00Z"), sajuMonth: 0 },   // KST 1/21 0:00
+    { name: "입춘", date: new Date("1950-02-04T09:22:00Z"), sajuMonth: 0 },   // KST 2/4 18:22
+    { name: "우수", date: new Date("1950-02-19T05:18:00Z"), sajuMonth: 0 },   // KST 2/19 14:18
+    { name: "경칩", date: new Date("1950-03-06T03:36:00Z"), sajuMonth: 1 },   // KST 3/6 12:36
+    { name: "춘분", date: new Date("1950-03-21T04:36:00Z"), sajuMonth: 0 },   // KST 3/21 13:36
+    { name: "청명", date: new Date("1950-04-05T08:45:00Z"), sajuMonth: 2 },   // KST 4/5 17:45
+    { name: "곡우", date: new Date("1950-04-20T16:00:00Z"), sajuMonth: 0 },   // KST 4/21 1:00
+    { name: "입하", date: new Date("1950-05-06T02:25:00Z"), sajuMonth: 3 },   // KST 5/6 11:25
+    { name: "소만", date: new Date("1950-05-21T15:28:00Z"), sajuMonth: 0 },   // KST 5/22 0:28
+    { name: "망종", date: new Date("1950-06-06T06:52:00Z"), sajuMonth: 4 },   // KST 6/6 15:52
+    { name: "하지", date: new Date("1950-06-21T23:37:00Z"), sajuMonth: 0 },   // KST 6/22 8:37
+    { name: "소서", date: new Date("1950-07-07T17:14:00Z"), sajuMonth: 5 },   // KST 7/8 2:14
+    { name: "대서", date: new Date("1950-07-23T10:30:00Z"), sajuMonth: 0 },   // KST 7/23 19:30
+    { name: "입추", date: new Date("1950-08-08T02:56:00Z"), sajuMonth: 6 },   // KST 8/8 11:56
+    { name: "처서", date: new Date("1950-08-23T17:24:00Z"), sajuMonth: 0 },   // KST 8/24 2:24
+    { name: "백로", date: new Date("1950-09-08T05:34:00Z"), sajuMonth: 7 },   // KST 9/8 14:34
+    { name: "추분", date: new Date("1950-09-23T14:44:00Z"), sajuMonth: 0 },   // KST 9/23 23:44
+    { name: "한로", date: new Date("1950-10-08T20:52:00Z"), sajuMonth: 8 },   // KST 10/9 5:52
+    { name: "상강", date: new Date("1950-10-23T23:45:00Z"), sajuMonth: 0 },   // KST 10/24 8:45
+    { name: "입동", date: new Date("1950-11-07T23:44:00Z"), sajuMonth: 9 },   // KST 11/8 8:44
+    { name: "소설", date: new Date("1950-11-22T21:03:00Z"), sajuMonth: 0 },   // KST 11/23 6:03
+    { name: "대설", date: new Date("1950-12-07T16:22:00Z"), sajuMonth: 10 },  // KST 12/8 1:22
+    { name: "동지", date: new Date("1950-12-22T10:14:00Z"), sajuMonth: 0 }    // KST 12/22 19:14
+  ],
   1958: [
     // 1958년 정확한 절입일 (UTC 기준 = KST - 9시간)
     { name: "소한", date: new Date("1958-01-05T23:49:00Z"), sajuMonth: 11 },
