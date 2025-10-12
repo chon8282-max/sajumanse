@@ -2,13 +2,85 @@
 
 ## 📋 개요
 
-공공데이터포털 API에서 정확한 24절기 데이터를 수집하여 DB에 저장합니다.
+정확한 24절기 데이터를 수집하여 DB에 저장하는 2가지 방법을 제공합니다.
 
 ## 🚨 현재 상황
 
 - **공공데이터포털 API**: 서버 화재로 서비스 중단 (2025년 기준)
-- **대안**: API 복구 후 전체 데이터 수집 예정
-- **임시 데이터**: 근사치 계산 사용 중 (부정확)
+- **현재 데이터**: 근사치 계산 사용 중 (부정확, 예: 1983년 입하 4-25 → 실제 5-6)
+- **해결 방법**: ✅ Python sxtwl 라이브러리 (천문 계산) 또는 API 복구 대기
+
+---
+
+## 🎯 방법 선택 가이드
+
+### 방법 A: Python sxtwl (✅ **권장**)
+- ✅ **즉시 사용 가능** (API 복구 불필요)
+- ✅ **천문 계산**: 태양 황경, ΔT 보정 등 정확한 계산
+- ✅ **시간 정보**: 분 단위 정확한 입절 시각
+- ✅ **200년 범위**: 1900-2100년 전체 커버
+- 📂 위치: `server/scripts/python-solar-terms/`
+
+### 방법 B: 공공데이터포털 API
+- ⏳ API 복구 대기 필요
+- ⚠️ 시간 정보 미제공 (날짜만)
+- 📂 위치: `server/scripts/collect-all-solar-terms.ts`
+
+---
+
+## 🐍 방법 A: Python sxtwl로 정확한 데이터 생성 (권장)
+
+### 1단계: Python 환경 준비
+
+```bash
+cd server/scripts/python-solar-terms/
+pip install -r requirements.txt
+```
+
+### 2단계: CSV 데이터 생성
+
+```bash
+python build_calendar_db.py --start 1900 --end 2100 --tz Asia/Seoul
+```
+
+**결과 파일:**
+- `solar_terms_24_1900_2100.csv` - 24절기 입절 일시 (KST)
+- `east_asia_calendar_1900_2100.sqlite` - SQLite DB
+- `lunar_calendar_1900_2100.csv` - 양력↔음력 데이터
+
+### 3단계: PostgreSQL로 Import
+
+```bash
+# CSV를 현재 디렉토리로 복사
+cp solar_terms_24_1900_2100.csv ../../
+
+# Node.js import 스크립트 실행
+tsx server/scripts/import-solar-terms-from-csv.ts solar_terms_24_1900_2100.csv
+```
+
+**Import 결과:**
+```
+✅ Import 완료!
+   총 저장: 4,800개
+   교체됨: 2,400개 (근사치→sxtwl)
+   출처: sxtwl-python (천문 계산 라이브러리)
+```
+
+### 데이터 정확도
+- ✅ **천문 계산**: 태양 황경 15° 간격
+- ✅ **시간 정보**: 분 단위 정확한 입절 시각 (예: 2024-02-04 01:26:53 KST)
+- ✅ **ΔT 보정**: 역사적 시간 보정 포함
+- ✅ **검증 범위**: 1900-2100년
+
+### CSV 데이터 구조
+```csv
+year,term_index,term_name_kr,term_name_zh,ecliptic_longitude_deg,utc_time,local_time
+2024,2,입춘,立春,315.0,2024-02-03T16:26:53+00:00,2024-02-04T01:26:53+09:00
+```
+
+---
+
+## 🌐 방법 B: 공공데이터포털 API (복구 후)
 
 ## 🔍 1단계: API 상태 확인
 

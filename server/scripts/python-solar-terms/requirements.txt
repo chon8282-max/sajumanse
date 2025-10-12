@@ -1,0 +1,4 @@
+sxtwl==3.0.3
+pytz>=2023.3
+python-dateutil>=2.9.0
+sqlite-utils>=3.35

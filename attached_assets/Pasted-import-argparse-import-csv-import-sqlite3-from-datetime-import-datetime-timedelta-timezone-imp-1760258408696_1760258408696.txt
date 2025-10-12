@@ -1,0 +1,158 @@
+import argparse
+import csv
+import sqlite3
+from datetime import datetime, timedelta, timezone
+import pytz
+
+try:
+    import sxtwl  # 중국/동아시아 음양력·절기 계산 라이브러리
+except Exception as e:
+    raise SystemExit("This script requires the 'sxtwl' package. Install with: pip install sxtwl") from e
+
+# 24절기 이름 (index 0..23, 15° 간격; 0=소한, 23=동지)
+KR_TERM_NAMES = [
+    "소한","대한","입춘","우수","경칩","춘분","청명","곡우",
+    "입하","소만","망종","하지","소서","대서","입추","처서",
+    "백로","추분","한로","상강","입동","소설","대설","동지",
+]
+ZH_TERM_NAMES = [
+    "小寒","大寒","立春","雨水","驚蟄","春分","清明","穀雨",
+    "立夏","小滿","芒種","夏至","小暑","大暑","立秋","處暑",
+    "白露","秋分","寒露","霜降","立冬","小雪","大雪","冬至",
+]
+
+def gz_text(gz):
+    # sxtwl.GZ 객체 → "甲子" 같은 천간지지 문자열
+    return gz.tg + gz.dz
+
+def build_lunar_row(y, m, d):
+    """양력 y-m-d 1일치 → 음력 정보/간지"""
+    lunar = sxtwl.Lunar()
+    day = lunar.getDayBySolar(y, m, d)
+    ly = day.Lyear
+    lm = day.Lmonth
+    ld = day.Lday
+    leap = 1 if day.isLunarLeap() else 0
+    ygz = gz_text(day.getYearGZ())
+    mgz = gz_text(day.getMonthGZ())
+    dgz = gz_text(day.getDayGZ())
+    return ly, lm, ld, leap, ygz, mgz, dgz
+
+def solar_terms_for_year(year, tzname="Asia/Seoul"):
+    """
+    해당 '로컬연도'에 속하는 24절기(입절 시각)를 반환.
+    (절기 시각을 지역시간 기준의 연도로 필터링)
+    """
+    local_tz = pytz.timezone(tzname)
+    result = []
+    for idx in range(24):
+        # 보통 해당 연도로 바로 구해지지만, 구현체에 따라 경계해의 값이 None일 수 있어 보완
+        dt_utc = sxtwl.SolarTerms.getTimeOfTerm(year, idx)
+        if dt_utc is None:
+            for yy in (year-1, year, year+1):
+                dt_utc = sxtwl.SolarTerms.getTimeOfTerm(yy, idx)
+                if dt_utc is not None:
+                    break
+        if dt_utc is None:
+            continue
+
+        # UTC로 정규화
+        if dt_utc.tzinfo is None:
+            dt_utc = dt_utc.replace(tzinfo=timezone.utc)
+        else:
+            dt_utc = dt_utc.astimezone(timezone.utc)
+
+        dt_local = dt_utc.astimezone(local_tz)
+
+        # “해당 로컬연도”만 저장 (달력적으로 보통 이렇게 보는 게 편함)
+        if dt_local.year != year:
+            continue
+
+        result.append({
+            "year": year,
+            "term_index": idx,
+            "term_name_kr": KR_TERM_NAMES[idx],
+            "term_name_zh": ZH_TERM_NAMES[idx],
+            "ecliptic_longitude_deg": idx * 15.0,
+            "utc_time": dt_utc.isoformat(),
+            "local_time": dt_local.isoformat(),
+        })
+    result.sort(key=lambda r: r["term_index"])
+    return result
+
+def build_db(start, end, tzname, sqlite_path, csv_lunar_path, csv_terms_path):
+    con = sqlite3.connect(sqlite_path)
+    cur = con.cursor()
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS calendar_days (
+      gregorian_date   TEXT PRIMARY KEY,
+      year             INTEGER,
+      lunar_year       INTEGER,
+      lunar_month      INTEGER,
+      lunar_day        INTEGER,
+      is_leap_month    INTEGER,
+      sexagenary_day   TEXT,
+      sexagenary_month TEXT,
+      sexagenary_year  TEXT
+    )
+    """)
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS solar_terms_24 (
+      year                     INTEGER,
+      term_index               INTEGER,
+      term_name_kr             TEXT,
+      term_name_zh             TEXT,
+      ecliptic_longitude_deg   REAL,
+      utc_time                 TEXT,
+      local_time               TEXT,
+      PRIMARY KEY (year, term_index)
+    )
+    """)
+
+    lw = csv.writer(open(csv_lunar_path, "w", newline="", encoding="utf-8"))
+    lw.writerow(["gregorian_date","year","lunar_year","lunar_month","lunar_day","is_leap_month","sexagenary_day","sexagenary_month","sexagenary_year"])
+
+    tw = csv.writer(open(csv_terms_path, "w", newline="", encoding="utf-8"))
+    tw.writerow(["year","term_index","term_name_kr","term_name_zh","ecliptic_longitude_deg","utc_time","local_time"])
+
+    from datetime import date, timedelta
+    for y in range(start, end+1):
+        d = date(y, 1, 1)
+        while d.year == y:
+            ly, lm, ld, leap, ygz, mgz, dgz = build_lunar_row(d.year, d.month, d.day)
+            row = (d.isoformat(), d.year, ly, lm, ld, leap, dgz, mgz, ygz)
+            cur.execute("""
+              INSERT OR REPLACE INTO calendar_days
+              (gregorian_date, year, lunar_year, lunar_month, lunar_day, is_leap_month, sexagenary_day, sexagenary_month, sexagenary_year)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, row)
+            lw.writerow(row)
+            d += timedelta(days=1)
+
+        terms = solar_terms_for_year(y, tzname)
+        for t in terms:
+            tw.writerow([t["year"], t["term_index"], t["term_name_kr"], t["term_name_zh"], t["ecliptic_longitude_deg"], t["utc_time"], t["local_time"]])
+            cur.execute("""
+              INSERT OR REPLACE INTO solar_terms_24
+              (year, term_index, term_name_kr, term_name_zh, ecliptic_longitude_deg, utc_time, local_time)
+              VALUES (:year, :term_index, :term_name_kr, :term_name_zh, :ecliptic_longitude_deg, :utc_time, :local_time)
+            """, t)
+
+        print(f"Year {y} done. Terms stored: {len(terms)}")
+
+    con.commit()
+    con.close()
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--start", type=int, default=1900)
+    ap.add_argument("--end", type=int, default=2100)
+    ap.add_argument("--tz", type=str, default="Asia/Seoul", help="IANA time zone for solar-term local_time")
+    ap.add_argument("--sqlite", type=str, default="east_asia_calendar_1900_2100.sqlite")
+    ap.add_argument("--csv-lunar", type=str, default="lunar_calendar_1900_2100.csv")
+    ap.add_argument("--csv-terms", type=str, default="solar_terms_24_1900_2100.csv")
+    args = ap.parse_args()
+    build_db(args.start, args.end, args.tz, args.sqlite, args.csv_lunar, args.csv_terms)
+
+if __name__ == "__main__":
+    main()
