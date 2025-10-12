@@ -282,21 +282,11 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTermsCache.get(year)!;
   }
   
-  // 1. 하드코딩 데이터 최우선 확인 (천문연구원 정확한 데이터)
-  if (HARDCODED_SOLAR_TERMS[year]) {
-    console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년 (천문연구원)`);
-    const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
-    // DB에 저장 (source: hardcoded)
-    await saveSolarTermsToDb(year, hardcodedTerms, 'hardcoded');
-    solarTermsCache.set(year, hardcodedTerms);
-    return hardcodedTerms;
-  }
-  
-  // 2. DB에서 조회 (이전에 저장된 데이터)
+  // 1. DB에서 최우선 조회 (가장 정확한 데이터 - bebeyam 역서, holidays.dist.be 등)
   const { storage } = await import('../storage');
   const dbTerms = await storage.getSolarTerms(year);
   if (dbTerms && dbTerms.length > 0) {
-    console.log(`✅ DB에서 ${year}년 절입일 데이터 로드 성공 (${dbTerms.length}개)`);
+    console.log(`✅ DB에서 ${year}년 절입일 데이터 로드 성공 (${dbTerms.length}개, source: ${dbTerms[0]?.source})`);
     const solarTerms = dbTerms.map(term => ({
       name: term.name,
       date: term.date,
@@ -306,7 +296,7 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTerms;
   }
   
-  // 3. data.go.kr API 시도 (정확한 절입시간 포함) - DB에 저장
+  // 2. data.go.kr API 시도 (정확한 절입시간 포함) - DB에 저장
   const dataGovTerms = await fetchSolarTermsFromDataGovKr(year);
   if (dataGovTerms && dataGovTerms.length > 0) {
     console.log(`✅ data.go.kr API에서 ${year}년 절입일 데이터 로드 성공`);
@@ -315,7 +305,7 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return dataGovTerms;
   }
   
-  // 4. holidays.dist.be API 시도 (2006년 이후) - DB에 저장
+  // 3. holidays.dist.be API 시도 (2006년 이후) - DB에 저장
   if (year >= 2006) {
     const distBeTerms = await fetchSolarTermsFromDistBe(year);
     if (distBeTerms && distBeTerms.length > 0) {
@@ -326,7 +316,7 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     }
   }
   
-  // 5. Fallback: 로컬 근사치 계산 - DB에 저장
+  // 4. Fallback: 로컬 근사치 계산 - DB에 저장
   console.log(`⚠️ 모든 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
   const all24Terms = getAll24SolarTermsForYear(year);
   await saveSolarTermsToDb(year, all24Terms, 'approximation');

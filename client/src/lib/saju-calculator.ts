@@ -60,7 +60,7 @@ const TWELVE_SOLAR_TERMS_1963 = [
 // month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
 const TWELVE_SOLAR_TERMS_1950 = [
   { term: "소한", month: 0, date: new Date(1950, 0, 6, 5, 30) },    // 축월 시작 (소한: 1월 6일, 근사치)
-  { term: "입춘", month: 1, date: new Date(1950, 1, 4, 16, 49) },   // 인월 시작 (입춘: 2월 4일 16:49)
+  { term: "입춘", month: 1, date: new Date(1950, 1, 4, 18, 22) },   // 인월 시작 (입춘: 2월 4일 18:22 KST bebeyam 역서)
   { term: "경칩", month: 2, date: new Date(1950, 2, 6, 11, 0) },    // 묘월 시작 (경칩: 3월 6일, 근사치)
   { term: "청명", month: 3, date: new Date(1950, 3, 5, 16, 0) },    // 진월 시작 (청명: 4월 5일, 근사치)
   { term: "입하", month: 4, date: new Date(1950, 4, 6, 9, 0) },     // 사월 시작 (입하: 5월 6일, 근사치)
