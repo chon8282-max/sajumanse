@@ -294,7 +294,17 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTermsCache.get(year)!;
   }
   
-  // 1. DB에서 먼저 조회 (가장 정확한 데이터)
+  // 1. 하드코딩 데이터 최우선 확인 (천문연구원 정확한 데이터)
+  if (HARDCODED_SOLAR_TERMS[year]) {
+    console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년 (천문연구원)`);
+    const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
+    // DB에 저장 (source: hardcoded)
+    await saveSolarTermsToDb(year, hardcodedTerms, 'hardcoded');
+    solarTermsCache.set(year, hardcodedTerms);
+    return hardcodedTerms;
+  }
+  
+  // 2. DB에서 조회 (이전에 저장된 데이터)
   const { storage } = await import('../storage');
   const dbTerms = await storage.getSolarTerms(year);
   if (dbTerms && dbTerms.length > 0) {
@@ -308,42 +318,29 @@ export async function getSolarTermsForYear(year: number): Promise<SolarTermInfo[
     return solarTerms;
   }
   
-  // 2. data.go.kr API 시도 (정확한 절입시간 포함) - DB에 저장
+  // 3. data.go.kr API 시도 (정확한 절입시간 포함) - DB에 저장
   const dataGovTerms = await fetchSolarTermsFromDataGovKr(year);
   if (dataGovTerms && dataGovTerms.length > 0) {
     console.log(`✅ data.go.kr API에서 ${year}년 절입일 데이터 로드 성공`);
-    // DB에 저장
     await saveSolarTermsToDb(year, dataGovTerms, 'data.go.kr');
     solarTermsCache.set(year, dataGovTerms);
     return dataGovTerms;
   }
   
-  // 3. holidays.dist.be API 시도 (2006년 이후) - DB에 저장
+  // 4. holidays.dist.be API 시도 (2006년 이후) - DB에 저장
   if (year >= 2006) {
     const distBeTerms = await fetchSolarTermsFromDistBe(year);
     if (distBeTerms && distBeTerms.length > 0) {
       console.log(`✅ holidays.dist.be API에서 ${year}년 절입일 데이터 로드 성공`);
-      // DB에 저장
       await saveSolarTermsToDb(year, distBeTerms, 'holidays.dist.be');
       solarTermsCache.set(year, distBeTerms);
       return distBeTerms;
     }
   }
   
-  // 4. 하드코딩 데이터 확인 (정확한 절입일이 있는 경우) - DB에 저장
-  if (HARDCODED_SOLAR_TERMS[year]) {
-    console.log(`✨ 하드코딩된 정확한 절입일 사용: ${year}년`);
-    const hardcodedTerms = HARDCODED_SOLAR_TERMS[year];
-    // DB에 저장
-    await saveSolarTermsToDb(year, hardcodedTerms, 'hardcoded');
-    solarTermsCache.set(year, hardcodedTerms);
-    return hardcodedTerms;
-  }
-  
   // 5. Fallback: 로컬 근사치 계산 - DB에 저장
   console.log(`⚠️ 모든 외부 API 실패, 로컬 근사치로 계산: ${year}년`);
   const all24Terms = getAll24SolarTermsForYear(year);
-  // DB에 저장
   await saveSolarTermsToDb(year, all24Terms, 'approximation');
   solarTermsCache.set(year, all24Terms);
   return all24Terms.sort((a, b) => a.date.getTime() - b.date.getTime());
