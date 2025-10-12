@@ -23,51 +23,54 @@ const MONTH_JIJI = ["寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌
 const HOUR_JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
 // 12절기 날짜 데이터 (월주 계산용) - 시각 포함
+// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
 const TWELVE_SOLAR_TERMS_2024 = [
-  { term: "입춘", month: 0, date: new Date(2024, 1, 4, 16, 27) },   // 인월 시작 (입춘: 2월 4일 16:27)
-  { term: "경칩", month: 1, date: new Date(2024, 2, 5, 10, 23) },   // 묘월 시작 (경칩: 3월 5일 10:23)
-  { term: "청명", month: 2, date: new Date(2024, 3, 4, 15, 2) },    // 진월 시작 (청명: 4월 4일 15:02)
-  { term: "입하", month: 3, date: new Date(2024, 4, 5, 8, 10) },    // 사월 시작 (입하: 5월 5일 08:10)
-  { term: "망종", month: 4, date: new Date(2024, 5, 5, 12, 10) },   // 오월 시작 (망종: 6월 5일 12:10)
-  { term: "소서", month: 5, date: new Date(2024, 6, 6, 22, 20) },   // 미월 시작 (소서: 7월 6일 22:20)
-  { term: "입추", month: 6, date: new Date(2024, 7, 7, 9, 11) },    // 신월 시작 (입추: 8월 7일 09:11)
-  { term: "백로", month: 7, date: new Date(2024, 8, 7, 11, 11) },   // 유월 시작 (백로: 9월 7일 11:11)
-  { term: "한로", month: 8, date: new Date(2024, 9, 8, 3, 56) },    // 술월 시작 (한로: 10월 8일 03:56)
-  { term: "입동", month: 9, date: new Date(2024, 10, 7, 12, 20) },  // 해월 시작 (입동: 11월 7일 12:20)
-  { term: "대설", month: 10, date: new Date(2024, 11, 7, 0, 17) },  // 자월 시작 (대설: 12월 7일 00:17)
-  { term: "소한", month: 11, date: new Date(2025, 0, 5, 23, 49) },  // 축월 시작 (소한: 1월 5일 23:49)
+  { term: "소한", month: 0, date: new Date(2024, 0, 6, 5, 9) },     // 축월 시작 (소한: 1월 6일 05:09)
+  { term: "입춘", month: 1, date: new Date(2024, 1, 4, 16, 27) },   // 인월 시작 (입춘: 2월 4일 16:27)
+  { term: "경칩", month: 2, date: new Date(2024, 2, 5, 10, 23) },   // 묘월 시작 (경칩: 3월 5일 10:23)
+  { term: "청명", month: 3, date: new Date(2024, 3, 4, 15, 2) },    // 진월 시작 (청명: 4월 4일 15:02)
+  { term: "입하", month: 4, date: new Date(2024, 4, 5, 8, 10) },    // 사월 시작 (입하: 5월 5일 08:10)
+  { term: "망종", month: 5, date: new Date(2024, 5, 5, 12, 10) },   // 오월 시작 (망종: 6월 5일 12:10)
+  { term: "소서", month: 6, date: new Date(2024, 6, 6, 22, 20) },   // 미월 시작 (소서: 7월 6일 22:20)
+  { term: "입추", month: 7, date: new Date(2024, 7, 7, 9, 11) },    // 신월 시작 (입추: 8월 7일 09:11)
+  { term: "백로", month: 8, date: new Date(2024, 8, 7, 11, 11) },   // 유월 시작 (백로: 9월 7일 11:11)
+  { term: "한로", month: 9, date: new Date(2024, 9, 8, 3, 56) },    // 술월 시작 (한로: 10월 8일 03:56)
+  { term: "입동", month: 10, date: new Date(2024, 10, 7, 12, 20) },  // 해월 시작 (입동: 11월 7일 12:20)
+  { term: "대설", month: 11, date: new Date(2024, 11, 7, 0, 17) },  // 자월 시작 (대설: 12월 7일 00:17)
 ];
 
 // 1963년 12절기 정확한 시각 (사용자 제공)
+// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
 const TWELVE_SOLAR_TERMS_1963 = [
-  { term: "입춘", month: 0, date: new Date(1963, 1, 4, 22, 8) },    // 인월 시작 (입춘: 2월 4일 22:08)
-  { term: "경칩", month: 1, date: new Date(1963, 2, 6, 16, 0) },    // 묘월 시작 (경칩: 3월 6일, 근사치)
-  { term: "청명", month: 2, date: new Date(1963, 3, 5, 21, 0) },    // 진월 시작 (청명: 4월 5일, 근사치)
-  { term: "입하", month: 3, date: new Date(1963, 4, 6, 14, 0) },    // 사월 시작 (입하: 5월 6일, 근사치)
-  { term: "망종", month: 4, date: new Date(1963, 5, 6, 18, 0) },    // 오월 시작 (망종: 6월 6일, 근사치)
-  { term: "소서", month: 5, date: new Date(1963, 6, 8, 4, 0) },     // 미월 시작 (소서: 7월 8일, 근사치)
-  { term: "입추", month: 6, date: new Date(1963, 7, 8, 15, 0) },    // 신월 시작 (입추: 8월 8일, 근사치)
-  { term: "백로", month: 7, date: new Date(1963, 8, 8, 17, 0) },    // 유월 시작 (백로: 9월 8일, 근사치)
-  { term: "한로", month: 8, date: new Date(1963, 9, 9, 9, 0) },     // 술월 시작 (한로: 10월 9일, 근사치)
-  { term: "입동", month: 9, date: new Date(1963, 10, 8, 12, 0) },   // 해월 시작 (입동: 11월 8일, 근사치)
-  { term: "대설", month: 10, date: new Date(1963, 11, 8, 5, 0) },   // 자월 시작 (대설: 12월 8일, 근사치)
-  { term: "소한", month: 11, date: new Date(1964, 0, 6, 10, 0) },   // 축월 시작 (소한: 1964년 1월 6일, 근사치)
+  { term: "소한", month: 0, date: new Date(1963, 0, 6, 11, 0) },    // 축월 시작 (소한: 1월 6일, 근사치)
+  { term: "입춘", month: 1, date: new Date(1963, 1, 4, 22, 8) },    // 인월 시작 (입춘: 2월 4일 22:08)
+  { term: "경칩", month: 2, date: new Date(1963, 2, 6, 16, 0) },    // 묘월 시작 (경칩: 3월 6일, 근사치)
+  { term: "청명", month: 3, date: new Date(1963, 3, 5, 21, 0) },    // 진월 시작 (청명: 4월 5일, 근사치)
+  { term: "입하", month: 4, date: new Date(1963, 4, 6, 14, 0) },    // 사월 시작 (입하: 5월 6일, 근사치)
+  { term: "망종", month: 5, date: new Date(1963, 5, 6, 18, 0) },    // 오월 시작 (망종: 6월 6일, 근사치)
+  { term: "소서", month: 6, date: new Date(1963, 6, 8, 4, 0) },     // 미월 시작 (소서: 7월 8일, 근사치)
+  { term: "입추", month: 7, date: new Date(1963, 7, 8, 15, 0) },    // 신월 시작 (입추: 8월 8일, 근사치)
+  { term: "백로", month: 8, date: new Date(1963, 8, 8, 17, 0) },    // 유월 시작 (백로: 9월 8일, 근사치)
+  { term: "한로", month: 9, date: new Date(1963, 9, 9, 9, 0) },     // 술월 시작 (한로: 10월 9일, 근사치)
+  { term: "입동", month: 10, date: new Date(1963, 10, 8, 12, 0) },   // 해월 시작 (입동: 11월 8일, 근사치)
+  { term: "대설", month: 11, date: new Date(1963, 11, 8, 5, 0) },   // 자월 시작 (대설: 12월 8일, 근사치)
 ];
 
 // 2025년 12절기 정확한 시각 (DB 기반)
+// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
 const TWELVE_SOLAR_TERMS_2025 = [
-  { term: "입춘", month: 0, date: new Date(2025, 1, 3, 23, 10) },   // 인월 시작 (입춘: 2월 3일 23:10)
-  { term: "경칩", month: 1, date: new Date(2025, 2, 5, 17, 7) },    // 묘월 시작 (경칩: 3월 5일 17:07)
-  { term: "청명", month: 2, date: new Date(2025, 3, 4, 21, 49) },   // 진월 시작 (청명: 4월 4일 21:49)
-  { term: "입하", month: 3, date: new Date(2025, 4, 5, 14, 57) },   // 사월 시작 (입하: 5월 5일 14:57)
-  { term: "망종", month: 4, date: new Date(2025, 5, 5, 18, 57) },   // 오월 시작 (망종: 6월 5일 18:57)
-  { term: "소서", month: 5, date: new Date(2025, 6, 7, 5, 5) },     // 미월 시작 (소서: 7월 7일 05:05)
-  { term: "입추", month: 6, date: new Date(2025, 7, 7, 14, 52) },   // 신월 시작 (입추: 8월 7일 14:52)
-  { term: "백로", month: 7, date: new Date(2025, 8, 7, 17, 52) },   // 유월 시작 (백로: 9월 7일 17:52)
-  { term: "한로", month: 8, date: new Date(2025, 9, 8, 9, 41) },    // 술월 시작 (한로: 10월 8일 09:41)
-  { term: "입동", month: 9, date: new Date(2025, 10, 7, 13, 4) },   // 해월 시작 (입동: 11월 7일 13:04)
-  { term: "대설", month: 10, date: new Date(2025, 11, 7, 6, 5) },   // 자월 시작 (대설: 12월 7일 06:05)
-  { term: "소한", month: 11, date: new Date(2026, 0, 5, 11, 33) },  // 축월 시작 (소한: 2026년 1월 5일 11:33)
+  { term: "소한", month: 0, date: new Date(2025, 0, 5, 11, 33) },   // 축월 시작 (소한: 1월 5일 11:33)
+  { term: "입춘", month: 1, date: new Date(2025, 1, 3, 23, 10) },   // 인월 시작 (입춘: 2월 3일 23:10)
+  { term: "경칩", month: 2, date: new Date(2025, 2, 5, 17, 7) },    // 묘월 시작 (경칩: 3월 5일 17:07)
+  { term: "청명", month: 3, date: new Date(2025, 3, 4, 21, 49) },   // 진월 시작 (청명: 4월 4일 21:49)
+  { term: "입하", month: 4, date: new Date(2025, 4, 5, 14, 57) },   // 사월 시작 (입하: 5월 5일 14:57)
+  { term: "망종", month: 5, date: new Date(2025, 5, 5, 18, 57) },   // 오월 시작 (망종: 6월 5일 18:57)
+  { term: "소서", month: 6, date: new Date(2025, 6, 7, 5, 5) },     // 미월 시작 (소서: 7월 7일 05:05)
+  { term: "입추", month: 7, date: new Date(2025, 7, 7, 14, 52) },   // 신월 시작 (입추: 8월 7일 14:52)
+  { term: "백로", month: 8, date: new Date(2025, 8, 7, 17, 52) },   // 유월 시작 (백로: 9월 7일 17:52)
+  { term: "한로", month: 9, date: new Date(2025, 9, 8, 9, 41) },    // 술월 시작 (한로: 10월 8일 09:41)
+  { term: "입동", month: 10, date: new Date(2025, 10, 7, 13, 4) },  // 해월 시작 (입동: 11월 7일 13:04)
+  { term: "대설", month: 11, date: new Date(2025, 11, 7, 6, 5) },   // 자월 시작 (대설: 12월 7일 06:05)
 ];
 
 // 24절기 날짜 데이터 (입춘 기준일 - 시각 포함)
@@ -146,36 +149,35 @@ function generateSolarTermsForYear(year: number): Array<{ term: string; month: n
     return TWELVE_SOLAR_TERMS_2024;
   }
   
+  // 2024년 데이터를 기준으로 근사치 생성
   const baseYear = 2024;
   const yearDiff = year - baseYear;
   
-  return TWELVE_SOLAR_TERMS_2024.map(term => {
-    // 원본 날짜의 월/일/시/분을 유지하면서 해당 년도로 조정
-    const originalDate = term.date;
-    let targetYear = year;
-    
-    // 소한은 다음해 1월이므로 특별 처리
-    if (term.term === "소한") {
-      targetYear = year + 1;
-    }
-    
-    // 연도별 변동 근사치 적용 - 더 정확한 계산
-    // 4년마다 약 1일씩 늦어지는 것을 고려하되, 과도한 보정 방지
-    let dayOffset = 0;
-    if (Math.abs(yearDiff) <= 100) { // 100년 이내만 근사치 적용
-      dayOffset = Math.round(yearDiff / 4 * 0.25); // 보정 계수 조정
-    }
-    
-    let adjustedDate = new Date(targetYear, originalDate.getMonth(), originalDate.getDate() + dayOffset, originalDate.getHours(), originalDate.getMinutes());
-    
-    // 1975년 소한 특별 처리: 1975년 1월 6일경으로 고정
-    if (year === 1974 && term.term === "소한") {
-      adjustedDate = new Date(1975, 0, 6, 12, 0); // 1975년 1월 6일 12시
-    }
+  // 월별 절기 근사치 (month: 0=축월~11=자월)
+  const solarTermsTemplate = [
+    { term: "소한", month: 0, baseMonth: 0, baseDay: 6 },   // 1월 6일
+    { term: "입춘", month: 1, baseMonth: 1, baseDay: 4 },   // 2월 4일
+    { term: "경칩", month: 2, baseMonth: 2, baseDay: 5 },   // 3월 5일
+    { term: "청명", month: 3, baseMonth: 3, baseDay: 4 },   // 4월 4일
+    { term: "입하", month: 4, baseMonth: 4, baseDay: 5 },   // 5월 5일
+    { term: "망종", month: 5, baseMonth: 5, baseDay: 5 },   // 6월 5일
+    { term: "소서", month: 6, baseMonth: 6, baseDay: 7 },   // 7월 7일
+    { term: "입추", month: 7, baseMonth: 7, baseDay: 7 },   // 8월 7일
+    { term: "백로", month: 8, baseMonth: 8, baseDay: 7 },   // 9월 7일
+    { term: "한로", month: 9, baseMonth: 9, baseDay: 8 },   // 10월 8일
+    { term: "입동", month: 10, baseMonth: 10, baseDay: 7 }, // 11월 7일
+    { term: "대설", month: 11, baseMonth: 11, baseDay: 7 }, // 12월 7일
+  ];
+  
+  return solarTermsTemplate.map(template => {
+    // 연도별 변동 근사치 (4년에 하루씩 변동)
+    const dayOffset = Math.floor(yearDiff / 4);
+    const adjustedDay = template.baseDay + dayOffset;
     
     return {
-      ...term,
-      date: adjustedDate
+      term: template.term,
+      month: template.month,
+      date: new Date(year, template.baseMonth, adjustedDay, 12, 0)
     };
   });
 }
@@ -255,14 +257,14 @@ export function calculateSaju(
   const yearSkyIndex = yearIndex % 10;
   const yearEarthIndex = yearIndex % 12;
   
-  // 월주 계산 (24절기 기준으로 정확하게)
-  let monthEarthIndex: number;
+  // 월주 계산 (12절기 기준으로 정확하게)
+  let sajuMonth: number; // calculateSajuMonth의 반환값 (0=축월, 1=인월, 2=묘월...)
   
   if (apiData?.lunMonth) {
-    // API 데이터가 있는 경우 음력 월 정보 사용
-    monthEarthIndex = (parseInt(apiData.lunMonth) - 1) % 12;
+    // API 데이터가 있는 경우 음력 월 정보 사용 (인월=0 기준)
+    sajuMonth = (parseInt(apiData.lunMonth) + 11) % 12; // 인월(1) -> 0(축월 기준)
   } else {
-    // 24절기 기준 월주 계산 (양력 기준) - solarDate 우선 사용
+    // 12절기 기준 월주 계산 (양력 기준) - solarDate 우선 사용
     let monthCalcDate: Date;
     if (solarDate) {
       // 서버에서 제공한 정확한 양력 날짜 사용
@@ -271,8 +273,7 @@ export function calculateSaju(
       // 기존 방식
       monthCalcDate = calcDate;
     }
-    const sajuMonth = calculateSajuMonth(monthCalcDate);
-    monthEarthIndex = sajuMonth;
+    sajuMonth = calculateSajuMonth(monthCalcDate); // 0=축월, 1=인월, 2=묘월...
   }
   
   // 절입일 간지 적용
@@ -282,16 +283,20 @@ export function calculateSaju(
   if (usePreviousMonthPillar !== undefined) {
     if (usePreviousMonthPillar) {
       // "전월 간지" 선택: 월주만 -1 (절입 전 월주 사용)
-      monthEarthIndex = (monthEarthIndex - 1 + 12) % 12;
+      sajuMonth = (sajuMonth - 1 + 12) % 12;
     } else {
-      // "절입 후 간지" 선택: 입춘(인월=0)만 년주를 바꿈
-      if (monthEarthIndex === 0) {
+      // "절입 후 간지" 선택: 입춘(인월=1)만 년주를 바꿈
+      if (sajuMonth === 1) { // 인월
         adjustedYearSkyIndex = (yearSkyIndex + 1) % 10;
         adjustedYearEarthIndex = (yearEarthIndex + 1) % 12;
       }
       // 다른 절기는 기본 계산 그대로 (아무것도 하지 않음)
     }
   }
+  
+  // sajuMonth를 인월 기준 인덱스로 변환 (월간표는 인월 기준)
+  // 0(축월) -> 11, 1(인월) -> 0, 2(묘월) -> 1...
+  const monthEarthIndexForJiji = (sajuMonth + 11) % 12;
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)
   // 입춘 전월 간지 선택 시 조정된 년주 천간 사용
@@ -308,7 +313,7 @@ export function calculateSaju(
     monthSkyStartIndex = 0; // 甲부터 시작 (인월=甲)
   }
   
-  const monthSkyIndex = (monthSkyStartIndex + monthEarthIndex) % 10;
+  const monthSkyIndex = (monthSkyStartIndex + monthEarthIndexForJiji) % 10;
   
   // 일주 계산 (API 데이터 우선 활용)
   let daySkyIndex: number;
@@ -420,7 +425,7 @@ export function calculateSaju(
   const yearSky = CHEONGAN[adjustedYearSkyIndex];
   const yearEarth = JIJI[adjustedYearEarthIndex];
   const monthSky = CHEONGAN[monthSkyIndex];
-  const monthEarth = MONTH_JIJI[monthEarthIndex]; // 월지는 MONTH_JIJI 사용 (寅부터 시작)
+  const monthEarth = MONTH_JIJI[monthEarthIndexForJiji]; // 월지는 MONTH_JIJI 사용 (인월부터 시작, 0=인, 11=축)
   const daySky = CHEONGAN[daySkyIndex];
   const dayEarth = JIJI[dayEarthIndex];
   
