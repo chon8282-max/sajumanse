@@ -38,14 +38,30 @@ const TWELVE_SOLAR_TERMS_2024 = [
   { term: "소한", month: 11, date: new Date(2025, 0, 5, 23, 49) },  // 축월 시작 (소한: 1월 5일 23:49)
 ];
 
-// 24절기 날짜 데이터 (입춘 기준일 - 간단화)
+// 2025년 12절기 정확한 시각 (DB 기반)
+const TWELVE_SOLAR_TERMS_2025 = [
+  { term: "입춘", month: 0, date: new Date(2025, 1, 3, 23, 10) },   // 인월 시작 (입춘: 2월 3일 23:10)
+  { term: "경칩", month: 1, date: new Date(2025, 2, 5, 17, 7) },    // 묘월 시작 (경칩: 3월 5일 17:07)
+  { term: "청명", month: 2, date: new Date(2025, 3, 4, 21, 49) },   // 진월 시작 (청명: 4월 4일 21:49)
+  { term: "입하", month: 3, date: new Date(2025, 4, 5, 14, 57) },   // 사월 시작 (입하: 5월 5일 14:57)
+  { term: "망종", month: 4, date: new Date(2025, 5, 5, 18, 57) },   // 오월 시작 (망종: 6월 5일 18:57)
+  { term: "소서", month: 5, date: new Date(2025, 6, 7, 5, 5) },     // 미월 시작 (소서: 7월 7일 05:05)
+  { term: "입추", month: 6, date: new Date(2025, 7, 7, 14, 52) },   // 신월 시작 (입추: 8월 7일 14:52)
+  { term: "백로", month: 7, date: new Date(2025, 8, 7, 17, 52) },   // 유월 시작 (백로: 9월 7일 17:52)
+  { term: "한로", month: 8, date: new Date(2025, 9, 8, 9, 41) },    // 술월 시작 (한로: 10월 8일 09:41)
+  { term: "입동", month: 9, date: new Date(2025, 10, 7, 13, 4) },   // 해월 시작 (입동: 11월 7일 13:04)
+  { term: "대설", month: 10, date: new Date(2025, 11, 7, 6, 5) },   // 자월 시작 (대설: 12월 7일 06:05)
+  { term: "소한", month: 11, date: new Date(2026, 0, 5, 11, 33) },  // 축월 시작 (소한: 2026년 1월 5일 11:33)
+];
+
+// 24절기 날짜 데이터 (입춘 기준일 - 시각 포함)
 const SOLAR_TERMS_LICHUN = [
   { year: 2020, date: new Date(2020, 1, 4) }, // 2020년 입춘
   { year: 2021, date: new Date(2021, 1, 3) },
   { year: 2022, date: new Date(2022, 1, 4) },
   { year: 2023, date: new Date(2023, 1, 4) },
-  { year: 2024, date: new Date(2024, 1, 4) },
-  { year: 2025, date: new Date(2025, 1, 3) },
+  { year: 2024, date: new Date(2024, 1, 4, 16, 27) }, // 2024년 입춘 16:27
+  { year: 2025, date: new Date(2025, 1, 3, 23, 10) }, // 2025년 입춘 23:10
 ];
 
 /**
@@ -98,6 +114,16 @@ function calculateSajuMonth(date: Date): number {
  * @returns 해당 년도의 12절기 날짜 배열
  */
 function generateSolarTermsForYear(year: number): Array<{ term: string; month: number; date: Date }> {
+  // 2025년은 정확한 DB 데이터 사용
+  if (year === 2025) {
+    return TWELVE_SOLAR_TERMS_2025;
+  }
+  
+  // 2024년은 정확한 데이터 사용
+  if (year === 2024) {
+    return TWELVE_SOLAR_TERMS_2024;
+  }
+  
   const baseYear = 2024;
   const yearDiff = year - baseYear;
   

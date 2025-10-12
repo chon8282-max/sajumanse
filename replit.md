@@ -70,7 +70,7 @@ Preferred communication style: Simple, everyday language.
   - Example for 1988-03-05 (경칩): "전월 간지" → 정묘년 갑인월, "절입 후 간지" → 무진년 을묘월
   - SajuResult page prioritizes server-calculated pillars (saved in database) over client-side recalculation
   - isLichunAdjusted flag tracks whether year adjustment already occurred during lunar conversion to prevent double adjustments
-  - **5-Tier Solar Term Data System with Database Caching** (2025-10-11 Updated):
+  - **5-Tier Solar Term Data System with Database Caching** (2025-10-12 Updated):
     - Tier 1: **Database Query** (Primary source, fastest)
     - Tier 2: data.go.kr API (공공데이터포털 24절기 API) → saves to DB
     - Tier 3: holidays.dist.be API for 2006-현재 (provides exact times) → saves to DB
@@ -80,6 +80,11 @@ Preferred communication style: Simple, everyday language.
     - **Data Coverage**: 2006-2025 stored from holidays.dist.be (accurate times), other years use approximation or hardcoded data
     - **KST/UTC Conversion**: Server stores UTC (API KST - 9h), client displays KST (UTC + 9h)
     - Frontend detection: UTC date comparison (getUTCMonth/getUTCDate) to avoid timezone issues
+  - **2024-2025 Accurate Solar Terms** (Client-side calculation):
+    - `TWELVE_SOLAR_TERMS_2024`: 2024년 12절기 정확한 시각 (예: 입춘 2월 4일 16:27)
+    - `TWELVE_SOLAR_TERMS_2025`: 2025년 12절기 정확한 시각 (예: 입춘 2월 3일 23:10)
+    - `generateSolarTermsForYear()`: 2024, 2025는 정확한 데이터 사용, 기타 연도는 근사치 계산
+    - 예시: 2025-02-03 23:09 입춘 전 → 갑진년 정축월, 23:10 입춘 후 → 을사년 무인월
 - **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
   - When birth time is unknown, hourSky and hourEarth are stored as empty strings
   - Hour pillar Wuxing values (hourSky, hourEarth) are also empty strings
