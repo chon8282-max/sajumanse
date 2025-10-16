@@ -77,30 +77,6 @@ async function importExcelData() {
   
   console.log(`\n✅ 전체 ${insertedCount}개 절기 데이터 삽입 완료`);
   
-  // 2030년 우수 누락 확인 및 보간 추가
-  const term2030 = await storage.db.execute(`
-    SELECT COUNT(*) as cnt FROM solar_terms WHERE year = 2030 AND name = '우수'
-  `);
-  
-  if (term2030.rows[0].cnt === 0) {
-    console.log(`\n⚠️  2030년 우수 누락 감지 - 선형 보간으로 추가`);
-    
-    // 2029년(2월 18일 18:08), 2031년(2월 19일 5:51) 데이터로 선형 보간
-    // 결과: 2월 18일 23:59 KST
-    const woosu2030UTC = new Date('2030-02-18T14:59:00.000Z'); // UTC
-    
-    await storage.createSolarTerm({
-      year: 2030,
-      name: '우수',
-      date: woosu2030UTC,
-      kstHour: 23,
-      kstMinute: 59,
-      source: 'kasi (보간)' // 선형 보간으로 추정, ±5분 정확도
-    });
-    
-    console.log(`  ✓ 2030년 우수 추가 완료 (2월 18일 23:59 KST, 보간)`);
-  }
-  
   console.log(`\n📊 최종 통계:`);
   console.log(`  - 삽입된 절기: ${insertedCount}개`);
 }
