@@ -40,13 +40,13 @@ def build_lunar_row(y, m, d):
 
 def solar_terms_for_year(year, tzname="Asia/Seoul"):
     """
-    해당 '로컬연도'에 속하는 12절기(입절 시각)를 반환.
-    12절기 = 절기(입기) 12개 (term_index % 2 = 0: 소한, 입춘, 경칩, 청명, 입하, 망종, 소서, 입추, 백로, 한로, 입동, 대설)
+    해당 '로컬연도'에 속하는 24절기(입절 시각)를 반환.
+    24절기 = 모든 절기 (소한, 대한, 입춘, 우수, ...)
     """
     local_tz = pytz.timezone(tzname)
     result = []
-    # 12절기만 추출 (짝수 인덱스: 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22)
-    for idx in range(0, 24, 2):
+    # 24절기 전체 추출 (0부터 23까지)
+    for idx in range(0, 24):
         # 보통 해당 연도로 바로 구해지지만, 구현체에 따라 경계해의 값이 None일 수 있어 보완
         dt_utc = sxtwl.SolarTerms.getTimeOfTerm(year, idx)
         if dt_utc is None:
@@ -98,7 +98,7 @@ def build_db(start, end, tzname, sqlite_path, csv_lunar_path, csv_terms_path):
     )
     """)
     cur.execute("""
-    CREATE TABLE IF NOT EXISTS solar_terms_12 (
+    CREATE TABLE IF NOT EXISTS solar_terms_24 (
       year                     INTEGER,
       term_index               INTEGER,
       term_name_kr             TEXT,
@@ -134,7 +134,7 @@ def build_db(start, end, tzname, sqlite_path, csv_lunar_path, csv_terms_path):
         for t in terms:
             tw.writerow([t["year"], t["term_index"], t["term_name_kr"], t["term_name_zh"], t["ecliptic_longitude_deg"], t["utc_time"], t["local_time"]])
             cur.execute("""
-              INSERT OR REPLACE INTO solar_terms_12
+              INSERT OR REPLACE INTO solar_terms_24
               (year, term_index, term_name_kr, term_name_zh, ecliptic_longitude_deg, utc_time, local_time)
               VALUES (:year, :term_index, :term_name_kr, :term_name_zh, :ecliptic_longitude_deg, :utc_time, :local_time)
             """, t)
@@ -151,7 +151,7 @@ def main():
     ap.add_argument("--tz", type=str, default="Asia/Seoul", help="IANA time zone for solar-term local_time")
     ap.add_argument("--sqlite", type=str, default="east_asia_calendar_1900_2100.sqlite")
     ap.add_argument("--csv-lunar", type=str, default="lunar_calendar_1900_2100.csv")
-    ap.add_argument("--csv-terms", type=str, default="solar_terms_12_1900_2100.csv")
+    ap.add_argument("--csv-terms", type=str, default="solar_terms_24_1900_2100.csv")
     args = ap.parse_args()
     build_db(args.start, args.end, args.tz, args.sqlite, args.csv_lunar, args.csv_terms)
 
