@@ -216,7 +216,7 @@ export default function TraditionalCalendar({
             </div>
             
             <div className="text-base font-bold">
-              역학달력 {currentYear}년 {currentMonth}월
+              {currentYear}년 {currentMonth}월
             </div>
             
             <div className="text-base font-bold text-green-800">
