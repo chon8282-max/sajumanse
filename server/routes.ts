@@ -242,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<void> {
               try {
                 const solarTerms = await getSolarTermsForYear(solarCalcYear);
                 const inputDate = new Date(solarCalcYear, solarCalcMonth - 1, solarCalcDay);
-                const inputTime = hour * 60 + minute;
+                const inputTime = (hour ?? 0) * 60 + minute;
                 
                 // 같은 날짜의 절기 중 입력 시각과 가장 가까운 절기 찾기
                 let closestTerm: any = null;

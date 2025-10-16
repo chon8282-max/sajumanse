@@ -163,7 +163,7 @@ export default function Compatibility() {
                   </Button>
                   <CardTitle className="text-sm">사주 1</CardTitle>
                 </div>
-                <div className="flex gap-0 items-start">
+                <div className="flex items-start">
                   {leftSajuId && (
                     <>
                       <Button
@@ -171,7 +171,7 @@ export default function Compatibility() {
                         size="sm"
                         onClick={() => setLeftSajuId(null)}
                         data-testid="button-left-change"
-                        className="scale-[0.6] origin-center"
+                        className="scale-[0.6] origin-center -mr-3"
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
                         변경
@@ -252,7 +252,7 @@ export default function Compatibility() {
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">사주 2</CardTitle>
-                <div className="flex gap-0 items-start">
+                <div className="flex items-start">
                   {rightSajuId && (
                     <>
                       <Button
@@ -260,7 +260,7 @@ export default function Compatibility() {
                         size="sm"
                         onClick={() => setRightSajuId(null)}
                         data-testid="button-right-change"
-                        className="scale-[0.6] origin-center"
+                        className="scale-[0.6] origin-center -mr-3"
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
                         변경
