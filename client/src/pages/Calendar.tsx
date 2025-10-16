@@ -27,7 +27,7 @@ export default function Calendar() {
         </Button>
         
         <h1 className="text-2xl font-bold text-amber-800 dark:text-amber-200">
-          전통 만세력 달력
+          역학달력
         </h1>
         
         <div className="w-16" /> {/* 균형 맞추기 */}

@@ -70,27 +70,35 @@ export default function TraditionalCalendar({
     },
   });
 
-  // 현재 월의 절기만 필터링하여 표시
+  // 현재 월의 절기만 필터링하여 표시 (KST 기준)
   const solarTerms: SolarTermInfo[] = useMemo(() => {
     if (!solarTermsData?.success) return [];
     
-    const allTerms: SolarTermInfo[] = solarTermsData.data.map((term: { name: string; date: string }) => ({
-      name: term.name,
-      date: new Date(term.date),
-      dateString: new Date(term.date).toLocaleDateString('ko-KR', { 
-        month: '2-digit', 
-        day: '2-digit' 
-      }).replace('. ', '/').replace('.', ''),
-      timeString: new Date(term.date).toLocaleTimeString('ko-KR', { 
-        hour: '2-digit', 
-        minute: '2-digit',
-        hour12: false 
-      })
-    }));
+    const allTerms: SolarTermInfo[] = solarTermsData.data.map((term: { name: string; date: string }) => {
+      const utcDate = new Date(term.date);
+      // UTC를 KST로 변환 (UTC + 9시간)
+      const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+      
+      return {
+        name: term.name,
+        date: kstDate, // KST로 변환된 날짜
+        dateString: kstDate.toLocaleDateString('ko-KR', { 
+          timeZone: 'UTC', // KST Date를 그대로 표시
+          month: '2-digit', 
+          day: '2-digit' 
+        }).replace('. ', '/').replace('.', ''),
+        timeString: kstDate.toLocaleTimeString('ko-KR', { 
+          timeZone: 'UTC', // KST Date를 그대로 표시
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        })
+      };
+    });
     
-    // 현재 월의 절기만 반환
+    // 현재 월의 절기만 반환 (KST 기준)
     return allTerms.filter((term: SolarTermInfo) => {
-      const termMonth = term.date.getMonth() + 1;
+      const termMonth = term.date.getUTCMonth() + 1; // KST Date의 UTC 메서드 사용
       return termMonth === currentMonth;
     });
   }, [solarTermsData, currentMonth]);
@@ -155,10 +163,12 @@ export default function TraditionalCalendar({
     const isSunday = dayData.dayOfWeek === 0;
     const isSaturday = dayData.dayOfWeek === 6;
     
-    // 절기 확인
-    const solarTerm = solarTerms.find(term => 
-      term.date.getDate() === dayData.solarDay && dayData.isCurrentMonth
-    );
+    // 절기 확인 (KST 기준 날짜 비교)
+    const solarTerm = solarTerms.find(term => {
+      // term.date는 이미 KST로 변환된 Date 객체
+      const termDay = term.date.getUTCDate(); // KST Date의 UTC 메서드로 날짜 추출
+      return termDay === dayData.solarDay && dayData.isCurrentMonth;
+    });
 
     return (
       <div 
