@@ -424,7 +424,53 @@ export default function SajuInput() {
             }
           }
 
-          // usePreviousMonthPillar 플래그만 서버로 전달 (서버에서 정확한 절기 데이터로 계산)
+          // 클라이언트에서 직접 사주 계산 (월주법 포함)
+          let hour = 12;
+          let minute = 0;
+          
+          if (formData.selectedTimeCode) {
+            const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode);
+            if (timePeriod) {
+              hour = timePeriod.hour;
+              minute = 0; // 십이시는 정각 기준
+            }
+          } else if (formData.birthTime && formData.birthTime.includes(':')) {
+            // "23:30" 형식의 시간
+            hour = parseInt(formData.birthTime.split(':')[0]);
+            minute = parseInt(formData.birthTime.split(':')[1]);
+          }
+          
+          // 입춘 절입전은 특별 처리: 년주를 직접 조정
+          let sajuYear = lunarYear;
+          if (usePreviousMonthPillar && solarTermInfo?.name === '입춘') {
+            sajuYear = solarYear - 1; // 절입전: 전년도 사용
+          }
+          
+          const clientSaju = calculateSaju(
+            sajuYear,
+            lunarMonth,
+            lunarDay,
+            hour,
+            minute,
+            formData.calendarType === "음력" || formData.calendarType === "윤달",
+            { solarYear, solarMonth, solarDay },
+            null,
+            usePreviousMonthPillar // 월주 조정 플래그
+          );
+          
+          // 계산된 사주를 서버로 전송
+          requestData.clientCalculatedSaju = {
+            yearSky: clientSaju.year.sky,
+            yearEarth: clientSaju.year.earth,
+            monthSky: clientSaju.month.sky,
+            monthEarth: clientSaju.month.earth,
+            daySky: clientSaju.day.sky,
+            dayEarth: clientSaju.day.earth,
+            hourSky: clientSaju.hour.sky,
+            hourEarth: clientSaju.hour.earth
+          };
+          
+          console.log('🎯 클라이언트 계산 사주:', requestData.clientCalculatedSaju);
           console.log('🎯 절입일 처리: usePreviousMonthPillar=' + usePreviousMonthPillar);
         } catch (error) {
           console.error('❌ 절입일 처리 실패:', error);
