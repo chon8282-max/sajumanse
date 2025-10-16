@@ -377,103 +377,96 @@ export default function SajuInput() {
       if (usePreviousMonthPillar !== undefined) {
         requestData.usePreviousMonthPillar = usePreviousMonthPillar;
         
-        // 클라이언트에서 사주 계산하여 서버로 전달 (서버 계산 우선순위보다 높음)
+        // 절입일 사주 무조건 직접 계산
         try {
-          let solarYear = yearNum;
-          let solarMonth = monthNum;
-          let solarDay = dayNum;
-          let lunarYear = yearNum;
-          let lunarMonth = monthNum;
-          let lunarDay = dayNum;
-
-          // 양력인 경우 음력으로 변환 (사주 계산용)
-          if (formData.calendarType === "양력") {
-            const response = await fetch('/api/lunar-solar/convert/lunar', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                solYear: yearNum,
-                solMonth: monthNum,
-                solDay: dayNum
-              })
-            });
-            const result = await response.json();
-            if (result.success && result.data) {
-              lunarYear = result.data.lunYear;
-              lunarMonth = result.data.lunMonth;
-              lunarDay = result.data.lunDay;
-              console.log(`🌙 양력→음력 변환: ${yearNum}-${monthNum}-${dayNum} → ${lunarYear}-${lunarMonth}-${lunarDay}`);
-            }
-          } else if (formData.calendarType === "음력" || formData.calendarType === "윤달") {
-            // 음력/윤달인 경우: 양력으로 변환 (일시주 계산용)
-            const response = await fetch('/api/lunar-solar/convert/solar', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                lunYear: yearNum,
-                lunMonth: monthNum,
-                lunDay: dayNum,
-                isLeapMonth: formData.calendarType === "윤달"
-              })
-            });
-            const result = await response.json();
-            if (result.success && result.data) {
-              solarYear = result.data.solYear;
-              solarMonth = result.data.solMonth;
-              solarDay = result.data.solDay;
-            }
-          }
-
-          // 클라이언트에서 직접 사주 계산 (월주법 포함)
+          const CHEONGAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+          const JIJI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+          
+          // 시주 파싱
           let hour = 12;
           let minute = 0;
-          
           if (formData.selectedTimeCode) {
             const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode);
             if (timePeriod) {
               hour = timePeriod.hour;
-              minute = 0; // 십이시는 정각 기준
             }
-          } else if (formData.birthTime && formData.birthTime.includes(':')) {
-            // "23:30" 형식의 시간
-            hour = parseInt(formData.birthTime.split(':')[0]);
-            minute = parseInt(formData.birthTime.split(':')[1]);
           }
           
-          // 입춘 절입전은 특별 처리: 년주를 직접 조정
-          let sajuYear = lunarYear;
-          if (usePreviousMonthPillar && solarTermInfo?.name === '입춘') {
-            sajuYear = solarYear - 1; // 절입전: 전년도 사용
-          }
+          // 양력 날짜
+          let solarYear = yearNum;
+          let solarMonth = monthNum;
+          let solarDay = dayNum;
           
-          const clientSaju = calculateSaju(
-            sajuYear,
-            lunarMonth,
-            lunarDay,
-            hour,
-            minute,
-            formData.calendarType === "음력" || formData.calendarType === "윤달",
-            { solarYear, solarMonth, solarDay },
-            null,
-            usePreviousMonthPillar // 월주 조정 플래그
-          );
-          
-          // 계산된 사주를 서버로 전송
-          requestData.clientCalculatedSaju = {
-            yearSky: clientSaju.year.sky,
-            yearEarth: clientSaju.year.earth,
-            monthSky: clientSaju.month.sky,
-            monthEarth: clientSaju.month.earth,
-            daySky: clientSaju.day.sky,
-            dayEarth: clientSaju.day.earth,
-            hourSky: clientSaju.hour.sky,
-            hourEarth: clientSaju.hour.earth
+          // 월 인덱스 맵 (인월=0, 묘월=1, ..., 축월=11)
+          const termMonthMap: { [key: string]: number} = {
+            '소한': 11, '입춘': 0, '경칩': 1, '청명': 2, '입하': 3, '망종': 4,
+            '소서': 5, '입추': 6, '백로': 7, '한로': 8, '입동': 9, '대설': 10
           };
           
-          console.log('🎯 클라이언트 계산 사주:', requestData.clientCalculatedSaju);
-          console.log('🎯 절입일 처리: usePreviousMonthPillar=' + usePreviousMonthPillar);
+          // 년주 계산 (입춘 절입전만 년도 변경)
+          let targetYear = solarYear;
+          if (solarTermInfo?.name === '입춘' && usePreviousMonthPillar) {
+            targetYear = solarYear - 1;
+          }
+          
+          const yearIndex = ((targetYear - 1924) % 60 + 60) % 60;
+          const yearSky = CHEONGAN[yearIndex % 10];
+          const yearEarth = JIJI[yearIndex % 12];
+          const yearSkyIndex = yearIndex % 10;
+          
+          // 월주 계산 (월주법)
+          let monthSkyStart: number;
+          if (yearSkyIndex === 0 || yearSkyIndex === 5) monthSkyStart = 2; // 甲己년
+          else if (yearSkyIndex === 1 || yearSkyIndex === 6) monthSkyStart = 4; // 乙庚년
+          else if (yearSkyIndex === 2 || yearSkyIndex === 7) monthSkyStart = 6; // 丙辛년
+          else if (yearSkyIndex === 3 || yearSkyIndex === 8) monthSkyStart = 8; // 丁壬년
+          else monthSkyStart = 0; // 戊癸년
+          
+          // 월 인덱스 계산
+          const currentMonthIndex = solarTermInfo ? (termMonthMap[solarTermInfo.name] ?? 0) : 0;
+          const monthIndex = usePreviousMonthPillar ? (currentMonthIndex - 1 + 12) % 12 : currentMonthIndex;
+          
+          const monthSky = CHEONGAN[(monthSkyStart + monthIndex) % 10];
+          const monthEarth = JIJI[(monthIndex + 2) % 12]; // 인월=2(寅), 묘월=3(卯), ..., 축월=1(丑)
+          
+          // 일주/시주는 양력 기준 계산
+          const response = await fetch('/api/lunar-solar/convert/lunar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              solYear: solarYear,
+              solMonth: solarMonth,
+              solDay: solarDay
+            })
+          });
+          const lunarData = await response.json();
+          
+          // calculateSaju로 일주/시주 계산
+          const tempSaju = calculateSaju(
+            lunarData.data?.lunYear || yearNum,
+            lunarData.data?.lunMonth || monthNum,
+            lunarData.data?.lunDay || dayNum,
+            hour, minute,
+            false,
+            { solarYear, solarMonth, solarDay },
+            null,
+            undefined
+          );
+          
+          requestData.clientCalculatedSaju = {
+            yearSky,
+            yearEarth,
+            monthSky,
+            monthEarth,
+            daySky: tempSaju.day.sky,
+            dayEarth: tempSaju.day.earth,
+            hourSky: tempSaju.hour.sky,
+            hourEarth: tempSaju.hour.earth
+          };
+          
+          console.log(`🎯 절입${usePreviousMonthPillar ? '전' : '후'} 사주:`, requestData.clientCalculatedSaju);
         } catch (error) {
-          console.error('❌ 절입일 처리 실패:', error);
+          console.error('❌ 절입일 사주 계산 실패:', error);
         }
       }
 

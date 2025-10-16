@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon } from "lucide-react";
 import { format } from "date-fns";
-import logoPath from "@assets/만세력아이콘1_1759804001975.png";
+import logoPath from "@assets/메인화면로고_1760616257592.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -79,7 +79,7 @@ export default function MobileHeader({
             <img 
               src={logoPath} 
               alt="만세력 로고" 
-              className="w-4 h-4 dark:invert"
+              className="w-5 h-5"
             />
             지천명 만세력
           </h1>
