@@ -301,9 +301,21 @@ export function calculateSaju(
     sajuMonth = calculateSajuMonth(monthCalcDate); // 0=축월, 1=인월, 2=묘월...
   }
   
-  // usePreviousMonthPillar는 서버에서 시간 조정으로 처리되므로 클라이언트에서는 사용하지 않음
+  // 절입일 전월 간지 처리 (입절 전 간지는 전월 간지)
   let adjustedYearSkyIndex = yearSkyIndex;
   let adjustedYearEarthIndex = yearEarthIndex;
+  
+  if (usePreviousMonthPillar === true) {
+    // 전월로 조정하고, 인월(1)에서 축월(0)로 넘어가면 년주도 -1
+    const originalSajuMonth = sajuMonth;
+    sajuMonth = (sajuMonth - 1 + 12) % 12;
+    
+    // 인월(1)에서 축월(0)로 넘어가면 년주도 -1 (입춘 전월 간지)
+    if (originalSajuMonth === 1 && sajuMonth === 0) {
+      adjustedYearSkyIndex = (yearSkyIndex - 1 + 10) % 10;
+      adjustedYearEarthIndex = (yearEarthIndex - 1 + 12) % 12;
+    }
+  }
   
   // sajuMonth를 인월 기준 인덱스로 변환 (월간표는 인월 기준)
   // 0(축월) -> 11, 1(인월) -> 0, 2(묘월) -> 1...
