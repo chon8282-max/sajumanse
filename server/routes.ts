@@ -632,7 +632,7 @@ export async function registerRoutes(app: Express): Promise<void> {
                     }
                     
                     // 입춘 년주 변경 처리 (양력 년도 기준 직접 계산)
-                    if (closestTerm.term.name === "입춘") {
+                    if (closestTerm.term.name === "입춘" && validatedData.birthYear) {
                       const solarYearForCalc = validatedData.birthYear; // 원본 입력 양력 년도
                       if (validatedData.usePreviousMonthPillar) {
                         // "절입 전" 선택 시: 전년도로 직접 설정
@@ -2096,11 +2096,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   // 특정 연도 24절기 데이터 수집
   app.post("/api/admin/solar-terms/collect/:year", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
         return res.status(401).json({ error: "인증이 필요합니다." });
       }
 
-      const user = await storage.getUser(req.user!.id);
+      const user = await storage.getUser(userId);
       if (!user?.isMaster) {
         return res.status(403).json({ error: "관리자 권한이 필요합니다." });
       }
@@ -2181,11 +2182,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   // 연도 범위 24절기 데이터 수집
   app.post("/api/admin/solar-terms/collect-range", async (req, res) => {
     try {
-      if (!req.isAuthenticated()) {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
         return res.status(401).json({ error: "인증이 필요합니다." });
       }
 
-      const user = await storage.getUser(req.user!.id);
+      const user = await storage.getUser(userId);
       if (!user?.isMaster) {
         return res.status(403).json({ error: "관리자 권한이 필요합니다." });
       }
