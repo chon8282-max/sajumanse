@@ -4,7 +4,7 @@ import XLSX from 'xlsx';
 async function importExcelData() {
   console.log('📊 Excel 파일에서 24절기 데이터 가져오기...\n');
   
-  const filePath = '../../attached_assets/천문연_24절기(1900~2050)_1760601609488.xlsx';
+  const filePath = './attached_assets/천문연_24절기(1900~2050)_1760601609488.xlsx';
   
   // Excel 파일 읽기
   const workbook = XLSX.readFile(filePath);
