@@ -171,7 +171,7 @@ export default function Compatibility() {
                         size="sm"
                         onClick={() => setLeftSajuId(null)}
                         data-testid="button-left-change"
-                        className="scale-[0.6] origin-center -mr-[17.5px] pl-[16px] pr-[16px]"
+                        className="scale-[0.6] origin-center -mr-[17.5px] pl-[14px] pr-[14px]"
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
                         변경
@@ -182,7 +182,7 @@ export default function Compatibility() {
                         onClick={() => leftSaveMutation.mutate(leftMemo)}
                         disabled={leftSaveMutation.isPending}
                         data-testid="button-left-save"
-                        className="scale-[0.6] origin-center -ml-[17.5px] pl-[16px] pr-[16px]"
+                        className="scale-[0.6] origin-center -ml-[17.5px] pl-[14px] pr-[14px]"
                       >
                         <Save className="w-3 h-3 mr-1" />
                         {leftSaveMutation.isPending ? "저장중..." : "저장"}
@@ -260,7 +260,7 @@ export default function Compatibility() {
                         size="sm"
                         onClick={() => setRightSajuId(null)}
                         data-testid="button-right-change"
-                        className="scale-[0.6] origin-center -mr-[17.5px] pl-[16px] pr-[16px]"
+                        className="scale-[0.6] origin-center -mr-[17.5px] pl-[14px] pr-[14px]"
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
                         변경
@@ -271,7 +271,7 @@ export default function Compatibility() {
                         onClick={() => rightSaveMutation.mutate(rightMemo)}
                         disabled={rightSaveMutation.isPending}
                         data-testid="button-right-save"
-                        className="scale-[0.6] origin-center -ml-[17.5px] pl-[16px] pr-[16px]"
+                        className="scale-[0.6] origin-center -ml-[17.5px] pl-[14px] pr-[14px]"
                       >
                         <Save className="w-3 h-3 mr-1" />
                         {rightSaveMutation.isPending ? "저장중..." : "저장"}
