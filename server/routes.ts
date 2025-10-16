@@ -332,19 +332,32 @@ export async function registerRoutes(app: Express): Promise<void> {
               }
             }
             
-            console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
-            const sajuResult = calculateSaju(
-              sajuCalculationYear,      // 년월주는 음력
-              sajuCalculationMonth,
-              sajuCalculationDay,
-              hour as any,  // undefined일 수 있음
-              minute,
-              validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
-              solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-              null,  // apiData - 로컬 계산만 사용하므로 null
-              undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
-            );
-            console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+            // 클라이언트가 계산한 사주가 있으면 우선 사용 (절입일 처리)
+            let sajuResult: any;
+            const clientSaju = (validatedData as any).clientCalculatedSaju;
+            if (clientSaju) {
+              console.log(`✅ 클라이언트 계산 사주 사용:`, clientSaju);
+              sajuResult = {
+                year: { sky: clientSaju.yearSky, earth: clientSaju.yearEarth },
+                month: { sky: clientSaju.monthSky, earth: clientSaju.monthEarth },
+                day: { sky: clientSaju.daySky, earth: clientSaju.dayEarth },
+                hour: { sky: clientSaju.hourSky, earth: clientSaju.hourEarth }
+              };
+            } else {
+              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
+              sajuResult = calculateSaju(
+                sajuCalculationYear,      // 년월주는 음력
+                sajuCalculationMonth,
+                sajuCalculationDay,
+                hour as any,  // undefined일 수 있음
+                minute,
+                validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
+                solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
+                null,  // apiData - 로컬 계산만 사용하므로 null
+                undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
+              );
+              console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+            }
 
             // 사주팔자 정보 추가
             updateData.yearSky = sajuResult.year.sky;
@@ -631,19 +644,32 @@ export async function registerRoutes(app: Express): Promise<void> {
                 }
               }
               
-              console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
-              const sajuResult = calculateSaju(
-                sajuCalculationYear,      // 년월주는 음력
-                sajuCalculationMonth,
-                sajuCalculationDay,
-                hour,
-                minute,
-                finalCalendarType === "음력" || finalCalendarType === "윤달",
-                solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
-                null,  // apiData - 로컬 계산만 사용하므로 null
-                undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
-              );
-              console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+              // 클라이언트가 계산한 사주가 있으면 우선 사용 (절입일 처리)
+              let sajuResult: any;
+              const clientSaju = (validatedData as any).clientCalculatedSaju;
+              if (clientSaju) {
+                console.log(`✅ 클라이언트 계산 사주 사용 (PUT):`, clientSaju);
+                sajuResult = {
+                  year: { sky: clientSaju.yearSky, earth: clientSaju.yearEarth },
+                  month: { sky: clientSaju.monthSky, earth: clientSaju.monthEarth },
+                  day: { sky: clientSaju.daySky, earth: clientSaju.dayEarth },
+                  hour: { sky: clientSaju.hourSky, earth: clientSaju.hourEarth }
+                };
+              } else {
+                console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+                sajuResult = calculateSaju(
+                  sajuCalculationYear,      // 년월주는 음력
+                  sajuCalculationMonth,
+                  sajuCalculationDay,
+                  hour,
+                  minute,
+                  finalCalendarType === "음력" || finalCalendarType === "윤달",
+                  solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
+                  null,  // apiData - 로컬 계산만 사용하므로 null
+                  undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
+                );
+                console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
+              }
 
               // 사주팔자 정보 추가
               updateData.yearSky = sajuResult.year.sky;
