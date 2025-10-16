@@ -225,30 +225,50 @@ export default function TraditionalCalendar({
           </div>
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1">
-              <Button variant="outline" size="sm" onClick={handlePrevYear} data-testid="button-prev-year" className="scale-75 px-2 py-0.5 min-h-6">
-                <ChevronLeft className="w-3 h-3" />
-                <ChevronLeft className="w-3 h-3" />
-                <span className="ml-0.5 text-xs">년</span>
+          <div className="flex items-center justify-between mb-1 pl-[14px] pr-[14px]">
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handlePrevYear} 
+                data-testid="button-prev-year" 
+                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4 ml-[-12px]" />
               </Button>
               
-              <Button variant="outline" size="sm" onClick={handlePrevMonth} data-testid="button-prev-month" className="scale-75 px-2 py-0.5 min-h-6">
-                <ChevronLeft className="w-3 h-3" />
-                <span className="ml-0.5 text-xs">월</span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handlePrevMonth} 
+                data-testid="button-prev-month" 
+                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              >
+                <ChevronLeft className="w-4 h-4" />
               </Button>
             </div>
             
-            <div className="flex items-center gap-1">
-              <Button variant="outline" size="sm" onClick={handleNextMonth} data-testid="button-next-month" className="scale-75 px-2 py-0.5 min-h-6">
-                <span className="mr-0.5 text-xs">월</span>
-                <ChevronRight className="w-3 h-3" />
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleNextMonth} 
+                data-testid="button-next-month" 
+                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              >
+                <ChevronRight className="w-4 h-4" />
               </Button>
               
-              <Button variant="outline" size="sm" onClick={handleNextYear} data-testid="button-next-year" className="scale-75 px-2 py-0.5 min-h-6">
-                <span className="mr-0.5 text-xs">년</span>
-                <ChevronRight className="w-3 h-3" />
-                <ChevronRight className="w-3 h-3" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleNextYear} 
+                data-testid="button-next-year" 
+                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              >
+                <ChevronRight className="w-4 h-4 ml-[-12px]" />
+                <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
