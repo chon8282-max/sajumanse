@@ -280,37 +280,65 @@ export default function SajuInput() {
       if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
         console.log('🎯 절입일 발견! 다이얼로그 표시');
         
-        // 양력을 음력으로 변환하여 간지 계산
-        let lunarForGanji = { year: solarYear, month: solarMonth, day: solarDay };
-        if (formData.calendarType === "양력") {
-          try {
-            const response = await fetch('/api/lunar-solar/convert/lunar', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ solYear: solarYear, solMonth: solarMonth, solDay: solarDay })
-            });
-            const result = await response.json();
-            if (result.success && result.data) {
-              lunarForGanji = { year: result.data.lunYear, month: result.data.lunMonth, day: result.data.lunDay };
-            }
-          } catch (err) {
-            console.error('양력→음력 변환 실패:', err);
-          }
+        const CHEONGAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const JIJI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        
+        // 연주 간지 계산 함수
+        const getYearGanji = (year: number) => {
+          const yearFromBase = year - 1924;
+          const yearIndex = ((yearFromBase % 60) + 60) % 60;
+          const skyIndex = yearIndex % 10;
+          const earthIndex = yearIndex % 12;
+          return { sky: CHEONGAN[skyIndex], earth: JIJI[earthIndex], skyIndex, earthIndex };
+        };
+        
+        // 월주 간지 계산 함수 (년주 천간 기준)
+        const getMonthGanji = (yearSkyIndex: number, monthEarthIndex: number) => {
+          // 월주 천간 시작 인덱스 (인월 기준)
+          let monthSkyStart: number;
+          if (yearSkyIndex === 0 || yearSkyIndex === 5) monthSkyStart = 2; // 甲己년: 인월=丙
+          else if (yearSkyIndex === 1 || yearSkyIndex === 6) monthSkyStart = 4; // 乙庚년: 인월=戊
+          else if (yearSkyIndex === 2 || yearSkyIndex === 7) monthSkyStart = 6; // 丙辛년: 인월=庚
+          else if (yearSkyIndex === 3 || yearSkyIndex === 8) monthSkyStart = 8; // 丁壬년: 인월=壬
+          else monthSkyStart = 0; // 戊癸년: 인월=甲
+          
+          // monthEarthIndex: 0=인월, 1=묘월, ..., 11=축월
+          const monthSkyIndex = (monthSkyStart + monthEarthIndex) % 10;
+          return { sky: CHEONGAN[monthSkyIndex], earth: JIJI[(monthEarthIndex + 2) % 12] }; // 인월=寅(2), 묘월=卯(3), ..., 축월=丑(1)
+        };
+        
+        let previousGanji: string, afterGanji: string;
+        
+        if (solarTermCheck.termInfo.name === '입춘') {
+          // 입춘: 절입전은 전년도 간지 + 전년도 월주법의 축월
+          const prevYear = getYearGanji(solarYear - 1);
+          const prevMonth = getMonthGanji(prevYear.skyIndex, 11); // 축월 = 11
+          previousGanji = `${prevYear.sky}${prevYear.earth}년 ${prevMonth.sky}${prevMonth.earth}월`;
+          
+          // 입춘: 절입후는 당해년도 간지 + 당해년도 월주법의 인월
+          const currYear = getYearGanji(solarYear);
+          const currMonth = getMonthGanji(currYear.skyIndex, 0); // 인월 = 0
+          afterGanji = `${currYear.sky}${currYear.earth}년 ${currMonth.sky}${currMonth.earth}월`;
+        } else {
+          // 다른 절기: 년주는 그대로, 월주만 전월/당월
+          const currYear = getYearGanji(solarYear);
+          
+          // 현재 절기의 월 인덱스 (인월=0, 묘월=1, ...)
+          const termMonthMap: { [key: string]: number } = {
+            '소한': 11, '입춘': 0, '경칩': 1, '청명': 2, '입하': 3, '망종': 4,
+            '소서': 5, '입추': 6, '백로': 7, '한로': 8, '입동': 9, '대설': 10
+          };
+          const currentMonthIndex = termMonthMap[solarTermCheck.termInfo.name] ?? 0;
+          const prevMonthIndex = (currentMonthIndex - 1 + 12) % 12;
+          
+          const prevMonth = getMonthGanji(currYear.skyIndex, prevMonthIndex);
+          previousGanji = `${currYear.sky}${currYear.earth}년 ${prevMonth.sky}${prevMonth.earth}월`;
+          
+          const currMonth = getMonthGanji(currYear.skyIndex, currentMonthIndex);
+          afterGanji = `${currYear.sky}${currYear.earth}년 ${currMonth.sky}${currMonth.earth}월`;
         }
         
-        // 전월 간지와 절입 후 간지 계산 (음력 기준)
-        const birthHour = 12; // 기본값 (시간 정보 없음)
-        const sajuWithPrevious = calculateSaju(lunarForGanji.year, lunarForGanji.month, lunarForGanji.day, birthHour, 0, true, { solarYear, solarMonth, solarDay }, undefined, true); // 전월 간지
-        const sajuAfter = calculateSaju(lunarForGanji.year, lunarForGanji.month, lunarForGanji.day, birthHour, 0, true, { solarYear, solarMonth, solarDay }, undefined, false); // 절입 후 간지
-        
-        // 연주 + 월주를 함께 표시 (예: 정묘년 계축월)
-        const previousYearGanji = `${sajuWithPrevious.year.sky}${sajuWithPrevious.year.earth}`;
-        const previousMonthGanji = `${sajuWithPrevious.month.sky}${sajuWithPrevious.month.earth}`;
-        const previousGanji = `${previousYearGanji}년 ${previousMonthGanji}월`;
-        
-        const afterYearGanji = `${sajuAfter.year.sky}${sajuAfter.year.earth}`;
-        const afterMonthGanji = `${sajuAfter.month.sky}${sajuAfter.month.earth}`;
-        const afterGanji = `${afterYearGanji}년 ${afterMonthGanji}월`;
+        console.log(`절입일 간지 계산: 절입전=${previousGanji}, 절입후=${afterGanji}`);
         
         setSolarTermInfo({
           ...solarTermCheck.termInfo,
