@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { generateCalendarMonth, getCalendarInfo, CalendarDayData } from "@/lib/calendar-calculator";
 import { CHINESE_TO_KOREAN_MAP } from "@shared/schema";
+import { Solar } from 'lunar-javascript';
 
 interface SolarTermInfo {
   name: string;
@@ -38,36 +39,24 @@ export default function TraditionalCalendar({
     [currentYear, currentMonth]
   );
 
-  // 음력 데이터 조회
-  const { data: lunarData } = useQuery({
-    queryKey: [`/api/lunar-solar/month`, currentYear, currentMonth],
-    queryFn: async () => {
-      const promises = [];
-      const firstDay = new Date(currentYear, currentMonth - 1, 1);
-      const lastDay = new Date(currentYear, currentMonth, 0);
-      
-      // 해당 월의 모든 날짜에 대해 음력 데이터 조회
-      for (let day = 1; day <= lastDay.getDate(); day++) {
-        promises.push(
-          apiRequest("POST", "/api/lunar-solar/convert/lunar", {
-            solYear: currentYear,
-            solMonth: currentMonth,
-            solDay: day
-          }).then(res => res.json())
-        );
-      }
-      
-      return Promise.all(promises);
-    },
-  });
-
-  // 절기 데이터 조회 - 전체 년도의 24절기 가져오기
+  // 절기 데이터 조회 - 현재년도 ±2년 미리 로드
   const { data: solarTermsData } = useQuery({
-    queryKey: [`/api/solar-terms`, currentYear],
+    queryKey: [`/api/solar-terms-range`, currentYear],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/solar-terms/${currentYear}`);
-      return response.json();
+      const years = [currentYear - 1, currentYear, currentYear + 1];
+      const promises = years.map(year => 
+        apiRequest("GET", `/api/solar-terms/${year}`).then(res => res.json())
+      );
+      const results = await Promise.all(promises);
+      
+      // 모든 연도의 절기 데이터 병합
+      const allTerms = results.flatMap(result => 
+        result.success ? result.data : []
+      );
+      
+      return { success: true, data: allTerms };
     },
+    staleTime: 1000 * 60 * 60, // 1시간 캐시
   });
 
   // 현재 월의 절기만 필터링하여 표시 (KST 기준)
@@ -81,14 +70,14 @@ export default function TraditionalCalendar({
       
       return {
         name: term.name,
-        date: kstDate, // KST로 변환된 날짜
+        date: kstDate,
         dateString: kstDate.toLocaleDateString('ko-KR', { 
-          timeZone: 'UTC', // KST Date를 그대로 표시
+          timeZone: 'UTC',
           month: '2-digit', 
           day: '2-digit' 
         }).replace('. ', '/').replace('.', ''),
         timeString: kstDate.toLocaleTimeString('ko-KR', { 
-          timeZone: 'UTC', // KST Date를 그대로 표시
+          timeZone: 'UTC',
           hour: '2-digit', 
           minute: '2-digit',
           hour12: false 
@@ -98,38 +87,37 @@ export default function TraditionalCalendar({
     
     // 현재 월의 절기만 반환 (KST 기준)
     return allTerms.filter((term: SolarTermInfo) => {
-      const termMonth = term.date.getUTCMonth() + 1; // KST Date의 UTC 메서드 사용
-      return termMonth === currentMonth;
+      const termMonth = term.date.getUTCMonth() + 1;
+      const termYear = term.date.getUTCFullYear();
+      return termYear === currentYear && termMonth === currentMonth;
     });
-  }, [solarTermsData, currentMonth]);
+  }, [solarTermsData, currentYear, currentMonth]);
 
-  // 달력 데이터와 음력 데이터 결합
+  // 달력 데이터와 음력 데이터 결합 (lunar-javascript로 직접 계산)
   const enrichedCalendarData = useMemo(() => {
-    if (!lunarData) return calendarData;
-
     return calendarData.map(week => 
       week.map(dayData => {
         if (!dayData.isCurrentMonth) return dayData;
         
-        const lunarInfo = lunarData.find((data: any) => 
-          data.success && data.data && data.data.solDay === dayData.solarDay
-        );
-        
-        if (lunarInfo?.data) {
-          const lunar = lunarInfo.data;
+        try {
+          // lunar-javascript로 음력 계산 (즉시 계산, API 호출 없음)
+          const solar = Solar.fromYmd(currentYear, currentMonth, dayData.solarDay);
+          const lunar = solar.getLunar();
+          
           return {
             ...dayData,
-            lunarYear: lunar.lunYear,
-            lunarMonth: lunar.lunMonth,
-            lunarDay: lunar.lunDay,
-            isLunarFirst: lunar.lunDay === 1
+            lunarYear: lunar.getYear(),
+            lunarMonth: lunar.getMonth(),
+            lunarDay: lunar.getDay(),
+            isLunarFirst: lunar.getDay() === 1
           };
+        } catch (error) {
+          console.error(`음력 변환 오류: ${currentYear}-${currentMonth}-${dayData.solarDay}`, error);
+          return dayData;
         }
-        
-        return dayData;
       })
     );
-  }, [calendarData, lunarData]);
+  }, [calendarData, currentYear, currentMonth]);
 
   const handlePrevMonth = () => {
     if (currentMonth === 1) {
