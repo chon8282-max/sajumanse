@@ -311,10 +311,18 @@ export async function registerRoutes(app: Express): Promise<void> {
                     }
                   }
                   
-                  // 입춘 년주 변경 처리: "절입 후" 선택 시 입춘이면 년주 +1 (시간 조정 여부 무관)
-                  if (!validatedData.usePreviousMonthPillar && closestTerm.term.name === "입춘") {
-                    console.log(`  → 입춘 절입 후 선택: 년주 +1 (${sajuCalculationYear} → ${sajuCalculationYear + 1})`);
-                    sajuCalculationYear = sajuCalculationYear + 1;
+                  // 입춘 년주 변경 처리 (양력 년도 기준 직접 계산)
+                  if (closestTerm.term.name === "입춘") {
+                    const solarYearForCalc = validatedData.birthYear; // 원본 입력 양력 년도
+                    if (validatedData.usePreviousMonthPillar) {
+                      // "절입 전" 선택 시: 전년도로 직접 설정
+                      sajuCalculationYear = solarYearForCalc - 1;
+                      console.log(`  → 입춘 절입 전 선택: 양력 ${solarYearForCalc}년 → 전년도 ${sajuCalculationYear}년 사주로 변경`);
+                    } else {
+                      // "절입 후" 선택 시: 당해년도로 직접 설정
+                      sajuCalculationYear = solarYearForCalc;
+                      console.log(`  → 입춘 절입 후 선택: 양력 ${solarYearForCalc}년 → 당해년도 ${sajuCalculationYear}년 사주로 변경`);
+                    }
                   }
                 }
               } catch (termError) {
@@ -623,10 +631,18 @@ export async function registerRoutes(app: Express): Promise<void> {
                       }
                     }
                     
-                    // 입춘 년주 변경 처리: "절입 후" 선택 시 입춘이면 년주 +1 (시간 조정 여부 무관)
-                    if (!validatedData.usePreviousMonthPillar && closestTerm.term.name === "입춘") {
-                      console.log(`  → 입춘 절입 후 선택: 년주 +1 (${sajuCalculationYear} → ${sajuCalculationYear + 1})`);
-                      sajuCalculationYear = sajuCalculationYear + 1;
+                    // 입춘 년주 변경 처리 (양력 년도 기준 직접 계산)
+                    if (closestTerm.term.name === "입춘") {
+                      const solarYearForCalc = validatedData.birthYear; // 원본 입력 양력 년도
+                      if (validatedData.usePreviousMonthPillar) {
+                        // "절입 전" 선택 시: 전년도로 직접 설정
+                        sajuCalculationYear = solarYearForCalc - 1;
+                        console.log(`  → 입춘 절입 전 선택 (PUT): 양력 ${solarYearForCalc}년 → 전년도 ${sajuCalculationYear}년 사주로 변경`);
+                      } else {
+                        // "절입 후" 선택 시: 당해년도로 직접 설정
+                        sajuCalculationYear = solarYearForCalc;
+                        console.log(`  → 입춘 절입 후 선택 (PUT): 양력 ${solarYearForCalc}년 → 당해년도 ${sajuCalculationYear}년 사주로 변경`);
+                      }
                     }
                   }
                 } catch (termError) {
