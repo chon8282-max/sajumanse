@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<void> {
               validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
               solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
               null,  // apiData - 로컬 계산만 사용하므로 null
-              undefined // usePreviousMonthPillar는 더 이상 사용하지 않음 (시간 조정으로 대체)
+              undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
             );
             console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 
@@ -641,7 +641,7 @@ export async function registerRoutes(app: Express): Promise<void> {
                 finalCalendarType === "음력" || finalCalendarType === "윤달",
                 solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
                 null,  // apiData - 로컬 계산만 사용하므로 null
-                undefined // usePreviousMonthPillar는 더 이상 사용하지 않음 (시간 조정으로 대체)
+                undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
               );
               console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
 

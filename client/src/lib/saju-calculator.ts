@@ -306,12 +306,12 @@ export function calculateSaju(
   let adjustedYearEarthIndex = yearEarthIndex;
   
   if (usePreviousMonthPillar === true) {
-    // 전월로 조정하고, 인월(1)에서 축월(0)로 넘어가면 년주도 -1
+    // 전월로 조정하고, 인월(1) 또는 축월(0)에서 전월로 가면 년주도 -1
     const originalSajuMonth = sajuMonth;
     sajuMonth = (sajuMonth - 1 + 12) % 12;
     
-    // 인월(1)에서 축월(0)로 넘어가면 년주도 -1 (입춘 전월 간지)
-    if (originalSajuMonth === 1 && sajuMonth === 0) {
+    // 인월(1)→축월(0) 또는 축월(0)→자월(11) 모두 전년도로 넘어감
+    if (originalSajuMonth === 0 || originalSajuMonth === 1) {
       adjustedYearSkyIndex = (yearSkyIndex - 1 + 10) % 10;
       adjustedYearEarthIndex = (yearEarthIndex - 1 + 12) % 12;
     }
