@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon, LogOut, LogIn } from "lucide-react";
+import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon } from "lucide-react";
 import { format } from "date-fns";
 import logoPath from "@assets/만세력아이콘1_1759804001975.png";
 import { useAuth } from "@/contexts/AuthContext";
@@ -103,23 +103,15 @@ export default function MobileHeader({
             onClick={handleAuthClick}
             disabled={loading}
             data-testid="button-auth"
-            className={`h-8 px-2 gap-1 ${
+            className={`h-8 px-2 ${
               isAuthenticated 
                 ? 'text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400' 
                 : 'text-blue-600 hover:text-blue-700 dark:text-blue-500 dark:hover:text-blue-400'
             }`}
           >
-            {isAuthenticated ? (
-              <>
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">로그아웃</span>
-              </>
-            ) : (
-              <>
-                <LogIn className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">로그인</span>
-              </>
-            )}
+            <span className="text-xs font-medium">
+              {isAuthenticated ? '로그아웃' : '로그인'}
+            </span>
           </Button>
         </div>
       </div>
