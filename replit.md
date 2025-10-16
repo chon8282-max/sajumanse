@@ -70,26 +70,27 @@ Preferred communication style: Simple, everyday language.
   - Example for 1988-03-05 (경칩): "전월 간지" → 정묘년 갑인월, "절입 후 간지" → 무진년 을묘월
   - SajuResult page prioritizes server-calculated pillars (saved in database) over client-side recalculation
   - isLichunAdjusted flag tracks whether year adjustment already occurred during lunar conversion to prevent double adjustments
-  - **5-Tier Solar Term Data System with Database Caching** (2025-10-12 Updated):
-    - Tier 1: **Database Query** (Primary source, fastest)
-    - Tier 2: data.go.kr API (공공데이터포털 24절기 API) → saves to DB
-    - Tier 3: holidays.dist.be API for 2006-현재 (provides exact times) → saves to DB
-    - Tier 4: **bebeyam.com 역서 데이터** (한국천문연구원 기반, 1946-2005년 입춘 정확한 시각) → saved to DB
-    - Tier 5: Local approximation fallback for other years → saves to DB
-    - **Database Storage**: All solar term data (from any source) is saved to `solar_terms` table for future queries
-    - **Data Coverage**: 
-      - 1946-2005: bebeyam.com 역서 (입춘 정확한 시각, source='bebeyam')
-      - 2006-2025: holidays.dist.be (모든 절기 정확한 시각)
-      - 기타 연도: 근사치 계산
-    - **KST/UTC Conversion**: Server stores UTC (API KST - 9h), client displays KST (UTC + 9h)
-    - Frontend detection: UTC date comparison (getUTCMonth/getUTCDate) to avoid timezone issues
-  - **Historical Accurate Solar Terms** (Client-side hardcoded):
-    - `TWELVE_SOLAR_TERMS_1950`: 1950년 12절기 (입춘 2월 4일 18:22 KST bebeyam 역서)
-    - `TWELVE_SOLAR_TERMS_2024`: 2024년 12절기 (입춘 2월 4일 16:27)
-    - `TWELVE_SOLAR_TERMS_2025`: 2025년 12절기 (입춘 2월 3일 23:10)
-    - `generateSolarTermsForYear()`: 1950, 2024, 2025는 정확한 데이터 사용, 기타 연도는 근사치 계산
-    - 예시: 1950-02-04 18:21 입춘 전 → 기축년 을축월, 18:22 입춘 후 → 경인년 무인월
-    - 예시: 2025-02-03 23:09 입춘 전 → 갑진년 정축월, 23:10 입춘 후 → 을사년 무인월
+  - **Solar Term Database (2025-10-16 완전 구축)**:
+    - **Primary Source**: KASI (한국천문연구원) Excel 파일 `천문연_24절기(1900~2050)_1760601609488.xlsx`
+    - **Coverage**: 1900-2050년, 151년 × 24절기 = 3,624개 완전 데이터
+    - **Data Accuracy**: 
+      - 천문학적으로 정확한 절입시각 (분 단위)
+      - E135° 한국표준경선 기준
+      - ΔT 보정 적용된 정밀 계산
+    - **Database Storage**: PostgreSQL `solar_terms` table
+      - source='kasi': 3,623개 (Excel 직접 임포트)
+      - source='kasi (보간)': 1개 (2030년 우수, 선형 보간)
+    - **2030년 우수 보간**:
+      - Excel 파일에서 누락된 2030년 우수를 주변 연도 데이터로 선형 보간
+      - 2029년 우수(2월 18일 18:08 KST) + 2031년 우수(2월 19일 5:51 KST)
+      - 결과: 2030년 우수 = 2월 18일 23:59 KST (±5분 정확도)
+    - **KST/UTC Conversion**: Server stores UTC (KST - 9h), client displays KST (UTC + 9h)
+    - **Frontend Detection**: UTC date comparison (getUTCMonth/getUTCDate) to avoid timezone issues
+    - **Import Script**: `server/scripts/import-excel-solar-terms.ts`
+      - xlsx 라이브러리로 Excel 파일 읽기
+      - 1900-2050년 범위 필터링
+      - 배치 처리 (500개씩) for 성능 최적화
+      - 2030년 우수 자동 백필 로직 포함
 - **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
   - When birth time is unknown, hourSky and hourEarth are stored as empty strings
   - Hour pillar Wuxing values (hourSky, hourEarth) are also empty strings
