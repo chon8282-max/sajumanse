@@ -208,7 +208,7 @@ export default function TraditionalCalendar({
   return (
     <div className="w-full max-w-4xl mx-auto pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
       <Card>
-        <CardHeader className="pb-1">
+        <CardHeader className="pb-1 pl-[0px] pr-[0px]">
           {/* 1열: 년도간지(왼쪽) | 역학달력(가운데) | 월간지(오른쪽) */}
           <div className="flex items-center justify-between mb-1">
             <div className="text-base font-bold text-blue-800">
