@@ -210,7 +210,7 @@ export default function TraditionalCalendar({
       <Card>
         <CardHeader className="pb-1 pl-[0px] pr-[0px]">
           {/* 1열: 년도간지(왼쪽) | 역학달력(가운데) | 월간지(오른쪽) */}
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between mb-1 pl-[7px] pr-[7px]">
             <div className="text-base font-bold text-blue-800">
               {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
             </div>
