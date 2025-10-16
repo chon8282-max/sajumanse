@@ -182,7 +182,7 @@ export default function Compatibility() {
                         onClick={() => leftSaveMutation.mutate(leftMemo)}
                         disabled={leftSaveMutation.isPending}
                         data-testid="button-left-save"
-                        className="scale-[0.6] origin-center -ml-[17.5px] pl-[14px] pr-[14px]"
+                        className="scale-[0.6] origin-center ml-[-14.75px] mr-[-14.75px]"
                       >
                         <Save className="w-3 h-3 mr-1" />
                         {leftSaveMutation.isPending ? "저장중..." : "저장"}
@@ -271,7 +271,7 @@ export default function Compatibility() {
                         onClick={() => rightSaveMutation.mutate(rightMemo)}
                         disabled={rightSaveMutation.isPending}
                         data-testid="button-right-save"
-                        className="scale-[0.6] origin-center -ml-[17.5px] pl-[14px] pr-[14px]"
+                        className="scale-[0.6] origin-center ml-[-14.75px] mr-[-14.75px]"
                       >
                         <Save className="w-3 h-3 mr-1" />
                         {rightSaveMutation.isPending ? "저장중..." : "저장"}
