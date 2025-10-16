@@ -154,7 +154,7 @@ async function collectAll() {
   console.log('📅 bebeyam.com 1946-2005년 24절기 데이터 수집 시작\n');
   
   const START_YEAR = 1946;
-  const END_YEAR = 2005; // 전체: 1946-2005년 (60개 연도, 1,440개 절기)
+  const END_YEAR = 1946; // 1946년만 재수집
   
   let totalCollected = 0;
   let totalFailed = 0;
