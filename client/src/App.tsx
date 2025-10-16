@@ -51,7 +51,7 @@ function Router() {
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("home");
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false); // 메뉴 기본값: 닫힘
   const [location, setLocation] = useLocation();
   
   const touchStartX = useRef(0);
@@ -108,6 +108,20 @@ function AppContent() {
     const timer = setTimeout(hideLoadingScreen, 200);
     return () => clearTimeout(timer);
   }, []);
+
+  // PWA 뒤로가기 처리: 홈 화면에서 뒤로가기 시 앱 종료
+  useEffect(() => {
+    const handlePopState = () => {
+      if (location === "/" && window.history.length <= 2) {
+        // 홈 화면이고 히스토리가 거의 없으면 앱 종료 (window.close는 PWA에서 작동 안함)
+        // 안드로이드 PWA에서는 자동으로 앱이 종료됨
+        console.log('뒤로가기: 홈 화면 - 앱 종료');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [location]);
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
