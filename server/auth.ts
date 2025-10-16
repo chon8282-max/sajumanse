@@ -14,7 +14,7 @@ const tempTokens = new Map<string, TempToken>();
 // 만료된 토큰 정리 (1분마다)
 setInterval(() => {
   const now = Date.now();
-  for (const [token, data] of tempTokens.entries()) {
+  for (const [token, data] of Array.from(tempTokens.entries())) {
     if (now > data.expiry) {
       tempTokens.delete(token);
     }
