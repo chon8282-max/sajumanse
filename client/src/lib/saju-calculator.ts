@@ -93,6 +93,7 @@ const TWELVE_SOLAR_TERMS_2025 = [
 // 24절기 날짜 데이터 (입춘 기준일 - 시각 포함)
 const SOLAR_TERMS_LICHUN = [
   { year: 1963, date: new Date(1963, 1, 4, 22, 8) },  // 1963년 입춘 22:08
+  { year: 1988, date: new Date(1988, 1, 4, 23, 43) }, // 1988년 입춘 23:43
   { year: 2020, date: new Date(2020, 1, 4) }, // 2020년 입춘
   { year: 2021, date: new Date(2021, 1, 3) },
   { year: 2022, date: new Date(2022, 1, 4) },
@@ -145,6 +146,22 @@ function calculateSajuMonth(date: Date): number {
   return allTerms[allTerms.length - 1].month;
 }
 
+// 1988년 12절기 정확한 시각 (DB 기반, KST)
+const TWELVE_SOLAR_TERMS_1988 = [
+  { term: "소한", month: 0, date: new Date(1988, 0, 6, 12, 4) },    // 축월 시작 (소한: 1월 6일 12:04)
+  { term: "입춘", month: 1, date: new Date(1988, 1, 4, 23, 43) },   // 인월 시작 (입춘: 2월 4일 23:43)
+  { term: "경칩", month: 2, date: new Date(1988, 2, 5, 17, 47) },   // 묘월 시작 (경칩: 3월 5일 17:47)
+  { term: "청명", month: 3, date: new Date(1988, 3, 4, 22, 39) },   // 진월 시작 (청명: 4월 4일 22:39)
+  { term: "입하", month: 4, date: new Date(1988, 4, 5, 16, 2) },    // 사월 시작 (입하: 5월 5일 16:02)
+  { term: "망종", month: 5, date: new Date(1988, 5, 5, 20, 15) },   // 오월 시작 (망종: 6월 5일 20:15)
+  { term: "소서", month: 6, date: new Date(1988, 6, 7, 6, 33) },    // 미월 시작 (소서: 7월 7일 06:33)
+  { term: "입추", month: 7, date: new Date(1988, 7, 7, 16, 20) },   // 신월 시작 (입추: 8월 7일 16:20)
+  { term: "백로", month: 8, date: new Date(1988, 8, 7, 19, 12) },   // 유월 시작 (백로: 9월 7일 19:12)
+  { term: "한로", month: 9, date: new Date(1988, 9, 8, 10, 44) },   // 술월 시작 (한로: 10월 8일 10:44)
+  { term: "입동", month: 10, date: new Date(1988, 10, 7, 13, 49) }, // 해월 시작 (입동: 11월 7일 13:49)
+  { term: "대설", month: 11, date: new Date(1988, 11, 7, 6, 34) },  // 자월 시작 (대설: 12월 7일 06:34)
+];
+
 /**
  * 특정 년도의 12절기 날짜들을 생성
  * @param year 대상 년도
@@ -159,6 +176,11 @@ function generateSolarTermsForYear(year: number): Array<{ term: string; month: n
   // 1963년은 정확한 데이터 사용 (사용자 제공)
   if (year === 1963) {
     return TWELVE_SOLAR_TERMS_1963;
+  }
+  
+  // 1988년은 정확한 DB 데이터 사용
+  if (year === 1988) {
+    return TWELVE_SOLAR_TERMS_1988;
   }
   
   // 2024년은 정확한 데이터 사용
@@ -285,33 +307,33 @@ export function calculateSaju(
   // 월주 계산 (12절기 기준으로 정확하게)
   let sajuMonth: number; // calculateSajuMonth의 반환값 (0=축월, 1=인월, 2=묘월...)
   
-  if (apiData?.lunMonth) {
-    // API 데이터가 있는 경우 음력 월 정보 사용 (인월=0 기준)
-    sajuMonth = (parseInt(apiData.lunMonth) + 11) % 12; // 인월(1) -> 0(축월 기준)
+  // 12절기 기준 월주 계산 (양력 기준) - solarDate 우선 사용
+  let monthCalcDate: Date;
+  if (solarDate) {
+    // 서버에서 제공한 정확한 양력 날짜 사용 (시간 포함) - 음력 입력도 양력으로 변환된 날짜 사용
+    monthCalcDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay, hour || 12, minute || 0);
+  } else if (isLunar) {
+    // solarDate가 없고 음력인 경우: 음력→양력 변환 필요 (하지만 solarDate가 있어야 함)
+    console.warn('음력 입력인데 solarDate가 없음. 근사값으로 계산');
+    monthCalcDate = calcDate; // 폴백
   } else {
-    // 12절기 기준 월주 계산 (양력 기준) - solarDate 우선 사용
-    let monthCalcDate: Date;
-    if (solarDate) {
-      // 서버에서 제공한 정확한 양력 날짜 사용 (시간 포함)
-      monthCalcDate = new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay, hour || 12, minute || 0);
-    } else {
-      // 기존 방식
-      monthCalcDate = calcDate;
-    }
-    sajuMonth = calculateSajuMonth(monthCalcDate); // 0=축월, 1=인월, 2=묘월...
+    // 기존 방식 (양력 입력)
+    monthCalcDate = calcDate;
   }
+  sajuMonth = calculateSajuMonth(monthCalcDate); // 0=축월, 1=인월, 2=묘월...
   
   // 절입일 전월 간지 처리 (입절 전 간지는 전월 간지)
   let adjustedYearSkyIndex = yearSkyIndex;
   let adjustedYearEarthIndex = yearEarthIndex;
   
   if (usePreviousMonthPillar === true) {
-    // 전월로 조정하고, 인월(1) 또는 축월(0)에서 전월로 가면 년주도 -1
+    // 전월로 조정하고, 인월(1)에서 전월로 가면 년주도 -1 (단, 음력 입력일 경우 년주는 이미 조정됨)
     const originalSajuMonth = sajuMonth;
     sajuMonth = (sajuMonth - 1 + 12) % 12;
     
-    // 인월(1)→축월(0) 또는 축월(0)→자월(11) 모두 전년도로 넘어감
-    if (originalSajuMonth === 0 || originalSajuMonth === 1) {
+    // 인월(1)→축월(0): 전년도로 넘어감 (입춘이 인월 시작)
+    // 단, 음력 입력(isLunar=true)일 경우 sajuYear가 이미 음력 년도이므로 년주 조정하지 않음
+    if (!isLunar && originalSajuMonth === 1) {
       adjustedYearSkyIndex = (yearSkyIndex - 1 + 10) % 10;
       adjustedYearEarthIndex = (yearEarthIndex - 1 + 12) % 12;
     }

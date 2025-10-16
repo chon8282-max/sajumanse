@@ -280,10 +280,28 @@ export default function SajuInput() {
       if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
         console.log('🎯 절입일 발견! 다이얼로그 표시');
         
-        // 전월 간지와 절입 후 간지 계산
+        // 양력을 음력으로 변환하여 간지 계산
+        let lunarForGanji = { year: solarYear, month: solarMonth, day: solarDay };
+        if (formData.calendarType === "양력") {
+          try {
+            const response = await fetch('/api/lunar-solar/convert/lunar', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ solYear: solarYear, solMonth: solarMonth, solDay: solarDay })
+            });
+            const result = await response.json();
+            if (result.success && result.data) {
+              lunarForGanji = { year: result.data.lunYear, month: result.data.lunMonth, day: result.data.lunDay };
+            }
+          } catch (err) {
+            console.error('양력→음력 변환 실패:', err);
+          }
+        }
+        
+        // 전월 간지와 절입 후 간지 계산 (음력 기준)
         const birthHour = 12; // 기본값 (시간 정보 없음)
-        const sajuWithPrevious = calculateSaju(solarYear, solarMonth, solarDay, birthHour, 0, false, undefined, undefined, true); // 전월 간지
-        const sajuAfter = calculateSaju(solarYear, solarMonth, solarDay, birthHour, 0, false, undefined, undefined, false); // 절입 후 간지
+        const sajuWithPrevious = calculateSaju(lunarForGanji.year, lunarForGanji.month, lunarForGanji.day, birthHour, 0, true, { solarYear, solarMonth, solarDay }, undefined, true); // 전월 간지
+        const sajuAfter = calculateSaju(lunarForGanji.year, lunarForGanji.month, lunarForGanji.day, birthHour, 0, true, { solarYear, solarMonth, solarDay }, undefined, false); // 절입 후 간지
         
         // 연주 + 월주를 함께 표시 (예: 정묘년 계축월)
         const previousYearGanji = `${sajuWithPrevious.year.sky}${sajuWithPrevious.year.earth}`;
@@ -378,37 +396,10 @@ export default function SajuInput() {
             }
           }
 
-          // 생시 파싱
-          const birthHour = formData.selectedTimeCode 
-            ? (TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode)?.hour || 12)
-            : 12;
-
-          // 클라이언트에서 사주 계산 (음력으로)
-          const sajuResult = calculateSaju(
-            lunarYear, lunarMonth, lunarDay, 
-            birthHour, 0, 
-            true,  // 음력으로 계산
-            { solarYear, solarMonth, solarDay },  // 일시주용 양력 날짜
-            undefined, 
-            usePreviousMonthPillar
-          );
-          
-          // 계산된 사주를 requestData에 추가 (서버가 이 값을 우선 사용)
-          requestData.clientCalculatedSaju = {
-            yearSky: sajuResult.year.sky,
-            yearEarth: sajuResult.year.earth,
-            monthSky: sajuResult.month.sky,
-            monthEarth: sajuResult.month.earth,
-            daySky: sajuResult.day.sky,
-            dayEarth: sajuResult.day.earth,
-            hourSky: sajuResult.hour.sky || '',
-            hourEarth: sajuResult.hour.earth || ''
-          };
-          
-          console.log('🎯 클라이언트 사주 계산 완료:', requestData.clientCalculatedSaju);
+          // usePreviousMonthPillar 플래그만 서버로 전달 (서버에서 정확한 절기 데이터로 계산)
+          console.log('🎯 절입일 처리: usePreviousMonthPillar=' + usePreviousMonthPillar);
         } catch (error) {
-          console.error('❌ 클라이언트 사주 계산 실패:', error);
-          // 계산 실패시 서버에서 계산하도록 플래그만 전달
+          console.error('❌ 절입일 처리 실패:', error);
         }
       }
 

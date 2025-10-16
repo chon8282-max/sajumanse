@@ -237,8 +237,8 @@ export async function registerRoutes(app: Express): Promise<void> {
               }
             }
 
-            // usePreviousMonthPillar 처리: 절입 시각 기준으로 시간 조정
-            if (validatedData.usePreviousMonthPillar !== undefined && hour !== undefined) {
+            // usePreviousMonthPillar 처리: 절입 시각 기준으로 시간 강제 설정
+            if (validatedData.usePreviousMonthPillar !== undefined) {
               try {
                 const solarTerms = await getSolarTermsForYear(solarCalcYear);
                 const inputDate = new Date(solarCalcYear, solarCalcMonth - 1, solarCalcDay);
@@ -270,32 +270,22 @@ export async function registerRoutes(app: Express): Promise<void> {
                 }
                 
                 if (closestTerm) {
-                  console.log(`절입 시각 조정: 입력=${hour}:${minute}, 절기=${closestTerm.term.name} ${closestTerm.termHour}:${closestTerm.termMinute}, 전월간지=${validatedData.usePreviousMonthPillar}`);
+                  console.log(`절입일 강제 설정: 입력=${hour !== undefined ? hour : '미상'}:${minute}, 절기=${closestTerm.term.name} ${closestTerm.termHour}:${closestTerm.termMinute}, 전월간지=${validatedData.usePreviousMonthPillar}`);
                   
-                  let needsAdjustment = false;
+                  let needsAdjustment = true;
                   let adjustedDate: Date | null = null;
                   
                   // termDate를 KST로 변환
                   const termKst = new Date(closestTerm.termDate.getTime() + 9 * 60 * 60 * 1000);
                   
                   if (validatedData.usePreviousMonthPillar) {
-                    // "절입 전" 선택: 실제로 절입 후인 경우만 조정 (절입 시각 -1분, KST 기준)
-                    if (inputTime >= closestTerm.termTime) {
-                      adjustedDate = new Date(termKst.getTime() - 60 * 1000);
-                      needsAdjustment = true;
-                      console.log(`  → 절입 전으로 조정: ${adjustedDate.getFullYear()}-${adjustedDate.getMonth()+1}-${adjustedDate.getDate()} ${adjustedDate.getHours()}:${adjustedDate.getMinutes()}`);
-                    } else {
-                      console.log(`  → 이미 절입 전, 조정 불필요`);
-                    }
+                    // "절입 전" 선택: 절입 시각 -1시간으로 강제 설정 (확실하게 절입 전)
+                    adjustedDate = new Date(termKst.getTime() - 60 * 60 * 1000);
+                    console.log(`  → 절입 전으로 강제 설정: ${adjustedDate.getFullYear()}-${adjustedDate.getMonth()+1}-${adjustedDate.getDate()} ${adjustedDate.getHours()}:${adjustedDate.getMinutes()}`);
                   } else {
-                    // "절입 후" 선택: 실제로 절입 전인 경우만 조정 (절입 시각 +1분, KST 기준)
-                    if (inputTime < closestTerm.termTime) {
-                      adjustedDate = new Date(termKst.getTime() + 60 * 1000);
-                      needsAdjustment = true;
-                      console.log(`  → 절입 후로 조정: ${adjustedDate.getFullYear()}-${adjustedDate.getMonth()+1}-${adjustedDate.getDate()} ${adjustedDate.getHours()}:${adjustedDate.getMinutes()}`);
-                    } else {
-                      console.log(`  → 이미 절입 후, 조정 불필요`);
-                    }
+                    // "절입 후" 선택: 절입 시각 +1시간으로 강제 설정 (확실하게 절입 후)
+                    adjustedDate = new Date(termKst.getTime() + 60 * 60 * 1000);
+                    console.log(`  → 절입 후로 강제 설정: ${adjustedDate.getFullYear()}-${adjustedDate.getMonth()+1}-${adjustedDate.getDate()} ${adjustedDate.getHours()}:${adjustedDate.getMinutes()}`);
                   }
                   
                   // 날짜/시간이 조정된 경우 업데이트 및 재변환
@@ -354,7 +344,7 @@ export async function registerRoutes(app: Express): Promise<void> {
                 validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
                 solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
                 null,  // apiData - 로컬 계산만 사용하므로 null
-                undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
+                undefined  // 시간 강제 설정으로 이미 처리했으므로 usePreviousMonthPillar 전달하지 않음
               );
               console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
             }
