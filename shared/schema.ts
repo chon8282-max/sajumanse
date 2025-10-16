@@ -126,6 +126,17 @@ export const insertSajuRecordSchema = createInsertSchema(sajuRecords).omit({
 }).extend({
   // 절입일 전월 간지 적용 여부 (계산 시에만 사용, DB 저장 안 함)
   usePreviousMonthPillar: z.boolean().optional(),
+  // 클라이언트가 계산한 사주 (절입일 처리용, DB 저장 안 함)
+  clientCalculatedSaju: z.object({
+    yearSky: z.string(),
+    yearEarth: z.string(),
+    monthSky: z.string(),
+    monthEarth: z.string(),
+    daySky: z.string(),
+    dayEarth: z.string(),
+    hourSky: z.string(),
+    hourEarth: z.string(),
+  }).optional(),
 });
 
 export type InsertSajuRecord = z.infer<typeof insertSajuRecordSchema>;
