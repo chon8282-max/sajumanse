@@ -283,7 +283,9 @@ export default function TraditionalCalendar({
                 {solarTerms.map((term, index) => (
                   <div key={index} className="text-center">
                     <span className="font-bold text-blue-600">{term.name}</span>
-                    <span className="text-gray-600">: {term.dateString} {term.timeString}</span>
+                    <span className="text-gray-600">: </span>
+                    <span className="font-bold text-gray-600">{term.dateString}</span>
+                    <span className="text-gray-600"> {term.timeString}</span>
                   </div>
                 ))}
               </div>
