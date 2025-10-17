@@ -385,6 +385,13 @@ export default function SajuInput() {
       if (usePreviousMonthPillar !== undefined) {
         requestData.usePreviousMonthPillar = usePreviousMonthPillar;
         
+        // 음력 입력이었다면 변환된 양력 날짜를 requestData에 반영
+        if (convertedSolarDate) {
+          requestData.birthYear = convertedSolarDate.year;
+          requestData.birthMonth = convertedSolarDate.month;
+          requestData.birthDay = convertedSolarDate.day;
+        }
+        
         // 절입일 사주 무조건 직접 계산
         try {
           const CHEONGAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
