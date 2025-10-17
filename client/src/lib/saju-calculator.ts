@@ -56,6 +56,23 @@ const TWELVE_SOLAR_TERMS_1963 = [
   { term: "대설", month: 11, date: new Date(1963, 11, 8, 5, 0) },   // 자월 시작 (대설: 12월 8일, 근사치)
 ];
 
+// 1965년 12절기 정확한 시각 (KASI DB 기반)
+// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
+const TWELVE_SOLAR_TERMS_1965 = [
+  { term: "소한", month: 0, date: new Date(1965, 0, 5, 22, 2) },    // 축월 시작 (소한: 1월 5일 22:02)
+  { term: "입춘", month: 1, date: new Date(1965, 1, 4, 9, 46) },    // 인월 시작 (입춘: 2월 4일 09:46)
+  { term: "경칩", month: 2, date: new Date(1965, 2, 6, 4, 1) },     // 묘월 시작 (경칩: 3월 6일 04:01)
+  { term: "청명", month: 3, date: new Date(1965, 3, 5, 9, 7) },     // 진월 시작 (청명: 4월 5일 09:07)
+  { term: "입하", month: 4, date: new Date(1965, 4, 6, 2, 42) },    // 사월 시작 (입하: 5월 6일 02:42)
+  { term: "망종", month: 5, date: new Date(1965, 5, 6, 7, 2) },     // 오월 시작 (망종: 6월 6일 07:02)
+  { term: "소서", month: 6, date: new Date(1965, 6, 7, 17, 21) },   // 미월 시작 (소서: 7월 7일 17:21)
+  { term: "입추", month: 7, date: new Date(1965, 7, 8, 3, 5) },     // 신월 시작 (입추: 8월 8일 03:05)
+  { term: "백로", month: 8, date: new Date(1965, 8, 8, 5, 48) },    // 유월 시작 (백로: 9월 8일 05:48)
+  { term: "한로", month: 9, date: new Date(1965, 9, 8, 21, 11) },   // 술월 시작 (한로: 10월 8일 21:11)
+  { term: "입동", month: 10, date: new Date(1965, 10, 8, 0, 7) },   // 해월 시작 (입동: 11월 8일 00:07)
+  { term: "대설", month: 11, date: new Date(1965, 11, 7, 16, 46) }, // 자월 시작 (대설: 12월 7일 16:46)
+];
+
 // 1950년 12절기 정확한 시각 (bebeyam.com 기반, 한국천문연구원 데이터)
 // month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
 const TWELVE_SOLAR_TERMS_1950 = [
@@ -176,6 +193,11 @@ function generateSolarTermsForYear(year: number): Array<{ term: string; month: n
   // 1963년은 정확한 데이터 사용 (사용자 제공)
   if (year === 1963) {
     return TWELVE_SOLAR_TERMS_1963;
+  }
+  
+  // 1965년은 정확한 KASI DB 데이터 사용
+  if (year === 1965) {
+    return TWELVE_SOLAR_TERMS_1965;
   }
   
   // 1988년은 정확한 DB 데이터 사용
