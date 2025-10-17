@@ -91,7 +91,7 @@ async function importKASIData() {
     });
     
     if (lunarSolarBatch.length >= batchSize) {
-      await storage.bulkCreateLunarSolarCalendar(lunarSolarBatch);
+      await storage.bulkCreateLunarSolarData(lunarSolarBatch);
       insertedLunarSolar += lunarSolarBatch.length;
       console.log(`  ✓ ${insertedLunarSolar}개 음양력 데이터 삽입 완료...`);
       lunarSolarBatch.length = 0;
@@ -99,7 +99,7 @@ async function importKASIData() {
   }
   
   if (lunarSolarBatch.length > 0) {
-    await storage.bulkCreateLunarSolarCalendar(lunarSolarBatch);
+    await storage.bulkCreateLunarSolarData(lunarSolarBatch);
     insertedLunarSolar += lunarSolarBatch.length;
   }
   
