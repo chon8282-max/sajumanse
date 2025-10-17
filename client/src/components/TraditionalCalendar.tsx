@@ -226,49 +226,53 @@ export default function TraditionalCalendar({
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
           <div className="flex items-center justify-between mb-1 pl-[14px] pr-[14px]">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button 
-                variant="ghost" 
-                size="icon" 
+                variant="outline" 
+                size="sm" 
                 onClick={handlePrevYear} 
                 data-testid="button-prev-year" 
-                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
               >
-                <ChevronLeft className="w-4 h-4" />
-                <ChevronLeft className="w-4 h-4 ml-[-12px]" />
+                <ChevronLeft className="w-3 h-3" />
+                <ChevronLeft className="w-3 h-3 ml-[-8px]" />
+                <span>년</span>
               </Button>
               
               <Button 
-                variant="ghost" 
-                size="icon" 
+                variant="outline" 
+                size="sm" 
                 onClick={handlePrevMonth} 
                 data-testid="button-prev-month" 
-                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3 h-3" />
+                <span>월</span>
               </Button>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button 
-                variant="ghost" 
-                size="icon" 
+                variant="outline" 
+                size="sm" 
                 onClick={handleNextMonth} 
                 data-testid="button-next-month" 
-                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
               >
-                <ChevronRight className="w-4 h-4" />
+                <span>월</span>
+                <ChevronRight className="w-3 h-3" />
               </Button>
               
               <Button 
-                variant="ghost" 
-                size="icon" 
+                variant="outline" 
+                size="sm" 
                 onClick={handleNextYear} 
                 data-testid="button-next-year" 
-                className="h-8 w-8 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
               >
-                <ChevronRight className="w-4 h-4 ml-[-12px]" />
-                <ChevronRight className="w-4 h-4" />
+                <span>년</span>
+                <ChevronRight className="w-3 h-3 ml-[-8px]" />
+                <ChevronRight className="w-3 h-3" />
               </Button>
             </div>
           </div>
