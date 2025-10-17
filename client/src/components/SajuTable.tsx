@@ -308,7 +308,7 @@ export default function SajuTable({
   }, [calendarType, birthYear, birthMonth, birthDay, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
 
   // 역산된 양력 날짜를 음력으로 변환
-  const [reversedLunarDate, setReversedLunarDate] = useState<{ year: number; month: number; day: number } | null>(null);
+  const [reversedLunarDate, setReversedLunarDate] = useState<{ year: number; month: number; day: number; isLeapMonth: boolean } | null>(null);
   
   useEffect(() => {
     if (reversedDate) {
@@ -330,7 +330,8 @@ export default function SajuTable({
             setReversedLunarDate({
               year: data.data.lunYear,
               month: data.data.lunMonth,
-              day: data.data.lunDay
+              day: data.data.lunDay,
+              isLeapMonth: data.data.lunLeapMonth === "윤"
             });
           }
         } catch (error) {
@@ -1140,9 +1141,9 @@ export default function SajuTable({
             <span data-testid="text-birth-info">
               {reversedDate ? (
                 // 간지 역산된 날짜 표시
-                (<>양력 {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}
+                (<>양력: {reversedDate.year}.{reversedDate.month.toString().padStart(2, '0')}.{reversedDate.day.toString().padStart(2, '0')}
                   {reversedLunarDate && reversedLunarDate.year && reversedLunarDate.month && reversedLunarDate.day && (
-                    <>, (음력){reversedLunarDate.year}.{reversedLunarDate.month.toString().padStart(2, '0')}.{reversedLunarDate.day.toString().padStart(2, '0')}</>
+                    <>  {reversedLunarDate.isLeapMonth ? '음력 (윤달)' : '음력'}: {reversedLunarDate.year}.{reversedLunarDate.month.toString().padStart(2, '0')}.{reversedLunarDate.day.toString().padStart(2, '0')}</>
                   )}
                 </>)
               ) : calendarType === '음력' || calendarType === '윤달' ? (
