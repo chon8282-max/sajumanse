@@ -8,7 +8,33 @@ const require = createRequire(import.meta.url);
  * 서버용 양력-음력 변환 함수 (정부 API 우선 사용)
  */
 export async function convertSolarToLunarServer(date: Date): Promise<{ year: number; month: number; day: number; isLeapMonth: boolean }> {
-  // 1. 먼저 정부 공식 API 시도
+  // 1. 먼저 korean-lunar-calendar 라이브러리 사용 (윤달 정보 정확)
+  try {
+    const KoreanLunarCalendar = require('korean-lunar-calendar');
+    
+    // 새로운 인스턴스 생성
+    const cal = new KoreanLunarCalendar();
+    
+    // 양력 날짜 설정하면 자동으로 음력 계산됨
+    cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    
+    // 음력 정보 가져오기
+    const lunarInfo = cal.getLunarCalendar();
+    
+    console.log(`로컬 라이브러리: 양력 ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} → 음력 ${lunarInfo.year}-${lunarInfo.month}-${lunarInfo.day} (윤달: ${lunarInfo.intercalation || false})`);
+    
+    return {
+      year: lunarInfo.year,
+      month: lunarInfo.month,
+      day: lunarInfo.day,
+      isLeapMonth: lunarInfo.intercalation || false
+    };
+    
+  } catch (error) {
+    console.error('Local lunar conversion error, trying government API:', error);
+  }
+  
+  // 2. 로컬 라이브러리 실패 시 정부 공식 API 시도
   try {
     console.log(`정부 API로 양력 ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} 변환 시도`);
     
@@ -28,41 +54,16 @@ export async function convertSolarToLunarServer(date: Date): Promise<{ year: num
       return result;
     }
   } catch (apiError: any) {
-    console.log('정부 API 실패, 로컬 라이브러리로 fallback:', apiError?.message || apiError);
+    console.log('정부 API 실패:', apiError?.message || apiError);
   }
   
-  // 2. 정부 API 실패 시 korean-lunar-calendar 라이브러리 사용
-  try {
-    const KoreanLunarCalendar = require('korean-lunar-calendar');
-    
-    // 새로운 인스턴스 생성
-    const cal = new KoreanLunarCalendar();
-    
-    // 양력 날짜 설정하면 자동으로 음력 계산됨
-    cal.setSolarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-    
-    // 음력 정보 가져오기
-    const lunarInfo = cal.getLunarCalendar();
-    
-    console.log(`로컬 라이브러리: 양력 ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} → 음력 ${lunarInfo.year}-${lunarInfo.month}-${lunarInfo.day}`);
-    
-    return {
-      year: lunarInfo.year,
-      month: lunarInfo.month,
-      day: lunarInfo.day,
-      isLeapMonth: lunarInfo.intercalation || false
-    };
-    
-  } catch (error) {
-    console.error('Local lunar conversion error:', error);
-    // 최종 fallback: 입력 날짜 그대로 반환
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1,
-      day: date.getDate(),
-      isLeapMonth: false
-    };
-  }
+  // 3. 최종 fallback: 입력 날짜 그대로 반환
+  return {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
+    isLeapMonth: false
+  };
 }
 
 /**
