@@ -12,7 +12,6 @@ import {
   getLunarDataForYearRange,
   get24DivisionsInfo
 } from "./lib/data-gov-kr-service";
-import { getSolarTermsForYear } from "./lib/solar-terms-service";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<void> {
@@ -240,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<void> {
             // usePreviousMonthPillar 처리: 절입 시각 기준으로 시간 강제 설정
             if (validatedData.usePreviousMonthPillar !== undefined) {
               try {
-                const solarTerms = await getSolarTermsForYear(solarCalcYear);
+                const solarTerms = await storage.getSolarTermsForYear(solarCalcYear);
                 const inputDate = new Date(solarCalcYear, solarCalcMonth - 1, solarCalcDay);
                 const inputTime = (hour ?? 0) * 60 + minute;
                 
@@ -619,7 +618,7 @@ export async function registerRoutes(app: Express): Promise<void> {
               // usePreviousMonthPillar 처리: 절입 시각 기준으로 시간 조정
               if (validatedData.usePreviousMonthPillar !== undefined) {
                 try {
-                  const solarTerms = await getSolarTermsForYear(solarCalcYear);
+                  const solarTerms = await storage.getSolarTermsForYear(solarCalcYear);
                   const inputDate = new Date(solarCalcYear, solarCalcMonth - 1, solarCalcDay);
                   const inputTime = hour * 60 + minute;
                   
@@ -1868,7 +1867,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       console.log(`Fetching solar terms for year: ${year}`);
-      const solarTerms = await getSolarTermsForYear(year);
+      const solarTerms = await storage.getSolarTermsForYear(year);
       
       res.json({
         success: true,
@@ -1896,7 +1895,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       console.log(`Fetching solar terms for ${year}-${month}`);
-      const allSolarTerms = await getSolarTermsForYear(year);
+      const allSolarTerms = await storage.getSolarTermsForYear(year);
       
       // 해당 월의 절기들 필터링 (해당 월에 시작하는 절기들)
       const monthSolarTerms = allSolarTerms.filter(term => {
