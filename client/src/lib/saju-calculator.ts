@@ -158,10 +158,36 @@ function getLichunDate(year: number): Date {
 /**
  * 12절기 기준으로 사주 월 계산
  * @param date 계산할 날짜 (시/분 포함)
+ * @param solarTerms DB에서 가져온 절기 데이터 (서버에서만 사용)
  * @returns 사주 월 (0:축월, 1:인월, 2:묘월..., 11:자월)
  */
-function calculateSajuMonth(date: Date): number {
+function calculateSajuMonth(date: Date, solarTerms?: Array<{ name: string; date: Date; month: number }>): number {
   const year = date.getFullYear();
+  
+  // DB 절기 데이터가 있으면 우선 사용 (서버에서만 전달됨)
+  if (solarTerms && solarTerms.length > 0) {
+    console.log(`✓ DB 절기 데이터 사용 (${solarTerms.length}개 절기)`);
+    
+    // 현재 날짜가 어느 절기 구간에 속하는지 확인
+    for (let i = 0; i < solarTerms.length - 1; i++) {
+      const currentTerm = solarTerms[i];
+      const nextTerm = solarTerms[i + 1];
+      
+      // 현재 날짜가 이 절기 구간에 속하는지 확인
+      if (date >= currentTerm.date && date < nextTerm.date) {
+        console.log(`  → ${currentTerm.name}~${nextTerm.name} 구간: ${currentTerm.month}월`);
+        return currentTerm.month;
+      }
+    }
+    
+    // 마지막 절기 이후면 해당 월
+    const lastTerm = solarTerms[solarTerms.length - 1];
+    console.log(`  → 마지막 절기(${lastTerm.name}) 이후: ${lastTerm.month}월`);
+    return lastTerm.month;
+  }
+  
+  // DB 데이터가 없으면 기존 방식 사용 (클라이언트 또는 fallback)
+  console.log(`⚠ DB 절기 없음, 하드코딩된 절기 사용 (fallback)`);
   
   // 이전 년도, 현재 년도, 다음 년도의 12절기 날짜들을 생성
   const prevYearTerms = generateSolarTermsForYear(year - 1);
@@ -292,7 +318,8 @@ export function calculateSaju(
   isLunar: boolean = false,
   solarDate?: { solarYear: number; solarMonth: number; solarDay: number },
   apiData?: any, // data.go.kr API 응답 데이터
-  usePreviousMonthPillar?: boolean // 절입일 전월 간지 적용 여부
+  usePreviousMonthPillar?: boolean, // 절입일 전월 간지 적용 여부
+  solarTerms?: Array<{ name: string; date: Date; month: number }> // DB 절기 데이터 (서버에서 전달)
 ): SajuInfo {
   let calcDate: Date;
   
@@ -374,7 +401,7 @@ export function calculateSaju(
     // 기존 방식 (양력 입력)
     monthCalcDate = calcDate;
   }
-  sajuMonth = calculateSajuMonth(monthCalcDate); // 0=축월, 1=인월, 2=묘월...
+  sajuMonth = calculateSajuMonth(monthCalcDate, solarTerms); // 0=축월, 1=인월, 2=묘월...
   
   // 절입일 전월 간지 처리 (입절 전 간지는 전월 간지)
   let adjustedYearSkyIndex = yearSkyIndex;

@@ -60,10 +60,15 @@ export interface IStorage {
   
   // 음양력 변환 데이터 관련
   getLunarSolarData(solYear: number, solMonth: number, solDay: number): Promise<LunarSolarCalendar | undefined>;
+  getSolarFromLunar(lunYear: number, lunMonth: number, lunDay: number, lunLeapMonth?: string): Promise<LunarSolarCalendar | undefined>;
   createLunarSolarData(data: InsertLunarSolarCalendar): Promise<LunarSolarCalendar>;
   bulkCreateLunarSolarData(dataList: InsertLunarSolarCalendar[]): Promise<LunarSolarCalendar[]>;
   getLunarSolarDataRange(startYear: number, endYear: number): Promise<LunarSolarCalendar[]>;
   checkDataExists(year: number): Promise<boolean>;
+  
+  // 절기 데이터 관련
+  getSolarTermsForYear(year: number): Promise<SolarTerms[]>;
+  getSolarTermsForDate(year: number, month: number): Promise<SolarTerms[]>;
   
   // 운세 계산 결과 관련
   saveFortuneResult(data: InsertFortuneResult): Promise<FortuneResult>;
@@ -276,6 +281,24 @@ export class DatabaseStorage implements IStorage {
           eq(lunarSolarCalendar.solDay, solDay)
         )
       );
+    return data || undefined;
+  }
+
+  async getSolarFromLunar(lunYear: number, lunMonth: number, lunDay: number, lunLeapMonth?: string): Promise<LunarSolarCalendar | undefined> {
+    const conditions = [
+      eq(lunarSolarCalendar.lunYear, lunYear),
+      eq(lunarSolarCalendar.lunMonth, lunMonth),
+      eq(lunarSolarCalendar.lunDay, lunDay)
+    ];
+    
+    if (lunLeapMonth) {
+      conditions.push(eq(lunarSolarCalendar.lunLeapMonth, lunLeapMonth));
+    }
+    
+    const [data] = await db
+      .select()
+      .from(lunarSolarCalendar)
+      .where(and(...conditions));
     return data || undefined;
   }
 
@@ -708,6 +731,29 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result;
   }
+
+  // 절기 데이터 조회 메서드
+  async getSolarTermsForYear(year: number): Promise<SolarTerms[]> {
+    const results = await db
+      .select()
+      .from(solarTerms)
+      .where(eq(solarTerms.year, year))
+      .orderBy(asc(solarTerms.date));
+    return results;
+  }
+
+  async getSolarTermsForDate(year: number, month: number): Promise<SolarTerms[]> {
+    const results = await db
+      .select()
+      .from(solarTerms)
+      .where(eq(solarTerms.year, year))
+      .orderBy(asc(solarTerms.date));
+    return results.filter(term => {
+      const termDate = new Date(term.date);
+      const termMonth = termDate.getUTCMonth() + 1;
+      return termMonth === month || termMonth === month - 1 || termMonth === month + 1;
+    });
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -937,6 +983,33 @@ export class MemStorage implements IStorage {
     return Array.from(this.lunarSolarData.values()).some(
       data => data.solYear === year
     );
+  }
+
+  async getSolarFromLunar(lunYear: number, lunMonth: number, lunDay: number, lunLeapMonth?: string): Promise<LunarSolarCalendar | undefined> {
+    return Array.from(this.lunarSolarData.values()).find(data => {
+      const yearMatch = data.lunYear === lunYear;
+      const monthMatch = data.lunMonth === lunMonth;
+      const dayMatch = data.lunDay === lunDay;
+      const leapMatch = lunLeapMonth ? data.lunLeapMonth === lunLeapMonth : true;
+      return yearMatch && monthMatch && dayMatch && leapMatch;
+    });
+  }
+
+  async getSolarTermsForYear(year: number): Promise<SolarTerms[]> {
+    return Array.from(this.solarTermsData.values())
+      .filter(term => term.year === year)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }
+
+  async getSolarTermsForDate(year: number, month: number): Promise<SolarTerms[]> {
+    return Array.from(this.solarTermsData.values())
+      .filter(term => {
+        if (term.year !== year) return false;
+        const termDate = new Date(term.date);
+        const termMonth = termDate.getUTCMonth() + 1;
+        return termMonth === month || termMonth === month - 1 || termMonth === month + 1;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 
   // 그룹 관련 메서드 (메모리 버전)
