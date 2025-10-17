@@ -608,10 +608,14 @@ export default function SajuInput() {
           <div className="flex gap-2 items-center">
             <Input
               id="year"
-              type="number"
+              type="text"
               inputMode="numeric"
               value={formData.year}
-              onChange={(e) => handleInputChange("year", e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
+                handleInputChange("year", value);
+              }}
+              onFocus={(e) => e.target.select()}
               onKeyDown={(e) => handleKeyDown(e, "month")}
               placeholder=""
               maxLength={4}
@@ -621,10 +625,14 @@ export default function SajuInput() {
             <span className="text-xs">년</span>
             <Input
               id="month"
-              type="number"
+              type="text"
               inputMode="numeric"
               value={formData.month}
-              onChange={(e) => handleInputChange("month", e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+                handleInputChange("month", value);
+              }}
+              onFocus={(e) => e.target.select()}
               onKeyDown={(e) => handleKeyDown(e, "day")}
               placeholder=""
               maxLength={2}
@@ -634,10 +642,14 @@ export default function SajuInput() {
             <span className="text-xs">월</span>
             <Input
               id="day"
-              type="number"
+              type="text"
               inputMode="numeric"
               value={formData.day}
-              onChange={(e) => handleInputChange("day", e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 2);
+                handleInputChange("day", value);
+              }}
+              onFocus={(e) => e.target.select()}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
