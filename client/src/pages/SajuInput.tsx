@@ -116,6 +116,7 @@ export default function SajuInput() {
   const [newGroupName, setNewGroupName] = useState("");
   const [showSolarTermDialog, setShowSolarTermDialog] = useState(false);
   const [solarTermInfo, setSolarTermInfo] = useState<{ name: string; hour: number; minute: number; previousGanji?: string; afterGanji?: string } | null>(null);
+  const [convertedSolarDate, setConvertedSolarDate] = useState<{ year: number; month: number; day: number } | null>(null);
   
   // 편집 모드 확인 (URL 파라미터로 edit=true와 id 존재 여부)
   const urlParams = new URLSearchParams(window.location.search);
@@ -264,12 +265,17 @@ export default function SajuInput() {
             solarYear = result.data.solYear;
             solarMonth = result.data.solMonth;
             solarDay = result.data.solDay;
+            // 변환된 양력 날짜 저장
+            setConvertedSolarDate({ year: solarYear, month: solarMonth, day: solarDay });
             console.log(`✅ 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
           }
         } catch (error) {
           console.error('❌ 음력→양력 변환 실패:', error);
           // 변환 실패시 그냥 진행
         }
+      } else {
+        // 양력 입력인 경우 변환 날짜 초기화
+        setConvertedSolarDate(null);
       }
 
       // 변환된 양력 날짜로 절입일 체크
@@ -349,6 +355,8 @@ export default function SajuInput() {
         return; // 대화상자 표시 후 여기서 멈춤
       } else {
         console.log('❎ 절입일 아님');
+        // 절입일이 아니면 변환된 날짜 초기화
+        setConvertedSolarDate(null);
       }
     }
 
@@ -392,10 +400,10 @@ export default function SajuInput() {
             }
           }
           
-          // 양력 날짜
-          let solarYear = yearNum;
-          let solarMonth = monthNum;
-          let solarDay = dayNum;
+          // 양력 날짜 (음력 입력이었다면 변환된 양력 날짜 사용)
+          let solarYear = convertedSolarDate?.year || yearNum;
+          let solarMonth = convertedSolarDate?.month || monthNum;
+          let solarDay = convertedSolarDate?.day || dayNum;
           
           // 월 인덱스 맵 (인월=0, 묘월=1, ..., 축월=11)
           const termMonthMap: { [key: string]: number} = {
