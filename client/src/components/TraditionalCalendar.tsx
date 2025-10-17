@@ -151,9 +151,6 @@ export default function TraditionalCalendar({
     const isSunday = dayData.dayOfWeek === 0;
     const isSaturday = dayData.dayOfWeek === 6;
     
-    // 요일 문자열
-    const dayOfWeekText = ['일', '월', '화', '수', '목', '금', '토'][dayData.dayOfWeek];
-    
     // 절기 확인 (KST 기준 날짜 비교)
     const solarTerm = solarTerms.find(term => {
       // term.date는 이미 KST로 변환된 Date 객체
@@ -171,16 +168,6 @@ export default function TraditionalCalendar({
         `}
         data-testid={`calendar-day-${dayData.solarDay}`}
       >
-        {/* 요일 (1행) */}
-        <div className={`
-          text-xs font-bold text-center
-          ${isSunday ? 'text-red-500' : ''}
-          ${isSaturday ? 'text-blue-500' : ''}
-          ${!isSunday && !isSaturday ? 'text-gray-700' : ''}
-        `}>
-          {dayOfWeekText}
-        </div>
-        
         {/* 양력 날짜 */}
         <div className={`
           text-base font-bold mb-0
@@ -284,6 +271,22 @@ export default function TraditionalCalendar({
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
+          </div>
+
+          {/* 요일 헤더 */}
+          <div className="grid grid-cols-7 gap-0">
+            {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+              <div 
+                key={day} 
+                className={`
+                  text-center font-bold py-1 border bg-gray-100
+                  ${index === 0 ? 'text-red-500' : ''}
+                  ${index === 6 ? 'text-blue-500' : ''}
+                `}
+              >
+                {day}
+              </div>
+            ))}
           </div>
         </CardHeader>
 
