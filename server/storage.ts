@@ -103,6 +103,9 @@ export interface IStorage {
   createSolarTerm(data: InsertSolarTerms): Promise<SolarTerms>;
   bulkCreateSolarTerms(dataList: InsertSolarTerms[]): Promise<SolarTerms[]>;
   checkSolarTermsExist(year: number): Promise<boolean>;
+  
+  // 음양력 변환 데이터 관련
+  bulkCreateLunarSolarCalendar(dataList: InsertLunarSolarCalendar[]): Promise<LunarSolarCalendar[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -685,6 +688,26 @@ export class DatabaseStorage implements IStorage {
       .where(eq(solarTerms.year, year));
     return result[0]?.count > 0;
   }
+  
+  async bulkCreateLunarSolarCalendar(dataList: InsertLunarSolarCalendar[]): Promise<LunarSolarCalendar[]> {
+    if (dataList.length === 0) return [];
+    
+    const result = await db
+      .insert(lunarSolarCalendar)
+      .values(dataList)
+      .onConflictDoUpdate({
+        target: [lunarSolarCalendar.solYear, lunarSolarCalendar.solMonth, lunarSolarCalendar.solDay],
+        set: {
+          lunYear: sql`EXCLUDED.lun_year`,
+          lunMonth: sql`EXCLUDED.lun_month`,
+          lunDay: sql`EXCLUDED.lun_day`,
+          lunLeapMonth: sql`EXCLUDED.lun_leap_month`,
+          source: sql`EXCLUDED.source`,
+        },
+      })
+      .returning();
+    return result;
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -1182,6 +1205,24 @@ export class MemStorage implements IStorage {
   async checkSolarTermsExist(year: number): Promise<boolean> {
     return Array.from(this.solarTermsData.values())
       .some(term => term.year === year);
+  }
+  
+  async bulkCreateLunarSolarCalendar(dataList: InsertLunarSolarCalendar[]): Promise<LunarSolarCalendar[]> {
+    const created: LunarSolarCalendar[] = [];
+    for (const data of dataList) {
+      const id = randomUUID();
+      const now = new Date();
+      const record: LunarSolarCalendar = {
+        id,
+        ...data,
+        createdAt: now,
+        updatedAt: now,
+      };
+      const key = `${data.solarYear}-${data.solarMonth}-${data.solarDay}`;
+      this.lunarSolarData.set(key, record);
+      created.push(record);
+    }
+    return created;
   }
 }
 

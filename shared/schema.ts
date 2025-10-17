@@ -378,9 +378,13 @@ export const lunarSolarCalendar = pgTable("lunar_solar_calendar", {
   julianDay: integer("julian_day"),
   
   // 메타데이터
+  source: text("source").notNull().default("api"), // 데이터 출처
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  // 양력 날짜별 유니크 제약
+  solDateIdx: uniqueIndex("lunar_solar_sol_date_idx").on(table.solYear, table.solMonth, table.solDay),
+}));
 
 export const insertLunarSolarCalendarSchema = createInsertSchema(lunarSolarCalendar).omit({
   id: true,
