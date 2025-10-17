@@ -10,6 +10,16 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import MobileHeader from "@/components/MobileHeader";
 import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import Home from "@/pages/Home";
 import Manseryeok from "@/pages/Manseryeok";
 import Calendar from "@/pages/Calendar";
@@ -52,6 +62,7 @@ function AppContent() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("home");
   const [showMobileMenu, setShowMobileMenu] = useState(false); // 메뉴 기본값: 닫힘
+  const [showExitDialog, setShowExitDialog] = useState(false); // 종료 확인 다이얼로그
   const [location, setLocation] = useLocation();
   
   const touchStartX = useRef(0);
@@ -109,15 +120,21 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  // PWA 뒤로가기 처리: 홈 화면에서 뒤로가기 시 앱 종료
+  // PWA 뒤로가기 처리: 홈 화면에서 뒤로가기 시 앱 종료 확인
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (e: PopStateEvent) => {
       if (location === "/" && window.history.length <= 2) {
-        // 홈 화면이고 히스토리가 거의 없으면 앱 종료 (window.close는 PWA에서 작동 안함)
-        // 안드로이드 PWA에서는 자동으로 앱이 종료됨
-        console.log('뒤로가기: 홈 화면 - 앱 종료');
+        // 홈 화면이고 히스토리가 거의 없으면 종료 확인 다이얼로그 표시
+        setShowExitDialog(true);
+        // 히스토리에 다시 추가하여 뒤로가기 방지 (다이얼로그에서 취소 시)
+        window.history.pushState(null, '', window.location.pathname);
       }
     };
+
+    // 초기 진입 시 히스토리 상태 추가 (뒤로가기 감지용)
+    if (location === "/" && window.history.state === null) {
+      window.history.pushState(null, '', window.location.pathname);
+    }
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -243,6 +260,30 @@ function AppContent() {
           onClose={handleCloseMenu}
         />
       )}
+      
+      {/* 앱 종료 확인 다이얼로그 */}
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>앱을 종료하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              정말로 앱을 종료하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-exit-cancel">아니오</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                // 앱 종료 (브라우저 뒤로가기)
+                window.history.back();
+              }}
+              data-testid="button-exit-confirm"
+            >
+              예
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       <Toaster />
     </div>
