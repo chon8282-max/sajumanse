@@ -225,7 +225,7 @@ export default function TraditionalCalendar({
           </div>
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
-          <div className="flex items-center justify-between pl-[14px] pr-[14px] mt-[12px] mb-[12px]">
+          <div className="flex items-center justify-between pl-[14px] pr-[14px] pt-[3px] pb-[3px] mt-[5px] mb-[5px]">
             <div className="flex items-center gap-1">
               <Button 
                 variant="outline" 
@@ -303,7 +303,7 @@ export default function TraditionalCalendar({
           {/* 절기 정보 하단 표시 */}
           {solarTerms.length > 0 && (
             <div className="p-4 bg-gray-50 border-t">
-              <div className="flex gap-8 justify-center text-sm">
+              <div className="flex gap-8 justify-center text-[15px]">
                 {solarTerms.map((term, index) => (
                   <div key={index} className="text-center">
                     <span className="font-bold text-blue-600">{term.name}</span>
