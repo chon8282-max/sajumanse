@@ -225,7 +225,7 @@ export default function TraditionalCalendar({
           </div>
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
-          <div className="flex items-center justify-between mb-1 pl-[14px] pr-[14px]">
+          <div className="flex items-center justify-between pl-[14px] pr-[14px] mt-[12px] mb-[12px]">
             <div className="flex items-center gap-1">
               <Button 
                 variant="outline" 
