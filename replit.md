@@ -70,7 +70,7 @@ Preferred communication style: Simple, everyday language.
   - Example for 1988-03-05 (경칩): "전월 간지" → 정묘년 갑인월, "절입 후 간지" → 무진년 을묘월
   - SajuResult page prioritizes server-calculated pillars (saved in database) over client-side recalculation
   - isLichunAdjusted flag tracks whether year adjustment already occurred during lunar conversion to prevent double adjustments
-  - **Solar Term Database (2025-10-16 완전 구축)**:
+  - **Solar Term Database (2025-10-17 완전 구축 + DB 직접 활용)**:
     - **Primary Source**: KASI (한국천문연구원) Excel 파일 `천문연_24절기(1900~2050)_1760601609488.xlsx`
     - **Coverage**: 1900-2050년, 151년 × 24절기 = 3,624개 완전 데이터
     - **Data Accuracy**: 
@@ -91,6 +91,14 @@ Preferred communication style: Simple, everyday language.
       - 1900-2050년 범위 필터링
       - 배치 처리 (500개씩) for 성능 최적화
       - 2030년 우수 자동 백필 로직 포함
+    - **Direct Database Integration (2025-10-17)**:
+      - Lunar-solar calendar: 55,152 records from KASI `천문연_음양력정보(1900~2050)_1760602046925.xlsx`
+      - Month pillar (월주) calculation now directly uses DB solar term data
+      - Removed complex timezone calculations - uses KASI data AS-IS
+      - Storage methods: getSolarTermsForYear, getSolarTermsForDate, getSolarFromLunar
+      - calculateSaju accepts optional dbSolarTerms parameter for DB-first approach
+      - All API endpoints fetch DB solar terms before Saju calculations
+      - Fallback to hardcoded values only when DB data unavailable
 - **Birth Time Unknown Support**: Complete handling of cases where birth time is unknown (생시모름)
   - When birth time is unknown, hourSky and hourEarth are stored as empty strings
   - Hour pillar Wuxing values (hourSky, hourEarth) are also empty strings
