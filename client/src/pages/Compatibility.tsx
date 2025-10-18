@@ -52,21 +52,10 @@ export default function Compatibility() {
     }
   }, [searchParams]);
 
-  // 가로 모드 강제 전환
+  // 가로 모드 권장 (강제하지 않음)
   useEffect(() => {
-    // Screen Orientation API 지원 확인
-    if (screen.orientation && 'lock' in screen.orientation) {
-      (screen.orientation as any).lock('landscape').catch((err: Error) => {
-        console.log('Orientation lock failed:', err);
-      });
-    }
-
-    // 컴포넌트 언마운트 시 잠금 해제
-    return () => {
-      if (screen.orientation && 'unlock' in screen.orientation) {
-        (screen.orientation as any).unlock();
-      }
-    };
+    // 가로 모드 권장 메시지만 표시 (강제 전환 제거)
+    console.log('궁합 화면은 가로 모드에서 더 잘 보입니다.');
   }, []);
 
   // 왼쪽 사주 데이터 가져오기
