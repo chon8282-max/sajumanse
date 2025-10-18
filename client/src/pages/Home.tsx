@@ -103,8 +103,10 @@ export default function Home() {
             now.getHours(),
             now.getMinutes(),
             false,
-            undefined,
-            dbSolarTerms
+            undefined,  // solarDate
+            null,       // apiData
+            undefined,  // usePreviousMonthPillar
+            dbSolarTerms  // solarTerms (DB 절기 데이터)
           );
           setCurrentSaju(saju);
         } catch (error) {
@@ -208,8 +210,10 @@ export default function Home() {
           now.getHours(),
           now.getMinutes(),
           false,
-          undefined,
-          dbSolarTerms
+          undefined,  // solarDate
+          null,       // apiData
+          undefined,  // usePreviousMonthPillar
+          dbSolarTerms  // solarTerms (DB 절기 데이터)
         );
         setCurrentSaju(saju);
       } catch (error) {
