@@ -73,38 +73,25 @@ async function checkSolarTermDay(year: number, month: number, day: number): Prom
     // 해당 년도의 모든 절기 중에서 당일 절입일 찾기
     const solarTerms = result.data;
     for (const term of solarTerms) {
-      // Date 객체가 JSON으로 변환된 ISO 문자열 파싱
-      const termDate = new Date(term.date);
+      // UTC date에 9시간(KST offset)을 더해서 KST 날짜 계산
+      const termDateUTC = new Date(term.date);
+      const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로
+      const termDateKST = new Date(termDateUTC.getTime() + kstOffset);
       
-      // KST 날짜로 변환하여 연/월/일 비교 (절입 시각은 KST 기준)
-      const termYear = termDate.getUTCFullYear();
-      const termMonth = termDate.getUTCMonth() + 1;
-      const termDay = termDate.getUTCDate();
-      const termHour = termDate.getUTCHours();
-      
-      // KST 시간 조정 (UTC+9)
-      let kstYear = termYear;
-      let kstMonth = termMonth;
-      let kstDay = termDay;
-      let kstHour = termHour + 9;
-      
-      // 24시 넘어가면 다음날로
-      if (kstHour >= 24) {
-        kstHour -= 24;
-        const nextDay = new Date(Date.UTC(termYear, termMonth - 1, termDay + 1));
-        kstYear = nextDay.getUTCFullYear();
-        kstMonth = nextDay.getUTCMonth() + 1;
-        kstDay = nextDay.getUTCDate();
-      }
+      // KST 날짜 추출 (getUTC* 메서드를 사용하지만 이미 KST로 조정된 Date 객체)
+      const kstYear = termDateKST.getUTCFullYear();
+      const kstMonth = termDateKST.getUTCMonth() + 1;
+      const kstDay = termDateKST.getUTCDate();
       
       // 입력 날짜와 절입일 KST 날짜가 정확히 일치하는지 확인
       if (kstYear === year && kstMonth === month && kstDay === day) {
+        // kstHour, kstMinute는 API에서 제공하는 값 사용
         return {
           isSolarTerm: true,
           termInfo: {
             name: term.name,
-            hour: kstHour,
-            minute: termDate.getUTCMinutes()
+            hour: term.kstHour,
+            minute: term.kstMinute
           }
         };
       }
