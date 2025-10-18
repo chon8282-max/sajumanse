@@ -130,11 +130,11 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="w-full h-full flex flex-row gap-1 p-0">
+    <div className="flex min-h-[100dvh] w-full bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 pb-[env(safe-area-inset-bottom)]">
+      <div className="w-full min-h-0 flex flex-row gap-1 p-0">
       {/* 왼쪽 영역 */}
-      <div className="flex-1 flex flex-col min-w-[50%]">
-        <Card className="h-full overflow-y-auto rounded-none border-0">
+      <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
+        <Card className="h-full min-h-0 overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -234,8 +234,8 @@ export default function Compatibility() {
       </div>
 
       {/* 오른쪽 영역 */}
-      <div className="flex-1 flex flex-col min-w-[50%]">
-        <Card className="h-full overflow-y-auto rounded-none border-0">
+      <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
+        <Card className="h-full min-h-0 overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">사주 2</CardTitle>
