@@ -35,6 +35,8 @@ import Announcements from "@/pages/Announcements";
 import AnnouncementDetail from "@/pages/AnnouncementDetail";
 import AnnouncementAdmin from "@/pages/AnnouncementAdmin";
 import Login from "@/pages/Login";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 
 function Router() {
   return (
@@ -53,6 +55,8 @@ function Router() {
       <Route path="/announcements" component={Announcements} />
       <Route path="/announcements/:id" component={AnnouncementDetail} />
       <Route path="/announcement-admin" component={AnnouncementAdmin} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
       <Route component={NotFound} />
     </Switch>
   );
