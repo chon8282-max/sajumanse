@@ -347,19 +347,20 @@ export async function registerRoutes(app: Express): Promise<void> {
               const dbSolarTerms = await storage.getSolarTermsForYear(solarCalcYear);
               
               // 절기 이름 → 사주 월 매핑 (0=축월, 1=인월, ..., 11=자월)
+              // 각 월은 2개의 절기로 구성: 첫 번째 절기에서 시작, 두 번째 절기도 같은 월
               const solarTermMonthMap: Record<string, number> = {
-                "소한": 0,  // 축월
-                "입춘": 1,  // 인월  
-                "경칩": 2,  // 묘월
-                "청명": 3,  // 진월
-                "입하": 4,  // 사월
-                "망종": 5,  // 오월
-                "소서": 6,  // 미월
-                "입추": 7,  // 신월
-                "백로": 8,  // 유월
-                "한로": 9,  // 술월
-                "입동": 10, // 해월
-                "대설": 11  // 자월
+                "소한": 0, "대한": 0,  // 축월 (12월)
+                "입춘": 1, "우수": 1,  // 인월 (1월)
+                "경칩": 2, "춘분": 2,  // 묘월 (2월)
+                "청명": 3, "곡우": 3,  // 진월 (3월)
+                "입하": 4, "소만": 4,  // 사월 (4월)
+                "망종": 5, "하지": 5,  // 오월 (5월)
+                "소서": 6, "대서": 6,  // 미월 (6월)
+                "입추": 7, "처서": 7,  // 신월 (7월)
+                "백로": 8, "추분": 8,  // 유월 (8월)
+                "한로": 9, "상강": 9,  // 술월 (9월)
+                "입동": 10, "소설": 10, // 해월 (10월)
+                "대설": 11, "동지": 11  // 자월 (11월)
               };
               
               const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
@@ -690,6 +691,34 @@ export async function registerRoutes(app: Express): Promise<void> {
                 };
               } else {
                 console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}`);
+                
+                // DB에서 절기 데이터 가져오기
+                const dbSolarTerms = await storage.getSolarTermsForYear(solarCalcYear);
+                
+                // 절기 이름 → 사주 월 매핑 (0=축월, 1=인월, ..., 11=자월)
+                // 각 월은 2개의 절기로 구성: 첫 번째 절기에서 시작, 두 번째 절기도 같은 월
+                const solarTermMonthMap: Record<string, number> = {
+                  "소한": 0, "대한": 0,  // 축월 (12월)
+                  "입춘": 1, "우수": 1,  // 인월 (1월)
+                  "경칩": 2, "춘분": 2,  // 묘월 (2월)
+                  "청명": 3, "곡우": 3,  // 진월 (3월)
+                  "입하": 4, "소만": 4,  // 사월 (4월)
+                  "망종": 5, "하지": 5,  // 오월 (5월)
+                  "소서": 6, "대서": 6,  // 미월 (6월)
+                  "입추": 7, "처서": 7,  // 신월 (7월)
+                  "백로": 8, "추분": 8,  // 유월 (8월)
+                  "한로": 9, "상강": 9,  // 술월 (9월)
+                  "입동": 10, "소설": 10, // 해월 (10월)
+                  "대설": 11, "동지": 11  // 자월 (11월)
+                };
+                
+                const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
+                  name: term.name,
+                  date: new Date(term.date),
+                  month: solarTermMonthMap[term.name] ?? 0
+                }));
+                console.log(`✓ DB 절기 데이터 ${solarTermsForCalculation.length}개 로드됨 (${solarCalcYear}년)`);
+                
                 sajuResult = calculateSaju(
                   sajuCalculationYear,      // 년월주는 음력
                   sajuCalculationMonth,
@@ -699,7 +728,8 @@ export async function registerRoutes(app: Express): Promise<void> {
                   finalCalendarType === "음력" || finalCalendarType === "윤달",
                   solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
                   null,  // apiData - 로컬 계산만 사용하므로 null
-                  undefined // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
+                  undefined, // 서버는 시간 조정으로 전월 간지 처리 (이중 조정 방지)
+                  solarTermsForCalculation  // DB 절기 데이터 전달
                 );
                 console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
               }
@@ -735,13 +765,76 @@ export async function registerRoutes(app: Express): Promise<void> {
               });
             }
           } else {
-            // 생시가 없는 경우: 음력 정보만 저장
-            updatedRecord = await storage.updateSajuRecord(id, updateData);
-            res.json({
-              success: true,
-              data: updatedRecord,
-              message: "사주 기본 정보 및 음력 정보가 업데이트되었습니다. (생시 정보 없음으로 사주팔자 미계산)"
-            });
+            // 생시가 없는 경우: 년월일주만 계산 (시주는 빈 문자열)
+            try {
+              // DB에서 절기 데이터 가져오기
+              const dbSolarTerms = await storage.getSolarTermsForYear(solarCalcYear);
+              
+              // 절기 이름 → 사주 월 매핑
+              const solarTermMonthMap: Record<string, number> = {
+                "소한": 0, "대한": 0,  // 축월
+                "입춘": 1, "우수": 1,  // 인월
+                "경칩": 2, "춘분": 2,  // 묘월
+                "청명": 3, "곡우": 3,  // 진월
+                "입하": 4, "소만": 4,  // 사월
+                "망종": 5, "하지": 5,  // 오월
+                "소서": 6, "대서": 6,  // 미월
+                "입추": 7, "처서": 7,  // 신월
+                "백로": 8, "추분": 8,  // 유월
+                "한로": 9, "상강": 9,  // 술월
+                "입동": 10, "소설": 10, // 해월
+                "대설": 11, "동지": 11  // 자월
+              };
+              
+              const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
+                name: term.name,
+                date: new Date(term.date),
+                month: solarTermMonthMap[term.name] ?? 0
+              }));
+              
+              console.log(`생시 미상 사주 계산: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}`);
+              
+              const sajuResult = calculateSaju(
+                sajuCalculationYear,
+                sajuCalculationMonth,
+                sajuCalculationDay,
+                undefined as any, // 생시 미상
+                0,
+                finalCalendarType === "음력" || finalCalendarType === "윤달",
+                solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,
+                null,
+                undefined,
+                solarTermsForCalculation
+              );
+              
+              updateData.yearSky = sajuResult.year.sky;
+              updateData.yearEarth = sajuResult.year.earth;
+              updateData.monthSky = sajuResult.month.sky;
+              updateData.monthEarth = sajuResult.month.earth;
+              updateData.daySky = sajuResult.day.sky;
+              updateData.dayEarth = sajuResult.day.earth;
+              updateData.hourSky = '';  // 생시 미상
+              updateData.hourEarth = '';  // 생시 미상
+              
+              updatedRecord = await storage.updateSajuRecord(id, updateData);
+              
+              res.json({
+                success: true,
+                data: {
+                  record: updatedRecord,
+                  sajuInfo: sajuResult
+                },
+                message: "사주 기본 정보가 업데이트되었습니다. (생시 미상)"
+              });
+            } catch (birthTimeUnknownError) {
+              console.error('Saju calculation error (birth time unknown):', birthTimeUnknownError);
+              updatedRecord = await storage.updateSajuRecord(id, updateData);
+              res.json({
+                success: true,
+                data: updatedRecord,
+                message: "기본 정보 및 음력 정보만 업데이트되었습니다. (생시 미상, 사주 계산 오류)"
+              });
+            }
           }
         } catch (conversionError) {
           console.error('Date conversion error:', conversionError);
@@ -785,6 +878,31 @@ export async function registerRoutes(app: Express): Promise<void> {
           let sajuCalculationMonth = (updatedRecord.lunarMonth || updatedRecord.birthMonth) || 1;
           let sajuCalculationDay = (updatedRecord.lunarDay || updatedRecord.birthDay) || 1;
           
+          // DB에서 절기 데이터 가져오기
+          const dbSolarTerms = await storage.getSolarTermsForYear(updatedRecord.birthYear);
+          
+          // 절기 이름 → 사주 월 매핑
+          const solarTermMonthMap: Record<string, number> = {
+            "소한": 0, "대한": 0,
+            "입춘": 1, "우수": 1,
+            "경칩": 2, "춘분": 2,
+            "청명": 3, "곡우": 3,
+            "입하": 4, "소만": 4,
+            "망종": 5, "하지": 5,
+            "소서": 6, "대서": 6,
+            "입추": 7, "처서": 7,
+            "백로": 8, "추분": 8,
+            "한로": 9, "상강": 9,
+            "입동": 10, "소설": 10,
+            "대설": 11, "동지": 11
+          };
+          
+          const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
+            name: term.name,
+            date: new Date(term.date),
+            month: solarTermMonthMap[term.name] ?? 0
+          }));
+          
           const sajuResult = calculateSaju(
             sajuCalculationYear,
             sajuCalculationMonth,
@@ -794,7 +912,8 @@ export async function registerRoutes(app: Express): Promise<void> {
             updatedRecord.calendarType === "음력" || updatedRecord.calendarType === "윤달",
             { solarYear: updatedRecord.birthYear, solarMonth: updatedRecord.birthMonth || 1, solarDay: updatedRecord.birthDay || 1 },
             null,
-            false
+            false,
+            solarTermsForCalculation
           );
 
           const updateData = {
