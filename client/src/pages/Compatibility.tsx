@@ -184,15 +184,12 @@ export default function Compatibility() {
                 <>
                   <div className="w-full">
                     <SajuTable 
-                      saju={(() => {
-                        const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === leftSaju.birthTime);
-                        return calculateSaju(
-                          leftSaju.birthYear,
-                          leftSaju.birthMonth,
-                          leftSaju.birthDay,
-                          timePeriod?.hour || 0
-                        );
-                      })()}
+                      saju={{
+                        year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
+                        month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
+                        day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
+                        hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' }
+                      }}
                       name={leftSaju.name}
                       birthYear={leftSaju.birthYear}
                       birthMonth={leftSaju.birthMonth}
@@ -273,15 +270,12 @@ export default function Compatibility() {
                 <>
                   <div className="w-full">
                     <SajuTable 
-                      saju={(() => {
-                        const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === rightSaju.birthTime);
-                        return calculateSaju(
-                          rightSaju.birthYear,
-                          rightSaju.birthMonth,
-                          rightSaju.birthDay,
-                          timePeriod?.hour || 0
-                        );
-                      })()}
+                      saju={{
+                        year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
+                        month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
+                        day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
+                        hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' }
+                      }}
                       name={rightSaju.name}
                       birthYear={rightSaju.birthYear}
                       birthMonth={rightSaju.birthMonth}

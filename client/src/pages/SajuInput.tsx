@@ -456,30 +456,20 @@ export default function SajuInput() {
           });
           const lunarData = await response.json();
           
-          // calculateSaju로 일주/시주 계산
-          const tempSaju = calculateSaju(
-            lunarData.data?.lunYear || yearNum,
-            lunarData.data?.lunMonth || monthNum,
-            lunarData.data?.lunDay || dayNum,
-            hour, minute,
-            false,
-            { solarYear, solarMonth, solarDay },
-            null,
-            undefined
-          );
-          
+          // 년주/월주는 클라이언트에서 계산, 일시주는 서버에서 계산됨
+          // (DB 절기 데이터 없이는 정확한 계산 불가)
           requestData.clientCalculatedSaju = {
             yearSky,
             yearEarth,
             monthSky,
             monthEarth,
-            daySky: tempSaju.day.sky,
-            dayEarth: tempSaju.day.earth,
-            hourSky: tempSaju.hour.sky,
-            hourEarth: tempSaju.hour.earth
+            daySky: '', // 서버에서 계산
+            dayEarth: '', // 서버에서 계산
+            hourSky: '', // 서버에서 계산
+            hourEarth: '' // 서버에서 계산
           };
           
-          console.log(`🎯 절입${usePreviousMonthPillar ? '전' : '후'} 사주:`, requestData.clientCalculatedSaju);
+          console.log(`🎯 절입${usePreviousMonthPillar ? '전' : '후'} 년월주만 전달 (일시주는 서버 계산):`, requestData.clientCalculatedSaju);
         } catch (error) {
           console.error('❌ 절입일 사주 계산 실패:', error);
         }
