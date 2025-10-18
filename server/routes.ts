@@ -342,6 +342,33 @@ export async function registerRoutes(app: Express): Promise<void> {
               };
             } else {
               console.log(`사주 계산 입력값: 음력(년월주)=${sajuCalculationYear}-${sajuCalculationMonth}-${sajuCalculationDay}, 양력(일시주)=${solarCalcYear}-${solarCalcMonth}-${solarCalcDay}, 시=${hour}:${minute}, 전월간지=${validatedData.usePreviousMonthPillar || false}`);
+              
+              // DB에서 절기 데이터 가져오기
+              const dbSolarTerms = await storage.getSolarTermsForYear(solarCalcYear);
+              
+              // 절기 이름 → 사주 월 매핑 (0=축월, 1=인월, ..., 11=자월)
+              const solarTermMonthMap: Record<string, number> = {
+                "소한": 0,  // 축월
+                "입춘": 1,  // 인월  
+                "경칩": 2,  // 묘월
+                "청명": 3,  // 진월
+                "입하": 4,  // 사월
+                "망종": 5,  // 오월
+                "소서": 6,  // 미월
+                "입추": 7,  // 신월
+                "백로": 8,  // 유월
+                "한로": 9,  // 술월
+                "입동": 10, // 해월
+                "대설": 11  // 자월
+              };
+              
+              const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
+                name: term.name,
+                date: new Date(term.date),
+                month: solarTermMonthMap[term.name] ?? 0
+              }));
+              console.log(`✓ DB 절기 데이터 ${solarTermsForCalculation.length}개 로드됨 (${solarCalcYear}년)`);
+              
               sajuResult = calculateSaju(
                 sajuCalculationYear,      // 년월주는 음력
                 sajuCalculationMonth,
@@ -351,7 +378,8 @@ export async function registerRoutes(app: Express): Promise<void> {
                 validatedData.calendarType === "음력" || validatedData.calendarType === "윤달",
                 solarCalcYear && solarCalcMonth && solarCalcDay ? { solarYear: solarCalcYear, solarMonth: solarCalcMonth, solarDay: solarCalcDay } : undefined,  // 일시주용 양력 날짜
                 null,  // apiData - 로컬 계산만 사용하므로 null
-                undefined  // 시간 강제 설정으로 이미 처리했으므로 usePreviousMonthPillar 전달하지 않음
+                undefined,  // 시간 강제 설정으로 이미 처리했으므로 usePreviousMonthPillar 전달하지 않음
+                solarTermsForCalculation  // DB 절기 데이터 전달
               );
               console.log(`사주 계산 결과: 년주=${sajuResult.year.sky}${sajuResult.year.earth}, 월주=${sajuResult.month.sky}${sajuResult.month.earth}, 일주=${sajuResult.day.sky}${sajuResult.day.earth}, 시주=${sajuResult.hour.sky}${sajuResult.hour.earth}`);
             }

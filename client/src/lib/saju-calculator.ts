@@ -16,294 +16,43 @@ const JIJI_WUXING: Record<string, WuXing> = {
   "申": "금", "酉": "금", "戌": "토", "亥": "수"
 };
 
-// 월별 지지 (음력 기준)
+// 월별 지지 (음력 기준) - 참고용
 const MONTH_JIJI = ["寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥", "子", "丑"];
 
-// 시간별 지지
+// 시간별 지지 - 참고용
 const HOUR_JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
-// 12절기 날짜 데이터 (월주 계산용, UTC 저장)
-// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
-// KST → UTC 변환: -9시간
-const TWELVE_SOLAR_TERMS_2024 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(2024, 0, 5, 20, 9)) },     // KST 2024-01-06 05:09
-  { term: "입춘", month: 1, date: new Date(Date.UTC(2024, 1, 4, 7, 27)) },     // KST 2024-02-04 16:27
-  { term: "경칩", month: 2, date: new Date(Date.UTC(2024, 2, 5, 1, 23)) },     // KST 2024-03-05 10:23
-  { term: "청명", month: 3, date: new Date(Date.UTC(2024, 3, 4, 6, 2)) },      // KST 2024-04-04 15:02
-  { term: "입하", month: 4, date: new Date(Date.UTC(2024, 4, 4, 23, 10)) },    // KST 2024-05-05 08:10
-  { term: "망종", month: 5, date: new Date(Date.UTC(2024, 5, 5, 3, 10)) },     // KST 2024-06-05 12:10
-  { term: "소서", month: 6, date: new Date(Date.UTC(2024, 6, 6, 13, 20)) },    // KST 2024-07-06 22:20
-  { term: "입추", month: 7, date: new Date(Date.UTC(2024, 7, 7, 0, 11)) },     // KST 2024-08-07 09:11
-  { term: "백로", month: 8, date: new Date(Date.UTC(2024, 8, 7, 2, 11)) },     // KST 2024-09-07 11:11
-  { term: "한로", month: 9, date: new Date(Date.UTC(2024, 9, 7, 18, 56)) },    // KST 2024-10-08 03:56
-  { term: "입동", month: 10, date: new Date(Date.UTC(2024, 10, 7, 3, 20)) },   // KST 2024-11-07 12:20
-  { term: "대설", month: 11, date: new Date(Date.UTC(2024, 11, 6, 15, 17)) },  // KST 2024-12-07 00:17
-];
-
-// 1963년 12절기 정확한 시각 (사용자 제공, UTC 저장)
-// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
-// KST → UTC 변환: -9시간
-const TWELVE_SOLAR_TERMS_1963 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(1963, 0, 6, 2, 0)) },    // KST 1963-01-06 11:00
-  { term: "입춘", month: 1, date: new Date(Date.UTC(1963, 1, 4, 13, 8)) },   // KST 1963-02-04 22:08
-  { term: "경칩", month: 2, date: new Date(Date.UTC(1963, 2, 6, 7, 0)) },    // KST 1963-03-06 16:00
-  { term: "청명", month: 3, date: new Date(Date.UTC(1963, 3, 5, 12, 0)) },   // KST 1963-04-05 21:00
-  { term: "입하", month: 4, date: new Date(Date.UTC(1963, 4, 6, 5, 0)) },    // KST 1963-05-06 14:00
-  { term: "망종", month: 5, date: new Date(Date.UTC(1963, 5, 6, 9, 0)) },    // KST 1963-06-06 18:00
-  { term: "소서", month: 6, date: new Date(Date.UTC(1963, 6, 7, 19, 0)) },   // KST 1963-07-08 04:00
-  { term: "입추", month: 7, date: new Date(Date.UTC(1963, 7, 8, 6, 0)) },    // KST 1963-08-08 15:00
-  { term: "백로", month: 8, date: new Date(Date.UTC(1963, 8, 8, 8, 0)) },    // KST 1963-09-08 17:00
-  { term: "한로", month: 9, date: new Date(Date.UTC(1963, 9, 9, 0, 0)) },    // KST 1963-10-09 09:00
-  { term: "입동", month: 10, date: new Date(Date.UTC(1963, 10, 8, 3, 0)) },  // KST 1963-11-08 12:00
-  { term: "대설", month: 11, date: new Date(Date.UTC(1963, 11, 7, 20, 0)) }, // KST 1963-12-08 05:00
-];
-
-// 1965년 12절기 정확한 시각 (KASI DB 기반, UTC 저장)
-// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
-// KST → UTC 변환: -9시간
-const TWELVE_SOLAR_TERMS_1965 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(1965, 0, 5, 13, 2)) },   // KST 1965-01-05 22:02
-  { term: "입춘", month: 1, date: new Date(Date.UTC(1965, 1, 4, 0, 46)) },   // KST 1965-02-04 09:46
-  { term: "경칩", month: 2, date: new Date(Date.UTC(1965, 2, 5, 19, 1)) },   // KST 1965-03-06 04:01
-  { term: "청명", month: 3, date: new Date(Date.UTC(1965, 3, 5, 0, 7)) },    // KST 1965-04-05 09:07
-  { term: "입하", month: 4, date: new Date(Date.UTC(1965, 4, 5, 17, 42)) },  // KST 1965-05-06 02:42
-  { term: "망종", month: 5, date: new Date(Date.UTC(1965, 5, 5, 22, 2)) },   // KST 1965-06-06 07:02
-  { term: "소서", month: 6, date: new Date(Date.UTC(1965, 6, 7, 8, 21)) },   // KST 1965-07-07 17:21
-  { term: "입추", month: 7, date: new Date(Date.UTC(1965, 7, 7, 18, 5)) },   // KST 1965-08-08 03:05
-  { term: "백로", month: 8, date: new Date(Date.UTC(1965, 8, 7, 20, 48)) },  // KST 1965-09-08 05:48
-  { term: "한로", month: 9, date: new Date(Date.UTC(1965, 9, 8, 12, 11)) },  // KST 1965-10-08 21:11
-  { term: "입동", month: 10, date: new Date(Date.UTC(1965, 10, 7, 15, 7)) }, // KST 1965-11-08 00:07
-  { term: "대설", month: 11, date: new Date(Date.UTC(1965, 11, 7, 7, 46)) }, // KST 1965-12-07 16:46
-];
-
-// 1949년 12절기 정확한 시각 (KASI DB 기반, UTC 저장)
-// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
-// KST → UTC 변환: -9시간 (예: KST 12:23 → UTC 03:23)
-const TWELVE_SOLAR_TERMS_1949 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(1949, 0, 5, 15, 41)) },  // KST 1949-01-06 00:41
-  { term: "입춘", month: 1, date: new Date(Date.UTC(1949, 1, 4, 3, 23)) },   // KST 1949-02-04 12:23
-  { term: "경칩", month: 2, date: new Date(Date.UTC(1949, 2, 5, 21, 39)) },  // KST 1949-03-06 06:39
-  { term: "청명", month: 3, date: new Date(Date.UTC(1949, 3, 5, 2, 52)) },   // KST 1949-04-05 11:52
-  { term: "입하", month: 4, date: new Date(Date.UTC(1949, 4, 5, 20, 37)) },  // KST 1949-05-06 05:37
-  { term: "망종", month: 5, date: new Date(Date.UTC(1949, 5, 6, 1, 7)) },    // KST 1949-06-06 10:07
-  { term: "소서", month: 6, date: new Date(Date.UTC(1949, 6, 7, 11, 32)) },  // KST 1949-07-07 20:32
-  { term: "입추", month: 7, date: new Date(Date.UTC(1949, 7, 7, 21, 15)) },  // KST 1949-08-08 06:15
-  { term: "백로", month: 8, date: new Date(Date.UTC(1949, 8, 7, 23, 54)) },  // KST 1949-09-08 08:54
-  { term: "한로", month: 9, date: new Date(Date.UTC(1949, 9, 8, 15, 11)) },  // KST 1949-10-09 00:11
-  { term: "입동", month: 10, date: new Date(Date.UTC(1949, 10, 7, 18, 0)) }, // KST 1949-11-08 03:00
-  { term: "대설", month: 11, date: new Date(Date.UTC(1949, 11, 7, 10, 33)) },// KST 1949-12-07 19:33
-];
-
-// 1950년 12절기 정확한 시각 (bebeyam.com 기반, UTC 저장)
-// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
-// KST → UTC 변환: -9시간
-const TWELVE_SOLAR_TERMS_1950 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(1950, 0, 5, 20, 30)) },  // KST 1950-01-06 05:30
-  { term: "입춘", month: 1, date: new Date(Date.UTC(1950, 1, 4, 9, 22)) },   // KST 1950-02-04 18:22
-  { term: "경칩", month: 2, date: new Date(Date.UTC(1950, 2, 6, 2, 0)) },    // KST 1950-03-06 11:00
-  { term: "청명", month: 3, date: new Date(Date.UTC(1950, 3, 5, 7, 0)) },    // KST 1950-04-05 16:00
-  { term: "입하", month: 4, date: new Date(Date.UTC(1950, 4, 6, 0, 0)) },    // KST 1950-05-06 09:00
-  { term: "망종", month: 5, date: new Date(Date.UTC(1950, 5, 6, 4, 0)) },    // KST 1950-06-06 13:00
-  { term: "소서", month: 6, date: new Date(Date.UTC(1950, 6, 7, 14, 0)) },   // KST 1950-07-07 23:00
-  { term: "입추", month: 7, date: new Date(Date.UTC(1950, 7, 8, 1, 0)) },    // KST 1950-08-08 10:00
-  { term: "백로", month: 8, date: new Date(Date.UTC(1950, 8, 8, 3, 0)) },    // KST 1950-09-08 12:00
-  { term: "한로", month: 9, date: new Date(Date.UTC(1950, 9, 8, 19, 0)) },   // KST 1950-10-09 04:00
-  { term: "입동", month: 10, date: new Date(Date.UTC(1950, 10, 7, 22, 0)) }, // KST 1950-11-08 07:00
-  { term: "대설", month: 11, date: new Date(Date.UTC(1950, 11, 7, 15, 0)) }, // KST 1950-12-08 00:00
-];
-
-// 2025년 12절기 정확한 시각 (DB 기반, UTC 저장)
-// month: 0=축월, 1=인월, 2=묘월, 3=진월, 4=사월, 5=오월, 6=미월, 7=신월, 8=유월, 9=술월, 10=해월, 11=자월
-// KST → UTC 변환: -9시간
-const TWELVE_SOLAR_TERMS_2025 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(2025, 0, 5, 2, 33)) },    // KST 2025-01-05 11:33
-  { term: "입춘", month: 1, date: new Date(Date.UTC(2025, 1, 3, 14, 10)) },   // KST 2025-02-03 23:10
-  { term: "경칩", month: 2, date: new Date(Date.UTC(2025, 2, 5, 8, 7)) },     // KST 2025-03-05 17:07
-  { term: "청명", month: 3, date: new Date(Date.UTC(2025, 3, 4, 12, 49)) },   // KST 2025-04-04 21:49
-  { term: "입하", month: 4, date: new Date(Date.UTC(2025, 4, 5, 5, 57)) },    // KST 2025-05-05 14:57
-  { term: "망종", month: 5, date: new Date(Date.UTC(2025, 5, 5, 9, 57)) },    // KST 2025-06-05 18:57
-  { term: "소서", month: 6, date: new Date(Date.UTC(2025, 6, 6, 20, 5)) },    // KST 2025-07-07 05:05
-  { term: "입추", month: 7, date: new Date(Date.UTC(2025, 7, 7, 5, 52)) },    // KST 2025-08-07 14:52
-  { term: "백로", month: 8, date: new Date(Date.UTC(2025, 8, 7, 8, 52)) },    // KST 2025-09-07 17:52
-  { term: "한로", month: 9, date: new Date(Date.UTC(2025, 9, 8, 0, 41)) },    // KST 2025-10-08 09:41
-  { term: "입동", month: 10, date: new Date(Date.UTC(2025, 10, 7, 4, 4)) },   // KST 2025-11-07 13:04
-  { term: "대설", month: 11, date: new Date(Date.UTC(2025, 11, 6, 21, 5)) },  // KST 2025-12-07 06:05
-];
-
-// 24절기 날짜 데이터 (입춘 기준일, UTC 저장)
-// KST → UTC 변환: -9시간
-const SOLAR_TERMS_LICHUN = [
-  { year: 1963, date: new Date(Date.UTC(1963, 1, 4, 13, 8)) },    // KST 1963-02-04 22:08
-  { year: 1988, date: new Date(Date.UTC(1988, 1, 4, 14, 43)) },   // KST 1988-02-04 23:43
-  { year: 2020, date: new Date(Date.UTC(2020, 1, 3, 15, 0)) },    // KST 2020-02-04 00:00 (근사)
-  { year: 2021, date: new Date(Date.UTC(2021, 1, 2, 15, 0)) },    // KST 2021-02-03 00:00 (근사)
-  { year: 2022, date: new Date(Date.UTC(2022, 1, 3, 15, 0)) },    // KST 2022-02-04 00:00 (근사)
-  { year: 2023, date: new Date(Date.UTC(2023, 1, 3, 15, 0)) },    // KST 2023-02-04 00:00 (근사)
-  { year: 2024, date: new Date(Date.UTC(2024, 1, 4, 7, 27)) },    // KST 2024-02-04 16:27
-  { year: 2025, date: new Date(Date.UTC(2025, 1, 3, 14, 10)) },   // KST 2025-02-03 23:10
-];
-
 /**
- * 해당 년도의 입춘일 구하기 (근사치)
- */
-function getLichunDate(year: number): Date {
-  const found = SOLAR_TERMS_LICHUN.find(st => st.year === year);
-  if (found) return found.date;
-  
-  // 기본값으로 2월 4일 00:00 KST 사용 (UTC로 저장: -9시간)
-  // KST 00:00 → UTC 15:00 (전날)
-  return new Date(Date.UTC(year, 1, 3, 15, 0));
-}
-
-/**
- * 12절기 기준으로 사주 월 계산
+ * 12절기 기준으로 사주 월 계산 (DB 절기 데이터 필수)
  * @param date 계산할 날짜 (시/분 포함)
- * @param solarTerms DB에서 가져온 절기 데이터 (서버에서만 사용)
+ * @param solarTerms DB에서 가져온 절기 데이터 (필수)
  * @returns 사주 월 (0:축월, 1:인월, 2:묘월..., 11:자월)
  */
 function calculateSajuMonth(date: Date, solarTerms?: Array<{ name: string; date: Date; month: number }>): number {
-  const year = date.getFullYear();
-  
-  // DB 절기 데이터가 있으면 우선 사용 (서버에서만 전달됨)
-  if (solarTerms && solarTerms.length > 0) {
-    console.log(`✓ DB 절기 데이터 사용 (${solarTerms.length}개 절기)`);
-    
-    // 현재 날짜가 어느 절기 구간에 속하는지 확인
-    for (let i = 0; i < solarTerms.length - 1; i++) {
-      const currentTerm = solarTerms[i];
-      const nextTerm = solarTerms[i + 1];
-      
-      // 현재 날짜가 이 절기 구간에 속하는지 확인
-      if (date >= currentTerm.date && date < nextTerm.date) {
-        console.log(`  → ${currentTerm.name}~${nextTerm.name} 구간: ${currentTerm.month}월`);
-        return currentTerm.month;
-      }
-    }
-    
-    // 마지막 절기 이후면 해당 월
-    const lastTerm = solarTerms[solarTerms.length - 1];
-    console.log(`  → 마지막 절기(${lastTerm.name}) 이후: ${lastTerm.month}월`);
-    return lastTerm.month;
+  // DB 절기 데이터가 없으면 오류
+  if (!solarTerms || solarTerms.length === 0) {
+    console.error('❌ DB 절기 데이터가 없습니다. 서버에서 절기 데이터를 가져와야 합니다.');
+    throw new Error('DB 절기 데이터가 필요합니다. 서버 API를 통해 사주를 계산하세요.');
   }
   
-  // DB 데이터가 없으면 기존 방식 사용 (클라이언트 또는 fallback)
-  console.log(`⚠ DB 절기 없음, 하드코딩된 절기 사용 (fallback)`);
-  
-  // 이전 년도, 현재 년도, 다음 년도의 12절기 날짜들을 생성
-  const prevYearTerms = generateSolarTermsForYear(year - 1);
-  const currentYearTerms = generateSolarTermsForYear(year);
-  const nextYearTerms = generateSolarTermsForYear(year + 1);
-  
-  // 모든 절기들을 시간순으로 정렬
-  const allTerms = [...prevYearTerms, ...currentYearTerms, ...nextYearTerms].sort((a, b) => 
-    a.date.getTime() - b.date.getTime()
-  );
+  console.log(`✓ DB 절기 데이터 사용 (${solarTerms.length}개 절기)`);
   
   // 현재 날짜가 어느 절기 구간에 속하는지 확인
-  for (let i = 0; i < allTerms.length - 1; i++) {
-    const currentTerm = allTerms[i];
-    const nextTerm = allTerms[i + 1];
+  for (let i = 0; i < solarTerms.length - 1; i++) {
+    const currentTerm = solarTerms[i];
+    const nextTerm = solarTerms[i + 1];
     
     // 현재 날짜가 이 절기 구간에 속하는지 확인
     if (date >= currentTerm.date && date < nextTerm.date) {
+      console.log(`  → ${currentTerm.name}~${nextTerm.name} 구간: ${currentTerm.month}월`);
       return currentTerm.month;
     }
   }
   
-  // 기본값 (마지막 절기 이후면 해당 월)
-  return allTerms[allTerms.length - 1].month;
-}
-
-// 1988년 12절기 정확한 시각 (DB 기반, UTC 저장)
-// KST → UTC 변환: -9시간
-const TWELVE_SOLAR_TERMS_1988 = [
-  { term: "소한", month: 0, date: new Date(Date.UTC(1988, 0, 6, 3, 4)) },     // KST 1988-01-06 12:04
-  { term: "입춘", month: 1, date: new Date(Date.UTC(1988, 1, 4, 14, 43)) },   // KST 1988-02-04 23:43
-  { term: "경칩", month: 2, date: new Date(Date.UTC(1988, 2, 5, 8, 47)) },    // KST 1988-03-05 17:47
-  { term: "청명", month: 3, date: new Date(Date.UTC(1988, 3, 4, 13, 39)) },   // KST 1988-04-04 22:39
-  { term: "입하", month: 4, date: new Date(Date.UTC(1988, 4, 5, 7, 2)) },     // KST 1988-05-05 16:02
-  { term: "망종", month: 5, date: new Date(Date.UTC(1988, 5, 5, 11, 15)) },   // KST 1988-06-05 20:15
-  { term: "소서", month: 6, date: new Date(Date.UTC(1988, 6, 6, 21, 33)) },   // KST 1988-07-07 06:33
-  { term: "입추", month: 7, date: new Date(Date.UTC(1988, 7, 7, 7, 20)) },    // KST 1988-08-07 16:20
-  { term: "백로", month: 8, date: new Date(Date.UTC(1988, 8, 7, 10, 12)) },   // KST 1988-09-07 19:12
-  { term: "한로", month: 9, date: new Date(Date.UTC(1988, 9, 8, 1, 44)) },    // KST 1988-10-08 10:44
-  { term: "입동", month: 10, date: new Date(Date.UTC(1988, 10, 7, 4, 49)) },  // KST 1988-11-07 13:49
-  { term: "대설", month: 11, date: new Date(Date.UTC(1988, 11, 6, 21, 34)) }, // KST 1988-12-07 06:34
-];
-
-/**
- * 특정 년도의 12절기 날짜들을 생성
- * @param year 대상 년도
- * @returns 해당 년도의 12절기 날짜 배열
- */
-function generateSolarTermsForYear(year: number): Array<{ term: string; month: number; date: Date }> {
-  // 1949년은 정확한 KASI DB 데이터 사용
-  if (year === 1949) {
-    return TWELVE_SOLAR_TERMS_1949;
-  }
-  
-  // 1950년은 정확한 데이터 사용 (bebeyam.com 기반)
-  if (year === 1950) {
-    return TWELVE_SOLAR_TERMS_1950;
-  }
-  
-  // 1963년은 정확한 데이터 사용 (사용자 제공)
-  if (year === 1963) {
-    return TWELVE_SOLAR_TERMS_1963;
-  }
-  
-  // 1965년은 정확한 KASI DB 데이터 사용
-  if (year === 1965) {
-    return TWELVE_SOLAR_TERMS_1965;
-  }
-  
-  // 1988년은 정확한 DB 데이터 사용
-  if (year === 1988) {
-    return TWELVE_SOLAR_TERMS_1988;
-  }
-  
-  // 2024년은 정확한 데이터 사용
-  if (year === 2024) {
-    return TWELVE_SOLAR_TERMS_2024;
-  }
-  
-  // 2025년은 정확한 DB 데이터 사용
-  if (year === 2025) {
-    return TWELVE_SOLAR_TERMS_2025;
-  }
-  
-  // 2024년 데이터를 기준으로 근사치 생성
-  const baseYear = 2024;
-  const yearDiff = year - baseYear;
-  
-  // 월별 절기 근사치 (month: 0=축월~11=자월)
-  const solarTermsTemplate = [
-    { term: "소한", month: 0, baseMonth: 0, baseDay: 6 },   // 1월 6일
-    { term: "입춘", month: 1, baseMonth: 1, baseDay: 4 },   // 2월 4일
-    { term: "경칩", month: 2, baseMonth: 2, baseDay: 5 },   // 3월 5일
-    { term: "청명", month: 3, baseMonth: 3, baseDay: 4 },   // 4월 4일
-    { term: "입하", month: 4, baseMonth: 4, baseDay: 5 },   // 5월 5일
-    { term: "망종", month: 5, baseMonth: 5, baseDay: 5 },   // 6월 5일
-    { term: "소서", month: 6, baseMonth: 6, baseDay: 7 },   // 7월 7일
-    { term: "입추", month: 7, baseMonth: 7, baseDay: 7 },   // 8월 7일
-    { term: "백로", month: 8, baseMonth: 8, baseDay: 7 },   // 9월 7일
-    { term: "한로", month: 9, baseMonth: 9, baseDay: 8 },   // 10월 8일
-    { term: "입동", month: 10, baseMonth: 10, baseDay: 7 }, // 11월 7일
-    { term: "대설", month: 11, baseMonth: 11, baseDay: 7 }, // 12월 7일
-  ];
-  
-  return solarTermsTemplate.map(template => {
-    // 연도별 변동 근사치 (4년에 하루씩 변동)
-    const dayOffset = Math.floor(yearDiff / 4);
-    const adjustedDay = template.baseDay + dayOffset;
-    
-    return {
-      term: template.term,
-      month: template.month,
-      // UTC 저장: KST 12:00 → UTC 03:00
-      date: new Date(Date.UTC(year, template.baseMonth, adjustedDay, 3, 0))
-    };
-  });
+  // 마지막 절기 이후면 해당 월
+  const lastTerm = solarTerms[solarTerms.length - 1];
+  console.log(`  → 마지막 절기(${lastTerm.name}) 이후: ${lastTerm.month}월`);
+  return lastTerm.month;
 }
 
 /**
@@ -355,9 +104,8 @@ export function calculateSaju(
     // 야자시는 일간이 바뀌지 않으므로 다음날로 넘기지 않음
   }
   
-  // 입춘 기준으로 년도 조정 (이중 조정 방지)
+  // 입춘 기준으로 년도 조정 (DB 절기 데이터 사용)
   let baseYear = solarDate ? solarDate.solarYear : year;
-  const lichunDate = getLichunDate(baseYear);
   let sajuYear = year; // 년주는 음력 년도 기준
   let isLichunAdjusted = false; // 입춘 조정 여부 추적
   
@@ -366,16 +114,28 @@ export function calculateSaju(
     isLichunAdjusted = true;
   }
   
-  // 입춘 조정: 음력 변환이 이미 된 경우 추가 조정하지 않음
-  // 시간까지 포함하여 정확한 비교
-  const checkDate = solarDate 
-    ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay, hour || 12, minute || 0)
-    : calcDate;
-  // 음력 변환이 이미 되어 year가 baseYear와 다르면 이미 조정된 것으로 간주
-  if (checkDate < lichunDate && year === baseYear) {
-    sajuYear = year - 1;
-    isLichunAdjusted = true;
+  // 입춘 조정: DB 절기 데이터에서 입춘일 찾기
+  if (solarTerms && solarTerms.length > 0) {
+    const lichunTerm = solarTerms.find(term => term.name === "입춘");
+    if (lichunTerm) {
+      const checkDate = solarDate 
+        ? new Date(solarDate.solarYear, solarDate.solarMonth - 1, solarDate.solarDay, hour || 12, minute || 0)
+        : calcDate;
+      
+      // 음력 변환이 이미 되어 year가 baseYear와 다르면 이미 조정된 것으로 간주
+      if (checkDate < lichunTerm.date && year === baseYear) {
+        sajuYear = year - 1;
+        isLichunAdjusted = true;
+        console.log(`입춘 전이므로 년주 -1: ${year} → ${sajuYear}`);
+      } else {
+        sajuYear = year;
+      }
+    } else {
+      console.warn('⚠ DB 절기 데이터에 입춘이 없습니다.');
+      sajuYear = year;
+    }
   } else {
+    console.warn('⚠ DB 절기 데이터가 없어 입춘 조정을 생략합니다.');
     sajuYear = year;
   }
   
