@@ -23,36 +23,49 @@ const MONTH_JIJI = ["寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌
 const HOUR_JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
 /**
- * 12절기 기준으로 사주 월 계산 (DB 절기 데이터 필수)
+ * 12절기 기준으로 사주 월 계산
  * @param date 계산할 날짜 (시/분 포함)
- * @param solarTerms DB에서 가져온 절기 데이터 (필수)
+ * @param solarTerms DB에서 가져온 절기 데이터 (없으면 근사값 사용)
  * @returns 사주 월 (0:축월, 1:인월, 2:묘월..., 11:자월)
  */
 function calculateSajuMonth(date: Date, solarTerms?: Array<{ name: string; date: Date; month: number }>): number {
-  // DB 절기 데이터가 없으면 오류
-  if (!solarTerms || solarTerms.length === 0) {
-    console.error('❌ DB 절기 데이터가 없습니다. 서버에서 절기 데이터를 가져와야 합니다.');
-    throw new Error('DB 절기 데이터가 필요합니다. 서버 API를 통해 사주를 계산하세요.');
-  }
-  
-  console.log(`✓ DB 절기 데이터 사용 (${solarTerms.length}개 절기)`);
-  
-  // 현재 날짜가 어느 절기 구간에 속하는지 확인
-  for (let i = 0; i < solarTerms.length - 1; i++) {
-    const currentTerm = solarTerms[i];
-    const nextTerm = solarTerms[i + 1];
+  // DB 절기 데이터가 있으면 정확한 계산
+  if (solarTerms && solarTerms.length > 0) {
+    console.log(`✓ DB 절기 데이터 사용 (${solarTerms.length}개 절기)`);
     
-    // 현재 날짜가 이 절기 구간에 속하는지 확인
-    if (date >= currentTerm.date && date < nextTerm.date) {
-      console.log(`  → ${currentTerm.name}~${nextTerm.name} 구간: ${currentTerm.month}월`);
-      return currentTerm.month;
+    // 현재 날짜가 어느 절기 구간에 속하는지 확인
+    for (let i = 0; i < solarTerms.length - 1; i++) {
+      const currentTerm = solarTerms[i];
+      const nextTerm = solarTerms[i + 1];
+      
+      // 현재 날짜가 이 절기 구간에 속하는지 확인
+      if (date >= currentTerm.date && date < nextTerm.date) {
+        console.log(`  → ${currentTerm.name}~${nextTerm.name} 구간: ${currentTerm.month}월`);
+        return currentTerm.month;
+      }
     }
+    
+    // 마지막 절기 이후면 해당 월
+    const lastTerm = solarTerms[solarTerms.length - 1];
+    console.log(`  → 마지막 절기(${lastTerm.name}) 이후: ${lastTerm.month}월`);
+    return lastTerm.month;
   }
   
-  // 마지막 절기 이후면 해당 월
-  const lastTerm = solarTerms[solarTerms.length - 1];
-  console.log(`  → 마지막 절기(${lastTerm.name}) 이후: ${lastTerm.month}월`);
-  return lastTerm.month;
+  // DB 절기 데이터가 없으면 근사값 사용 (실시간 시계 용도)
+  console.warn('⚠️ DB 절기 데이터 없음 - 근사값 사용 (실시간 표시용)');
+  const solarMonth = date.getMonth(); // 0-11 (1월=0, 12월=11)
+  const solarDay = date.getDate();
+  
+  // 간단한 근사 (각 월 6일경 절입으로 가정)
+  const monthMapping = [11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]; // 양력 1월=자월(11)...
+  let sajuMonth = monthMapping[solarMonth];
+  
+  // 월 초순이면 전월일 가능성 (6일 이전)
+  if (solarDay < 6) {
+    sajuMonth = (sajuMonth - 1 + 12) % 12;
+  }
+  
+  return sajuMonth;
 }
 
 /**

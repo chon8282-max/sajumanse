@@ -6,7 +6,7 @@ import SajuTable from "@/components/SajuTable";
 import CurrentTimeTable from "@/components/CurrentTimeTable";
 import DatePicker from "@/components/DatePicker";
 import MenuGrid from "@/components/MenuGrid";
-import { calculateSaju, getCurrentSaju } from "@/lib/saju-calculator";
+import { getCurrentSaju } from "@/lib/saju-calculator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo, type Announcement } from "@shared/schema";
