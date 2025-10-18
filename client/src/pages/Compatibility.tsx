@@ -130,13 +130,11 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden">
-      <div className="w-full h-full relative">
-        {/* 2분할 레이아웃 */}
-        <div className="h-full flex flex-row gap-1 p-0">
-        {/* 왼쪽 영역 */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <Card className="flex-1 overflow-auto rounded-none border-0">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="w-full min-h-screen flex flex-col lg:flex-row gap-1 p-0">
+      {/* 왼쪽 영역 */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen lg:min-h-0">
+        <Card className="flex-1 overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -184,7 +182,7 @@ export default function Compatibility() {
             <CardContent className="p-1">
               {leftSajuId && leftSaju ? (
                 <>
-                  <div className="scale-[0.7] origin-top-left w-[142.86%]">
+                  <div className="w-full">
                     <SajuTable 
                       saju={(() => {
                         const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === leftSaju.birthTime);
@@ -232,12 +230,12 @@ export default function Compatibility() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </div>
+        </Card>
+      </div>
 
-        {/* 오른쪽 영역 */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <Card className="flex-1 overflow-auto rounded-none border-0">
+      {/* 오른쪽 영역 */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen lg:min-h-0">
+        <Card className="flex-1 overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">사주 2</CardTitle>
@@ -273,7 +271,7 @@ export default function Compatibility() {
             <CardContent className="p-1">
               {rightSajuId && rightSaju ? (
                 <>
-                  <div className="scale-[0.7] origin-top-left w-[142.86%]">
+                  <div className="w-full">
                     <SajuTable 
                       saju={(() => {
                         const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === rightSaju.birthTime);
@@ -321,12 +319,11 @@ export default function Compatibility() {
                 </div>
               )}
             </CardContent>
-          </Card>
-        </div>
-        </div>
+        </Card>
+      </div>
 
-        {/* 왼쪽 사주 선택 다이얼로그 */}
-        <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
+      {/* 왼쪽 사주 선택 다이얼로그 */}
+      <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>사주 1 선택</DialogTitle>
@@ -354,10 +351,10 @@ export default function Compatibility() {
             ))}
           </div>
         </DialogContent>
-        </Dialog>
+      </Dialog>
 
-        {/* 오른쪽 사주 선택 다이얼로그 */}
-        <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
+      {/* 오른쪽 사주 선택 다이얼로그 */}
+      <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>사주 2 선택</DialogTitle>
@@ -385,7 +382,7 @@ export default function Compatibility() {
             ))}
           </div>
         </DialogContent>
-        </Dialog>
+      </Dialog>
       </div>
     </div>
   );

@@ -230,7 +230,7 @@ function AppContent() {
   const isCompatibilityPage = location === "/compatibility";
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <div className="flex min-h-screen flex-col bg-background font-sans">
       {/* 궁합 페이지가 아닌 경우에만 메인 페이지 상단 헤더 표시 */}
       {!isCompatibilityPage && location === "/" && (
         <MobileHeader
@@ -241,7 +241,7 @@ function AppContent() {
         />
       )}
       
-      <main className={isCompatibilityPage ? "" : "pb-20"}> {/* 궁합 페이지가 아닐 때만 하단 네비게이션 공간 */}
+      <main className={`flex-1 ${isCompatibilityPage ? "" : "pb-20"}`}>
         <Router />
       </main>
 
