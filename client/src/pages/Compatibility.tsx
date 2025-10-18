@@ -130,11 +130,11 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="w-full h-full flex flex-row gap-1 p-0 overflow-x-auto">
+    <div className="h-dvh bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="w-full h-full flex flex-row gap-1 p-0">
       {/* 왼쪽 영역 */}
       <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
-        <Card className="flex-1 overflow-y-auto rounded-none border-0">
+        <Card className="h-full overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function Compatibility() {
 
       {/* 오른쪽 영역 */}
       <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
-        <Card className="flex-1 overflow-y-auto rounded-none border-0">
+        <Card className="h-full overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">사주 2</CardTitle>
@@ -324,11 +324,11 @@ export default function Compatibility() {
 
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>사주 1 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-y-auto flex-1">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
@@ -355,11 +355,11 @@ export default function Compatibility() {
 
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>사주 2 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-y-auto flex-1">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
