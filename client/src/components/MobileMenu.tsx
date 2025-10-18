@@ -8,7 +8,9 @@ import {
   X,
   Info,
   Type,
-  RefreshCw
+  RefreshCw,
+  FileText,
+  Scale
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -334,6 +336,48 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <MessageSquare className="w-4 h-4 mr-1" />
                   의견·오류신고
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="p-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">약관</h3>
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-2"
+                  onClick={() => {
+                    setLocation("/privacy-policy");
+                    onClose();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLocation("/privacy-policy");
+                    onClose();
+                  }}
+                  data-testid="button-privacy-policy"
+                >
+                  <FileText className="w-4 h-4 mr-1" />
+                  개인정보 처리방침
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-2"
+                  onClick={() => {
+                    setLocation("/terms-of-service");
+                    onClose();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setLocation("/terms-of-service");
+                    onClose();
+                  }}
+                  data-testid="button-terms-of-service"
+                >
+                  <Scale className="w-4 h-4 mr-1" />
+                  서비스 이용약관
                 </Button>
               </div>
             </Card>
