@@ -245,17 +245,15 @@ function AppContent() {
         />
       )}
       
-      <main className={`flex-1 min-h-0 ${isCompatibilityPage ? "" : "pb-20"}`}>
+      <main className="flex-1 min-h-0 pb-20">
         <Router />
       </main>
 
-      {/* 궁합 페이지가 아닐 때만 하단 네비게이션 표시 */}
-      {!isCompatibilityPage && (
-        <BottomNavigation 
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
-      )}
+      {/* 모든 페이지에서 하단 네비게이션 표시 */}
+      <BottomNavigation 
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+      />
 
       {/* 궁합 페이지가 아니고 메인 페이지일 때만 모바일 메뉴 표시 */}
       {!isCompatibilityPage && location === "/" && (
