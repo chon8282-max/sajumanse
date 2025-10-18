@@ -549,14 +549,16 @@ export default function SajuTable({
   };
 
   // 사주 데이터 구성 (메모이제이션)
-  // 생시가 없으면 시주를 제외
+  // 생시가 없으면 빈 문자열로 시주 추가 ("생시모름" 표시용)
   const sajuColumns = useMemo(() => {
     const columns = [];
     
-    // 생시가 있을 때만 시주 추가
-    if (saju.hour.sky && saju.hour.earth) {
-      columns.push({ label: "시주", sky: saju.hour.sky, earth: saju.hour.earth });
-    }
+    // 생시가 있든 없든 항상 시주 추가 (없으면 빈 문자열)
+    columns.push({ 
+      label: "시주", 
+      sky: saju.hour.sky || '', 
+      earth: saju.hour.earth || '' 
+    });
     
     columns.push({ label: "일주", sky: saju.day.sky, earth: saju.day.earth });
     columns.push({ label: "월주", sky: saju.month.sky, earth: saju.month.earth });
@@ -567,11 +569,11 @@ export default function SajuTable({
 
   // 12신살 계산 (년지 기준)
   const sibiSinsal = useMemo(() => {
-    const hasHourPillar = saju.hour.sky && saju.hour.earth;
-    const defaultArray = hasHourPillar ? ['', '', '', ''] : ['', '', ''];
+    // 항상 4개 기둥 (시일월년)
+    const defaultArray = ['', '', '', ''];
     if (!saju?.year?.earth) return defaultArray;
     return calculateSibiSinsal(saju.year.earth, sajuColumns);
-  }, [saju?.year?.earth, saju?.hour?.sky, saju?.hour?.earth, sajuColumns]);
+  }, [saju?.year?.earth, sajuColumns]);
 
   // 공망 계산 (일주 기준)
   const gongmang = useMemo(() => {
@@ -643,8 +645,8 @@ export default function SajuTable({
   // 통합 신살 계산 (12신살 + 천을귀인/문창귀인 + 모든 신살 - 메모이제이션)
   // 각 주별로 신살 배열을 반환
   const allShinsalArrays = useMemo(() => {
-    const hasHourPillar = saju.hour.sky && saju.hour.earth;
-    const defaultArray = hasHourPillar ? [[], [], [], []] : [[], [], []];
+    // 항상 4개 기둥 (시일월년)
+    const defaultArray = [[], [], [], []];
     
     if (!saju?.day?.sky) return defaultArray;
     
@@ -727,6 +729,9 @@ export default function SajuTable({
     
     // 각 주별로 세 결과를 합침 (12신살 맨 위 + 12운성 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
+    const hasHourPillar = hourSky && hourEarth;
+    
+    // 시주 (생시가 없으면 빈 배열)
     if (hasHourPillar) {
       result.push([
         convert12Sinsal(sibiSinsalArray[0] || ''),
@@ -734,21 +739,29 @@ export default function SajuTable({
         ...formatShinSalArray(secondRowResult.hourPillar, showKorean1),
         ...formatShinSalArray(firstRowResult.hourPillar, showKorean1)
       ].filter(s => s !== ''));
+    } else {
+      result.push([]); // 생시모름일 때 빈 배열
     }
+    
+    // 일주
     result.push([
-      convert12Sinsal(sibiSinsalArray[hasHourPillar ? 1 : 0] || ''),
+      convert12Sinsal(sibiSinsalArray[1] || ''),
       calculateTwelveUnseong(daySky, dayEarth) || '',
       ...formatShinSalArray(secondRowResult.dayPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.dayPillar, showKorean1)
     ].filter(s => s !== ''));
+    
+    // 월주
     result.push([
-      convert12Sinsal(sibiSinsalArray[hasHourPillar ? 2 : 1] || ''),
+      convert12Sinsal(sibiSinsalArray[2] || ''),
       calculateTwelveUnseong(daySky, monthEarth) || '',
       ...formatShinSalArray(secondRowResult.monthPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.monthPillar, showKorean1)
     ].filter(s => s !== ''));
+    
+    // 년주
     result.push([
-      convert12Sinsal(sibiSinsalArray[hasHourPillar ? 3 : 2] || ''),
+      convert12Sinsal(sibiSinsalArray[3] || ''),
       calculateTwelveUnseong(daySky, yearEarth) || '',
       ...formatShinSalArray(secondRowResult.yearPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.yearPillar, showKorean1)
@@ -1387,12 +1400,14 @@ export default function SajuTable({
             const cheonganImage = getCheonganImage(col.sky, showKorean2);
             const isHourPillar = index === 0;
             const isMonthPillar = index === 2;
+            const isBirthTimeUnknown = isHourPillar && !col.sky && !col.earth;
+            
             return (
               <div 
                 key={`sky-${index}`} 
                 className={`text-center font-bold border-r border-border flex items-center justify-center ${isHourPillar || isMonthPillar ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
                 style={{ 
-                  backgroundColor: getWuxingColor(col.sky),
+                  backgroundColor: isBirthTimeUnknown ? 'transparent' : getWuxingColor(col.sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -1401,7 +1416,14 @@ export default function SajuTable({
                 onClick={isHourPillar ? handleHourEarthClick : isMonthPillar ? handleDayEarthClick : undefined}
                 data-testid={`text-sky-${index}`}
               >
-                {cheonganImage ? (
+                {isBirthTimeUnknown ? (
+                  <span style={{ 
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    color: 'var(--muted-foreground)',
+                    lineHeight: '1'
+                  }}>생시모름</span>
+                ) : cheonganImage ? (
                   <img 
                     src={cheonganImage} 
                     alt={col.sky} 
@@ -1476,6 +1498,7 @@ export default function SajuTable({
             const jijiImage = getJijiImage(col.earth, showKorean2);
             const isHourEarth = index === 0;
             const isMonthEarth = index === 2;
+            const isBirthTimeUnknown = isHourEarth && !col.sky && !col.earth;
             
             return (
               <div 
@@ -1484,7 +1507,7 @@ export default function SajuTable({
                   isHourEarth || isMonthEarth ? 'cursor-pointer hover-elevate active-elevate-2' : ''
                 }`}
                 style={{ 
-                  backgroundColor: getWuxingColor(col.earth),
+                  backgroundColor: isBirthTimeUnknown ? 'transparent' : getWuxingColor(col.earth),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -1503,7 +1526,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {jijiImage ? (
+                  {isBirthTimeUnknown ? null : jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
