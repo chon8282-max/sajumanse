@@ -1708,9 +1708,31 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.log(`Fetching solar terms for year: ${year}`);
       const solarTerms = await storage.getSolarTermsForYear(year);
       
+      // 절기 이름 → 사주 월 매핑 (0=축월, 1=인월, ..., 11=자월)
+      const termMonthMap: Record<string, number> = {
+        '소한': 0, '대한': 0,
+        '입춘': 1, '우수': 1,
+        '경칩': 2, '춘분': 2,
+        '청명': 3, '곡우': 3,
+        '입하': 4, '소만': 4,
+        '망종': 5, '하지': 5,
+        '소서': 6, '대서': 6,
+        '입추': 7, '처서': 7,
+        '백로': 8, '추분': 8,
+        '한로': 9, '상강': 9,
+        '입동': 10, '소설': 10,
+        '대설': 11, '동지': 11,
+      };
+      
+      // month 필드 추가
+      const solarTermsWithMonth = solarTerms.map(term => ({
+        ...term,
+        month: termMonthMap[term.name] ?? 0
+      }));
+      
       res.json({
         success: true,
-        data: solarTerms,
+        data: solarTermsWithMonth,
         year: year
       });
     } catch (error) {

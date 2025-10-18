@@ -6,7 +6,7 @@ import SajuTable from "@/components/SajuTable";
 import CurrentTimeTable from "@/components/CurrentTimeTable";
 import DatePicker from "@/components/DatePicker";
 import MenuGrid from "@/components/MenuGrid";
-import { getCurrentSaju } from "@/lib/saju-calculator";
+import { calculateSaju } from "@/lib/saju-calculator";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo, type Announcement } from "@shared/schema";
@@ -16,7 +16,7 @@ import { ko } from "date-fns/locale";
 import { useLocation } from "wouter";
 
 export default function Home() {
-  const [currentSaju, setCurrentSaju] = useState<SajuInfo>(getCurrentSaju());
+  const [currentSaju, setCurrentSaju] = useState<SajuInfo | null>(null);
   const [customSaju, setCustomSaju] = useState<SajuInfo | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -28,6 +28,18 @@ export default function Home() {
     isLunar: boolean;
   } | null>(null);
   const [, setLocation] = useLocation();
+  
+  // 절기 데이터 가져오기
+  const { data: solarTermsData } = useQuery({
+    queryKey: ["/api/solar-terms", lastUpdated.getFullYear()],
+    queryFn: async () => {
+      const response = await fetch(`/api/solar-terms/${lastUpdated.getFullYear()}`);
+      const result = await response.json();
+      return result.success ? result.data : [];
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24시간 캐시
+    refetchOnWindowFocus: false,
+  });
 
   // 최신 공지사항 조회
   const { data: announcementsData } = useQuery<{ success: boolean; data: Announcement[] }>({
@@ -68,15 +80,46 @@ export default function Home() {
     return { solarDate };
   };
 
-  // 현재 시각 자동 업데이트 (1초마다 실시간)
+  // 현재 시각 자동 업데이트 (1초마다 실시간, DB 절기 데이터 사용)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSaju(getCurrentSaju());
-      setLastUpdated(new Date());
-    }, 1000); // 1초마다 업데이트
-
-    return () => clearInterval(interval);
-  }, []);
+    // 절기 데이터가 있을 때만 사주 계산
+    if (solarTermsData && solarTermsData.length > 0) {
+      const updateCurrentSaju = () => {
+        const now = new Date();
+        setLastUpdated(now);
+        
+        try {
+          // DB 절기 데이터 변환 (ISO string -> Date)
+          const dbSolarTerms = solarTermsData.map((term: any) => ({
+            name: term.name,
+            date: new Date(term.date),
+            month: term.month
+          }));
+          
+          const saju = calculateSaju(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            now.getDate(),
+            now.getHours(),
+            now.getMinutes(),
+            false,
+            undefined,
+            dbSolarTerms
+          );
+          setCurrentSaju(saju);
+        } catch (error) {
+          console.error('현재 사주 계산 오류:', error);
+        }
+      };
+      
+      // 즉시 실행
+      updateCurrentSaju();
+      
+      // 1초마다 업데이트
+      const interval = setInterval(updateCurrentSaju, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [solarTermsData]);
 
   const { toast } = useToast();
 
@@ -146,8 +189,33 @@ export default function Home() {
   };
 
   const handleRefresh = () => {
-    setCurrentSaju(getCurrentSaju());
-    setLastUpdated(new Date());
+    // 절기 데이터가 있을 때만 새로고침
+    if (solarTermsData && solarTermsData.length > 0) {
+      const now = new Date();
+      setLastUpdated(now);
+      
+      try {
+        const dbSolarTerms = solarTermsData.map((term: any) => ({
+          name: term.name,
+          date: new Date(term.date),
+          month: term.month
+        }));
+        
+        const saju = calculateSaju(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          now.getDate(),
+          now.getHours(),
+          now.getMinutes(),
+          false,
+          undefined,
+          dbSolarTerms
+        );
+        setCurrentSaju(saju);
+      } catch (error) {
+        console.error('사주 새로고침 오류:', error);
+      }
+    }
   };
 
   const handleNewInput = () => {
@@ -204,13 +272,22 @@ export default function Home() {
 
         {/* 현재 시각의 만세력 */}
         <div>
-          <CurrentTimeTable 
-            saju={currentSaju}
-            title="현재 만세력"
-            solarDate={getCurrentDateInfo().solarDate}
-            isOffline={navigator.onLine === false}
-            announcements={announcements}
-          />
+          {currentSaju ? (
+            <CurrentTimeTable 
+              saju={currentSaju}
+              title="현재 만세력"
+              solarDate={getCurrentDateInfo().solarDate}
+              isOffline={navigator.onLine === false}
+              announcements={announcements}
+            />
+          ) : (
+            <Card className="p-6 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">만세력 로딩 중...</p>
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* 생년월일 입력 버튼 */}
