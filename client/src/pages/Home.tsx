@@ -80,40 +80,22 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  // 사주팔자 계산 뮤테이션 (오프라인 지원)
+  // 사주팔자 계산 뮤테이션 (서버 API 사용 - DB 절기 데이터 필수)
   const calculateMutation = useMutation({
     mutationFn: async (data: { year: number; month: number; day: number; hour: number; isLunar: boolean }) => {
-      try {
-        // 1. 온라인일 때는 서버 API 사용 (정확한 음력-양력 변환 포함)
-        const response = await apiRequest("POST", "/api/saju/calculate", data) as any;
-        if (!response.success) {
-          throw new Error(response.error || "서버 사주 계산에 실패했습니다.");
-        }
-        return response.data;
-      } catch (error) {
-        // 2. 오프라인일 때는 클라이언트에서 직접 계산
-        
-        // 클라이언트 사주 계산 (음력인 경우에도 양력으로 간주)
-        const offlineSaju = calculateSaju(
-          data.year,
-          data.month,
-          data.day,
-          data.hour,
-          0, // minute = 0
-          false // 오프라인에서는 양력으로 간주
-        );
-        
-        return offlineSaju;
+      // 서버 API 사용 (정확한 음력-양력 변환 + DB 절기 데이터 포함)
+      const response = await apiRequest("POST", "/api/saju/calculate", data) as any;
+      if (!response.success) {
+        throw new Error(response.error || "서버 사주 계산에 실패했습니다.");
       }
+      return response.data;
     },
     onSuccess: (data) => {
       setCustomSaju(data);
       setShowDatePicker(false);
       toast({
         title: "사주팔자 계산 완료",
-        description: navigator.onLine === false 
-          ? "오프라인 모드에서 계산되었습니다. (음력 변환 제한)" 
-          : "개인 사주팔자가 성공적으로 계산되었습니다."
+        description: "개인 사주팔자가 성공적으로 계산되었습니다."
       });
     },
     onError: () => {

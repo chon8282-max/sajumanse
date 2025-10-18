@@ -393,26 +393,47 @@ export default function GanjiResult() {
   };
 
   // 생일 변경 핸들러 - 날짜로부터 간지 재계산
-  const handleBirthDateChange = useCallback((newYear: number, newMonth: number, newDay: number) => {
-    // 새로운 날짜로 사주 계산 (기존 시간 정보 사용)
-    const hourIndex = JIJI.indexOf(hourEarth as any);
-    const calculatedHour = hourIndex !== -1 ? hourIndex * 2 + 1 : 1; // 지지에서 시간 복원
-    
-    // 새로운 날짜로 사주 계산 (양력 기준)
-    const newSaju = calculateSaju(newYear, newMonth, newDay, calculatedHour, 0, false);
-    
-    // 계산된 간지로 URL 파라미터 업데이트
-    const params = new URLSearchParams(searchParams);
-    params.set('yearSky', newSaju.year.sky);
-    params.set('yearEarth', newSaju.year.earth);
-    params.set('monthSky', newSaju.month.sky);
-    params.set('monthEarth', newSaju.month.earth);
-    params.set('daySky', newSaju.day.sky);
-    params.set('dayEarth', newSaju.day.earth);
-    params.set('hourSky', newSaju.hour.sky);
-    params.set('hourEarth', newSaju.hour.earth);
-    
-    setLocation(`/ganji-result?${params.toString()}`);
+  const handleBirthDateChange = useCallback(async (newYear: number, newMonth: number, newDay: number) => {
+    try {
+      // 서버 API를 통해 정확한 사주 계산 (DB 절기 데이터 사용)
+      const hourIndex = JIJI.indexOf(hourEarth as any);
+      const calculatedHour = hourIndex !== -1 ? hourIndex * 2 + 1 : 1; // 지지에서 시간 복원
+      
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year: newYear,
+          month: newMonth,
+          day: newDay,
+          hour: calculatedHour,
+          isLunar: false
+        })
+      });
+      
+      const result = await response.json();
+      if (!result.success) {
+        console.error('사주 계산 실패:', result.error);
+        return;
+      }
+      
+      const newSaju = result.data;
+      
+      // 계산된 간지로 URL 파라미터 업데이트
+      const params = new URLSearchParams(searchParams);
+      params.set('yearSky', newSaju.year.sky);
+      params.set('yearEarth', newSaju.year.earth);
+      params.set('monthSky', newSaju.month.sky);
+      params.set('monthEarth', newSaju.month.earth);
+      params.set('daySky', newSaju.day.sky);
+      params.set('dayEarth', newSaju.day.earth);
+      params.set('hourSky', newSaju.hour.sky);
+      params.set('hourEarth', newSaju.hour.earth);
+      
+      setLocation(`/ganji-result?${params.toString()}`);
+    } catch (error) {
+      console.error('날짜 변경 실패:', error);
+    }
   }, [hourEarth, gender, name, searchParams, setLocation]);
 
   // 파라미터 검증
