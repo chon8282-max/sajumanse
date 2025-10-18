@@ -395,9 +395,19 @@ export default function SajuInput() {
         
         // 음력 입력이었다면 변환된 양력 날짜를 requestData에 반영
         if (convertedSolarDate) {
+          // 원본 음력 정보 별도 저장
+          requestData.lunarYear = yearNum;
+          requestData.lunarMonth = monthNum;
+          requestData.lunarDay = dayNum;
+          requestData.isLeapMonth = formData.calendarType === "윤달";
+          
+          // 변환된 양력 날짜로 업데이트
           requestData.birthYear = convertedSolarDate.year;
           requestData.birthMonth = convertedSolarDate.month;
           requestData.birthDay = convertedSolarDate.day;
+          
+          // calendarType을 양력으로 변경 (서버가 중복 변환하지 않도록)
+          requestData.calendarType = "양력";
         }
         
         // 절입일 사주 무조건 직접 계산
