@@ -59,7 +59,7 @@ function checkDSTPeriod(year: number, month: number, day: number): { isDST: bool
   return { isDST: false };
 }
 
-// 절입일 체크 함수 (서버 API 사용, ±1일 범위 체크)
+// 절입일 체크 함수 (서버 API 사용, 당일만 체크)
 async function checkSolarTermDay(year: number, month: number, day: number): Promise<{ isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } }> {
   try {
     const response = await fetch(`/api/solar-terms/${year}`);
@@ -70,31 +70,41 @@ async function checkSolarTermDay(year: number, month: number, day: number): Prom
       return { isSolarTerm: false };
     }
     
-    // 입력 날짜의 Date 객체 생성 (UTC 기준)
-    const inputDate = new Date(Date.UTC(year, month - 1, day));
-    
-    // 해당 년도의 모든 절기 중에서 ±1일 범위 내 절입일 찾기
+    // 해당 년도의 모든 절기 중에서 당일 절입일 찾기
     const solarTerms = result.data;
     for (const term of solarTerms) {
-      // Date 객체가 JSON으로 변환된 ISO 문자열 파싱 (UTC로 파싱)
+      // Date 객체가 JSON으로 변환된 ISO 문자열 파싱
       const termDate = new Date(term.date);
       
-      // 날짜 차이 계산 (일 단위)
-      const diffTime = Math.abs(inputDate.getTime() - termDate.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      // KST 날짜로 변환하여 연/월/일 비교 (절입 시각은 KST 기준)
+      const termYear = termDate.getUTCFullYear();
+      const termMonth = termDate.getUTCMonth() + 1;
+      const termDay = termDate.getUTCDate();
+      const termHour = termDate.getUTCHours();
       
-      // ±1일 범위 내에 있으면 절입일로 간주
-      if (diffDays <= 1) {
-        // UTC 시간을 KST(UTC+9)로 변환
-        const kstHour = (termDate.getUTCHours() + 9) % 24;
-        const kstMinute = termDate.getUTCMinutes();
-        
+      // KST 시간 조정 (UTC+9)
+      let kstYear = termYear;
+      let kstMonth = termMonth;
+      let kstDay = termDay;
+      let kstHour = termHour + 9;
+      
+      // 24시 넘어가면 다음날로
+      if (kstHour >= 24) {
+        kstHour -= 24;
+        const nextDay = new Date(Date.UTC(termYear, termMonth - 1, termDay + 1));
+        kstYear = nextDay.getUTCFullYear();
+        kstMonth = nextDay.getUTCMonth() + 1;
+        kstDay = nextDay.getUTCDate();
+      }
+      
+      // 입력 날짜와 절입일 KST 날짜가 정확히 일치하는지 확인
+      if (kstYear === year && kstMonth === month && kstDay === day) {
         return {
           isSolarTerm: true,
           termInfo: {
             name: term.name,
             hour: kstHour,
-            minute: kstMinute
+            minute: termDate.getUTCMinutes()
           }
         };
       }
