@@ -245,7 +245,7 @@ function AppContent() {
         />
       )}
       
-      <main className={`flex-1 ${isCompatibilityPage ? "" : "pb-20"}`}>
+      <main className={`flex-1 min-h-0 ${isCompatibilityPage ? "" : "pb-20"}`}>
         <Router />
       </main>
 
