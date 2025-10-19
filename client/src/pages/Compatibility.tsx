@@ -305,11 +305,11 @@ export default function Compatibility() {
           <DialogHeader className="flex-shrink-0">
             <DialogTitle>사주 1 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 overflow-y-auto flex-1">
+          <div className="space-y-3 overflow-y-auto flex-1 p-2">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
-                className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                className="p-6 cursor-pointer hover-elevate active-elevate-2"
                 onClick={() => {
                   setLeftSajuId(saju.id);
                   setShowLeftDialog(false);
@@ -318,8 +318,8 @@ export default function Compatibility() {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold">{saju.name}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg">{saju.name}</h3>
+                    <p className="text-base text-muted-foreground mt-1">
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
                   </div>
@@ -336,11 +336,11 @@ export default function Compatibility() {
           <DialogHeader className="flex-shrink-0">
             <DialogTitle>사주 2 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 overflow-y-auto flex-1">
+          <div className="space-y-3 overflow-y-auto flex-1 p-2">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
-                className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                className="p-6 cursor-pointer hover-elevate active-elevate-2"
                 onClick={() => {
                   setRightSajuId(saju.id);
                   setShowRightDialog(false);
@@ -349,8 +349,8 @@ export default function Compatibility() {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold">{saju.name}</h3>
-                    <p className="text-sm text-muted-foreground">
+                    <h3 className="font-semibold text-lg">{saju.name}</h3>
+                    <p className="text-base text-muted-foreground mt-1">
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
                   </div>
