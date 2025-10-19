@@ -235,29 +235,34 @@ function AppContent() {
 
   return (
     <div className="flex h-screen flex-col bg-background font-sans">
-      {/* 궁합 페이지가 아닌 경우에만 메인 페이지 상단 헤더 표시 */}
-      {!isCompatibilityPage && location === "/" && (
-        <MobileHeader
-          currentDate={new Date()}
-          isDarkMode={theme === "dark"}
-          onThemeToggle={toggleTheme}
-          onMenuClick={handleMenuClick}
-        />
-      )}
-      
-      <main className={`flex-1 flex flex-col min-h-0 ${isCompatibilityPage ? "overflow-hidden" : "pb-20"}`}>
+      {/* 궁합 페이지는 완전 독립 */}
+      {isCompatibilityPage ? (
         <Router />
-      </main>
+      ) : (
+        <>
+          {/* 메인 페이지 상단 헤더 표시 */}
+          {location === "/" && (
+            <MobileHeader
+              currentDate={new Date()}
+              isDarkMode={theme === "dark"}
+              onThemeToggle={toggleTheme}
+              onMenuClick={handleMenuClick}
+            />
+          )}
+          
+          <main className="flex-1 flex flex-col min-h-0 pb-20">
+            <Router />
+          </main>
 
-      {/* 궁합 페이지가 아닐 때만 하단 네비게이션 표시 */}
-      {!isCompatibilityPage && (
-        <BottomNavigation 
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        />
+          {/* 하단 네비게이션 표시 */}
+          <BottomNavigation 
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        </>
       )}
 
-      {/* 궁합 페이지가 아니고 메인 페이지일 때만 모바일 메뉴 표시 */}
+      {/* 메인 페이지일 때만 모바일 메뉴 표시 */}
       {!isCompatibilityPage && location === "/" && (
         <MobileMenu 
           isOpen={showMobileMenu}
