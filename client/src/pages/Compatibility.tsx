@@ -127,22 +127,20 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div style={{ 
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" style={{ 
       display: 'grid', 
       gridTemplateColumns: '1fr 1fr', 
       width: '100%', 
       height: '100vh',
-      background: 'linear-gradient(to bottom right, #fef3c7, #fed7aa, #fecaca)',
       gap: '1px',
       overflow: 'hidden'
     }}>
       {/* 왼쪽 사주 1 */}
-      <div style={{ 
+      <div className="bg-white dark:bg-gray-900" style={{ 
         display: 'flex', 
         flexDirection: 'column',
         height: '100vh',
-        overflow: 'hidden',
-        backgroundColor: 'white'
+        overflow: 'hidden'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -221,13 +219,11 @@ export default function Compatibility() {
       </div>
 
       {/* 오른쪽 사주 2 */}
-      <div style={{ 
+      <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700" style={{ 
         display: 'flex', 
         flexDirection: 'column',
         height: '100vh',
-        overflow: 'hidden',
-        backgroundColor: 'white',
-        borderLeft: '1px solid #e5e7eb'
+        overflow: 'hidden'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
