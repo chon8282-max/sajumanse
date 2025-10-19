@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Home, FolderOpen, RefreshCw, Save } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Home, FolderOpen, RefreshCw, Save, X } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import SajuTable from "@/components/SajuTable";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface SajuResultData {
   id: string;
@@ -304,64 +306,86 @@ export default function Compatibility() {
 
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col bg-white dark:bg-gray-900 !top-[5vh] !translate-y-0">
-          <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
-            <DialogTitle className="text-black dark:text-white text-xl">사주 1 선택</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
-            {sajuList.map((saju) => (
-              <Card
-                key={saju.id}
-                className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
-                onClick={() => {
-                  setLeftSajuId(saju.id);
-                  setShowLeftDialog(false);
-                }}
-                data-testid={`saju-item-${saju.id}`}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
-                    <p className="text-base text-muted-foreground mt-1">
-                      {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
-                    </p>
+        <DialogPortal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-transparent" />
+          <DialogPrimitive.Content
+            className={cn(
+              "fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
+            )}
+          >
+            <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
+              <DialogTitle className="text-black dark:text-white text-xl">사주 1 선택</DialogTitle>
+            </DialogHeader>
+            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
+              {sajuList.map((saju) => (
+                <Card
+                  key={saju.id}
+                  className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                  onClick={() => {
+                    setLeftSajuId(saju.id);
+                    setShowLeftDialog(false);
+                  }}
+                  data-testid={`saju-item-${saju.id}`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
+                      <p className="text-base text-muted-foreground mt-1">
+                        {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </DialogContent>
+                </Card>
+              ))}
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPortal>
       </Dialog>
 
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col bg-white dark:bg-gray-900 !top-[5vh] !translate-y-0">
-          <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
-            <DialogTitle className="text-black dark:text-white text-xl">사주 2 선택</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
-            {sajuList.map((saju) => (
-              <Card
-                key={saju.id}
-                className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
-                onClick={() => {
-                  setRightSajuId(saju.id);
-                  setShowRightDialog(false);
-                }}
-                data-testid={`saju-item-${saju.id}`}
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
-                    <p className="text-base text-muted-foreground mt-1">
-                      {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
-                    </p>
+        <DialogPortal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-transparent" />
+          <DialogPrimitive.Content
+            className={cn(
+              "fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
+            )}
+          >
+            <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
+              <DialogTitle className="text-black dark:text-white text-xl">사주 2 선택</DialogTitle>
+            </DialogHeader>
+            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
+              {sajuList.map((saju) => (
+                <Card
+                  key={saju.id}
+                  className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                  onClick={() => {
+                    setRightSajuId(saju.id);
+                    setShowRightDialog(false);
+                  }}
+                  data-testid={`saju-item-${saju.id}`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
+                      <p className="text-base text-muted-foreground mt-1">
+                        {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </DialogContent>
+                </Card>
+              ))}
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPortal>
       </Dialog>
     </div>
   );
