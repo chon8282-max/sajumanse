@@ -650,13 +650,17 @@ export default function SajuTable({
     
     if (!saju?.day?.sky) return defaultArray;
     
+    // 생시 존재 여부 확인 (공통)
+    const hourSky = saju.hour.sky;
+    const hourEarth = saju.hour.earth;
+    const hasHourPillar = hourSky && hourEarth;
+    
     // 대운/세운 모드일 때 동적 신살 계산
     if ((displayMode === 'daeun' && focusedDaeun) || (displayMode === 'saeun' && focusedSaeun)) {
       const baseEarth = displayMode === 'daeun' ? focusedDaeun!.earth : focusedSaeun!.earth;
       const yearEarth = saju.year.earth;
       const monthEarth = saju.month.earth;
       const dayEarth = saju.day.earth;
-      const hourEarth = saju.hour.earth;
       
       const result: string[][] = [];
       
@@ -696,11 +700,9 @@ export default function SajuTable({
     const yearSky = saju.year.sky;
     const monthSky = saju.month.sky;
     const daySky = saju.day.sky;
-    const hourSky = saju.hour.sky;
     const yearEarth = saju.year.earth;
     const monthEarth = saju.month.earth;
     const dayEarth = saju.day.earth;
-    const hourEarth = saju.hour.earth;
     
     // 천을귀인, 문창귀인 계산
     const secondRowResult = calculateAllShinSal(daySky, yearEarth, monthEarth, dayEarth, hourEarth);
@@ -729,7 +731,6 @@ export default function SajuTable({
     
     // 각 주별로 세 결과를 합침 (12신살 맨 위 + 12운성 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
-    const hasHourPillar = hourSky && hourEarth;
     
     // 시주 (생시가 없으면 빈 배열)
     if (hasHourPillar) {
@@ -1526,7 +1527,14 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {isBirthTimeUnknown ? null : jijiImage ? (
+                  {isBirthTimeUnknown ? (
+                    <span style={{ 
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: 'var(--muted-foreground)',
+                      lineHeight: '1'
+                    }}>생시모름</span>
+                  ) : jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
@@ -1588,6 +1596,8 @@ export default function SajuTable({
           )}
           {earthlyYukjin.map((yukjin, index) => {
             const earthCharacter = sajuColumns[index]?.earth;
+            const isHourColumn = index === 0;
+            const isBirthTimeUnknown = isHourColumn && !sajuColumns[0]?.sky && !sajuColumns[0]?.earth;
             let displayText = showWuxing && earthCharacter ? getWuxingElement(earthCharacter) : yukjin;
             displayText = convertTextForRow145(displayText);
             
@@ -1597,7 +1607,13 @@ export default function SajuTable({
                 className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-earth-${index}`}
               >
-                {displayText}
+                {isBirthTimeUnknown ? (
+                  <span style={{ 
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: 'var(--muted-foreground)'
+                  }}>생시모름</span>
+                ) : displayText}
               </div>
             );
           })}
@@ -1643,42 +1659,66 @@ export default function SajuTable({
           )}
           {showShinsal ? (
             // 신살 표시 (세로 나열, 맨 위 정렬) - 5행은 이미 showKorean1 적용됨
-            (allShinsalArrays.map((shinsalArray, index) => (
-              <div 
-                key={`shinsal-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-start text-black dark:text-white bg-white dark:bg-gray-900"
-                data-testid={`text-shinsal-${index}`}
-              >
-                {shinsalArray.map((shinsal, idx) => {
-                  // 12신살은 첫 번째 요소 (idx === 0)
-                  // 한글2일 때만 12신살을 한글로 변환
-                  const displayText = idx === 0 && showKorean2 
-                    ? (SINSAL_KOREAN_MAP[shinsal] || shinsal)
-                    : shinsal;
-                  
-                  return (
-                    <div 
-                      key={`shinsal-${index}-${idx}`}
-                      className="leading-tight"
-                      style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
-                    >
-                      {displayText}
-                    </div>
-                  );
-                })}
-              </div>
-            )))
+            (allShinsalArrays.map((shinsalArray, index) => {
+              const isHourColumn = index === 0;
+              const isBirthTimeUnknown = isHourColumn && !sajuColumns[0]?.sky && !sajuColumns[0]?.earth;
+              
+              return (
+                <div 
+                  key={`shinsal-${index}`} 
+                  className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-start text-black dark:text-white bg-white dark:bg-gray-900"
+                  data-testid={`text-shinsal-${index}`}
+                >
+                  {isBirthTimeUnknown ? (
+                    <span style={{ 
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      color: 'var(--muted-foreground)'
+                    }}>생시모름</span>
+                  ) : (
+                    shinsalArray.map((shinsal, idx) => {
+                      // 12신살은 첫 번째 요소 (idx === 0)
+                      // 한글2일 때만 12신살을 한글로 변환
+                      const displayText = idx === 0 && showKorean2 
+                        ? (SINSAL_KOREAN_MAP[shinsal] || shinsal)
+                        : shinsal;
+                      
+                      return (
+                        <div 
+                          key={`shinsal-${index}-${idx}`}
+                          className="leading-tight"
+                          style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
+                        >
+                          {displayText}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              );
+            }))
           ) : (
             // 지장간 표시 (기본값)
-            (jijanggan.map((stems, index) => (
-              <div 
-                key={`jijanggan-${index}`} 
-                className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
-                data-testid={`text-jijanggan-${index}`}
-              >
-                {convertTextForRow145(stems)}
-              </div>
-            )))
+            (jijanggan.map((stems, index) => {
+              const isHourColumn = index === 0;
+              const isBirthTimeUnknown = isHourColumn && !sajuColumns[0]?.sky && !sajuColumns[0]?.earth;
+              
+              return (
+                <div 
+                  key={`jijanggan-${index}`} 
+                  className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                  data-testid={`text-jijanggan-${index}`}
+                >
+                  {isBirthTimeUnknown ? (
+                    <span style={{ 
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      color: 'var(--muted-foreground)'
+                    }}>생시모름</span>
+                  ) : convertTextForRow145(stems)}
+                </div>
+              );
+            }))
           )}
           {displayMode === 'base' && (
             <div className="bg-white dark:bg-gray-900"></div>
