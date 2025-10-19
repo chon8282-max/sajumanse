@@ -2,11 +2,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Home, UserPlus, FolderOpen, RefreshCw, Save } from "lucide-react";
+import { Home, FolderOpen, RefreshCw, Save } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
-import { calculateSaju } from "@/lib/saju-calculator";
 import SajuTable from "@/components/SajuTable";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +19,14 @@ interface SajuResultData {
   calendarType: string;
   gender: string;
   memo: string | null;
-  lunarYear: number | null;
-  lunarMonth: number | null;
-  lunarDay: number | null;
+  yearSky?: string;
+  yearEarth?: string;
+  monthSky?: string;
+  monthEarth?: string;
+  daySky?: string;
+  dayEarth?: string;
+  hourSky?: string;
+  hourEarth?: string;
 }
 
 export default function Compatibility() {
@@ -44,20 +47,13 @@ export default function Compatibility() {
     const leftId = params.get('left');
     const rightId = params.get('right');
     
-    // 현재 상태와 다를 때만 업데이트 (화면 회전 시 중복 업데이트 방지)
     if (leftId && leftId !== leftSajuId) {
       setLeftSajuId(leftId);
     }
     if (rightId && rightId !== rightSajuId) {
       setRightSajuId(rightId);
     }
-  }, [searchParams]); // searchParams 변경 시에만 실행
-
-  // 가로 모드 권장 (강제하지 않음)
-  useEffect(() => {
-    // 가로 모드 권장 메시지만 표시 (강제 전환 제거)
-    console.log('궁합 화면은 가로 모드에서 더 잘 보입니다.');
-  }, []);
+  }, [searchParams]);
 
   // 왼쪽 사주 데이터 가져오기
   const { data: leftSajuResponse } = useQuery<{success: boolean, data: SajuResultData}>({
@@ -74,7 +70,7 @@ export default function Compatibility() {
   const leftSaju = leftSajuResponse?.data;
   const rightSaju = rightSajuResponse?.data;
   
-  // 사주 데이터 로드 시 메모 동기화 (ID 변경 시에만)
+  // 사주 데이터 로드 시 메모 동기화
   useEffect(() => {
     if (leftSaju && leftSaju.id === leftSajuId) {
       setLeftMemo(leftSaju.memo ?? "");
@@ -131,172 +127,170 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="flex min-h-dvh w-full overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="w-full flex-1 flex flex-row gap-1 p-0 min-h-0">
-      {/* 왼쪽 영역 */}
-      <div className="flex-1 flex flex-col min-w-[50%] min-h-0 overflow-hidden">
-        <Card className="flex-1 overflow-y-auto rounded-none border-0">
-            <CardHeader className="pb-1 px-2 pt-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleHomeClick}
-                    className="gap-1 h-6 text-xs px-2"
-                    data-testid="button-home"
-                  >
-                    <Home className="w-3 h-3" />
-                    홈
-                  </Button>
-                  <CardTitle className="text-sm">사주 1</CardTitle>
-                </div>
-                <div className="flex items-start gap-0.5">
-                  {leftSajuId && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setLeftSajuId(null)}
-                        data-testid="button-left-change"
-                        className="scale-[0.6] origin-center -mr-[17.5px] pl-[14px] pr-[14px]"
-                      >
-                        <RefreshCw className="w-3 h-3 mr-1" />
-                        변경
-                      </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => leftSaveMutation.mutate(leftMemo)}
-                        disabled={leftSaveMutation.isPending}
-                        data-testid="button-left-save"
-                        className="scale-[0.6] origin-center ml-[-14.75px] mr-[-14.75px]"
-                      >
-                        <Save className="w-3 h-3 mr-1" />
-                        {leftSaveMutation.isPending ? "저장중..." : "저장"}
-                      </Button>
-                    </>
-                  )}
-                </div>
+    <div style={{ 
+      display: 'grid', 
+      gridTemplateColumns: '1fr 1fr', 
+      width: '100%', 
+      height: '100vh',
+      background: 'linear-gradient(to bottom right, #fef3c7, #fed7aa, #fecaca)',
+      gap: '1px',
+      overflow: 'hidden'
+    }}>
+      {/* 왼쪽 사주 1 */}
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+        backgroundColor: 'white'
+      }}>
+        <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleHomeClick}
+                className="gap-1 h-6 text-xs px-2"
+                data-testid="button-home"
+              >
+                <Home className="w-3 h-3" />
+                홈
+              </Button>
+              <h3 style={{ fontSize: '14px', fontWeight: '600' }}>사주 1</h3>
+            </div>
+            {leftSajuId && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLeftSajuId(null)}
+                  data-testid="button-left-change"
+                  className="h-7 text-xs"
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  수정
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => leftSaveMutation.mutate(leftMemo)}
+                  disabled={leftSaveMutation.isPending}
+                  data-testid="button-left-save"
+                  className="h-7 text-xs"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  저장
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent className="p-1">
-              {leftSajuId && leftSaju ? (
-                <div className="w-full">
-                  <SajuTable 
-                    saju={{
-                      year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
-                      month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
-                      day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
-                      hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' }
-                    }}
-                    name={leftSaju.name}
-                    birthYear={leftSaju.birthYear}
-                    birthMonth={leftSaju.birthMonth}
-                    birthDay={leftSaju.birthDay}
-                    birthHour={leftSaju.birthTime || undefined}
-                    gender={leftSaju.gender}
-                    memo={leftMemo}
-                    onMemoChange={(memo) => setLeftMemo(memo)}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 gap-4">
-                  <p className="text-muted-foreground text-center">
-                    사주를 선택해주세요
-                  </p>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowLeftDialog(true)}
-                      data-testid="button-left-load"
-                      className="text-sm"
-                    >
-                      <FolderOpen className="w-4 h-4 mr-2" />
-                      불러오기
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-        </Card>
+            )}
+          </div>
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+          {leftSajuId && leftSaju ? (
+            <SajuTable 
+              saju={{
+                year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
+                month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
+                day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
+                hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' }
+              }}
+              name={leftSaju.name}
+              birthYear={leftSaju.birthYear}
+              birthMonth={leftSaju.birthMonth}
+              birthDay={leftSaju.birthDay}
+              birthHour={leftSaju.birthTime || undefined}
+              gender={leftSaju.gender}
+              memo={leftMemo}
+              onMemoChange={(memo) => setLeftMemo(memo)}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '16px' }}>
+              <p style={{ color: '#6b7280' }}>사주를 선택해주세요</p>
+              <Button
+                variant="outline"
+                onClick={() => setShowLeftDialog(true)}
+                data-testid="button-left-load"
+              >
+                <FolderOpen className="w-4 h-4 mr-2" />
+                불러오기
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* 오른쪽 영역 */}
-      <div className="flex-1 flex flex-col min-w-[50%] min-h-0 overflow-hidden">
-        <Card className="flex-1 overflow-y-auto rounded-none border-0">
-            <CardHeader className="pb-1 px-2 pt-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">사주 2</CardTitle>
-                <div className="flex items-start gap-0.5">
-                  {rightSajuId && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setRightSajuId(null)}
-                        data-testid="button-right-change"
-                        className="scale-[0.6] origin-center -mr-[17.5px] pl-[14px] pr-[14px]"
-                      >
-                        <RefreshCw className="w-3 h-3 mr-1" />
-                        변경
-                      </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => rightSaveMutation.mutate(rightMemo)}
-                        disabled={rightSaveMutation.isPending}
-                        data-testid="button-right-save"
-                        className="scale-[0.6] origin-center ml-[-14.75px] mr-[-14.75px]"
-                      >
-                        <Save className="w-3 h-3 mr-1" />
-                        {rightSaveMutation.isPending ? "저장중..." : "저장"}
-                      </Button>
-                    </>
-                  )}
-                </div>
+      {/* 오른쪽 사주 2 */}
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+        backgroundColor: 'white',
+        borderLeft: '1px solid #e5e7eb'
+      }}>
+        <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600' }}>사주 2</h3>
+            {rightSajuId && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRightSajuId(null)}
+                  data-testid="button-right-change"
+                  className="h-7 text-xs"
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  수정
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => rightSaveMutation.mutate(rightMemo)}
+                  disabled={rightSaveMutation.isPending}
+                  data-testid="button-right-save"
+                  className="h-7 text-xs"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  저장
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent className="p-1">
-              {rightSajuId && rightSaju ? (
-                <div className="w-full">
-                  <SajuTable 
-                    saju={{
-                      year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
-                      month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
-                      day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
-                      hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' }
-                    }}
-                    name={rightSaju.name}
-                    birthYear={rightSaju.birthYear}
-                    birthMonth={rightSaju.birthMonth}
-                    birthDay={rightSaju.birthDay}
-                    birthHour={rightSaju.birthTime || undefined}
-                    gender={rightSaju.gender}
-                    memo={rightMemo}
-                    onMemoChange={(memo) => setRightMemo(memo)}
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-64 gap-4">
-                  <p className="text-muted-foreground text-center">
-                    사주를 선택해주세요
-                  </p>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowRightDialog(true)}
-                      data-testid="button-right-load"
-                      className="text-sm"
-                    >
-                      <FolderOpen className="w-4 h-4 mr-2" />
-                      불러오기
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-        </Card>
+            )}
+          </div>
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+          {rightSajuId && rightSaju ? (
+            <SajuTable 
+              saju={{
+                year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
+                month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
+                day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
+                hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' }
+              }}
+              name={rightSaju.name}
+              birthYear={rightSaju.birthYear}
+              birthMonth={rightSaju.birthMonth}
+              birthDay={rightSaju.birthDay}
+              birthHour={rightSaju.birthTime || undefined}
+              gender={rightSaju.gender}
+              memo={rightMemo}
+              onMemoChange={(memo) => setRightMemo(memo)}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '16px' }}>
+              <p style={{ color: '#6b7280' }}>사주를 선택해주세요</p>
+              <Button
+                variant="outline"
+                onClick={() => setShowRightDialog(true)}
+                data-testid="button-right-load"
+              >
+                <FolderOpen className="w-4 h-4 mr-2" />
+                불러오기
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 왼쪽 사주 선택 다이얼로그 */}
@@ -360,7 +354,6 @@ export default function Compatibility() {
           </div>
         </DialogContent>
       </Dialog>
-      </div>
     </div>
   );
 }
