@@ -131,11 +131,11 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="flex h-full w-full bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="w-full h-full flex flex-row gap-1 p-0">
+    <div className="flex flex-col min-h-screen w-full bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="w-full flex-1 flex flex-row gap-1 p-0 min-h-0">
       {/* 왼쪽 영역 */}
-      <div className="flex-1 flex flex-col min-w-[50%]">
-        <Card className="h-full overflow-y-auto rounded-none border-0">
+      <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
+        <Card className="flex-1 overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -223,8 +223,8 @@ export default function Compatibility() {
       </div>
 
       {/* 오른쪽 영역 */}
-      <div className="flex-1 flex flex-col min-w-[50%]">
-        <Card className="h-full overflow-y-auto rounded-none border-0">
+      <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
+        <Card className="flex-1 overflow-y-auto rounded-none border-0">
             <CardHeader className="pb-1 px-2 pt-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">사주 2</CardTitle>
@@ -305,22 +305,21 @@ export default function Compatibility() {
           <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
             <DialogTitle className="text-black dark:text-white">사주 1 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 overflow-y-auto flex-1 p-3 bg-gray-50 dark:bg-gray-800">
+          <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
-                className="cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
                 onClick={() => {
                   setLeftSajuId(saju.id);
                   setShowLeftDialog(false);
                 }}
                 data-testid={`saju-item-${saju.id}`}
-                style={{ padding: '24px 20px' }}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-black dark:text-white" style={{ fontSize: '22px', fontWeight: '600', marginBottom: '6px' }}>{saju.name}</h3>
-                    <p className="text-muted-foreground" style={{ fontSize: '18px' }}>
+                    <h3 className="font-semibold text-lg text-black dark:text-white">{saju.name}</h3>
+                    <p className="text-base text-muted-foreground mt-1">
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
                   </div>
@@ -337,22 +336,21 @@ export default function Compatibility() {
           <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
             <DialogTitle className="text-black dark:text-white">사주 2 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 overflow-y-auto flex-1 p-3 bg-gray-50 dark:bg-gray-800">
+          <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
-                className="cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
                 onClick={() => {
                   setRightSajuId(saju.id);
                   setShowRightDialog(false);
                 }}
                 data-testid={`saju-item-${saju.id}`}
-                style={{ padding: '24px 20px' }}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-black dark:text-white" style={{ fontSize: '22px', fontWeight: '600', marginBottom: '6px' }}>{saju.name}</h3>
-                    <p className="text-muted-foreground" style={{ fontSize: '18px' }}>
+                    <h3 className="font-semibold text-lg text-black dark:text-white">{saju.name}</h3>
+                    <p className="text-base text-muted-foreground mt-1">
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
                   </div>
