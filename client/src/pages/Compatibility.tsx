@@ -131,8 +131,8 @@ export default function Compatibility() {
   const sajuList = sajuListResponse?.data || [];
 
   return (
-    <div className="flex h-screen w-full bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="w-full flex-1 flex flex-row gap-1 p-0">
+    <div className="flex h-full w-full bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="w-full flex-1 flex flex-row gap-1 p-0 min-h-0">
       {/* 왼쪽 영역 */}
       <div className="flex-1 flex flex-col min-w-[50%] min-h-0">
         <Card className="flex-1 overflow-y-auto rounded-none border-0">
