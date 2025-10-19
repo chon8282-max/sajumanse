@@ -300,20 +300,28 @@ export default function SajuInput() {
       console.log('📊 절입일 체크 결과:', solarTermCheck);
       
       // 생시가 명확한 경우, 절입 시각과 비교해서 다이얼로그 표시 여부 결정
+      // 단, 입춘일은 연주가 바뀌므로 생시와 무관하게 무조건 다이얼로그 표시
       let shouldShowDialog = true;
-      if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo && inputHour !== null) {
-        const termHour = solarTermCheck.termInfo.hour;
-        const termMinute = solarTermCheck.termInfo.minute;
-        const inputTotalMinutes = inputHour * 60 + inputMinute;
-        const termTotalMinutes = termHour * 60 + termMinute;
-        const timeDiff = Math.abs(inputTotalMinutes - termTotalMinutes);
+      if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
+        const isLichun = solarTermCheck.termInfo.name === '입춘';
         
-        // 절입 시각과 2시간(120분) 이상 차이나면 다이얼로그 표시 안함
-        if (timeDiff > 120) {
-          console.log(`⏭️ 생시(${inputHour}:${inputMinute})와 절입 시각(${termHour}:${termMinute})이 ${Math.floor(timeDiff/60)}시간 ${timeDiff%60}분 차이 → 다이얼로그 생략`);
-          shouldShowDialog = false;
-        } else {
-          console.log(`⚠️ 생시(${inputHour}:${inputMinute})와 절입 시각(${termHour}:${termMinute})이 ${Math.floor(timeDiff/60)}시간 ${timeDiff%60}분 차이 → 다이얼로그 표시`);
+        if (isLichun) {
+          console.log(`🌸 입춘일이므로 생시와 무관하게 다이얼로그 표시`);
+          shouldShowDialog = true;
+        } else if (inputHour !== null) {
+          const termHour = solarTermCheck.termInfo.hour;
+          const termMinute = solarTermCheck.termInfo.minute;
+          const inputTotalMinutes = inputHour * 60 + inputMinute;
+          const termTotalMinutes = termHour * 60 + termMinute;
+          const timeDiff = Math.abs(inputTotalMinutes - termTotalMinutes);
+          
+          // 절입 시각과 2시간(120분) 이상 차이나면 다이얼로그 표시 안함
+          if (timeDiff > 120) {
+            console.log(`⏭️ 생시(${inputHour}:${inputMinute})와 절입 시각(${termHour}:${termMinute})이 ${Math.floor(timeDiff/60)}시간 ${timeDiff%60}분 차이 → 다이얼로그 생략`);
+            shouldShowDialog = false;
+          } else {
+            console.log(`⚠️ 생시(${inputHour}:${inputMinute})와 절입 시각(${termHour}:${termMinute})이 ${Math.floor(timeDiff/60)}시간 ${timeDiff%60}분 차이 → 다이얼로그 표시`);
+          }
         }
       }
       
@@ -343,12 +351,9 @@ export default function SajuInput() {
           else monthSkyStart = 0; // 戊癸년: 인월=甲
           
           // monthEarthIndex: 0=인월, 1=묘월, ..., 11=축월
-          // 축월(11)은 인월 바로 전 달이므로 천간 = 인월 - 1
-          let offset = monthEarthIndex;
-          if (monthEarthIndex === 11) {
-            offset = -1; // 축월은 인월 - 1
-          }
-          const monthSkyIndex = (monthSkyStart + offset + 10) % 10; // +10은 음수 방지
+          // 월주 천간 = 인월 천간 + monthEarthIndex (mod 10)
+          // 예: 乙庚년 축월(11) = 戊(4) + 11 = 己(15 % 10 = 5)
+          const monthSkyIndex = (monthSkyStart + monthEarthIndex) % 10;
           return { sky: CHEONGAN[monthSkyIndex], earth: JIJI[(monthEarthIndex + 2) % 12] }; // 인월=寅(2), 묘월=卯(3), ..., 축월=丑(1)
         };
         
@@ -512,12 +517,9 @@ export default function SajuInput() {
           const currentMonthIndex = solarTermInfo ? (termMonthMap[solarTermInfo.name] ?? 0) : 0;
           const monthIndex = usePreviousMonthPillar ? (currentMonthIndex - 1 + 12) % 12 : currentMonthIndex;
           
-          // 축월(11)은 인월 바로 전 달이므로 천간 offset = -1
-          let offset = monthIndex;
-          if (monthIndex === 11) {
-            offset = -1; // 축월은 인월 - 1
-          }
-          const monthSky = CHEONGAN[(monthSkyStart + offset + 10) % 10];
+          // 월주 천간 = 인월 천간 + monthIndex (mod 10)
+          // 예: 乙庚년 축월(11) = 戊(4) + 11 = 己(15 % 10 = 5)
+          const monthSky = CHEONGAN[(monthSkyStart + monthIndex) % 10];
           const monthEarth = JIJI[(monthIndex + 2) % 12]; // 인월=2(寅), 묘월=3(卯), ..., 축월=1(丑)
           
           // 일주/시주는 양력 기준 계산
