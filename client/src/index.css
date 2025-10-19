@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 궁합 페이지 다이얼로그 오버레이 투명도 조정 */
+[data-state="open"][class*="DialogOverlay"] {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Radix Dialog Overlay 투명도 조정 (더 넓은 범위) */
+.fixed.inset-0.z-50[data-state="open"] {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
 /* 조선궁서체 폰트 정의 */
 @font-face {
   font-family: 'ChosunGsFont';
