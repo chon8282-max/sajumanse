@@ -37,6 +37,7 @@ import AnnouncementAdmin from "@/pages/AnnouncementAdmin";
 import Login from "@/pages/Login";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import CacheClear from "@/pages/CacheClear";
 
 function Router() {
   return (
@@ -57,6 +58,7 @@ function Router() {
       <Route path="/announcement-admin" component={AnnouncementAdmin} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/cache-clear" component={CacheClear} />
       <Route component={NotFound} />
     </Switch>
   );
