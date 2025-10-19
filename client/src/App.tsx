@@ -234,7 +234,7 @@ function AppContent() {
   const isCompatibilityPage = location === "/compatibility";
 
   return (
-    <div className="flex min-h-screen flex-col bg-background font-sans">
+    <div className="flex h-[100dvh] flex-col bg-background font-sans overflow-hidden">
       {/* 궁합 페이지가 아닌 경우에만 메인 페이지 상단 헤더 표시 */}
       {!isCompatibilityPage && location === "/" && (
         <MobileHeader
@@ -245,7 +245,7 @@ function AppContent() {
         />
       )}
       
-      <main className={`flex-1 ${isCompatibilityPage ? "" : "min-h-0 pb-20"}`}>
+      <main className={`flex-1 min-h-0 overflow-auto ${isCompatibilityPage ? "" : "pb-20"}`}>
         <Router />
       </main>
 
