@@ -305,21 +305,22 @@ export default function Compatibility() {
           <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
             <DialogTitle className="text-black dark:text-white">사주 1 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
+          <div className="space-y-4 overflow-y-auto flex-1 p-3 bg-gray-50 dark:bg-gray-800">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
-                className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                className="cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
                 onClick={() => {
                   setLeftSajuId(saju.id);
                   setShowLeftDialog(false);
                 }}
                 data-testid={`saju-item-${saju.id}`}
+                style={{ padding: '24px 20px' }}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-lg text-black dark:text-white">{saju.name}</h3>
-                    <p className="text-base text-muted-foreground mt-1">
+                    <h3 className="text-black dark:text-white" style={{ fontSize: '22px', fontWeight: '600', marginBottom: '6px' }}>{saju.name}</h3>
+                    <p className="text-muted-foreground" style={{ fontSize: '18px' }}>
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
                   </div>
@@ -336,21 +337,22 @@ export default function Compatibility() {
           <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
             <DialogTitle className="text-black dark:text-white">사주 2 선택</DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
+          <div className="space-y-4 overflow-y-auto flex-1 p-3 bg-gray-50 dark:bg-gray-800">
             {sajuList.map((saju) => (
               <Card
                 key={saju.id}
-                className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                className="cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
                 onClick={() => {
                   setRightSajuId(saju.id);
                   setShowRightDialog(false);
                 }}
                 data-testid={`saju-item-${saju.id}`}
+                style={{ padding: '24px 20px' }}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-lg text-black dark:text-white">{saju.name}</h3>
-                    <p className="text-base text-muted-foreground mt-1">
+                    <h3 className="text-black dark:text-white" style={{ fontSize: '22px', fontWeight: '600', marginBottom: '6px' }}>{saju.name}</h3>
+                    <p className="text-muted-foreground" style={{ fontSize: '18px' }}>
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
                   </div>
