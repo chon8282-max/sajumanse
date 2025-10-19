@@ -15,6 +15,17 @@ if ('serviceWorker' in navigator) {
     }
   });
   
+  // SW에서 강제 리로드 메시지 수신
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'FORCE_RELOAD') {
+      console.log('🔄 Force reload requested by SW - reloading page');
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    }
+  });
+  
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
       .then((registration) => {

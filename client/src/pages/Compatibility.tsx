@@ -30,25 +30,6 @@ interface SajuResultData {
 }
 
 export default function Compatibility() {
-  // 최소 렌더링 테스트
-  return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'red',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: 'white',
-      fontSize: '24px',
-      fontWeight: 'bold'
-    }}>
-      궁합 페이지 테스트 (v1.25.10.49)
-    </div>
-  );
-}
-
-export function CompatibilityOriginal() {
   console.log('[Compatibility] 컴포넌트 렌더링 시작');
   
   const [, setLocation] = useLocation();
