@@ -131,7 +131,7 @@ export default function Compatibility() {
       display: 'grid', 
       gridTemplateColumns: '1fr 1fr', 
       width: '100%', 
-      height: '100vh',
+      height: '100dvh',
       gap: '1px',
       overflow: 'hidden'
     }}>
@@ -139,7 +139,7 @@ export default function Compatibility() {
       <div className="bg-white dark:bg-gray-900" style={{ 
         display: 'flex', 
         flexDirection: 'column',
-        height: '100vh',
+        height: '100dvh',
         overflow: 'hidden'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
@@ -222,7 +222,7 @@ export default function Compatibility() {
       <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700" style={{ 
         display: 'flex', 
         flexDirection: 'column',
-        height: '100vh',
+        height: '100dvh',
         overflow: 'hidden'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
