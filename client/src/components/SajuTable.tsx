@@ -1531,7 +1531,14 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {isBirthTimeUnknown ? null : jijiImage ? (
+                  {isBirthTimeUnknown ? (
+                    <span style={{ 
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: 'var(--muted-foreground)',
+                      lineHeight: '1.1'
+                    }}>생시<br/>모름</span>
+                  ) : jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
@@ -1667,14 +1674,7 @@ export default function SajuTable({
                   className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-start text-black dark:text-white bg-white dark:bg-gray-900"
                   data-testid={`text-shinsal-${index}`}
                 >
-                  {isBirthTimeUnknown ? (
-                    <span style={{ 
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      color: 'var(--muted-foreground)',
-                      lineHeight: '1.1'
-                    }}>생시<br/>모름</span>
-                  ) : (
+                  {isBirthTimeUnknown ? "" : (
                     shinsalArray.map((shinsal, idx) => {
                       // 12신살은 첫 번째 요소 (idx === 0)
                       // 한글2일 때만 12신살을 한글로 변환
@@ -1708,14 +1708,7 @@ export default function SajuTable({
                   className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                   data-testid={`text-jijanggan-${index}`}
                 >
-                  {isBirthTimeUnknown ? (
-                    <span style={{ 
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      color: 'var(--muted-foreground)',
-                      lineHeight: '1.1'
-                    }}>생시<br/>모름</span>
-                  ) : convertTextForRow145(stems)}
+                  {isBirthTimeUnknown ? "" : convertTextForRow145(stems)}
                 </div>
               );
             }))
