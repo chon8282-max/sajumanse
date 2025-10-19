@@ -306,21 +306,22 @@ export default function Compatibility() {
 
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
-        <DialogPortal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-[9998] bg-transparent" />
-          <DialogPrimitive.Content
-            className={cn(
-              "fixed left-[50%] top-[5vh] z-[9999] grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
-            )}
+        <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
+          <div className="fixed inset-0 z-[9998] bg-black/30" onClick={() => setShowLeftDialog(false)} />
+          <div
+            className="fixed left-[50%] top-[5vh] z-[9999] w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] bg-white dark:bg-gray-900 p-6 shadow-2xl sm:rounded-lg h-[90vh] flex flex-col border-2 border-gray-300"
+            onClick={(e) => e.stopPropagation()}
           >
-            <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
-              <DialogTitle className="text-black dark:text-white text-xl">사주 1 선택</DialogTitle>
-            </DialogHeader>
-            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
+            <div className="flex-shrink-0 flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-black dark:text-white">사주 1 선택</h2>
+              <button
+                onClick={() => setShowLeftDialog(false)}
+                className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
               {sajuList.map((saju) => (
                 <Card
                   key={saju.id}
@@ -342,27 +343,28 @@ export default function Compatibility() {
                 </Card>
               ))}
             </div>
-          </DialogPrimitive.Content>
+          </div>
         </DialogPortal>
       </Dialog>
 
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
-        <DialogPortal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-[9998] bg-transparent" />
-          <DialogPrimitive.Content
-            className={cn(
-              "fixed left-[50%] top-[5vh] z-[9999] grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
-            )}
+        <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
+          <div className="fixed inset-0 z-[9998] bg-black/30" onClick={() => setShowRightDialog(false)} />
+          <div
+            className="fixed left-[50%] top-[5vh] z-[9999] w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] bg-white dark:bg-gray-900 p-6 shadow-2xl sm:rounded-lg h-[90vh] flex flex-col border-2 border-gray-300"
+            onClick={(e) => e.stopPropagation()}
           >
-            <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
-              <DialogTitle className="text-black dark:text-white text-xl">사주 2 선택</DialogTitle>
-            </DialogHeader>
-            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
-            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
+            <div className="flex-shrink-0 flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-black dark:text-white">사주 2 선택</h2>
+              <button
+                onClick={() => setShowRightDialog(false)}
+                className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
               {sajuList.map((saju) => (
                 <Card
                   key={saju.id}
@@ -384,7 +386,7 @@ export default function Compatibility() {
                 </Card>
               ))}
             </div>
-          </DialogPrimitive.Content>
+          </div>
         </DialogPortal>
       </Dialog>
     </div>
