@@ -245,7 +245,7 @@ function AppContent() {
         />
       )}
       
-      <main className={`flex-1 flex flex-col ${isCompatibilityPage ? "overflow-hidden" : "min-h-0 pb-20"}`}>
+      <main className={`flex-1 flex flex-col min-h-0 ${isCompatibilityPage ? "overflow-hidden" : "pb-20"}`}>
         <Router />
       </main>
 
