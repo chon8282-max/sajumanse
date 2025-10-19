@@ -304,9 +304,9 @@ export default function Compatibility() {
 
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col bg-white dark:bg-gray-900">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col bg-white dark:bg-gray-900 !top-[5vh] !translate-y-0">
           <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
-            <DialogTitle className="text-black dark:text-white">사주 1 선택</DialogTitle>
+            <DialogTitle className="text-black dark:text-white text-xl">사주 1 선택</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
             {sajuList.map((saju) => (
@@ -321,7 +321,7 @@ export default function Compatibility() {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-lg text-black dark:text-white">{saju.name}</h3>
+                    <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
                     <p className="text-base text-muted-foreground mt-1">
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
@@ -335,9 +335,9 @@ export default function Compatibility() {
 
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col bg-white dark:bg-gray-900">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl h-[90vh] flex flex-col bg-white dark:bg-gray-900 !top-[5vh] !translate-y-0">
           <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
-            <DialogTitle className="text-black dark:text-white">사주 2 선택</DialogTitle>
+            <DialogTitle className="text-black dark:text-white text-xl">사주 2 선택</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800">
             {sajuList.map((saju) => (
@@ -352,7 +352,7 @@ export default function Compatibility() {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-lg text-black dark:text-white">{saju.name}</h3>
+                    <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
                     <p className="text-base text-muted-foreground mt-1">
                       {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                     </p>
