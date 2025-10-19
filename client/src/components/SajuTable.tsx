@@ -1352,14 +1352,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
                 data-testid={`text-yukjin-sky-${index}`}
               >
-                {isBirthTimeUnknown ? (
-                  <span style={{ 
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    color: 'var(--muted-foreground)',
-                    lineHeight: '1.1'
-                  }}>생시<br/>모름</span>
-                ) : displayText}
+                {isBirthTimeUnknown ? "" : displayText}
               </div>
             );
           })}
@@ -1435,14 +1428,7 @@ export default function SajuTable({
                 onClick={isHourPillar ? handleHourEarthClick : isMonthPillar ? handleDayEarthClick : undefined}
                 data-testid={`text-sky-${index}`}
               >
-                {isBirthTimeUnknown ? (
-                  <span style={{ 
-                    fontSize: '16px',
-                    fontWeight: '700',
-                    color: 'var(--muted-foreground)',
-                    lineHeight: '1.1'
-                  }}>생시<br/>모름</span>
-                ) : cheonganImage ? (
+                {isBirthTimeUnknown ? null : cheonganImage ? (
                   <img 
                     src={cheonganImage} 
                     alt={col.sky} 
@@ -1545,14 +1531,7 @@ export default function SajuTable({
                     justifyContent: 'center'
                   }}
                 >
-                  {isBirthTimeUnknown ? (
-                    <span style={{ 
-                      fontSize: '16px',
-                      fontWeight: '700',
-                      color: 'var(--muted-foreground)',
-                      lineHeight: '1.1'
-                    }}>생시<br/>모름</span>
-                  ) : jijiImage ? (
+                  {isBirthTimeUnknown ? null : jijiImage ? (
                     <img 
                       src={jijiImage} 
                       alt={col.earth} 
