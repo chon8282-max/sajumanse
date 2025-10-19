@@ -307,10 +307,10 @@ export default function Compatibility() {
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
         <DialogPortal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-transparent" />
+          <DialogPrimitive.Overlay className="fixed inset-0 z-[9998] bg-transparent" />
           <DialogPrimitive.Content
             className={cn(
-              "fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
+              "fixed left-[50%] top-[5vh] z-[9999] grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
             )}
           >
             <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
@@ -349,10 +349,10 @@ export default function Compatibility() {
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
         <DialogPortal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-transparent" />
+          <DialogPrimitive.Overlay className="fixed inset-0 z-[9998] bg-transparent" />
           <DialogPrimitive.Content
             className={cn(
-              "fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
+              "fixed left-[50%] top-[5vh] z-[9999] grid w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] translate-y-0 gap-4 border bg-white dark:bg-gray-900 p-6 shadow-lg duration-200 sm:rounded-lg h-[90vh] flex flex-col"
             )}
           >
             <DialogHeader className="flex-shrink-0 bg-white dark:bg-gray-900">
