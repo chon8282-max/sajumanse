@@ -224,11 +224,20 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       {/* 사이드 메뉴 - 클릭 전파 중단 */}
       <div 
         ref={menuRef}
-        className="absolute left-0 top-0 h-full w-[60%] bg-background border-r z-10 transform transition-transform duration-300 ease-in-out"
+        className="absolute left-0 top-0 h-full w-[60%] bg-background border-r z-10 transform transition-transform duration-300 ease-in-out overscroll-contain"
         onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={(e) => {
+          e.stopPropagation();
+          handleTouchStart(e);
+        }}
+        onTouchMove={(e) => {
+          e.stopPropagation();
+          handleTouchMove(e);
+        }}
+        onTouchEnd={(e) => {
+          e.stopPropagation();
+          handleTouchEnd(e);
+        }}
         data-testid="mobile-menu"
       >
         <div className="flex flex-col h-full">
@@ -251,7 +260,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
 
           {/* 메뉴 항목들 */}
-          <div className="flex-1 p-2 space-y-3 overflow-y-auto">
+          <div 
+            className="flex-1 p-2 space-y-3 overflow-y-auto overscroll-contain"
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
             <Card className="p-2">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">도움말</h3>
               <div className="space-y-1">

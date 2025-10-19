@@ -44,13 +44,14 @@ export default function Compatibility() {
     const leftId = params.get('left');
     const rightId = params.get('right');
     
-    if (leftId && !leftSajuId) {
+    // 현재 상태와 다를 때만 업데이트 (화면 회전 시 중복 업데이트 방지)
+    if (leftId && leftId !== leftSajuId) {
       setLeftSajuId(leftId);
     }
-    if (rightId && !rightSajuId) {
+    if (rightId && rightId !== rightSajuId) {
       setRightSajuId(rightId);
     }
-  }, [searchParams]);
+  }, [searchParams]); // searchParams 변경 시에만 실행
 
   // 가로 모드 권장 (강제하지 않음)
   useEffect(() => {
@@ -73,18 +74,18 @@ export default function Compatibility() {
   const leftSaju = leftSajuResponse?.data;
   const rightSaju = rightSajuResponse?.data;
   
-  // 사주 데이터 로드 시 메모 동기화
+  // 사주 데이터 로드 시 메모 동기화 (ID 변경 시에만)
   useEffect(() => {
-    if (leftSaju?.memo) {
-      setLeftMemo(leftSaju.memo);
+    if (leftSaju && leftSaju.id === leftSajuId) {
+      setLeftMemo(leftSaju.memo ?? "");
     }
-  }, [leftSaju]);
+  }, [leftSaju?.id, leftSajuId]);
   
   useEffect(() => {
-    if (rightSaju?.memo) {
-      setRightMemo(rightSaju.memo);
+    if (rightSaju && rightSaju.id === rightSajuId) {
+      setRightMemo(rightSaju.memo ?? "");
     }
-  }, [rightSaju]);
+  }, [rightSaju?.id, rightSajuId]);
   
   // 왼쪽 저장 mutation
   const leftSaveMutation = useMutation({
@@ -181,33 +182,24 @@ export default function Compatibility() {
             </CardHeader>
             <CardContent className="p-1">
               {leftSajuId && leftSaju ? (
-                <>
-                  <div className="w-full">
-                    <SajuTable 
-                      saju={{
-                        year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
-                        month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
-                        day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
-                        hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' }
-                      }}
-                      name={leftSaju.name}
-                      birthYear={leftSaju.birthYear}
-                      birthMonth={leftSaju.birthMonth}
-                      birthDay={leftSaju.birthDay}
-                      birthHour={leftSaju.birthTime || undefined}
-                      gender={leftSaju.gender}
-                    />
-                  </div>
-                  <div className="mt-2 px-2">
-                    <textarea
-                      value={leftMemo}
-                      onChange={(e) => setLeftMemo(e.target.value)}
-                      placeholder="메모를 입력하세요..."
-                      className="w-full text-xs text-muted-foreground whitespace-pre-wrap bg-transparent border border-border rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring min-h-[60px]"
-                      data-testid="textarea-left-memo"
-                    />
-                  </div>
-                </>
+                <div className="w-full">
+                  <SajuTable 
+                    saju={{
+                      year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
+                      month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
+                      day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
+                      hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' }
+                    }}
+                    name={leftSaju.name}
+                    birthYear={leftSaju.birthYear}
+                    birthMonth={leftSaju.birthMonth}
+                    birthDay={leftSaju.birthDay}
+                    birthHour={leftSaju.birthTime || undefined}
+                    gender={leftSaju.gender}
+                    memo={leftMemo}
+                    onMemoChange={(memo) => setLeftMemo(memo)}
+                  />
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
                   <p className="text-muted-foreground text-center">
@@ -267,33 +259,24 @@ export default function Compatibility() {
             </CardHeader>
             <CardContent className="p-1">
               {rightSajuId && rightSaju ? (
-                <>
-                  <div className="w-full">
-                    <SajuTable 
-                      saju={{
-                        year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
-                        month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
-                        day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
-                        hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' }
-                      }}
-                      name={rightSaju.name}
-                      birthYear={rightSaju.birthYear}
-                      birthMonth={rightSaju.birthMonth}
-                      birthDay={rightSaju.birthDay}
-                      birthHour={rightSaju.birthTime || undefined}
-                      gender={rightSaju.gender}
-                    />
-                  </div>
-                  <div className="mt-2 px-2">
-                    <textarea
-                      value={rightMemo}
-                      onChange={(e) => setRightMemo(e.target.value)}
-                      placeholder="메모를 입력하세요..."
-                      className="w-full text-xs text-muted-foreground whitespace-pre-wrap bg-transparent border border-border rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring min-h-[60px]"
-                      data-testid="textarea-right-memo"
-                    />
-                  </div>
-                </>
+                <div className="w-full">
+                  <SajuTable 
+                    saju={{
+                      year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
+                      month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
+                      day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
+                      hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' }
+                    }}
+                    name={rightSaju.name}
+                    birthYear={rightSaju.birthYear}
+                    birthMonth={rightSaju.birthMonth}
+                    birthDay={rightSaju.birthDay}
+                    birthHour={rightSaju.birthTime || undefined}
+                    gender={rightSaju.gender}
+                    memo={rightMemo}
+                    onMemoChange={(memo) => setRightMemo(memo)}
+                  />
+                </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 gap-4">
                   <p className="text-muted-foreground text-center">
