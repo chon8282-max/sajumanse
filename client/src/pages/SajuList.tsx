@@ -50,9 +50,11 @@ export default function SajuList() {
   const [selectedGroupId, setSelectedGroupId] = useState<string>("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   
-  // 페이지네이션 상태 (성능 최적화)
-  const [page, setPage] = useState(1);
-  const pageSize = 20; // 한 번에 20개씩 로드
+  // 정렬 상태
+  type SortType = 'name' | 'createdAt' | 'age';
+  type SortOrder = 'asc' | 'desc';
+  const [sortType, setSortType] = useState<SortType>('createdAt'); // 기본값: 저장일순
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc'); // 기본값: 내림차순 (최신순)
   
   // 그룹 관리 모달 상태
   const [showGroupModal, setShowGroupModal] = useState(false);
@@ -77,11 +79,6 @@ export default function SajuList() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // 검색/필터 변경 시 페이지 리셋
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearchQuery, selectedGroupId]);
-
   // 그룹 목록 조회
   const { data: groupsList } = useQuery<ApiResponse<Group[]>, Error, Group[]>({
     queryKey: ["/api/groups"],
@@ -103,12 +100,12 @@ export default function SajuList() {
     select: (response: ApiResponse<Group[]>) => response?.data || [],
   });
 
-  // 저장된 사주 목록 조회 (페이지네이션 + 서버 사이드 검색)
+  // 저장된 사주 목록 조회 (전체 리스트 표시)
   const { data: sajuResponse, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>>({
-    queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId, page],
+    queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId],
     queryFn: async () => {
       const params = new URLSearchParams();
-      params.set('limit', (page * pageSize).toString()); // 누적 로딩
+      params.set('limit', '10000'); // 전체 리스트 표시
       if (debouncedSearchQuery.trim()) {
         params.set('search', debouncedSearchQuery.trim());
       }
@@ -133,9 +130,33 @@ export default function SajuList() {
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지 (성능 향상)
   });
 
-  // 사주 목록과 더 보기 가능 여부 계산  
-  const sajuList = sajuResponse?.data || [];
-  const hasMore = sajuList.length > (page - 1) * pageSize && sajuList.length === page * pageSize;
+  // 사주 목록 정렬
+  const sajuList = useMemo(() => {
+    const list = [...(sajuResponse?.data || [])];
+    
+    return list.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortType) {
+        case 'name':
+          // 가나다순
+          comparison = (a.name || '').localeCompare(b.name || '', 'ko-KR');
+          break;
+        case 'createdAt':
+          // 저장일순
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          comparison = dateA - dateB;
+          break;
+        case 'age':
+          // 나이순 (birthYear 기준)
+          comparison = a.birthYear - b.birthYear;
+          break;
+      }
+      
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [sajuResponse?.data, sortType, sortOrder]);
 
   // 사주 삭제 뮤테이션
   const deleteMutation = useMutation({
@@ -205,7 +226,7 @@ export default function SajuList() {
   // 검색/필터 변경 시 선택 초기화 (숨겨진 선택 항목 방지)
   useEffect(() => {
     setSelectedSajuIds([]);
-  }, [searchQuery, selectedGroupId, page]);
+  }, [searchQuery, selectedGroupId]);
   
   // Form 초기화
   const groupForm = useForm<GroupFormData>({
@@ -432,6 +453,22 @@ export default function SajuList() {
     setShowBulkDeleteDialog(false);
   };
 
+  // 정렬 핸들러 (토글 방식)
+  const handleSort = (type: SortType) => {
+    if (sortType === type) {
+      // 같은 타입 클릭 시 오름차순/내림차순 토글
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      // 다른 타입 클릭 시 해당 타입으로 변경하고 기본 순서 설정
+      setSortType(type);
+      if (type === 'createdAt') {
+        setSortOrder('desc'); // 저장일순은 최신순이 기본
+      } else {
+        setSortOrder('asc'); // 가나다순, 나이순은 오름차순이 기본
+      }
+    }
+  };
+
   // 서버 사이드 검색으로 변경하여 filteredSajuList 제거
   // sajuList가 이미 필터링된 결과이므로 더 이상 필터링 불필요
 
@@ -543,6 +580,37 @@ export default function SajuList() {
               </Button>
             </div>
           )}
+          
+          {/* 정렬 버튼 */}
+          <div className="flex gap-2 mt-2">
+            <Button
+              variant={sortType === 'name' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleSort('name')}
+              data-testid="button-sort-name"
+              className="flex-1"
+            >
+              가나다순 {sortType === 'name' && (sortOrder === 'asc' ? '▲' : '▼')}
+            </Button>
+            <Button
+              variant={sortType === 'createdAt' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleSort('createdAt')}
+              data-testid="button-sort-date"
+              className="flex-1"
+            >
+              저장일순 {sortType === 'createdAt' && (sortOrder === 'asc' ? '▲' : '▼')}
+            </Button>
+            <Button
+              variant={sortType === 'age' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleSort('age')}
+              data-testid="button-sort-age"
+              className="flex-1"
+            >
+              나이순 {sortType === 'age' && (sortOrder === 'asc' ? '▲' : '▼')}
+            </Button>
+          </div>
         </div>
 
         {/* 로딩 상태 */}
@@ -741,20 +809,6 @@ export default function SajuList() {
                     })}
                   </TableBody>
                 </Table>
-                
-                {/* 더 보기 버튼 (성능 최적화) */}
-                {hasMore && !isLoading && (
-                  <div className="flex justify-center p-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setPage(prev => prev + 1)}
-                      disabled={isLoading}
-                      data-testid="button-load-more"
-                    >
-                      더 보기 ({sajuList.length}개 표시됨)
-                    </Button>
-                  </div>
-                )}
               </div>
               </>
             )}

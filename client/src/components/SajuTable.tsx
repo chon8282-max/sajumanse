@@ -346,6 +346,15 @@ export default function SajuTable({
 
   // 메모 상태 관리
   const [memoText, setMemoText] = useState(memo || '');
+  const [prevMemo, setPrevMemo] = useState(memo);
+  
+  // memo prop이 실제로 변경될 때만 memoText 동기화
+  useEffect(() => {
+    if (memo !== prevMemo) {
+      setMemoText(memo || '');
+      setPrevMemo(memo);
+    }
+  }, [memo, prevMemo]);
   
   // 메모가 변경될 때 부모 컴포넌트에 전달
   useEffect(() => {
@@ -1317,6 +1326,8 @@ export default function SajuTable({
           {/* 천간 육친/오행 표시 (대운/세운 모드일 때는 천간 이벤트) */}
           {heavenlyYukjin.map((yukjin, index) => {
             const skyCharacter = sajuColumns[index]?.sky;
+            const isHourColumn = index === 0;
+            const isBirthTimeUnknown = isHourColumn && !sajuColumns[0]?.sky && !sajuColumns[0]?.earth;
             
             // 대운 또는 세운 모드일 때는 천간 이벤트 계산
             let displayText: string;
@@ -1341,7 +1352,14 @@ export default function SajuTable({
                 className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
                 data-testid={`text-yukjin-sky-${index}`}
               >
-                {displayText}
+                {isBirthTimeUnknown ? (
+                  <span style={{ 
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: 'var(--muted-foreground)',
+                    lineHeight: '1.1'
+                  }}>생시<br/>모름</span>
+                ) : displayText}
               </div>
             );
           })}
