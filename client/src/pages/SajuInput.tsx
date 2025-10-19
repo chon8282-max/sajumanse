@@ -512,7 +512,12 @@ export default function SajuInput() {
           const currentMonthIndex = solarTermInfo ? (termMonthMap[solarTermInfo.name] ?? 0) : 0;
           const monthIndex = usePreviousMonthPillar ? (currentMonthIndex - 1 + 12) % 12 : currentMonthIndex;
           
-          const monthSky = CHEONGAN[(monthSkyStart + monthIndex) % 10];
+          // 축월(11)은 인월 바로 전 달이므로 천간 offset = -1
+          let offset = monthIndex;
+          if (monthIndex === 11) {
+            offset = -1; // 축월은 인월 - 1
+          }
+          const monthSky = CHEONGAN[(monthSkyStart + offset + 10) % 10];
           const monthEarth = JIJI[(monthIndex + 2) % 12]; // 인월=2(寅), 묘월=3(卯), ..., 축월=1(丑)
           
           // 일주/시주는 양력 기준 계산
