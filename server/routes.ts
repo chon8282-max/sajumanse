@@ -215,8 +215,11 @@ export async function registerRoutes(app: Express): Promise<void> {
             let hour: number | undefined = undefined;
             let minute = 0;
             
+            // 생시가 있는지 여부 저장 (절입일 처리 후 복원용)
+            const hasBirthTime = validatedData.birthTime !== null && validatedData.birthTime !== undefined;
+            
             // 생시가 있는 경우에만 시간 파싱
-            if (validatedData.birthTime) {
+            if (hasBirthTime) {
               // 전통 시간대 코드인지 확인 (예: "子時")
               const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
               if (timePeriod) {
@@ -224,7 +227,7 @@ export async function registerRoutes(app: Express): Promise<void> {
                 hour = timePeriod.hour;
                 // 야자시는 23:31부터 시작하므로 minute을 31로 설정
                 minute = timePeriod.code === "夜子時" ? 31 : 0;
-              } else {
+              } else if (validatedData.birthTime) {
                 // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
                 const timeStr = validatedData.birthTime;
                 if (timeStr.includes(':')) {
@@ -326,6 +329,13 @@ export async function registerRoutes(app: Express): Promise<void> {
                 }
               } catch (termError) {
                 console.error('절입 시각 조정 실패:', termError);
+              }
+              
+              // 원래 생시모름이었으면 hour를 다시 undefined로 복원
+              if (!hasBirthTime) {
+                hour = undefined;
+                minute = 0;
+                console.log('  ⚠️ 생시모름: 절입일 처리 후 시주 계산 제외');
               }
             }
             
@@ -450,6 +460,9 @@ export async function registerRoutes(app: Express): Promise<void> {
             console.log(`📝 DB 업데이트 데이터:`, { daySky: updateData.daySky, dayEarth: updateData.dayEarth, hourSky: updateData.hourSky, hourEarth: updateData.hourEarth });
 
             const updatedRecord = await storage.updateSajuRecord(savedRecord.id, updateData);
+            if (!updatedRecord) {
+              throw new Error('사주 정보 업데이트 실패');
+            }
             console.log(`✅ DB 업데이트 완료:`, { id: updatedRecord.id, daySky: updatedRecord.daySky, dayEarth: updatedRecord.dayEarth });
 
             res.json({

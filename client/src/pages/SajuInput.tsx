@@ -797,7 +797,9 @@ export default function SajuInput() {
                 }}
                 data-testid="checkbox-birth-time-unknown"
               />
-              <Label htmlFor="birthTimeUnknown" className="text-xs cursor-pointer">생시모름</Label>
+              <Label htmlFor="birthTimeUnknown" className="text-xs cursor-pointer leading-tight">
+                생시<br/>모름
+              </Label>
             </div>
           </div>
         </div>

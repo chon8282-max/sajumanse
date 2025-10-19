@@ -1422,8 +1422,8 @@ export default function SajuTable({
                     fontSize: '16px',
                     fontWeight: '700',
                     color: 'var(--muted-foreground)',
-                    lineHeight: '1'
-                  }}>생시모름</span>
+                    lineHeight: '1.1'
+                  }}>생시<br/>모름</span>
                 ) : cheonganImage ? (
                   <img 
                     src={cheonganImage} 
@@ -1532,8 +1532,8 @@ export default function SajuTable({
                       fontSize: '16px',
                       fontWeight: '700',
                       color: 'var(--muted-foreground)',
-                      lineHeight: '1'
-                    }}>생시모름</span>
+                      lineHeight: '1.1'
+                    }}>생시<br/>모름</span>
                   ) : jijiImage ? (
                     <img 
                       src={jijiImage} 
@@ -1611,8 +1611,9 @@ export default function SajuTable({
                   <span style={{ 
                     fontSize: '14px',
                     fontWeight: '700',
-                    color: 'var(--muted-foreground)'
-                  }}>생시모름</span>
+                    color: 'var(--muted-foreground)',
+                    lineHeight: '1.1'
+                  }}>생시<br/>모름</span>
                 ) : displayText}
               </div>
             );
@@ -1673,8 +1674,9 @@ export default function SajuTable({
                     <span style={{ 
                       fontSize: '14px',
                       fontWeight: '700',
-                      color: 'var(--muted-foreground)'
-                    }}>생시모름</span>
+                      color: 'var(--muted-foreground)',
+                      lineHeight: '1.1'
+                    }}>생시<br/>모름</span>
                   ) : (
                     shinsalArray.map((shinsal, idx) => {
                       // 12신살은 첫 번째 요소 (idx === 0)
@@ -1713,8 +1715,9 @@ export default function SajuTable({
                     <span style={{ 
                       fontSize: '14px',
                       fontWeight: '700',
-                      color: 'var(--muted-foreground)'
-                    }}>생시모름</span>
+                      color: 'var(--muted-foreground)',
+                      lineHeight: '1.1'
+                    }}>생시<br/>모름</span>
                   ) : convertTextForRow145(stems)}
                 </div>
               );
