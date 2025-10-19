@@ -145,22 +145,16 @@ export default function Compatibility() {
       display: 'grid', 
       gridTemplateColumns: '1fr 1fr', 
       width: '100%', 
-      height: '100dvh',
-      gap: '1px',
-      overflow: 'hidden'
+      minHeight: '100vh',
+      gap: '1px'
     }}>
       {/* 왼쪽 사주 1 */}
       <div className="bg-white dark:bg-gray-900" style={{ 
         display: 'flex', 
         flexDirection: 'column',
-        height: '100dvh',
-        overflow: 'hidden'
+        minHeight: '100vh'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
-          {/* 디버그 표시 - 렌더링 확인용 */}
-          <div style={{ fontSize: '10px', color: 'red', marginBottom: '4px' }}>
-            DEBUG: 궁합페이지 렌더링됨 (v1.25.10.47)
-          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <Button
@@ -240,8 +234,7 @@ export default function Compatibility() {
       <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700" style={{ 
         display: 'flex', 
         flexDirection: 'column',
-        height: '100dvh',
-        overflow: 'hidden'
+        minHeight: '100vh'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
