@@ -321,10 +321,16 @@
     font-size: 17px !important;
   }
   
-  /* 모든 버튼, 인풋, 셀렉트 최소 크기 보장 */
-  button, input, select, textarea {
+  /* 모든 버튼, 인풋, 셀렉트 최소 크기 보장 (체크박스 제외) */
+  button, input:not([type="checkbox"]), select, textarea {
     font-size: 16px !important;
     min-height: 44px;
+  }
+  
+  /* 체크박스는 원래 크기 유지 */
+  input[type="checkbox"] {
+    min-height: auto !important;
+    height: auto !important;
   }
   
   /* 다이얼로그 제목 크기 확대 */
