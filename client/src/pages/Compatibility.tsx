@@ -151,8 +151,7 @@ export default function Compatibility() {
       {/* 왼쪽 사주 1 */}
       <div className="bg-white dark:bg-gray-900" style={{ 
         display: 'flex', 
-        flexDirection: 'column',
-        minHeight: '100vh'
+        flexDirection: 'column'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -233,8 +232,7 @@ export default function Compatibility() {
       {/* 오른쪽 사주 2 */}
       <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700" style={{ 
         display: 'flex', 
-        flexDirection: 'column',
-        minHeight: '100vh'
+        flexDirection: 'column'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
