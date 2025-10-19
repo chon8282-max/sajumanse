@@ -343,7 +343,12 @@ export default function SajuInput() {
           else monthSkyStart = 0; // 戊癸년: 인월=甲
           
           // monthEarthIndex: 0=인월, 1=묘월, ..., 11=축월
-          const monthSkyIndex = (monthSkyStart + monthEarthIndex) % 10;
+          // 축월(11)은 인월 바로 전 달이므로 천간 = 인월 - 1
+          let offset = monthEarthIndex;
+          if (monthEarthIndex === 11) {
+            offset = -1; // 축월은 인월 - 1
+          }
+          const monthSkyIndex = (monthSkyStart + offset + 10) % 10; // +10은 음수 방지
           return { sky: CHEONGAN[monthSkyIndex], earth: JIJI[(monthEarthIndex + 2) % 12] }; // 인월=寅(2), 묘월=卯(3), ..., 축월=丑(1)
         };
         
