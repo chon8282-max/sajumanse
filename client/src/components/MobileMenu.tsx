@@ -447,7 +447,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               앱 새로고침
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              V.1.25.10.28
+              V.1.25.10.29
             </p>
           </div>
         </div>
