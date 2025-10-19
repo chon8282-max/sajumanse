@@ -1428,7 +1428,14 @@ export default function SajuTable({
                 onClick={isHourPillar ? handleHourEarthClick : isMonthPillar ? handleDayEarthClick : undefined}
                 data-testid={`text-sky-${index}`}
               >
-                {isBirthTimeUnknown ? null : cheonganImage ? (
+                {isBirthTimeUnknown ? (
+                  <span style={{ 
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    color: 'var(--muted-foreground)',
+                    lineHeight: '1.1'
+                  }}>생시<br/>모름</span>
+                ) : cheonganImage ? (
                   <img 
                     src={cheonganImage} 
                     alt={col.sky} 
@@ -1611,14 +1618,7 @@ export default function SajuTable({
                 className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-earth-${index}`}
               >
-                {isBirthTimeUnknown ? (
-                  <span style={{ 
-                    fontSize: '14px',
-                    fontWeight: '700',
-                    color: 'var(--muted-foreground)',
-                    lineHeight: '1.1'
-                  }}>생시<br/>모름</span>
-                ) : displayText}
+                {isBirthTimeUnknown ? "" : displayText}
               </div>
             );
           })}
