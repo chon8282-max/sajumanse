@@ -30,6 +30,8 @@ interface SajuResultData {
 }
 
 export default function Compatibility() {
+  console.log('[Compatibility] 컴포넌트 렌더링 시작');
+  
   const [, setLocation] = useLocation();
   const searchParams = useSearch();
   const { toast } = useToast();
@@ -41,11 +43,16 @@ export default function Compatibility() {
   const [leftMemo, setLeftMemo] = useState<string>("");
   const [rightMemo, setRightMemo] = useState<string>("");
   
+  console.log('[Compatibility] State:', { leftSajuId, rightSajuId });
+  
   // 쿼리 파라미터에서 ID 자동 로드
   useEffect(() => {
+    console.log('[Compatibility] useEffect - 쿼리 파라미터 로드');
     const params = new URLSearchParams(searchParams);
     const leftId = params.get('left');
     const rightId = params.get('right');
+    
+    console.log('[Compatibility] URL params:', { leftId, rightId });
     
     if (leftId && leftId !== leftSajuId) {
       setLeftSajuId(leftId);
@@ -126,6 +133,13 @@ export default function Compatibility() {
   
   const sajuList = sajuListResponse?.data || [];
 
+  console.log('[Compatibility] 렌더링 직전:', { leftSaju, rightSaju, sajuListLength: sajuList.length });
+
+  // 간단한 디버그 UI (최소 렌더링 확인용)
+  if (typeof window !== 'undefined') {
+    console.log('[Compatibility] window 존재, 브라우저 환경 확인');
+  }
+
   return (
     <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" style={{ 
       display: 'grid', 
@@ -143,6 +157,10 @@ export default function Compatibility() {
         overflow: 'hidden'
       }}>
         <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
+          {/* 디버그 표시 - 렌더링 확인용 */}
+          <div style={{ fontSize: '10px', color: 'red', marginBottom: '4px' }}>
+            DEBUG: 궁합페이지 렌더링됨 (v1.25.10.47)
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <Button
