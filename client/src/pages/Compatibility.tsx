@@ -153,31 +153,31 @@ export default function Compatibility() {
         display: 'flex', 
         flexDirection: 'column'
       }}>
-        <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleHomeClick}
-                className="gap-1 h-6 text-xs px-2"
+                className="gap-1 h-8 text-sm px-3"
                 data-testid="button-home"
               >
-                <Home className="w-3 h-3" />
+                <Home className="w-4 h-4" />
                 홈
               </Button>
-              <h3 style={{ fontSize: '14px', fontWeight: '600' }}>사주 1</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <div style={{ display: 'flex', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setLeftSajuId(null)}
                   data-testid="button-left-change"
-                  className="h-7 text-xs"
+                  className="h-9 text-sm px-3"
                 >
-                  <RefreshCw className="w-3 h-3 mr-1" />
+                  <RefreshCw className="w-4 h-4 mr-1" />
                   수정
                 </Button>
                 <Button
@@ -186,16 +186,16 @@ export default function Compatibility() {
                   onClick={() => leftSaveMutation.mutate(leftMemo)}
                   disabled={leftSaveMutation.isPending}
                   data-testid="button-left-save"
-                  className="h-7 text-xs"
+                  className="h-9 text-sm px-3"
                 >
-                  <Save className="w-3 h-3 mr-1" />
+                  <Save className="w-4 h-4 mr-1" />
                   저장
                 </Button>
               </div>
             )}
           </div>
         </div>
-        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {leftSajuId && leftSaju ? (
             <SajuTable 
               saju={{
@@ -214,14 +214,16 @@ export default function Compatibility() {
               onMemoChange={(memo) => setLeftMemo(memo)}
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '16px' }}>
-              <p style={{ color: '#6b7280' }}>사주를 선택해주세요</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '20px' }}>
+              <p style={{ color: '#6b7280', fontSize: '15px' }}>사주를 선택해주세요</p>
               <Button
                 variant="outline"
                 onClick={() => setShowLeftDialog(true)}
                 data-testid="button-left-load"
+                size="lg"
+                className="h-12 px-6 text-base"
               >
-                <FolderOpen className="w-4 h-4 mr-2" />
+                <FolderOpen className="w-5 h-5 mr-2" />
                 불러오기
               </Button>
             </div>
@@ -234,19 +236,19 @@ export default function Compatibility() {
         display: 'flex', 
         flexDirection: 'column'
       }}>
-        <div style={{ padding: '8px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '600' }}>사주 2</h3>
+        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
-              <div style={{ display: 'flex', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setRightSajuId(null)}
                   data-testid="button-right-change"
-                  className="h-7 text-xs"
+                  className="h-9 text-sm px-3"
                 >
-                  <RefreshCw className="w-3 h-3 mr-1" />
+                  <RefreshCw className="w-4 h-4 mr-1" />
                   수정
                 </Button>
                 <Button
@@ -255,16 +257,16 @@ export default function Compatibility() {
                   onClick={() => rightSaveMutation.mutate(rightMemo)}
                   disabled={rightSaveMutation.isPending}
                   data-testid="button-right-save"
-                  className="h-7 text-xs"
+                  className="h-9 text-sm px-3"
                 >
-                  <Save className="w-3 h-3 mr-1" />
+                  <Save className="w-4 h-4 mr-1" />
                   저장
                 </Button>
               </div>
             )}
           </div>
         </div>
-        <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {rightSajuId && rightSaju ? (
             <SajuTable 
               saju={{
@@ -283,14 +285,16 @@ export default function Compatibility() {
               onMemoChange={(memo) => setRightMemo(memo)}
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '200px', gap: '16px' }}>
-              <p style={{ color: '#6b7280' }}>사주를 선택해주세요</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '20px' }}>
+              <p style={{ color: '#6b7280', fontSize: '15px' }}>사주를 선택해주세요</p>
               <Button
                 variant="outline"
                 onClick={() => setShowRightDialog(true)}
                 data-testid="button-right-load"
+                size="lg"
+                className="h-12 px-6 text-base"
               >
-                <FolderOpen className="w-4 h-4 mr-2" />
+                <FolderOpen className="w-5 h-5 mr-2" />
                 불러오기
               </Button>
             </div>
