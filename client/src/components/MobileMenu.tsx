@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -31,6 +31,19 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+
+  // 메뉴 열릴 때 배경 스크롤 차단
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   const handleDriveBackup = async () => {
     // 로그인 체크
@@ -447,7 +460,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               앱 새로고침
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              V.1.25.10.45
+              V.1.25.10.46
             </p>
           </div>
         </div>
