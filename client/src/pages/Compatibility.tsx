@@ -47,6 +47,25 @@ export default function Compatibility() {
   
   console.log('[Compatibility] State:', { leftSajuId, rightSajuId });
   
+  // 다이얼로그 열릴 때 페이지 스크롤 완전히 막기
+  useEffect(() => {
+    if (showLeftDialog || showRightDialog) {
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showLeftDialog, showRightDialog]);
+  
   // 쿼리 파라미터에서 ID 자동 로드
   useEffect(() => {
     console.log('[Compatibility] useEffect - 쿼리 파라미터 로드');
