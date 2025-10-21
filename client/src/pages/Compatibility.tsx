@@ -167,7 +167,10 @@ export default function Compatibility() {
       gridTemplateColumns: '1fr 1fr', 
       width: '100%', 
       minHeight: '100vh',
-      gap: '1px'
+      gap: '1px',
+      isolation: 'isolate',
+      position: 'relative',
+      zIndex: 1
     }}>
       {/* 왼쪽 사주 1 */}
       <div className="bg-white dark:bg-gray-900" style={{ 
@@ -223,7 +226,13 @@ export default function Compatibility() {
                 year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
                 month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
                 day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
-                hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' }
+                hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' },
+                wuxing: {
+                  year: { sky: '', earth: '' },
+                  month: { sky: '', earth: '' },
+                  day: { sky: '', earth: '' },
+                  hour: { sky: '', earth: '' }
+                }
               }}
               name={leftSaju.name}
               birthYear={leftSaju.birthYear}
@@ -294,7 +303,13 @@ export default function Compatibility() {
                 year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
                 month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
                 day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
-                hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' }
+                hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' },
+                wuxing: {
+                  year: { sky: '', earth: '' },
+                  month: { sky: '', earth: '' },
+                  day: { sky: '', earth: '' },
+                  hour: { sky: '', earth: '' }
+                }
               }}
               name={rightSaju.name}
               birthYear={rightSaju.birthYear}
@@ -326,7 +341,11 @@ export default function Compatibility() {
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
         <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
-          <div className="fixed inset-0 z-[9998] bg-black/30" onClick={() => setShowLeftDialog(false)} />
+          <div 
+            className="fixed inset-0 z-[9998] bg-black/80" 
+            onClick={() => setShowLeftDialog(false)}
+            style={{ backdropFilter: 'blur(2px)' }}
+          />
           <div
             className="fixed left-[50%] top-[5vh] z-[9999] w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] bg-white dark:bg-gray-900 p-6 shadow-2xl sm:rounded-lg h-[90vh] flex flex-col border-2 border-gray-300"
             onClick={(e) => e.stopPropagation()}
@@ -369,7 +388,11 @@ export default function Compatibility() {
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
         <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
-          <div className="fixed inset-0 z-[9998] bg-black/30" onClick={() => setShowRightDialog(false)} />
+          <div 
+            className="fixed inset-0 z-[9998] bg-black/80" 
+            onClick={() => setShowRightDialog(false)}
+            style={{ backdropFilter: 'blur(2px)' }}
+          />
           <div
             className="fixed left-[50%] top-[5vh] z-[9999] w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] bg-white dark:bg-gray-900 p-6 shadow-2xl sm:rounded-lg h-[90vh] flex flex-col border-2 border-gray-300"
             onClick={(e) => e.stopPropagation()}
