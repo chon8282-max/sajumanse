@@ -47,25 +47,6 @@ export default function Compatibility() {
   
   console.log('[Compatibility] State:', { leftSajuId, rightSajuId });
   
-  // 다이얼로그 열릴 때 페이지 스크롤 완전히 막기
-  useEffect(() => {
-    if (showLeftDialog || showRightDialog) {
-      const scrollY = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-      document.body.style.overflow = 'hidden';
-      
-      return () => {
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        document.body.style.overflow = '';
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [showLeftDialog, showRightDialog]);
-  
   // 쿼리 파라미터에서 ID 자동 로드
   useEffect(() => {
     console.log('[Compatibility] useEffect - 쿼리 파라미터 로드');
@@ -167,10 +148,7 @@ export default function Compatibility() {
       gridTemplateColumns: '1fr 1fr', 
       width: '100%', 
       minHeight: '100vh',
-      gap: '1px',
-      isolation: 'isolate',
-      position: 'relative',
-      zIndex: 1
+      gap: '1px'
     }}>
       {/* 왼쪽 사주 1 */}
       <div className="bg-white dark:bg-gray-900" style={{ 
@@ -340,30 +318,17 @@ export default function Compatibility() {
 
       {/* 왼쪽 사주 선택 다이얼로그 */}
       <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
-        <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
-          <div 
-            className="fixed inset-0 z-[9998] bg-black/80" 
-            onClick={() => setShowLeftDialog(false)}
-            style={{ backdropFilter: 'blur(2px)' }}
-          />
-          <div
-            className="fixed left-[50%] top-[5vh] z-[9999] w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] bg-white dark:bg-gray-900 p-6 shadow-2xl sm:rounded-lg h-[90vh] flex flex-col border-2 border-gray-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex-shrink-0 flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-black dark:text-white">사주 1 선택</h2>
-              <button
-                onClick={() => setShowLeftDialog(false)}
-                className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+        <DialogPortal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogContent className="fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] translate-x-[-50%] translate-y-0 gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg sm:max-w-2xl h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-xl">사주 1 선택</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-muted rounded">
               {sajuList.map((saju) => (
                 <Card
                   key={saju.id}
-                  className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                  className="p-6 cursor-pointer hover-elevate active-elevate-2"
                   onClick={() => {
                     setLeftSajuId(saju.id);
                     setShowLeftDialog(false);
@@ -372,7 +337,7 @@ export default function Compatibility() {
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
+                      <h3 className="font-semibold text-xl">{saju.name}</h3>
                       <p className="text-base text-muted-foreground mt-1">
                         {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                       </p>
@@ -381,36 +346,23 @@ export default function Compatibility() {
                 </Card>
               ))}
             </div>
-          </div>
+          </DialogContent>
         </DialogPortal>
       </Dialog>
 
       {/* 오른쪽 사주 선택 다이얼로그 */}
       <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
-        <DialogPortal container={typeof document !== 'undefined' ? document.body : undefined}>
-          <div 
-            className="fixed inset-0 z-[9998] bg-black/80" 
-            onClick={() => setShowRightDialog(false)}
-            style={{ backdropFilter: 'blur(2px)' }}
-          />
-          <div
-            className="fixed left-[50%] top-[5vh] z-[9999] w-full max-w-[95vw] sm:max-w-2xl translate-x-[-50%] bg-white dark:bg-gray-900 p-6 shadow-2xl sm:rounded-lg h-[90vh] flex flex-col border-2 border-gray-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex-shrink-0 flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-black dark:text-white">사주 2 선택</h2>
-              <button
-                onClick={() => setShowRightDialog(false)}
-                className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-gray-50 dark:bg-gray-800 rounded">
+        <DialogPortal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogContent className="fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] translate-x-[-50%] translate-y-0 gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg sm:max-w-2xl h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-xl">사주 2 선택</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-muted rounded">
               {sajuList.map((saju) => (
                 <Card
                   key={saju.id}
-                  className="p-6 cursor-pointer hover-elevate active-elevate-2 bg-white dark:bg-gray-900"
+                  className="p-6 cursor-pointer hover-elevate active-elevate-2"
                   onClick={() => {
                     setRightSajuId(saju.id);
                     setShowRightDialog(false);
@@ -419,7 +371,7 @@ export default function Compatibility() {
                 >
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="font-semibold text-xl text-black dark:text-white">{saju.name}</h3>
+                      <h3 className="font-semibold text-xl">{saju.name}</h3>
                       <p className="text-base text-muted-foreground mt-1">
                         {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                       </p>
@@ -428,7 +380,7 @@ export default function Compatibility() {
                 </Card>
               ))}
             </div>
-          </div>
+          </DialogContent>
         </DialogPortal>
       </Dialog>
     </div>
