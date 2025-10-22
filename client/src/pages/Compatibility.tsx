@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Home, FolderOpen, RefreshCw, Save, X } from "lucide-react";
@@ -51,45 +52,48 @@ export default function Compatibility() {
     const params = new URLSearchParams(searchParams);
     const leftId = params.get('left');
     const rightId = params.get('right');
+    console.log('[Compatibility] 쿼리 파라미터:', { leftId, rightId });
     
-    console.log('[Compatibility] URL params:', { leftId, rightId });
-    
-    if (leftId && leftId !== leftSajuId) {
+    if (leftId) {
+      console.log('[Compatibility] 왼쪽 사주 ID 설정:', leftId);
       setLeftSajuId(leftId);
     }
-    if (rightId && rightId !== rightSajuId) {
+    if (rightId) {
+      console.log('[Compatibility] 오른쪽 사주 ID 설정:', rightId);
       setRightSajuId(rightId);
     }
   }, [searchParams]);
 
-  // 왼쪽 사주 데이터 가져오기
+  // 왼쪽 사주 데이터
   const { data: leftSajuResponse } = useQuery<{success: boolean, data: SajuResultData}>({
     queryKey: ['/api/saju-records', leftSajuId],
     enabled: !!leftSajuId,
   });
 
-  // 오른쪽 사주 데이터 가져오기
+  const leftSaju = leftSajuResponse?.data;
+
+  useEffect(() => {
+    if (leftSaju?.memo) {
+      setLeftMemo(leftSaju.memo);
+    }
+  }, [leftSaju]);
+
+  // 오른쪽 사주 데이터
   const { data: rightSajuResponse } = useQuery<{success: boolean, data: SajuResultData}>({
     queryKey: ['/api/saju-records', rightSajuId],
     enabled: !!rightSajuId,
   });
-  
-  const leftSaju = leftSajuResponse?.data;
+
   const rightSaju = rightSajuResponse?.data;
-  
-  // 사주 데이터 로드 시 메모 동기화
+
   useEffect(() => {
-    if (leftSaju && leftSaju.id === leftSajuId) {
-      setLeftMemo(leftSaju.memo ?? "");
+    if (rightSaju?.memo) {
+      setRightMemo(rightSaju.memo);
     }
-  }, [leftSaju?.id, leftSajuId]);
-  
-  useEffect(() => {
-    if (rightSaju && rightSaju.id === rightSajuId) {
-      setRightMemo(rightSaju.memo ?? "");
-    }
-  }, [rightSaju?.id, rightSajuId]);
-  
+  }, [rightSaju]);
+
+  console.log('[Compatibility] 사주 데이터:', { leftSaju, rightSaju });
+
   // 왼쪽 저장 mutation
   const leftSaveMutation = useMutation({
     mutationFn: async (memo: string) => {
@@ -105,7 +109,7 @@ export default function Compatibility() {
       queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
     }
   });
-  
+
   // 오른쪽 저장 mutation
   const rightSaveMutation = useMutation({
     mutationFn: async (memo: string) => {
@@ -189,11 +193,21 @@ export default function Compatibility() {
                   className="h-9 text-sm px-3"
                 >
                   <Save className="w-4 h-4 mr-1" />
-                  저장
+                  {leftSaveMutation.isPending ? '저장 중...' : '저장'}
                 </Button>
               </div>
             )}
           </div>
+          {leftSajuId && leftSaju && (
+            <textarea
+              value={leftMemo}
+              onChange={(e) => setLeftMemo(e.target.value)}
+              placeholder="메모를 입력하세요..."
+              className="w-full p-3 border rounded text-base resize-none dark:bg-gray-800 dark:border-gray-700"
+              rows={3}
+              data-testid="textarea-left-memo"
+            />
+          )}
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {leftSajuId && leftSaju ? (
@@ -214,14 +228,15 @@ export default function Compatibility() {
               birthYear={leftSaju.birthYear}
               birthMonth={leftSaju.birthMonth}
               birthDay={leftSaju.birthDay}
-              birthHour={leftSaju.birthTime || undefined}
+              birthTime={leftSaju.birthTime}
               gender={leftSaju.gender}
-              memo={leftMemo}
-              onMemoChange={(memo) => setLeftMemo(memo)}
+              yearText="년"
+              monthText="월"
+              dayText="일"
+              hourText="시"
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '20px' }}>
-              <p style={{ color: '#6b7280', fontSize: '15px' }}>사주를 선택해주세요</p>
+            <div className="flex items-center justify-center h-full">
               <Button
                 variant="outline"
                 onClick={() => setShowLeftDialog(true)}
@@ -238,7 +253,7 @@ export default function Compatibility() {
       </div>
 
       {/* 오른쪽 사주 2 */}
-      <div className="bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700" style={{ 
+      <div className="bg-white dark:bg-gray-900" style={{ 
         display: 'flex', 
         flexDirection: 'column'
       }}>
@@ -266,11 +281,21 @@ export default function Compatibility() {
                   className="h-9 text-sm px-3"
                 >
                   <Save className="w-4 h-4 mr-1" />
-                  저장
+                  {rightSaveMutation.isPending ? '저장 중...' : '저장'}
                 </Button>
               </div>
             )}
           </div>
+          {rightSajuId && rightSaju && (
+            <textarea
+              value={rightMemo}
+              onChange={(e) => setRightMemo(e.target.value)}
+              placeholder="메모를 입력하세요..."
+              className="w-full p-3 border rounded text-base resize-none dark:bg-gray-800 dark:border-gray-700"
+              rows={3}
+              data-testid="textarea-right-memo"
+            />
+          )}
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {rightSajuId && rightSaju ? (
@@ -291,14 +316,15 @@ export default function Compatibility() {
               birthYear={rightSaju.birthYear}
               birthMonth={rightSaju.birthMonth}
               birthDay={rightSaju.birthDay}
-              birthHour={rightSaju.birthTime || undefined}
+              birthTime={rightSaju.birthTime}
               gender={rightSaju.gender}
-              memo={rightMemo}
-              onMemoChange={(memo) => setRightMemo(memo)}
+              yearText="년"
+              monthText="월"
+              dayText="일"
+              hourText="시"
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px', gap: '20px' }}>
-              <p style={{ color: '#6b7280', fontSize: '15px' }}>사주를 선택해주세요</p>
+            <div className="flex items-center justify-center h-full">
               <Button
                 variant="outline"
                 onClick={() => setShowRightDialog(true)}
@@ -314,106 +340,162 @@ export default function Compatibility() {
         </div>
       </div>
 
-      {/* 왼쪽 사주 선택 다이얼로그 - 전체 화면 모달 */}
-      {showLeftDialog && (
-        <div className="fixed inset-0 z-[9999]" style={{ isolation: 'isolate' }}>
-          {/* 배경 오버레이 */}
+      {/* 왼쪽 사주 선택 다이얼로그 - React Portal로 body에 직접 렌더링 */}
+      {showLeftDialog && typeof document !== 'undefined' && createPortal(
+        <div 
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)'
+          }}
+          onClick={() => setShowLeftDialog(false)}
+        >
           <div 
-            className="absolute inset-0 bg-black/80"
-            onClick={() => setShowLeftDialog(false)}
-          />
-          {/* 모달 콘텐츠 */}
-          <div className="absolute inset-0 flex items-start justify-center p-4">
-            <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-lg shadow-2xl flex flex-col" style={{ height: '90vh', marginTop: '5vh' }}>
-              {/* 헤더 */}
-              <div className="flex-shrink-0 flex items-center justify-between p-6 border-b">
-                <h2 className="text-xl font-semibold">사주 1 선택</h2>
-                <button
-                  onClick={() => setShowLeftDialog(false)}
-                  className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              {/* 리스트 */}
-              <div className="flex-1 overflow-y-auto p-6">
-                <div className="space-y-3">
-                  {sajuList.map((saju) => (
-                    <Card
-                      key={saju.id}
-                      className="p-6 cursor-pointer hover-elevate active-elevate-2"
-                      onClick={() => {
-                        setLeftSajuId(saju.id);
-                        setShowLeftDialog(false);
-                      }}
-                      data-testid={`saju-item-${saju.id}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-semibold text-xl">{saju.name}</h3>
-                          <p className="text-base text-muted-foreground mt-1">
-                            {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+            style={{
+              width: '100%',
+              maxWidth: '640px',
+              maxHeight: '90vh',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}
+            className="dark:bg-gray-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div style={{ 
+              padding: '24px', 
+              borderBottom: '1px solid #e5e7eb', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              flexShrink: 0 
+            }} className="dark:border-gray-700">
+              <h2 style={{ fontSize: '20px', fontWeight: '600' }} className="dark:text-white">사주 1 선택</h2>
+              <button
+                onClick={() => setShowLeftDialog(false)}
+                style={{ padding: '4px', borderRadius: '4px' }}
+                className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {/* 리스트 */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {sajuList.map((saju) => (
+                  <Card
+                    key={saju.id}
+                    className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                    onClick={() => {
+                      setLeftSajuId(saju.id);
+                      setShowLeftDialog(false);
+                    }}
+                    data-testid={`saju-item-${saju.id}`}
+                  >
+                    <div>
+                      <h3 className="font-semibold text-xl">{saju.name}</h3>
+                      <p className="text-base text-muted-foreground mt-1">
+                        {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                      </p>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* 오른쪽 사주 선택 다이얼로그 - 전체 화면 모달 */}
-      {showRightDialog && (
-        <div className="fixed inset-0 z-[9999]" style={{ isolation: 'isolate' }}>
-          {/* 배경 오버레이 */}
+      {/* 오른쪽 사주 선택 다이얼로그 - React Portal로 body에 직접 렌더링 */}
+      {showRightDialog && typeof document !== 'undefined' && createPortal(
+        <div 
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)'
+          }}
+          onClick={() => setShowRightDialog(false)}
+        >
           <div 
-            className="absolute inset-0 bg-black/80"
-            onClick={() => setShowRightDialog(false)}
-          />
-          {/* 모달 콘텐츠 */}
-          <div className="absolute inset-0 flex items-start justify-center p-4">
-            <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-lg shadow-2xl flex flex-col" style={{ height: '90vh', marginTop: '5vh' }}>
-              {/* 헤더 */}
-              <div className="flex-shrink-0 flex items-center justify-between p-6 border-b">
-                <h2 className="text-xl font-semibold">사주 2 선택</h2>
-                <button
-                  onClick={() => setShowRightDialog(false)}
-                  className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              {/* 리스트 */}
-              <div className="flex-1 overflow-y-auto p-6">
-                <div className="space-y-3">
-                  {sajuList.map((saju) => (
-                    <Card
-                      key={saju.id}
-                      className="p-6 cursor-pointer hover-elevate active-elevate-2"
-                      onClick={() => {
-                        setRightSajuId(saju.id);
-                        setShowRightDialog(false);
-                      }}
-                      data-testid={`saju-item-${saju.id}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h3 className="font-semibold text-xl">{saju.name}</h3>
-                          <p className="text-base text-muted-foreground mt-1">
-                            {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
+            style={{
+              width: '100%',
+              maxWidth: '640px',
+              maxHeight: '90vh',
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+            }}
+            className="dark:bg-gray-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* 헤더 */}
+            <div style={{ 
+              padding: '24px', 
+              borderBottom: '1px solid #e5e7eb', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              flexShrink: 0 
+            }} className="dark:border-gray-700">
+              <h2 style={{ fontSize: '20px', fontWeight: '600' }} className="dark:text-white">사주 2 선택</h2>
+              <button
+                onClick={() => setShowRightDialog(false)}
+                style={{ padding: '4px', borderRadius: '4px' }}
+                className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {/* 리스트 */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {sajuList.map((saju) => (
+                  <Card
+                    key={saju.id}
+                    className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                    onClick={() => {
+                      setRightSajuId(saju.id);
+                      setShowRightDialog(false);
+                    }}
+                    data-testid={`saju-item-${saju.id}`}
+                  >
+                    <div>
+                      <h3 className="font-semibold text-xl">{saju.name}</h3>
+                      <p className="text-base text-muted-foreground mt-1">
+                        {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                      </p>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
