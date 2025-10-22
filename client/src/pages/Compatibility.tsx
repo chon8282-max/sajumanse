@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogPortal } from "@/components/ui/dialog";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Home, FolderOpen, RefreshCw, Save, X } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -316,73 +314,107 @@ export default function Compatibility() {
         </div>
       </div>
 
-      {/* 왼쪽 사주 선택 다이얼로그 */}
-      <Dialog open={showLeftDialog} onOpenChange={setShowLeftDialog}>
-        <DialogPortal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogContent className="fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] translate-x-[-50%] translate-y-0 gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg sm:max-w-2xl h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="text-xl">사주 1 선택</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-muted rounded">
-              {sajuList.map((saju) => (
-                <Card
-                  key={saju.id}
-                  className="p-6 cursor-pointer hover-elevate active-elevate-2"
-                  onClick={() => {
-                    setLeftSajuId(saju.id);
-                    setShowLeftDialog(false);
-                  }}
-                  data-testid={`saju-item-${saju.id}`}
+      {/* 왼쪽 사주 선택 다이얼로그 - 전체 화면 모달 */}
+      {showLeftDialog && (
+        <div className="fixed inset-0 z-[9999]" style={{ isolation: 'isolate' }}>
+          {/* 배경 오버레이 */}
+          <div 
+            className="absolute inset-0 bg-black/80"
+            onClick={() => setShowLeftDialog(false)}
+          />
+          {/* 모달 콘텐츠 */}
+          <div className="absolute inset-0 flex items-start justify-center p-4">
+            <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-lg shadow-2xl flex flex-col" style={{ height: '90vh', marginTop: '5vh' }}>
+              {/* 헤더 */}
+              <div className="flex-shrink-0 flex items-center justify-between p-6 border-b">
+                <h2 className="text-xl font-semibold">사주 1 선택</h2>
+                <button
+                  onClick={() => setShowLeftDialog(false)}
+                  className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-semibold text-xl">{saju.name}</h3>
-                      <p className="text-base text-muted-foreground mt-1">
-                        {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              {/* 리스트 */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-3">
+                  {sajuList.map((saju) => (
+                    <Card
+                      key={saju.id}
+                      className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                      onClick={() => {
+                        setLeftSajuId(saju.id);
+                        setShowLeftDialog(false);
+                      }}
+                      data-testid={`saju-item-${saju.id}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-semibold text-xl">{saju.name}</h3>
+                          <p className="text-base text-muted-foreground mt-1">
+                            {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             </div>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+          </div>
+        </div>
+      )}
 
-      {/* 오른쪽 사주 선택 다이얼로그 */}
-      <Dialog open={showRightDialog} onOpenChange={setShowRightDialog}>
-        <DialogPortal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogContent className="fixed left-[50%] top-[5vh] z-50 grid w-full max-w-[95vw] translate-x-[-50%] translate-y-0 gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg sm:max-w-2xl h-[90vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="text-xl">사주 2 선택</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 overflow-y-auto flex-1 p-2 bg-muted rounded">
-              {sajuList.map((saju) => (
-                <Card
-                  key={saju.id}
-                  className="p-6 cursor-pointer hover-elevate active-elevate-2"
-                  onClick={() => {
-                    setRightSajuId(saju.id);
-                    setShowRightDialog(false);
-                  }}
-                  data-testid={`saju-item-${saju.id}`}
+      {/* 오른쪽 사주 선택 다이얼로그 - 전체 화면 모달 */}
+      {showRightDialog && (
+        <div className="fixed inset-0 z-[9999]" style={{ isolation: 'isolate' }}>
+          {/* 배경 오버레이 */}
+          <div 
+            className="absolute inset-0 bg-black/80"
+            onClick={() => setShowRightDialog(false)}
+          />
+          {/* 모달 콘텐츠 */}
+          <div className="absolute inset-0 flex items-start justify-center p-4">
+            <div className="relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-lg shadow-2xl flex flex-col" style={{ height: '90vh', marginTop: '5vh' }}>
+              {/* 헤더 */}
+              <div className="flex-shrink-0 flex items-center justify-between p-6 border-b">
+                <h2 className="text-xl font-semibold">사주 2 선택</h2>
+                <button
+                  onClick={() => setShowRightDialog(false)}
+                  className="rounded-sm opacity-70 hover:opacity-100 transition-opacity"
                 >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-semibold text-xl">{saju.name}</h3>
-                      <p className="text-base text-muted-foreground mt-1">
-                        {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              {/* 리스트 */}
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-3">
+                  {sajuList.map((saju) => (
+                    <Card
+                      key={saju.id}
+                      className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                      onClick={() => {
+                        setRightSajuId(saju.id);
+                        setShowRightDialog(false);
+                      }}
+                      data-testid={`saju-item-${saju.id}`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-semibold text-xl">{saju.name}</h3>
+                          <p className="text-base text-muted-foreground mt-1">
+                            {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             </div>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
