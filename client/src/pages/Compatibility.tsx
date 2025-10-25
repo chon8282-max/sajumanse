@@ -198,7 +198,7 @@ export default function Compatibility() {
         flexDirection: 'column'
       }}>
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <Button
                 variant="outline"
@@ -213,41 +213,18 @@ export default function Compatibility() {
               <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLeftSajuId(null)}
-                  data-testid="button-left-change"
-                  className="h-9 text-sm px-3"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => leftSaveMutation.mutate(leftMemo)}
-                  disabled={leftSaveMutation.isPending}
-                  data-testid="button-left-save"
-                  className="h-9 text-sm px-3"
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {leftSaveMutation.isPending ? '저장 중...' : '저장'}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLeftSajuId(null)}
+                data-testid="button-left-change"
+                className="h-9 text-sm px-3"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                수정
+              </Button>
             )}
           </div>
-          {leftSajuId && leftSaju && (
-            <textarea
-              value={leftMemo}
-              onChange={(e) => setLeftMemo(e.target.value)}
-              placeholder="메모를 입력하세요..."
-              className="w-full p-3 border rounded text-base resize-none dark:bg-gray-800 dark:border-gray-700"
-              rows={3}
-              data-testid="textarea-left-memo"
-            />
-          )}
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {leftSajuId && leftSaju ? (
@@ -302,44 +279,21 @@ export default function Compatibility() {
         flexDirection: 'column'
       }}>
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRightSajuId(null)}
-                  data-testid="button-right-change"
-                  className="h-9 text-sm px-3"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => rightSaveMutation.mutate(rightMemo)}
-                  disabled={rightSaveMutation.isPending}
-                  data-testid="button-right-save"
-                  className="h-9 text-sm px-3"
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {rightSaveMutation.isPending ? '저장 중...' : '저장'}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRightSajuId(null)}
+                data-testid="button-right-change"
+                className="h-9 text-sm px-3"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                수정
+              </Button>
             )}
           </div>
-          {rightSajuId && rightSaju && (
-            <textarea
-              value={rightMemo}
-              onChange={(e) => setRightMemo(e.target.value)}
-              placeholder="메모를 입력하세요..."
-              className="w-full p-3 border rounded text-base resize-none dark:bg-gray-800 dark:border-gray-700"
-              rows={3}
-              data-testid="textarea-right-memo"
-            />
-          )}
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {rightSajuId && rightSaju ? (
