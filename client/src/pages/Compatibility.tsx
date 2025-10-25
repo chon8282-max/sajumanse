@@ -37,8 +37,20 @@ export default function Compatibility() {
   const searchParams = useSearch();
   const { toast } = useToast();
   
-  const [leftSajuId, setLeftSajuId] = useState<string | null>(null);
-  const [rightSajuId, setRightSajuId] = useState<string | null>(null);
+  const [leftSajuId, setLeftSajuId] = useState<string | null>(() => {
+    // 초기값: localStorage에서 복원
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('compatibility_left_id');
+    }
+    return null;
+  });
+  const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
+    // 초기값: localStorage에서 복원
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('compatibility_right_id');
+    }
+    return null;
+  });
   const [showLeftDialog, setShowLeftDialog] = useState(false);
   const [showRightDialog, setShowRightDialog] = useState(false);
   const [leftMemo, setLeftMemo] = useState<string>("");
@@ -46,7 +58,25 @@ export default function Compatibility() {
   
   console.log('[Compatibility] State:', { leftSajuId, rightSajuId });
   
-  // 쿼리 파라미터에서 ID 자동 로드
+  // leftSajuId 변경 시 localStorage에 저장
+  useEffect(() => {
+    if (leftSajuId) {
+      localStorage.setItem('compatibility_left_id', leftSajuId);
+    } else {
+      localStorage.removeItem('compatibility_left_id');
+    }
+  }, [leftSajuId]);
+  
+  // rightSajuId 변경 시 localStorage에 저장
+  useEffect(() => {
+    if (rightSajuId) {
+      localStorage.setItem('compatibility_right_id', rightSajuId);
+    } else {
+      localStorage.removeItem('compatibility_right_id');
+    }
+  }, [rightSajuId]);
+  
+  // 쿼리 파라미터에서 ID 자동 로드 (localStorage보다 우선)
   useEffect(() => {
     console.log('[Compatibility] useEffect - 쿼리 파라미터 로드');
     const params = new URLSearchParams(searchParams);
@@ -54,27 +84,20 @@ export default function Compatibility() {
     const rightId = params.get('right');
     console.log('[Compatibility] 쿼리 파라미터:', { leftId, rightId });
     
-    if (leftId && !leftSajuId) {
+    if (leftId) {
       console.log('[Compatibility] 왼쪽 사주 ID 설정:', leftId);
       setLeftSajuId(leftId);
     }
-    if (rightId && !rightSajuId) {
+    if (rightId) {
       console.log('[Compatibility] 오른쪽 사주 ID 설정:', rightId);
       setRightSajuId(rightId);
     }
   }, [searchParams]);
   
-  // 화면 회전 시 페이지 유지 (orientation change 방지)
+  // 컴포넌트 언마운트 시 localStorage 정리
   useEffect(() => {
-    const handleOrientationChange = (e: Event) => {
-      e.preventDefault();
-      console.log('[Compatibility] Orientation change prevented');
-    };
-    
-    window.addEventListener('orientationchange', handleOrientationChange);
-    
     return () => {
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      console.log('[Compatibility] 컴포넌트 언마운트');
     };
   }, []);
 
@@ -141,6 +164,9 @@ export default function Compatibility() {
   });
 
   const handleHomeClick = () => {
+    // localStorage 정리 후 홈으로 이동
+    localStorage.removeItem('compatibility_left_id');
+    localStorage.removeItem('compatibility_right_id');
     setLocation('/');
   };
 
@@ -232,10 +258,14 @@ export default function Compatibility() {
                 day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
                 hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' },
                 wuxing: {
-                  year: { sky: '', earth: '' },
-                  month: { sky: '', earth: '' },
-                  day: { sky: '', earth: '' },
-                  hour: { sky: '', earth: '' }
+                  yearSky: '목' as const,
+                  yearEarth: '목' as const,
+                  monthSky: '목' as const,
+                  monthEarth: '목' as const,
+                  daySky: '목' as const,
+                  dayEarth: '목' as const,
+                  hourSky: '',
+                  hourEarth: ''
                 }
               }}
               name={leftSaju.name}
@@ -320,10 +350,14 @@ export default function Compatibility() {
                 day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
                 hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' },
                 wuxing: {
-                  year: { sky: '', earth: '' },
-                  month: { sky: '', earth: '' },
-                  day: { sky: '', earth: '' },
-                  hour: { sky: '', earth: '' }
+                  yearSky: '목' as const,
+                  yearEarth: '목' as const,
+                  monthSky: '목' as const,
+                  monthEarth: '목' as const,
+                  daySky: '목' as const,
+                  dayEarth: '목' as const,
+                  hourSky: '',
+                  hourEarth: ''
                 }
               }}
               name={rightSaju.name}
