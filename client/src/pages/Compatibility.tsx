@@ -54,15 +54,29 @@ export default function Compatibility() {
     const rightId = params.get('right');
     console.log('[Compatibility] 쿼리 파라미터:', { leftId, rightId });
     
-    if (leftId) {
+    if (leftId && !leftSajuId) {
       console.log('[Compatibility] 왼쪽 사주 ID 설정:', leftId);
       setLeftSajuId(leftId);
     }
-    if (rightId) {
+    if (rightId && !rightSajuId) {
       console.log('[Compatibility] 오른쪽 사주 ID 설정:', rightId);
       setRightSajuId(rightId);
     }
   }, [searchParams]);
+  
+  // 화면 회전 시 페이지 유지 (orientation change 방지)
+  useEffect(() => {
+    const handleOrientationChange = (e: Event) => {
+      e.preventDefault();
+      console.log('[Compatibility] Orientation change prevented');
+    };
+    
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, []);
 
   // 왼쪽 사주 데이터
   const { data: leftSajuResponse } = useQuery<{success: boolean, data: SajuResultData}>({
@@ -375,29 +389,29 @@ export default function Compatibility() {
           >
             {/* 헤더 */}
             <div style={{ 
-              padding: '24px', 
+              padding: '16px', 
               borderBottom: '1px solid #e5e7eb', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between', 
               flexShrink: 0 
             }} className="dark:border-gray-700">
-              <h2 style={{ fontSize: '20px', fontWeight: '600' }} className="dark:text-white">사주 1 선택</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '600' }} className="dark:text-white">사주 1 선택</h2>
               <button
                 onClick={() => setShowLeftDialog(false)}
                 style={{ padding: '4px', borderRadius: '4px' }}
                 className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
             {/* 리스트 */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {sajuList.map((saju) => (
                   <Card
                     key={saju.id}
-                    className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                    className="p-3 cursor-pointer hover-elevate active-elevate-2"
                     onClick={() => {
                       setLeftSajuId(saju.id);
                       setShowLeftDialog(false);
@@ -405,8 +419,8 @@ export default function Compatibility() {
                     data-testid={`saju-item-${saju.id}`}
                   >
                     <div>
-                      <h3 className="font-semibold text-xl">{saju.name}</h3>
-                      <p className="text-base text-muted-foreground mt-1">
+                      <h3 className="font-semibold text-sm">{saju.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                       </p>
                     </div>
@@ -454,29 +468,29 @@ export default function Compatibility() {
           >
             {/* 헤더 */}
             <div style={{ 
-              padding: '24px', 
+              padding: '16px', 
               borderBottom: '1px solid #e5e7eb', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between', 
               flexShrink: 0 
             }} className="dark:border-gray-700">
-              <h2 style={{ fontSize: '20px', fontWeight: '600' }} className="dark:text-white">사주 2 선택</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '600' }} className="dark:text-white">사주 2 선택</h2>
               <button
                 onClick={() => setShowRightDialog(false)}
                 style={{ padding: '4px', borderRadius: '4px' }}
                 className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
             {/* 리스트 */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {sajuList.map((saju) => (
                   <Card
                     key={saju.id}
-                    className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                    className="p-3 cursor-pointer hover-elevate active-elevate-2"
                     onClick={() => {
                       setRightSajuId(saju.id);
                       setShowRightDialog(false);
@@ -484,8 +498,8 @@ export default function Compatibility() {
                     data-testid={`saju-item-${saju.id}`}
                   >
                     <div>
-                      <h3 className="font-semibold text-xl">{saju.name}</h3>
-                      <p className="text-base text-muted-foreground mt-1">
+                      <h3 className="font-semibold text-sm">{saju.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})
                       </p>
                     </div>
