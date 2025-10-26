@@ -228,7 +228,7 @@ export default function Compatibility() {
                         size="sm"
                         onClick={() => setLeftSajuId(null)}
                         data-testid="button-left-change"
-                        className="h-8 text-xs px-2 rounded-r-none border-r-0"
+                        className="h-8 text-xs px-2 rounded-r-none border-r-0 ml-[-1px]"
                         style={{ margin: '0' }}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -242,7 +242,7 @@ export default function Compatibility() {
                         onClick={() => leftSaveMutation.mutate(leftMemo)}
                         disabled={leftSaveMutation.isPending}
                         data-testid="button-left-save"
-                        className="h-8 text-xs px-2 rounded-l-none"
+                        className="h-8 text-xs px-2 rounded-l-none ml-[-1px]"
                         style={{ margin: '0' }}
                       >
                         <Save className="w-3 h-3 mr-1" />
@@ -328,7 +328,7 @@ export default function Compatibility() {
                         size="sm"
                         onClick={() => setRightSajuId(null)}
                         data-testid="button-right-change"
-                        className="h-8 text-xs px-2 rounded-r-none border-r-0"
+                        className="h-8 text-xs px-2 rounded-r-none border-r-0 ml-[-1px]"
                         style={{ margin: '0' }}
                       >
                         <RefreshCw className="w-3 h-3 mr-1" />
@@ -342,7 +342,7 @@ export default function Compatibility() {
                         onClick={() => rightSaveMutation.mutate(rightMemo)}
                         disabled={rightSaveMutation.isPending}
                         data-testid="button-right-save"
-                        className="h-8 text-xs px-2 rounded-l-none"
+                        className="h-8 text-xs px-2 rounded-l-none ml-[-1px]"
                         style={{ margin: '0' }}
                       >
                         <Save className="w-3 h-3 mr-1" />
