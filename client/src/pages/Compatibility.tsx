@@ -213,29 +213,37 @@ export default function Compatibility() {
               <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <div style={{ display: 'flex', gap: '0px' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLeftSajuId(null)}
-                  data-testid="button-left-change"
-                  className="h-9 text-sm px-3 scale-[0.6]"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => leftSaveMutation.mutate(leftMemo)}
-                  disabled={leftSaveMutation.isPending}
-                  data-testid="button-left-save"
-                  className="h-9 text-sm px-3 scale-[0.6]"
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {leftSaveMutation.isPending ? '저장 중...' : '저장'}
-                </Button>
-              </div>
+              <table style={{ borderCollapse: 'collapse', borderSpacing: '0' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '0', margin: '0', border: 'none' }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLeftSajuId(null)}
+                        data-testid="button-left-change"
+                        className="h-9 text-sm px-3 scale-[0.6] rounded-r-none border-r-0"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        수정
+                      </Button>
+                    </td>
+                    <td style={{ padding: '0', margin: '0', border: 'none' }}>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => leftSaveMutation.mutate(leftMemo)}
+                        disabled={leftSaveMutation.isPending}
+                        data-testid="button-left-save"
+                        className="h-9 text-sm px-3 scale-[0.6] rounded-l-none"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        {leftSaveMutation.isPending ? '저장 중...' : '저장'}
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             )}
           </div>
         </div>
@@ -297,29 +305,37 @@ export default function Compatibility() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
-              <div style={{ display: 'flex', gap: '0px' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRightSajuId(null)}
-                  data-testid="button-right-change"
-                  className="h-9 text-sm px-3 scale-[0.6]"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => rightSaveMutation.mutate(rightMemo)}
-                  disabled={rightSaveMutation.isPending}
-                  data-testid="button-right-save"
-                  className="h-9 text-sm px-3 scale-[0.6]"
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {rightSaveMutation.isPending ? '저장 중...' : '저장'}
-                </Button>
-              </div>
+              <table style={{ borderCollapse: 'collapse', borderSpacing: '0' }}>
+                <tbody>
+                  <tr>
+                    <td style={{ padding: '0', margin: '0', border: 'none' }}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRightSajuId(null)}
+                        data-testid="button-right-change"
+                        className="h-9 text-sm px-3 scale-[0.6] rounded-r-none border-r-0"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        수정
+                      </Button>
+                    </td>
+                    <td style={{ padding: '0', margin: '0', border: 'none' }}>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => rightSaveMutation.mutate(rightMemo)}
+                        disabled={rightSaveMutation.isPending}
+                        data-testid="button-right-save"
+                        className="h-9 text-sm px-3 scale-[0.6] rounded-l-none"
+                      >
+                        <Save className="w-4 h-4 mr-1" />
+                        {rightSaveMutation.isPending ? '저장 중...' : '저장'}
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             )}
           </div>
         </div>
