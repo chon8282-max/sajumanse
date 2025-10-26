@@ -344,24 +344,15 @@ export default function SajuTable({
     }
   }, [reversedDate]);
 
-  // 메모 상태 관리
-  const [memoText, setMemoText] = useState(memo || '');
-  const [prevMemo, setPrevMemo] = useState(memo);
+  // 메모 상태 관리 - 제어 컴포넌트로 변경
+  const memoText = memo || '';
   
-  // memo prop이 실제로 변경될 때만 memoText 동기화
-  useEffect(() => {
-    if (memo !== prevMemo) {
-      setMemoText(memo || '');
-      setPrevMemo(memo);
+  // 메모 변경 핸들러
+  const handleMemoChange = (newValue: string) => {
+    if (onMemoChange) {
+      onMemoChange(newValue);
     }
-  }, [memo, prevMemo]);
-  
-  // 메모가 변경될 때 부모 컴포넌트에 전달
-  useEffect(() => {
-    if (onMemoChange && memoText !== memo) {
-      onMemoChange(memoText);
-    }
-  }, [memoText, onMemoChange, memo]);
+  };
   
   // 선택된 歲運 나이 상태 (초기값: 현재 나이)
   const [selectedSaeunAge, setSelectedSaeunAge] = useState<number | null>(currentAge || null);
@@ -446,7 +437,7 @@ export default function SajuTable({
     const dateString = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
     const currentMemo = memoText;
     const newMemo = currentMemo ? `${currentMemo}\n${dateString}` : dateString;
-    setMemoText(newMemo);
+    handleMemoChange(newMemo);
   };
 
   // 터치 이벤트 핸들러
@@ -2162,7 +2153,7 @@ export default function SajuTable({
               className="w-full max-w-2xl min-h-[10rem] text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 resize-vertical bg-white dark:bg-gray-800 text-black dark:text-white"
               placeholder="메모를 입력하세요..."
               value={memoText}
-              onChange={(e) => setMemoText(e.target.value)}
+              onChange={(e) => handleMemoChange(e.target.value)}
               data-testid="textarea-memo"
             />
           </div>
