@@ -213,29 +213,16 @@ export default function Compatibility() {
               <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLeftSajuId(null)}
-                  data-testid="button-left-change"
-                  className="h-9 text-sm px-3"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => leftSaveMutation.mutate(leftMemo)}
-                  disabled={leftSaveMutation.isPending}
-                  data-testid="button-left-save"
-                  className="h-9 text-sm px-3"
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {leftSaveMutation.isPending ? '저장 중...' : '저장'}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLeftSajuId(null)}
+                data-testid="button-left-change"
+                className="h-9 text-sm px-3 scale-[0.6]"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                수정
+              </Button>
             )}
           </div>
         </div>
@@ -262,7 +249,7 @@ export default function Compatibility() {
               birthYear={leftSaju.birthYear}
               birthMonth={leftSaju.birthMonth}
               birthDay={leftSaju.birthDay}
-              birthTime={leftSaju.birthTime}
+              birthHour={leftSaju.birthTime || undefined}
               gender={leftSaju.gender}
               yearText="년"
               monthText="월"
@@ -295,29 +282,16 @@ export default function Compatibility() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setRightSajuId(null)}
-                  data-testid="button-right-change"
-                  className="h-9 text-sm px-3"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  수정
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => rightSaveMutation.mutate(rightMemo)}
-                  disabled={rightSaveMutation.isPending}
-                  data-testid="button-right-save"
-                  className="h-9 text-sm px-3"
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {rightSaveMutation.isPending ? '저장 중...' : '저장'}
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRightSajuId(null)}
+                data-testid="button-right-change"
+                className="h-9 text-sm px-3 scale-[0.6]"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                수정
+              </Button>
             )}
           </div>
         </div>
@@ -344,7 +318,7 @@ export default function Compatibility() {
               birthYear={rightSaju.birthYear}
               birthMonth={rightSaju.birthMonth}
               birthDay={rightSaju.birthDay}
-              birthTime={rightSaju.birthTime}
+              birthHour={rightSaju.birthTime || undefined}
               gender={rightSaju.gender}
               yearText="년"
               monthText="월"
