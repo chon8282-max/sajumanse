@@ -1323,27 +1323,31 @@ export default function SajuTable({
               </div>
             </>
           )}
-          {/* 천간 육친/오행 표시 (대운/세운 모드일 때는 천간 이벤트) */}
+          {/* 천간 육친/오행 표시 (대운/세운 모드일 때는 천간 이벤트 또는 오행) */}
           {heavenlyYukjin.map((yukjin, index) => {
             const skyCharacter = sajuColumns[index]?.sky;
             const isHourColumn = index === 0;
             const isBirthTimeUnknown = isHourColumn && !sajuColumns[0]?.sky && !sajuColumns[0]?.earth;
             
-            // 대운 또는 세운 모드일 때는 천간 이벤트 계산
+            // 오행 버튼이 활성화되어 있으면 오행 표시, 아니면 천간 이벤트/육친
             let displayText: string;
-            if (displayMode === 'daeun' && focusedDaeun && skyCharacter) {
+            if (showWuxing && skyCharacter) {
+              // 오행 버튼 활성화 시: 모든 모드에서 오행 표시
+              displayText = getWuxingElement(skyCharacter);
+              displayText = convertTextForRow145(displayText);
+            } else if (displayMode === 'daeun' && focusedDaeun && skyCharacter) {
+              // 대운 모드 + 오행 비활성화: 천간 이벤트
               const daeunSky = focusedDaeun.sky;
               const cheonganEvent = calculateCheonganEvent(daeunSky, skyCharacter);
-              // 한자1 버튼 상태에 따라 한글/한자 변환
               displayText = showKorean1 ? cheonganEvent : (CHEONGAN_EVENT_CHINESE_MAP[cheonganEvent] || cheonganEvent);
             } else if (displayMode === 'saeun' && focusedSaeun && skyCharacter) {
+              // 세운 모드 + 오행 비활성화: 천간 이벤트
               const saeunSky = focusedSaeun.sky;
               const cheonganEvent = calculateCheonganEvent(saeunSky, skyCharacter);
-              // 한자1 버튼 상태에 따라 한글/한자 변환
               displayText = showKorean1 ? cheonganEvent : (CHEONGAN_EVENT_CHINESE_MAP[cheonganEvent] || cheonganEvent);
             } else {
-              displayText = showWuxing && skyCharacter ? getWuxingElement(skyCharacter) : yukjin;
-              displayText = convertTextForRow145(displayText);
+              // 기본 모드: 육친 표시
+              displayText = convertTextForRow145(yukjin);
             }
             
             return (
