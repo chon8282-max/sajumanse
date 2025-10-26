@@ -208,9 +208,9 @@ export default function TraditionalCalendar({
   return (
     <div className="w-full max-w-4xl mx-auto pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
       <Card>
-        <CardHeader className="pb-1 pl-[0px] pr-[0px]">
+        <CardHeader className="pb-0 pl-[0px] pr-[0px] pt-2">
           {/* 1열: 년도간지(왼쪽) | 역학달력(가운데) | 월간지(오른쪽) */}
-          <div className="flex items-center justify-between mt-[-8px] mb-[-8px] pl-[14px] pr-[14px] text-[15px]">
+          <div className="flex items-center justify-between mb-1 pl-[14px] pr-[14px] text-[15px]">
             <div className="text-base font-bold text-blue-800">
               {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
             </div>
@@ -225,7 +225,7 @@ export default function TraditionalCalendar({
           </div>
 
           {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
-          <div className="flex items-center justify-between pl-[14px] pr-[14px] pt-[3px] pb-[3px] mt-[5px] mb-[5px]">
+          <div className="flex items-center justify-between pl-[14px] pr-[14px] pt-[2px] pb-[2px] mb-1">
             <div className="flex items-center gap-1">
               <Button 
                 variant="outline" 

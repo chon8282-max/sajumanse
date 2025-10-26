@@ -12,9 +12,9 @@ export default function Calendar() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-2">
       {/* 상단 네비게이션 */}
-      <div className="flex items-center justify-start mb-6">
+      <div className="flex items-center justify-start mb-1">
         <Button 
           variant="outline" 
           size="sm" 
