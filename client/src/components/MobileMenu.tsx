@@ -29,6 +29,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { font, setFont } = useFont();
   const { isAuthenticated } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
@@ -36,12 +37,15 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
     } else {
       document.body.style.overflow = '';
+      document.body.style.touchAction = '';
     }
     
     return () => {
       document.body.style.overflow = '';
+      document.body.style.touchAction = '';
     };
   }, [isOpen]);
 
@@ -274,9 +278,26 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
           {/* 메뉴 항목들 */}
           <div 
-            className="flex-1 p-2 space-y-3 overflow-y-auto overscroll-contain"
+            ref={scrollContainerRef}
+            className="flex-1 p-2 space-y-3 overflow-y-auto"
+            style={{ overscrollBehavior: 'contain' }}
             onTouchStart={(e) => e.stopPropagation()}
-            onTouchMove={(e) => e.stopPropagation()}
+            onTouchMove={(e) => {
+              e.stopPropagation();
+              // 스크롤 끝에서 bounce 방지
+              const container = scrollContainerRef.current;
+              if (container) {
+                const { scrollTop, scrollHeight, clientHeight } = container;
+                const isAtTop = scrollTop === 0;
+                const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+                
+                // 맨 위에서 위로 스크롤하려고 하거나, 맨 아래에서 아래로 스크롤하려고 할 때 이벤트 차단
+                if ((isAtTop && (e.touches[0].clientY > (touchStart || 0))) || 
+                    (isAtBottom && (e.touches[0].clientY < (touchStart || 0)))) {
+                  e.preventDefault();
+                }
+              }
+            }}
             onTouchEnd={(e) => e.stopPropagation()}
           >
             <Card className="p-2">
@@ -460,7 +481,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               앱 새로고침
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              V.1.25.10.68
+              V.1.25.10.69
             </p>
           </div>
         </div>

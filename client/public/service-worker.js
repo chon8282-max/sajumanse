@@ -1,6 +1,8 @@
-const CACHE_NAME = 'manseryeok-FIXED-v1.25.10.68';
+const CACHE_NAME = 'manseryeok-FIXED-v1.25.10.69';
 const urlsToCache = [
-  '/manifest.json'
+  '/',
+  '/manifest.json',
+  '/index.html'
 ];
 
 self.addEventListener('install', function(event) {
@@ -8,9 +10,15 @@ self.addEventListener('install', function(event) {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      console.log('[SW] Caching manifest...');
-      return cache.addAll(urlsToCache).catch(() => {
-        return cache.addAll(['/manifest.json']);
+      console.log('[SW] Caching essential files...');
+      return cache.addAll(urlsToCache).catch((err) => {
+        console.log('[SW] Cache addAll failed:', err);
+        // 개별적으로 캐싱 시도
+        return Promise.all(
+          urlsToCache.map(url => 
+            cache.add(url).catch(e => console.log('[SW] Failed to cache:', url, e))
+          )
+        );
       });
     })
   );
@@ -62,7 +70,7 @@ self.addEventListener('fetch', function(event) {
     return;
   }
   
-  // HTML과 JS는 NETWORK-FIRST 전략 (항상 최신 버전 가져오기)
+  // HTML과 JS는 NETWORK-FIRST 전략 + 캐싱 (오프라인 지원)
   const isHtmlOrScript = event.request.url.match(/\/$|\.html$|\.js$|\.ts$|\.jsx$|\.tsx$/);
   
   if (isHtmlOrScript) {
@@ -70,9 +78,13 @@ self.addEventListener('fetch', function(event) {
     event.respondWith(
       fetch(event.request)
         .then(function(response) {
-          // 네트워크 성공: 응답 반환 (캐시 안 함)
+          // 네트워크 성공: 응답을 캐시하고 반환
           if (response && response.status === 200) {
-            console.log('[SW] Network success:', event.request.url);
+            console.log('[SW] Network success, caching:', event.request.url);
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then(function(cache) {
+              cache.put(event.request, responseToCache);
+            });
             return response;
           }
           return response;
@@ -84,6 +96,15 @@ self.addEventListener('fetch', function(event) {
             if (cachedResponse) {
               console.log('[SW] Cache hit:', event.request.url);
               return cachedResponse;
+            }
+            // 루트 경로 요청이면 캐시된 index.html 반환
+            if (event.request.url.endsWith('/') || event.request.url.endsWith('.html')) {
+              return caches.match('/').then(function(indexResponse) {
+                return indexResponse || new Response('Offline - No cached version', {
+                  status: 503,
+                  statusText: 'Service Unavailable'
+                });
+              });
             }
             return new Response('Offline', {
               status: 503,
