@@ -198,7 +198,7 @@ export default function Compatibility() {
         flexDirection: 'column'
       }}>
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <Button
                 variant="outline"
@@ -238,16 +238,6 @@ export default function Compatibility() {
               </div>
             )}
           </div>
-          {leftSajuId && leftSaju && (
-            <textarea
-              value={leftMemo}
-              onChange={(e) => setLeftMemo(e.target.value)}
-              placeholder="메모를 입력하세요..."
-              className="w-full p-3 border rounded text-base resize-none dark:bg-gray-800 dark:border-gray-700"
-              rows={3}
-              data-testid="textarea-left-memo"
-            />
-          )}
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {leftSajuId && leftSaju ? (
@@ -274,6 +264,8 @@ export default function Compatibility() {
               birthDay={leftSaju.birthDay}
               birthHour={leftSaju.birthTime || undefined}
               gender={leftSaju.gender}
+              memo={leftMemo}
+              onMemoChange={(newMemo) => setLeftMemo(newMemo)}
               yearText="년"
               monthText="월"
               dayText="일"
@@ -302,7 +294,7 @@ export default function Compatibility() {
         flexDirection: 'column'
       }}>
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
               <div style={{ display: 'flex', gap: '6px' }}>
@@ -330,16 +322,6 @@ export default function Compatibility() {
               </div>
             )}
           </div>
-          {rightSajuId && rightSaju && (
-            <textarea
-              value={rightMemo}
-              onChange={(e) => setRightMemo(e.target.value)}
-              placeholder="메모를 입력하세요..."
-              className="w-full p-3 border rounded text-base resize-none dark:bg-gray-800 dark:border-gray-700"
-              rows={3}
-              data-testid="textarea-right-memo"
-            />
-          )}
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
           {rightSajuId && rightSaju ? (
@@ -366,6 +348,8 @@ export default function Compatibility() {
               birthDay={rightSaju.birthDay}
               birthHour={rightSaju.birthTime || undefined}
               gender={rightSaju.gender}
+              memo={rightMemo}
+              onMemoChange={(newMemo) => setRightMemo(newMemo)}
               yearText="년"
               monthText="월"
               dayText="일"
