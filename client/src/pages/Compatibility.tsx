@@ -213,45 +213,29 @@ export default function Compatibility() {
               <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <table style={{ 
-                borderCollapse: 'collapse', 
-                borderSpacing: '0',
-                fontSize: '11px',
-                transform: 'scale(0.6)',
-                transformOrigin: 'right center'
-              }}>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: '0', margin: '0', border: 'none', width: '1px', whiteSpace: 'nowrap' }}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setLeftSajuId(null)}
-                        data-testid="button-left-change"
-                        className="h-8 text-xs px-2 rounded-r-none border-r-0 ml-[-1px]"
-                        style={{ margin: '0' }}
-                      >
-                        <RefreshCw className="w-3 h-3 mr-1" />
-                        수정
-                      </Button>
-                    </td>
-                    <td style={{ padding: '0', margin: '0', border: 'none', width: '1px', whiteSpace: 'nowrap' }}>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => leftSaveMutation.mutate(leftMemo)}
-                        disabled={leftSaveMutation.isPending}
-                        data-testid="button-left-save"
-                        className="h-8 text-xs px-2 rounded-l-none ml-[-1px]"
-                        style={{ margin: '0' }}
-                      >
-                        <Save className="w-3 h-3 mr-1" />
-                        {leftSaveMutation.isPending ? '저장 중...' : '저장'}
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setLeftSajuId(null)}
+                  data-testid="button-left-change"
+                  className="px-3 py-1 text-xs rounded-r-none border-r-0"
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  수정
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => leftSaveMutation.mutate(leftMemo)}
+                  disabled={leftSaveMutation.isPending}
+                  data-testid="button-left-save"
+                  className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  {leftSaveMutation.isPending ? '저장 중...' : '저장'}
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -313,45 +297,29 @@ export default function Compatibility() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
-              <table style={{ 
-                borderCollapse: 'collapse', 
-                borderSpacing: '0',
-                fontSize: '11px',
-                transform: 'scale(0.6)',
-                transformOrigin: 'right center'
-              }}>
-                <tbody>
-                  <tr>
-                    <td style={{ padding: '0', margin: '0', border: 'none', width: '1px', whiteSpace: 'nowrap' }}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setRightSajuId(null)}
-                        data-testid="button-right-change"
-                        className="h-8 text-xs px-2 rounded-r-none border-r-0 ml-[-1px]"
-                        style={{ margin: '0' }}
-                      >
-                        <RefreshCw className="w-3 h-3 mr-1" />
-                        수정
-                      </Button>
-                    </td>
-                    <td style={{ padding: '0', margin: '0', border: 'none', width: '1px', whiteSpace: 'nowrap' }}>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => rightSaveMutation.mutate(rightMemo)}
-                        disabled={rightSaveMutation.isPending}
-                        data-testid="button-right-save"
-                        className="h-8 text-xs px-2 rounded-l-none ml-[-1px]"
-                        style={{ margin: '0' }}
-                      >
-                        <Save className="w-3 h-3 mr-1" />
-                        {rightSaveMutation.isPending ? '저장 중...' : '저장'}
-                      </Button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRightSajuId(null)}
+                  data-testid="button-right-change"
+                  className="px-3 py-1 text-xs rounded-r-none border-r-0"
+                >
+                  <RefreshCw className="w-3 h-3 mr-1" />
+                  수정
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => rightSaveMutation.mutate(rightMemo)}
+                  disabled={rightSaveMutation.isPending}
+                  data-testid="button-right-save"
+                  className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  {rightSaveMutation.isPending ? '저장 중...' : '저장'}
+                </Button>
+              </div>
             )}
           </div>
         </div>
