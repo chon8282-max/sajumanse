@@ -17,6 +17,8 @@ import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useRef, useEffect } from "react";
+import { localDB } from "@/lib/saju-local-storage";
+import { queryClient } from "@/lib/queryClient";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -66,13 +68,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     try {
       toast({
         title: "백업 중...",
-        description: "Google Drive에 백업하는 중입니다.",
+        description: "로컬 데이터를 Google Drive에 백업하는 중입니다.",
         duration: 800,
       });
+
+      // localDB에서 모든 데이터 가져오기 (사주, 그룹, 운세 결과)
+      const backupData = await localDB.exportAllData();
 
       const response = await fetch('/api/backup/drive/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(backupData)
       });
 
       const result = await response.json();
@@ -80,7 +86,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       if (response.ok) {
         toast({
           title: "백업 완료",
-          description: "Google Drive에 성공적으로 백업되었습니다.",
+          description: `${backupData.sajuRecords.length}개의 사주 레코드가 Google Drive에 백업되었습니다.`,
           duration: 800,
         });
       } else {
@@ -153,24 +159,17 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         ? JSON.parse(downloadResult.data) 
         : downloadResult.data;
 
-      const importResponse = await fetch('/api/backup/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(backupData),
-      });
+      // localDB에 데이터 복원 (중복 체크 후 병합)
+      const importResult = await localDB.importAllData(backupData);
 
-      const importResult = await importResponse.json();
-      
-      if (importResponse.ok) {
-        toast({
-          title: "복원 완료",
-          description: importResult.message || `${importResult.sajuRecordsCount}개의 사주 기록을 복원했습니다.`,
-          duration: 800,
-        });
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        throw new Error(importResult.error || '복원 실패');
-      }
+      // 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
+
+      toast({
+        title: "복원 완료",
+        description: `${importResult.sajuRecordsCount}개의 사주, ${importResult.groupsCount}개의 그룹을 복원했습니다.`,
+        duration: 800,
+      });
     } catch (error) {
       toast({
         title: "복원 실패",

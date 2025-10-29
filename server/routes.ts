@@ -2088,7 +2088,8 @@ export async function registerRoutes(app: Express): Promise<void> {
         });
       }
 
-      const data = await storage.exportAllData();
+      // 프론트엔드에서 전달한 백업 데이터 사용 (localDB 데이터)
+      const data = req.body || await storage.exportAllData();
       const fileName = `saju-backup-${data.exportDate.split('T')[0]}.json`;
       const fileContent = JSON.stringify(data, null, 2);
 
