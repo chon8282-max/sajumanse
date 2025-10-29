@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Plus, AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { localDB } from "@/lib/saju-local-storage";
 import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -168,20 +168,19 @@ export default function SajuInput() {
     }
   }, []);
 
-  // 그룹 목록 조회
+  // 그룹 목록 조회 (로컬 저장소)
   const { data: groups = [] } = useQuery<Group[]>({
-    queryKey: ["/api/groups"],
-    select: (response: any) => response.data || [],
+    queryKey: ["local-groups"],
+    queryFn: async () => await localDB.getGroups(),
   });
 
-  // 새 그룹 생성 뮤테이션
+  // 새 그룹 생성 뮤테이션 (로컬 저장소)
   const createGroupMutation = useMutation({
     mutationFn: async (groupName: string) => {
-      const response = await apiRequest("POST", "/api/groups", { name: groupName });
-      return response.json();
+      return await localDB.createGroup({ name: groupName });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+      queryClient.invalidateQueries({ queryKey: ["local-groups"] });
       setNewGroupName("");
       setIsGroupDialogOpen(false);
       toast({
@@ -555,39 +554,37 @@ export default function SajuInput() {
 
       console.log("사주 정보 저장 요청:", requestData);
 
-      // API 호출 - 편집 모드면 PUT, 아니면 POST
-      let response;
+      // 로컬 저장소에 저장 - 편집 모드면 UPDATE, 아니면 CREATE
+      let savedRecord;
       if (submitIsEditMode && editId) {
-        response = await apiRequest("PUT", `/api/saju-records/${editId}`, requestData);
+        savedRecord = await localDB.updateSajuRecord(editId, requestData);
+        if (!savedRecord) {
+          throw new Error("사주 수정에 실패했습니다.");
+        }
       } else {
-        response = await apiRequest("POST", "/api/saju-records", requestData);
+        savedRecord = await localDB.createSajuRecord(requestData);
       }
-      const result = await response.json();
 
-      if (result.success) {
-        // 사주 목록 캐시 새로고침 (저장된 사주가 리스트에 나타나도록)
-        queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
-        
-        // 감정중인 사주로 sessionStorage에 저장 (앱 종료 전까지 유지)
-        if (result.data?.record?.id) {
-          sessionStorage.setItem('currentSajuId', result.data.record.id);
-          sessionStorage.setItem('currentSajuName', formData.name);
-          sessionStorage.setItem('currentSajuTimestamp', new Date().toISOString());
-        }
-        
-        // 성공시 사주 결과 페이지로 이동
-        if (submitIsEditMode && editId) {
-          // 편집 모드에서는 편집한 사주의 결과 페이지로 이동
-          setLocation(`/saju-result/${editId}`);
-        } else if (result.data?.record?.id) {
-          // 새로 생성한 경우 새 사주의 결과 페이지로 이동
-          setLocation(`/saju-result/${result.data.record.id}`);
-        } else {
-          // ID가 없으면 만세력 페이지로 이동
-          setLocation("/manseryeok");
-        }
+      // 사주 목록 캐시 새로고침 (저장된 사주가 리스트에 나타나도록)
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
+      
+      // 감정중인 사주로 sessionStorage에 저장 (앱 종료 전까지 유지)
+      if (savedRecord.id) {
+        sessionStorage.setItem('currentSajuId', savedRecord.id);
+        sessionStorage.setItem('currentSajuName', formData.name);
+        sessionStorage.setItem('currentSajuTimestamp', new Date().toISOString());
+      }
+      
+      // 성공시 사주 결과 페이지로 이동
+      if (submitIsEditMode && editId) {
+        // 편집 모드에서는 편집한 사주의 결과 페이지로 이동
+        setLocation(`/saju-result/${editId}`);
+      } else if (savedRecord.id) {
+        // 새로 생성한 경우 새 사주의 결과 페이지로 이동
+        setLocation(`/saju-result/${savedRecord.id}`);
       } else {
-        throw new Error(result.error || "저장 중 오류가 발생했습니다.");
+        // ID가 없으면 만세력 페이지로 이동
+        setLocation("/manseryeok");
       }
     } catch (error) {
       console.error("사주 저장 오류:", error);

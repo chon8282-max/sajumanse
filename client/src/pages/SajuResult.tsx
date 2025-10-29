@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Calendar, User, Clock, Save, Edit, Moon, Sun } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { localDB } from "@/lib/saju-local-storage";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/components/ThemeProvider";
 import { calculateSaju } from "@/lib/saju-calculator";
@@ -159,29 +160,33 @@ export default function SajuResult() {
   const { toast } = useToast();
   const { theme, toggleTheme } = useTheme();
   
-  // 사주 데이터 조회 (항상 호출)
+  // 사주 데이터 조회 (로컬 저장소)
   const { data: sajuData, isLoading } = useQuery<{success: boolean, data: SajuResultData}>({
-    queryKey: ["/api/saju-records", params?.id || "null"],
+    queryKey: ["local-saju-records", params?.id || "null"],
     queryFn: async () => {
       if (!params?.id) {
         throw new Error("No ID provided");
       }
-      const response = await apiRequest("GET", `/api/saju-records/${params.id}`);
-      return await response.json();
+      const record = await localDB.getSajuRecord(params.id);
+      if (!record) {
+        throw new Error("사주 데이터를 찾을 수 없습니다.");
+      }
+      return { success: true, data: record as SajuResultData };
     },
     enabled: !!params?.id,
   });
 
-  // 저장 mutation
+  // 저장 mutation (로컬 저장소)
   const saveMutation = useMutation({
     mutationFn: async (memo: string) => {
       if (!params?.id) {
         throw new Error("No ID provided");
       }
-      const response = await apiRequest("PUT", `/api/saju-records/${params.id}`, {
-        memo: memo
-      });
-      return await response.json();
+      const result = await localDB.updateSajuRecord(params.id, { memo });
+      if (!result) {
+        throw new Error("사주 정보 저장에 실패했습니다.");
+      }
+      return result;
     },
     onSuccess: () => {
       toast({
@@ -189,7 +194,7 @@ export default function SajuResult() {
         description: "사주 정보가 성공적으로 저장되었습니다.",
         duration: 700
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id] });
     },
     onError: (error) => {
       console.error('Save error:', error);
@@ -202,16 +207,17 @@ export default function SajuResult() {
     }
   });
 
-  // 이름 업데이트 mutation
+  // 이름 업데이트 mutation (로컬 저장소)
   const updateNameMutation = useMutation({
     mutationFn: async (newName: string) => {
       if (!params?.id) {
         throw new Error("No ID provided");
       }
-      const response = await apiRequest("PUT", `/api/saju-records/${params.id}`, {
-        name: newName
-      });
-      return await response.json();
+      const result = await localDB.updateSajuRecord(params.id, { name: newName });
+      if (!result) {
+        throw new Error("이름 변경에 실패했습니다.");
+      }
+      return result;
     },
     onSuccess: () => {
       toast({
@@ -219,7 +225,7 @@ export default function SajuResult() {
         description: "이름이 성공적으로 변경되었습니다.",
         duration: 700
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id] });
       setIsNameDialogOpen(false);
     },
     onError: (error) => {
@@ -374,16 +380,64 @@ export default function SajuResult() {
     });
   }, []);
 
-  // 생시 변경 핸들러 (useMutation 사용)
+  // 생시 변경 핸들러 (로컬 저장소)
   const birthTimeUpdateMutation = useMutation({
     mutationFn: async (timeCode: string) => {
       if (!params?.id) throw new Error('No ID provided');
       
-      return apiRequest('PUT', `/api/saju-records/${params.id}`, { birthTime: timeCode });
+      // 기존 사주 데이터 가져오기
+      const existingRecord = await localDB.getSajuRecord(params.id);
+      if (!existingRecord) {
+        throw new Error('사주 데이터를 찾을 수 없습니다.');
+      }
+      
+      // 생시 파싱 (시:분 형태 또는 시진 코드)
+      let hour = 0;
+      let minute = 0;
+      
+      // 전통 시진 코드인지 확인
+      const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === timeCode);
+      if (timePeriod) {
+        hour = timePeriod.hour;
+      } else if (timeCode.includes(':')) {
+        const parts = timeCode.split(':');
+        hour = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+      } else {
+        hour = parseInt(timeCode) || 0;
+      }
+      
+      // 사주 재계산
+      const sajuData = calculateSaju(
+        existingRecord.birthYear,
+        existingRecord.birthMonth || 1,
+        existingRecord.birthDay || 1,
+        hour,
+        minute,
+        existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
+      );
+      
+      // 모든 간지 필드와 함께 업데이트
+      const result = await localDB.updateSajuRecord(params.id, { 
+        birthTime: timeCode,
+        yearSky: sajuData.year.sky,
+        yearEarth: sajuData.year.earth,
+        monthSky: sajuData.month.sky,
+        monthEarth: sajuData.month.earth,
+        daySky: sajuData.day.sky,
+        dayEarth: sajuData.day.earth,
+        hourSky: sajuData.hour.sky,
+        hourEarth: sajuData.hour.earth
+      });
+      
+      if (!result) {
+        throw new Error('생시 변경에 실패했습니다.');
+      }
+      return result;
     },
     onSuccess: (_, timeCode) => {
       // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id || "null"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id || "null"] });
       toast({
         title: "생시 변경됨",
         description: `생시가 ${timeCode}로 변경되었습니다.`,
@@ -411,20 +465,74 @@ export default function SajuResult() {
     birthTimeUpdateMutation.mutate(timeCode);
   }, [birthTimeUpdateMutation]);
 
-  // 생년월일 변경 핸들러 (useMutation 사용)
+  // 생년월일 변경 핸들러 (로컬 저장소)
   const birthDateUpdateMutation = useMutation({
     mutationFn: async ({ year, month, day }: { year: number; month: number; day: number }) => {
       if (!params?.id) throw new Error('No ID provided');
       
-      return apiRequest('PUT', `/api/saju-records/${params.id}`, { 
+      // 기존 사주 데이터 가져오기
+      const existingRecord = await localDB.getSajuRecord(params.id);
+      if (!existingRecord) {
+        throw new Error('사주 데이터를 찾을 수 없습니다.');
+      }
+      
+      // 생시 파싱
+      let hour = 0;
+      let minute = 0;
+      const birthTime = existingRecord.birthTime || '';
+      
+      const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+      if (timePeriod) {
+        hour = timePeriod.hour;
+      } else if (birthTime.includes(':')) {
+        const parts = birthTime.split(':');
+        hour = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+      } else if (birthTime) {
+        hour = parseInt(birthTime) || 0;
+      }
+      
+      // 사주 재계산
+      const sajuData = calculateSaju(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
+      );
+      
+      // 음력 정보 계산 (양력→음력 변환)
+      const solar = Solar.fromYmd(year, month, day);
+      const lunar = solar.getLunar();
+      
+      // 모든 간지 필드와 음력 정보도 함께 업데이트
+      const result = await localDB.updateSajuRecord(params.id, { 
         birthYear: year,
         birthMonth: month,
-        birthDay: day
+        birthDay: day,
+        lunarYear: lunar.getYear(),
+        lunarMonth: lunar.getMonth(),
+        lunarDay: lunar.getDay(),
+        isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false,
+        yearSky: sajuData.year.sky,
+        yearEarth: sajuData.year.earth,
+        monthSky: sajuData.month.sky,
+        monthEarth: sajuData.month.earth,
+        daySky: sajuData.day.sky,
+        dayEarth: sajuData.day.earth,
+        hourSky: sajuData.hour.sky,
+        hourEarth: sajuData.hour.earth
       });
+      
+      if (!result) {
+        throw new Error('생년월일 변경에 실패했습니다.');
+      }
+      return result;
     },
     onSuccess: (_, { year, month, day }) => {
       // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", params?.id || "null"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id || "null"] });
       toast({
         title: "생년월일 변경됨",
         description: `생년월일이 ${year}.${month}.${day}로 변경되었습니다.`,
