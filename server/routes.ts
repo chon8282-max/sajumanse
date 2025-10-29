@@ -1300,32 +1300,65 @@ export async function registerRoutes(app: Express): Promise<void> {
       let apiData = null;
       let solarDateForCalculation = undefined;
       
+      // DB에서 일진 및 음양력 정보 조회
+      let dbData = null;
+      
       try {
-        // 정확한 간지 정보를 위해 data.go.kr API 호출
         if (isLunarBool) {
-          // 음력인 경우 양력 변환 + 간지 정보
-          const solarInfo = await getSolarCalInfo(parseInt(year), parseInt(month), parseInt(day));
-          apiData = solarInfo.response.body.items.item;
-          solarDateForCalculation = {
-            solarYear: parseInt(apiData.solYear),
-            solarMonth: parseInt(apiData.solMonth), 
-            solarDay: parseInt(apiData.solDay)
-          };
-          console.log(`API 음력→양력 변환: ${year}-${month}-${day} → ${apiData.solYear}-${apiData.solMonth}-${apiData.solDay}, 일진: ${apiData.solJeongja}`);
+          // 음력인 경우 DB에서 양력 변환 + 간지 정보 조회
+          dbData = await storage.getSolarFromLunar(
+            parseInt(year), 
+            parseInt(month), 
+            parseInt(day)
+          );
+          
+          if (dbData) {
+            apiData = {
+              solYear: dbData.solYear.toString(),
+              solMonth: dbData.solMonth.toString(),
+              solDay: dbData.solDay.toString(),
+              solJeongja: dbData.solJeongja,
+              lunSecha: dbData.lunSecha,
+              lunWolban: dbData.lunWolban
+            };
+            solarDateForCalculation = {
+              solarYear: dbData.solYear,
+              solarMonth: dbData.solMonth,
+              solarDay: dbData.solDay
+            };
+            console.log(`✅ DB 음력→양력 변환: ${year}-${month}-${day} → ${dbData.solYear}-${dbData.solMonth}-${dbData.solDay}, 일진: ${dbData.solJeongja}`);
+          } else {
+            console.warn(`⚠️ DB에 음력 데이터 없음: ${year}-${month}-${day}`);
+          }
         } else {
-          // 양력인 경우 직접 간지 정보 조회
-          const lunarInfo = await getLunarCalInfo(parseInt(year), parseInt(month), parseInt(day));
-          apiData = lunarInfo.response.body.items.item;
-          solarDateForCalculation = {
-            solarYear: parseInt(year),
-            solarMonth: parseInt(month),
-            solarDay: parseInt(day)
-          };
-          console.log(`API 양력 간지 조회: ${year}-${month}-${day}, 일진: ${apiData.solJeongja}`);
+          // 양력인 경우 DB에서 직접 간지 정보 조회
+          dbData = await storage.getLunarSolarData(
+            parseInt(year), 
+            parseInt(month), 
+            parseInt(day)
+          );
+          
+          if (dbData) {
+            apiData = {
+              solYear: dbData.solYear.toString(),
+              solMonth: dbData.solMonth.toString(),
+              solDay: dbData.solDay.toString(),
+              solJeongja: dbData.solJeongja,
+              lunSecha: dbData.lunSecha,
+              lunWolban: dbData.lunWolban
+            };
+            solarDateForCalculation = {
+              solarYear: parseInt(year),
+              solarMonth: parseInt(month),
+              solarDay: parseInt(day)
+            };
+            console.log(`✅ DB 양력 간지 조회: ${year}-${month}-${day}, 일진: ${dbData.solJeongja}`);
+          } else {
+            console.warn(`⚠️ DB에 양력 데이터 없음: ${year}-${month}-${day}`);
+          }
         }
-      } catch (apiError) {
-        console.error('data.go.kr API 호출 실패:', apiError);
-        // API 실패 시 기존 방식으로 폴백
+      } catch (dbError) {
+        console.error('DB 조회 실패:', dbError);
       }
       
       // DB에서 절기 데이터 가져오기
