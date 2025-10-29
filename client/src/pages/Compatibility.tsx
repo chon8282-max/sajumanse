@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,104 @@ import SajuTable from "@/components/SajuTable";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { calculateCompleteDaeun, calculateCurrentAge, DaeunPeriod } from "@/lib/daeun-calculator";
+import { CHEONGAN, JIJI } from "@/lib/saju-calculator";
+
+// 다음 간지 계산 (60갑자 순환)
+function getNextGanji(sky: string, earth: string) {
+  const skyIndex = CHEONGAN.indexOf(sky as any);
+  const earthIndex = JIJI.indexOf(earth as any);
+  
+  if (skyIndex === -1 || earthIndex === -1) {
+    throw new Error(`Invalid ganji: ${sky}${earth}`);
+  }
+  
+  const nextSkyIndex = (skyIndex + 1) % CHEONGAN.length;
+  const nextEarthIndex = (earthIndex + 1) % JIJI.length;
+  
+  return {
+    sky: CHEONGAN[nextSkyIndex],
+    earth: JIJI[nextEarthIndex]
+  };
+}
+
+// 이전 간지 계산 (60갑자 순환 역방향)
+function getPrevGanji(sky: string, earth: string) {
+  const skyIndex = CHEONGAN.indexOf(sky as any);
+  const earthIndex = JIJI.indexOf(earth as any);
+  
+  if (skyIndex === -1 || earthIndex === -1) {
+    throw new Error(`Invalid ganji: ${sky}${earth}`);
+  }
+  
+  const prevSkyIndex = (skyIndex - 1 + CHEONGAN.length) % CHEONGAN.length;
+  const prevEarthIndex = (earthIndex - 1 + JIJI.length) % JIJI.length;
+  
+  return {
+    sky: CHEONGAN[prevSkyIndex],
+    earth: JIJI[prevEarthIndex]
+  };
+}
+
+// 개선된 歲運 계산 (offset과 window size 지원)
+function calculateSaeun(
+  birthYear: number, 
+  startSky: string, 
+  startEarth: string, 
+  windowSize: number = 12,
+  offsetAge: number = 0
+) {
+  const years: number[] = [];
+  const ages: number[] = [];
+  const skyStems: string[] = [];
+  const earthBranches: string[] = [];
+  
+  let currentSky = startSky;
+  let currentEarth = startEarth;
+  
+  // 태어난 다음날부터 시작하므로 첫 번째부터 다음 간지
+  const nextGanji = getNextGanji(currentSky, currentEarth);
+  currentSky = nextGanji.sky;
+  currentEarth = nextGanji.earth;
+  
+  // 실제 시작 나이와 년도 계산 (최소 1세)
+  const startAge = Math.max(1, offsetAge + 1);
+  const startYear = birthYear + startAge;
+  
+  // 시작 지점까지 간지 진행 (1세부터 계산)
+  const adjustedOffset = startAge - 1; // 1세가 0 오프셋
+  if (adjustedOffset >= 0) {
+    for (let i = 0; i < adjustedOffset; i++) {
+      const next = getNextGanji(currentSky, currentEarth);
+      currentSky = next.sky;
+      currentEarth = next.earth;
+    }
+  } else {
+    for (let i = 0; i < Math.abs(adjustedOffset); i++) {
+      const prev = getPrevGanji(currentSky, currentEarth);
+      currentSky = prev.sky;
+      currentEarth = prev.earth;
+    }
+  }
+  
+  // window size만큼 歲運 데이터 생성
+  for (let i = 0; i < windowSize; i++) {
+    const currentYear = startYear + i;
+    const currentAge = startAge + i;
+    
+    years.push(currentYear);
+    ages.push(currentAge);
+    skyStems.push(currentSky);
+    earthBranches.push(currentEarth);
+    
+    // 다음 해의 간지 계산
+    const next = getNextGanji(currentSky, currentEarth);
+    currentSky = next.sky;
+    currentEarth = next.earth;
+  }
+  
+  return { years, ages, skyStems, earthBranches };
+}
 
 interface SajuResultData {
   id: string;
@@ -28,6 +126,14 @@ interface SajuResultData {
   dayEarth?: string;
   hourSky?: string;
   hourEarth?: string;
+}
+
+type DisplayMode = 'base' | 'daeun' | 'saeun';
+
+interface SaeunInfo {
+  age: number;
+  sky: string;
+  earth: string;
 }
 
 export default function Compatibility() {
@@ -55,6 +161,18 @@ export default function Compatibility() {
   const [showRightDialog, setShowRightDialog] = useState(false);
   const [leftMemo, setLeftMemo] = useState<string>("");
   const [rightMemo, setRightMemo] = useState<string>("");
+  
+  // 왼쪽 사주 대운/세운 상태
+  const [leftDisplayMode, setLeftDisplayMode] = useState<DisplayMode>('base');
+  const [leftFocusedDaeun, setLeftFocusedDaeun] = useState<DaeunPeriod | null>(null);
+  const [leftFocusedSaeun, setLeftFocusedSaeun] = useState<SaeunInfo | null>(null);
+  const [leftSaeunOffset, setLeftSaeunOffset] = useState(0);
+  
+  // 오른쪽 사주 대운/세운 상태
+  const [rightDisplayMode, setRightDisplayMode] = useState<DisplayMode>('base');
+  const [rightFocusedDaeun, setRightFocusedDaeun] = useState<DaeunPeriod | null>(null);
+  const [rightFocusedSaeun, setRightFocusedSaeun] = useState<SaeunInfo | null>(null);
+  const [rightSaeunOffset, setRightSaeunOffset] = useState(0);
   
   console.log('[Compatibility] State:', { leftSajuId, rightSajuId });
   
@@ -294,6 +412,74 @@ export default function Compatibility() {
     setLocation('/');
   };
 
+  // 왼쪽 사주 대운 데이터 계산
+  const leftDaeunData = useMemo(() => {
+    if (!leftSaju?.yearSky || !leftSaju?.yearEarth || !leftSaju?.monthSky || !leftSaju?.monthEarth) {
+      return null;
+    }
+    return calculateCompleteDaeun(leftSaju as any);
+  }, [leftSaju]);
+
+  // 왼쪽 사주 현재 나이 계산
+  const leftCurrentAge = useMemo(() => {
+    if (!leftSaju) return null;
+    return calculateCurrentAge(
+      leftSaju.birthYear,
+      leftSaju.birthMonth,
+      leftSaju.birthDay,
+      leftSaju.yearSky,
+      leftSaju.yearEarth
+    );
+  }, [leftSaju]);
+
+  // 왼쪽 사주 세운 데이터 계산
+  const leftSaeunData = useMemo(() => {
+    if (!leftSaju?.yearSky || !leftSaju?.yearEarth || !leftFocusedDaeun) {
+      return null;
+    }
+    return calculateSaeun(
+      leftSaju.birthYear,
+      leftSaju.yearSky,
+      leftSaju.yearEarth,
+      12,
+      leftFocusedDaeun.startAge - 1 + leftSaeunOffset
+    );
+  }, [leftSaju, leftFocusedDaeun, leftSaeunOffset]);
+
+  // 오른쪽 사주 대운 데이터 계산
+  const rightDaeunData = useMemo(() => {
+    if (!rightSaju?.yearSky || !rightSaju?.yearEarth || !rightSaju?.monthSky || !rightSaju?.monthEarth) {
+      return null;
+    }
+    return calculateCompleteDaeun(rightSaju as any);
+  }, [rightSaju]);
+
+  // 오른쪽 사주 현재 나이 계산
+  const rightCurrentAge = useMemo(() => {
+    if (!rightSaju) return null;
+    return calculateCurrentAge(
+      rightSaju.birthYear,
+      rightSaju.birthMonth,
+      rightSaju.birthDay,
+      rightSaju.yearSky,
+      rightSaju.yearEarth
+    );
+  }, [rightSaju]);
+
+  // 오른쪽 사주 세운 데이터 계산
+  const rightSaeunData = useMemo(() => {
+    if (!rightSaju?.yearSky || !rightSaju?.yearEarth || !rightFocusedDaeun) {
+      return null;
+    }
+    return calculateSaeun(
+      rightSaju.birthYear,
+      rightSaju.yearSky,
+      rightSaju.yearEarth,
+      12,
+      rightFocusedDaeun.startAge - 1 + rightSaeunOffset
+    );
+  }, [rightSaju, rightFocusedDaeun, rightSaeunOffset]);
+
   // 사주 목록 조회
   const { data: sajuListResponse } = useQuery<{success: boolean, data: SajuResultData[]}>({
     queryKey: ['/api/saju-records'],
@@ -393,6 +579,12 @@ export default function Compatibility() {
               onMemoChange={(newMemo) => setLeftMemo(newMemo)}
               onBirthTimeChange={handleLeftBirthTimeChange}
               onBirthDateChange={handleLeftBirthDateChange}
+              daeunPeriods={leftDaeunData?.daeunPeriods || []}
+              currentAge={leftCurrentAge || undefined}
+              displayMode={leftDisplayMode}
+              focusedDaeun={leftFocusedDaeun}
+              focusedSaeun={leftFocusedSaeun}
+              saeunData={leftSaeunData}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -476,6 +668,12 @@ export default function Compatibility() {
               onMemoChange={(newMemo) => setRightMemo(newMemo)}
               onBirthTimeChange={handleRightBirthTimeChange}
               onBirthDateChange={handleRightBirthDateChange}
+              daeunPeriods={rightDaeunData?.daeunPeriods || []}
+              currentAge={rightCurrentAge || undefined}
+              displayMode={rightDisplayMode}
+              focusedDaeun={rightFocusedDaeun}
+              focusedSaeun={rightFocusedSaeun}
+              saeunData={rightSaeunData}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
