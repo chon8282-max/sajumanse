@@ -29,12 +29,14 @@ const HOUR_JIJI = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申"
  * 12절기 기준으로 사주 월 계산 (DB 절기 데이터 필수)
  * @param date 계산할 날짜 (시/분 포함)
  * @param solarTerms DB에서 가져온 절기 데이터
- * @returns 사주 월 (0:축월, 1:인월, 2:묘월..., 11:자월)
+ * @returns 사주 월 (0:인월, 1:묘월, 2:진월 ... 11:축월) - 입춘부터 시작
  */
 function calculateSajuMonth(date: Date, solarTerms?: Array<{ name: string; date: Date; month: number }>): number {
   if (!solarTerms || solarTerms.length === 0) {
     throw new Error('DB 절기 데이터가 필요합니다. /api/solar-terms/:year 에서 가져오세요.');
   }
+  
+  console.log(`📅 calculateSajuMonth: date=${date.toISOString()}, solarTerms count=${solarTerms.length}`);
   
   // 현재 날짜가 어느 절기 구간에 속하는지 확인
   for (let i = 0; i < solarTerms.length - 1; i++) {
@@ -43,12 +45,14 @@ function calculateSajuMonth(date: Date, solarTerms?: Array<{ name: string; date:
     
     // 현재 날짜가 이 절기 구간에 속하는지 확인
     if (date >= currentTerm.date && date < nextTerm.date) {
+      console.log(`✅ 절기 구간 찾음: ${currentTerm.name} (month=${currentTerm.month}), ${currentTerm.date.toISOString().slice(0,10)} ~ ${nextTerm.date.toISOString().slice(0,10)}`);
       return currentTerm.month;
     }
   }
   
   // 마지막 절기 이후면 해당 월
   const lastTerm = solarTerms[solarTerms.length - 1];
+  console.log(`⚠️ 마지막 절기 이후: ${lastTerm.name} (month=${lastTerm.month})`);
   return lastTerm.month;
 }
 
@@ -158,7 +162,8 @@ export function calculateSaju(
     // 기존 방식 (양력 입력)
     monthCalcDate = calcDate;
   }
-  sajuMonth = calculateSajuMonth(monthCalcDate, solarTerms); // 0=축월, 1=인월, 2=묘월...
+  sajuMonth = calculateSajuMonth(monthCalcDate, solarTerms); // 0=인월, 1=묘월, ... 11=축월
+  console.log(`🔍 월주 계산: sajuMonth=${sajuMonth}, monthCalcDate=${monthCalcDate.toISOString().slice(0,10)}`);
   
   // 절입일 전월 간지 처리 (입절 전 간지는 전월 간지)
   let adjustedYearSkyIndex = yearSkyIndex;
@@ -169,17 +174,17 @@ export function calculateSaju(
     const originalSajuMonth = sajuMonth;
     sajuMonth = (sajuMonth - 1 + 12) % 12;
     
-    // 인월(1)→축월(0): 전년도로 넘어감 (입춘이 인월 시작)
+    // 인월(0)에서 전월로 가면→축월(11): 전년도로 넘어감 (입춘이 인월 시작)
     // 단, 음력 입력(isLunar=true)일 경우 sajuYear가 이미 음력 년도이므로 년주 조정하지 않음
-    if (!isLunar && originalSajuMonth === 1) {
+    if (!isLunar && originalSajuMonth === 0) {
       adjustedYearSkyIndex = (yearSkyIndex - 1 + 10) % 10;
       adjustedYearEarthIndex = (yearEarthIndex - 1 + 12) % 12;
     }
   }
   
-  // sajuMonth를 인월 기준 인덱스로 변환 (월간표는 인월 기준)
-  // 0(축월) -> 11, 1(인월) -> 0, 2(묘월) -> 1...
-  const monthEarthIndexForJiji = (sajuMonth + 11) % 12;
+  // sajuMonth는 이미 인월 기준 인덱스 (0=인월, 1=묘월, ... 11=축월)
+  // 월간표도 인월 기준이므로 그대로 사용
+  const monthEarthIndexForJiji = sajuMonth;
   
   // 전통 월주 천간 계산법 (갑기지년 병작수, 을경지년 무위두, ...)
   // 입춘 전월 간지 선택 시 조정된 년주 천간 사용
@@ -197,6 +202,7 @@ export function calculateSaju(
   }
   
   const monthSkyIndex = (monthSkyStartIndex + monthEarthIndexForJiji) % 10;
+  console.log(`🔍 월주 상세: yearSkyIndex=${adjustedYearSkyIndex}, monthSkyStartIndex=${monthSkyStartIndex}, monthEarthIndexForJiji=${monthEarthIndexForJiji}, monthSkyIndex=${monthSkyIndex}`);
   
   // 일주 계산 (API 데이터 우선 활용)
   let daySkyIndex: number;
