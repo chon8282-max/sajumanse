@@ -554,6 +554,88 @@ export default function SajuInput() {
 
       console.log("사주 정보 저장 요청:", requestData);
 
+      // 서버에서 사주 계산 (절기 DB 데이터 활용)
+      let calculatedSaju;
+      try {
+        // 시간 파싱
+        let hour = 12; // 기본값
+        let minute = 0;
+        
+        if (formData.birthTimeUnknown) {
+          hour = -1; // 생시모름 표시
+        } else if (formData.selectedTimeCode) {
+          const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode);
+          if (timePeriod) {
+            hour = timePeriod.hour;
+          }
+        } else if (formData.birthTime && formData.birthTime.trim()) {
+          const timeStr = formData.birthTime.trim();
+          if (timeStr.includes(':')) {
+            const parts = timeStr.split(':');
+            hour = parseInt(parts[0]) || 12;
+            minute = parseInt(parts[1]) || 0;
+          } else {
+            hour = parseInt(timeStr) || 12;
+          }
+        }
+        
+        const sajuCalcResponse = await fetch('/api/saju/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            year: requestData.birthYear,
+            month: requestData.birthMonth,
+            day: requestData.birthDay,
+            hour: hour,
+            minute: minute,
+            isLunar: requestData.calendarType === "음력" || requestData.calendarType === "윤달"
+          })
+        });
+        
+        const sajuCalcResult = await sajuCalcResponse.json();
+        
+        if (!sajuCalcResult.success || !sajuCalcResult.data) {
+          throw new Error("사주 계산에 실패했습니다.");
+        }
+        
+        calculatedSaju = sajuCalcResult.data;
+        console.log("✅ 서버에서 계산된 사주:", calculatedSaju);
+        
+        // 절입일인 경우 클라이언트 계산 년월주 우선 사용
+        if (requestData.clientCalculatedSaju) {
+          calculatedSaju.year = {
+            sky: requestData.clientCalculatedSaju.yearSky,
+            earth: requestData.clientCalculatedSaju.yearEarth
+          };
+          calculatedSaju.month = {
+            sky: requestData.clientCalculatedSaju.monthSky,
+            earth: requestData.clientCalculatedSaju.monthEarth
+          };
+          console.log("🎯 절입일: 클라이언트 계산 년월주 적용", calculatedSaju.year, calculatedSaju.month);
+        }
+        
+        // 계산된 사주를 requestData에 추가
+        requestData.yearSky = calculatedSaju.year.sky;
+        requestData.yearEarth = calculatedSaju.year.earth;
+        requestData.monthSky = calculatedSaju.month.sky;
+        requestData.monthEarth = calculatedSaju.month.earth;
+        requestData.daySky = calculatedSaju.day.sky;
+        requestData.dayEarth = calculatedSaju.day.earth;
+        requestData.hourSky = formData.birthTimeUnknown ? '' : calculatedSaju.hour.sky;
+        requestData.hourEarth = formData.birthTimeUnknown ? '' : calculatedSaju.hour.earth;
+        
+        // 음력 정보도 추가 (서버가 계산한 경우)
+        if (calculatedSaju.lunarInfo) {
+          requestData.lunarYear = calculatedSaju.lunarInfo.lunarYear;
+          requestData.lunarMonth = calculatedSaju.lunarInfo.lunarMonth;
+          requestData.lunarDay = calculatedSaju.lunarInfo.lunarDay;
+          requestData.isLeapMonth = calculatedSaju.lunarInfo.isLeapMonth || false;
+        }
+      } catch (error) {
+        console.error("❌ 사주 계산 실패:", error);
+        throw new Error("사주 계산 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요.");
+      }
+
       // 로컬 저장소에 저장 - 편집 모드면 UPDATE, 아니면 CREATE
       let savedRecord;
       if (submitIsEditMode && editId) {

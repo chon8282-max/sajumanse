@@ -1328,7 +1328,34 @@ export async function registerRoutes(app: Express): Promise<void> {
         // API 실패 시 기존 방식으로 폴백
       }
       
-      // 사주팔자 계산 (API 데이터 활용)
+      // DB에서 절기 데이터 가져오기
+      const calculationYear = solarDateForCalculation ? solarDateForCalculation.solarYear : parseInt(year);
+      const dbSolarTerms = await storage.getSolarTermsForYear(calculationYear);
+      
+      // 절기 이름 → 사주 월 매핑
+      const solarTermMonthMap: Record<string, number> = {
+        "소한": 0, "대한": 0,  // 축월
+        "입춘": 1, "우수": 1,  // 인월
+        "경칩": 2, "춘분": 2,  // 묘월
+        "청명": 3, "곡우": 3,  // 진월
+        "입하": 4, "소만": 4,  // 사월
+        "망종": 5, "하지": 5,  // 오월
+        "소서": 6, "대서": 6,  // 미월
+        "입추": 7, "처서": 7,  // 신월
+        "백로": 8, "추분": 8,  // 유월
+        "한로": 9, "상강": 9,  // 술월
+        "입동": 10, "소설": 10, // 해월
+        "대설": 11, "동지": 11  // 자월
+      };
+      
+      const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
+        name: term.name,
+        date: new Date(term.date),
+        month: solarTermMonthMap[term.name] ?? 0
+      }));
+      console.log(`✓ DB 절기 데이터 ${solarTermsForCalculation.length}개 로드됨 (${calculationYear}년)`);
+      
+      // 사주팔자 계산 (API 데이터 + DB 절기 데이터 활용)
       const sajuResult = calculateSaju(
         parseInt(year), 
         parseInt(month), 
@@ -1337,7 +1364,9 @@ export async function registerRoutes(app: Express): Promise<void> {
         parseInt(minute) || 0,
         isLunarBool,
         solarDateForCalculation,
-        apiData // API 간지 정보 전달
+        apiData, // API 간지 정보 전달
+        undefined, // usePreviousMonthPillar
+        solarTermsForCalculation // DB 절기 데이터 전달
       );
 
       res.json({
