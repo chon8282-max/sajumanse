@@ -10,7 +10,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { calculateCompleteDaeun, calculateCurrentAge, DaeunPeriod } from "@/lib/daeun-calculator";
-import { CHEONGAN, JIJI, calculateSaju } from "@/lib/saju-calculator";
+import { CHEONGAN, JIJI, calculateSaju, CHEONGAN_WUXING, JIJI_WUXING } from "@/lib/saju-calculator";
 import { localDB } from "@/lib/saju-local-storage";
 import { TRADITIONAL_TIME_PERIODS, SajuRecord } from "@shared/schema";
 import { Solar } from "lunar-javascript";
@@ -688,14 +688,14 @@ export default function Compatibility() {
                 day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
                 hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' },
                 wuxing: {
-                  yearSky: '목' as const,
-                  yearEarth: '목' as const,
-                  monthSky: '목' as const,
-                  monthEarth: '목' as const,
-                  daySky: '목' as const,
-                  dayEarth: '목' as const,
-                  hourSky: '',
-                  hourEarth: ''
+                  yearSky: CHEONGAN_WUXING[leftSaju.yearSky || ''] || '',
+                  yearEarth: JIJI_WUXING[leftSaju.yearEarth || ''] || '',
+                  monthSky: CHEONGAN_WUXING[leftSaju.monthSky || ''] || '',
+                  monthEarth: JIJI_WUXING[leftSaju.monthEarth || ''] || '',
+                  daySky: CHEONGAN_WUXING[leftSaju.daySky || ''] || '',
+                  dayEarth: JIJI_WUXING[leftSaju.dayEarth || ''] || '',
+                  hourSky: leftSaju.hourSky ? CHEONGAN_WUXING[leftSaju.hourSky] || '' : '',
+                  hourEarth: leftSaju.hourEarth ? JIJI_WUXING[leftSaju.hourEarth] || '' : ''
                 }
               }}
               name={leftSaju.name}
@@ -777,14 +777,14 @@ export default function Compatibility() {
                 day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
                 hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' },
                 wuxing: {
-                  yearSky: '목' as const,
-                  yearEarth: '목' as const,
-                  monthSky: '목' as const,
-                  monthEarth: '목' as const,
-                  daySky: '목' as const,
-                  dayEarth: '목' as const,
-                  hourSky: '',
-                  hourEarth: ''
+                  yearSky: CHEONGAN_WUXING[rightSaju.yearSky || ''] || '',
+                  yearEarth: JIJI_WUXING[rightSaju.yearEarth || ''] || '',
+                  monthSky: CHEONGAN_WUXING[rightSaju.monthSky || ''] || '',
+                  monthEarth: JIJI_WUXING[rightSaju.monthEarth || ''] || '',
+                  daySky: CHEONGAN_WUXING[rightSaju.daySky || ''] || '',
+                  dayEarth: JIJI_WUXING[rightSaju.dayEarth || ''] || '',
+                  hourSky: rightSaju.hourSky ? CHEONGAN_WUXING[rightSaju.hourSky] || '' : '',
+                  hourEarth: rightSaju.hourEarth ? JIJI_WUXING[rightSaju.hourEarth] || '' : ''
                 }
               }}
               name={rightSaju.name}
