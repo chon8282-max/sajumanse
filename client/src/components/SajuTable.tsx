@@ -947,9 +947,25 @@ export default function SajuTable({
     
     const birthGanji = saju.year.sky + saju.year.earth;
     const birthGanjiIndex = gapja60.indexOf(birthGanji);
+    
+    // 간지를 찾을 수 없는 경우 기본값 반환
+    if (birthGanjiIndex === -1) {
+      return { skies: Array(13).fill(''), earths: Array(13).fill('') };
+    }
+    
     const yearOffset = targetYear - actualGanjiYear; // 정확한 간지년 사용
-    const targetGanjiIndex = (birthGanjiIndex + yearOffset) % 60;
+    let targetGanjiIndex = (birthGanjiIndex + yearOffset) % 60;
+    
+    // 음수 인덱스 처리
+    if (targetGanjiIndex < 0) {
+      targetGanjiIndex = targetGanjiIndex + 60;
+    }
+    
     const targetGanji = gapja60[targetGanjiIndex];
+    if (!targetGanji || targetGanji.length < 2) {
+      return { skies: Array(13).fill(''), earths: Array(13).fill('') };
+    }
+    
     const targetYearSky = targetGanji[0];
     
     // 월운 천간 시작 규칙 (축월부터)

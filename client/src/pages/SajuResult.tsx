@@ -11,6 +11,7 @@ import { localDB } from "@/lib/saju-local-storage";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/components/ThemeProvider";
 import { calculateSaju } from "@/lib/saju-calculator";
+import { getSolarTermsForCalculation } from "@/lib/solar-terms-data";
 import { CHEONGAN, JIJI, TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { Solar } from "lunar-javascript";
 import { getWuxingColor, getJijanggan } from "@/lib/wuxing-colors";
@@ -407,25 +408,24 @@ export default function SajuResult() {
         hour = parseInt(timeCode) || 0;
       }
       
-      // 서버 API로 사주 재계산
-      const response = await fetch('/api/saju/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          year: existingRecord.birthYear,
-          month: existingRecord.birthMonth || 1,
-          day: existingRecord.birthDay || 1,
-          hour,
-          minute,
-          isLunar: existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
-        })
-      });
+      // 클라이언트에서 직접 사주 재계산 (오프라인 지원 + 속도 향상)
+      const solarTerms = await getSolarTermsForCalculation(existingRecord.birthYear);
+      const sajuData = calculateSaju(
+        existingRecord.birthYear,
+        existingRecord.birthMonth || 1,
+        existingRecord.birthDay || 1,
+        hour,
+        minute,
+        existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달',
+        undefined,
+        undefined,
+        undefined,
+        solarTerms
+      );
       
-      if (!response.ok) {
+      if (!sajuData) {
         throw new Error('사주 계산에 실패했습니다.');
       }
-      
-      const { data: sajuData } = await response.json();
       
       // 모든 간지 필드와 함께 업데이트
       const result = await localDB.updateSajuRecord(params.id, { 
@@ -502,25 +502,24 @@ export default function SajuResult() {
         hour = parseInt(birthTime) || 0;
       }
       
-      // 서버 API로 사주 재계산
-      const response = await fetch('/api/saju/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          isLunar: existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
-        })
-      });
+      // 클라이언트에서 직접 사주 재계산 (오프라인 지원 + 속도 향상)
+      const solarTerms = await getSolarTermsForCalculation(year);
+      const sajuData = calculateSaju(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달',
+        undefined,
+        undefined,
+        undefined,
+        solarTerms
+      );
       
-      if (!response.ok) {
+      if (!sajuData) {
         throw new Error('사주 계산에 실패했습니다.');
       }
-      
-      const { data: sajuData } = await response.json();
       
       // 음력 정보 계산 (양력→음력 변환)
       const solar = Solar.fromYmd(year, month, day);

@@ -16,6 +16,8 @@ import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { calculateSaju } from "@/lib/saju-calculator";
+import { checkSolarTermDay as checkSolarTermDayLocal, getSolarTermsForCalculation } from "@/lib/solar-terms-data";
+import { Solar, Lunar } from "lunar-javascript";
 
 interface Group {
   id: string;
@@ -59,50 +61,7 @@ function checkDSTPeriod(year: number, month: number, day: number): { isDST: bool
   return { isDST: false };
 }
 
-// 절입일 체크 함수 (서버 API 사용, 당일만 체크)
-async function checkSolarTermDay(year: number, month: number, day: number): Promise<{ isSolarTerm: boolean; termInfo?: { name: string; hour: number; minute: number } }> {
-  try {
-    const response = await fetch(`/api/solar-terms/${year}`);
-    const result = await response.json();
-    
-    if (!result.success || !result.data) {
-      console.error('절입일 데이터 로드 실패:', result);
-      return { isSolarTerm: false };
-    }
-    
-    // 해당 년도의 모든 절기 중에서 당일 절입일 찾기
-    const solarTerms = result.data;
-    for (const term of solarTerms) {
-      // UTC date에 9시간(KST offset)을 더해서 KST 날짜 계산
-      const termDateUTC = new Date(term.date);
-      const kstOffset = 9 * 60 * 60 * 1000; // 9시간을 밀리초로
-      const termDateKST = new Date(termDateUTC.getTime() + kstOffset);
-      
-      // KST 날짜 추출 (getUTC* 메서드를 사용하지만 이미 KST로 조정된 Date 객체)
-      const kstYear = termDateKST.getUTCFullYear();
-      const kstMonth = termDateKST.getUTCMonth() + 1;
-      const kstDay = termDateKST.getUTCDate();
-      
-      // 입력 날짜와 절입일 KST 날짜가 정확히 일치하는지 확인
-      if (kstYear === year && kstMonth === month && kstDay === day) {
-        // kstHour, kstMinute는 API에서 제공하는 값 사용
-        return {
-          isSolarTerm: true,
-          termInfo: {
-            name: term.name,
-            hour: term.kstHour,
-            minute: term.kstMinute
-          }
-        };
-      }
-    }
-    
-    return { isSolarTerm: false };
-  } catch (error) {
-    console.error('절입일 체크 중 오류:', error);
-    return { isSolarTerm: false };
-  }
-}
+// 절입일 체크 함수는 이제 로컬 데이터 사용 (solar-terms-data.ts)
 
 export default function SajuInput() {
   const [, setLocation] = useLocation();
@@ -222,23 +181,55 @@ export default function SajuInput() {
     
     if (!formData.year || !formData.month || !formData.day || 
         isNaN(yearNum) || isNaN(monthNum) || isNaN(dayNum) ||
-        yearNum < 1900 || yearNum > 2100 ||
+        yearNum < 1900 || yearNum > 2050 ||
         monthNum < 1 || monthNum > 12 ||
         dayNum < 1 || dayNum > 31) {
       toast({
         title: "입력 오류", 
-        description: "올바른 생년월일을 입력해주세요. (년: 1900-2100, 월: 1-12, 일: 1-31)",
+        description: "올바른 생년월일을 입력해주세요. (년: 1900-2050, 월: 1-12, 일: 1-31)",
         variant: "destructive",
-        duration: 700
+        duration: 3000
       });
       return;
     }
 
+    // 음력→양력 변환 (절입일 체크 전 먼저 처리)
+    let currentConvertedSolarDate = convertedSolarDate; // 기존 state 값
+    if (formData.calendarType === "음력" || formData.calendarType === "윤달") {
+      try {
+        console.log(`🔄 음력→양력 변환 시작 (로컬): ${yearNum}-${monthNum}-${dayNum} (${formData.calendarType})`);
+        
+        // lunar-javascript로 로컬 변환 (윤달은 음수 월로 표현)
+        const isLeapMonth = formData.calendarType === "윤달";
+        const lunarMonth = isLeapMonth ? -monthNum : monthNum;
+        const lunar = Lunar.fromYmd(yearNum, lunarMonth, dayNum);
+        const solar = lunar.getSolar();
+        
+        const solarYear = solar.getYear();
+        const solarMonth = solar.getMonth();
+        const solarDay = solar.getDay();
+        
+        // 로컬 변수와 state 모두 업데이트
+        currentConvertedSolarDate = { year: solarYear, month: solarMonth, day: solarDay };
+        setConvertedSolarDate(currentConvertedSolarDate);
+        console.log(`✅ 로컬 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
+      } catch (error) {
+        console.error('❌ 음력→양력 변환 실패:', error);
+        currentConvertedSolarDate = null;
+        setConvertedSolarDate(null);
+      }
+    } else {
+      // 양력 입력인 경우
+      currentConvertedSolarDate = null;
+      setConvertedSolarDate(null);
+    }
+
     // 절입일 체크 (대화상자가 아직 표시되지 않았을 때만)
     if (usePreviousMonthPillar === undefined) {
-      let solarYear = yearNum;
-      let solarMonth = monthNum;
-      let solarDay = dayNum;
+      // 변환된 양력 날짜 사용 (없으면 원본)
+      const solarYear = currentConvertedSolarDate?.year || yearNum;
+      const solarMonth = currentConvertedSolarDate?.month || monthNum;
+      const solarDay = currentConvertedSolarDate?.day || dayNum;
       
       // 생시 파싱 (절입 시각 비교용)
       let inputHour: number | null = null;
@@ -259,43 +250,9 @@ export default function SajuInput() {
         }
       }
 
-      // 음력/윤달인 경우 양력으로 변환 후 체크
-      if (formData.calendarType === "음력" || formData.calendarType === "윤달") {
-        try {
-          console.log(`🔄 음력→양력 변환 시작: ${yearNum}-${monthNum}-${dayNum} (${formData.calendarType})`);
-          const response = await fetch('/api/lunar-solar/convert/solar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              lunYear: yearNum,
-              lunMonth: monthNum,
-              lunDay: dayNum,
-              isLeapMonth: formData.calendarType === "윤달"
-            })
-          });
-          const result = await response.json();
-          console.log('📅 변환 결과:', result);
-          
-          if (result.success && result.data) {
-            solarYear = result.data.solYear;
-            solarMonth = result.data.solMonth;
-            solarDay = result.data.solDay;
-            // 변환된 양력 날짜 저장
-            setConvertedSolarDate({ year: solarYear, month: solarMonth, day: solarDay });
-            console.log(`✅ 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
-          }
-        } catch (error) {
-          console.error('❌ 음력→양력 변환 실패:', error);
-          // 변환 실패시 그냥 진행
-        }
-      } else {
-        // 양력 입력인 경우 변환 날짜 초기화
-        setConvertedSolarDate(null);
-      }
-
-      // 변환된 양력 날짜로 절입일 체크
+      // 변환된 양력 날짜로 절입일 체크 (로컬 데이터 사용)
       console.log(`🔍 절입일 체크: ${solarYear}-${solarMonth}-${solarDay}, 생시=${inputHour !== null ? inputHour : '모름'}:${inputMinute}`);
-      const solarTermCheck = await checkSolarTermDay(solarYear, solarMonth, solarDay);
+      const solarTermCheck = await checkSolarTermDayLocal(solarYear, solarMonth, solarDay);
       console.log('📊 절입일 체크 결과:', solarTermCheck);
       
       // 생시가 명확한 경우, 절입 시각과 비교해서 다이얼로그 표시 여부 결정
@@ -408,9 +365,8 @@ export default function SajuInput() {
         setShowSolarTermDialog(true);
         return; // 대화상자 표시 후 여기서 멈춤
       } else {
-        console.log('❎ 절입일 아님');
-        // 절입일이 아니면 변환된 날짜 초기화
-        setConvertedSolarDate(null);
+        console.log('❎ 절입일 아님 - 변환된 날짜 유지');
+        // 절입일이 아니어도 convertedSolarDate는 유지 (음력 입력의 경우 양력 변환 정보 보존)
       }
     }
 
@@ -435,26 +391,30 @@ export default function SajuInput() {
         memo: formData.memo.trim() || null,
       };
 
-      // 절입일 전월 간지 적용: 클라이언트에서 직접 계산한 사주 전달
+      // 음력/윤달 입력의 경우 변환된 양력 날짜를 requestData에 반영
+      console.log(`🔍 currentConvertedSolarDate:`, currentConvertedSolarDate);
+      console.log(`🔍 calendarType:`, formData.calendarType);
+      if (currentConvertedSolarDate) {
+        // 원본 음력 정보 별도 저장
+        requestData.lunarYear = yearNum;
+        requestData.lunarMonth = monthNum;
+        requestData.lunarDay = dayNum;
+        requestData.isLeapMonth = formData.calendarType === "윤달";
+        
+        // 변환된 양력 날짜로 업데이트
+        requestData.birthYear = currentConvertedSolarDate.year;
+        requestData.birthMonth = currentConvertedSolarDate.month;
+        requestData.birthDay = currentConvertedSolarDate.day;
+        
+        // calendarType은 원본 유지 (음력/윤달 표시용)
+        console.log(`✅ 음력→양력 변환 반영: ${requestData.lunarYear}-${requestData.lunarMonth}-${requestData.lunarDay} → ${requestData.birthYear}-${requestData.birthMonth}-${requestData.birthDay}`);
+      } else if (formData.calendarType === "음력" || formData.calendarType === "윤달") {
+        console.log(`⚠️ 음력 입력이지만 currentConvertedSolarDate가 없습니다!`);
+      }
+
+      // 절입일 전월 간지 적용
       if (usePreviousMonthPillar !== undefined) {
         requestData.usePreviousMonthPillar = usePreviousMonthPillar;
-        
-        // 음력 입력이었다면 변환된 양력 날짜를 requestData에 반영
-        if (convertedSolarDate) {
-          // 원본 음력 정보 별도 저장
-          requestData.lunarYear = yearNum;
-          requestData.lunarMonth = monthNum;
-          requestData.lunarDay = dayNum;
-          requestData.isLeapMonth = formData.calendarType === "윤달";
-          
-          // 변환된 양력 날짜로 업데이트
-          requestData.birthYear = convertedSolarDate.year;
-          requestData.birthMonth = convertedSolarDate.month;
-          requestData.birthDay = convertedSolarDate.day;
-          
-          // calendarType을 양력으로 변경 (서버가 중복 변환하지 않도록)
-          requestData.calendarType = "양력";
-        }
         
         // 절입일 사주 무조건 직접 계산
         try {
@@ -472,9 +432,9 @@ export default function SajuInput() {
           }
           
           // 양력 날짜 (음력 입력이었다면 변환된 양력 날짜 사용)
-          let solarYear = convertedSolarDate?.year || yearNum;
-          let solarMonth = convertedSolarDate?.month || monthNum;
-          let solarDay = convertedSolarDate?.day || dayNum;
+          let solarYear = currentConvertedSolarDate?.year || yearNum;
+          let solarMonth = currentConvertedSolarDate?.month || monthNum;
+          let solarDay = currentConvertedSolarDate?.day || dayNum;
           
           // 월 인덱스 맵 (인월=0, 묘월=1, ..., 축월=11)
           // 각 월은 2개의 절기로 구성: 첫 번째 절기와 두 번째 절기 모두 같은 월
@@ -521,17 +481,18 @@ export default function SajuInput() {
           const monthSky = CHEONGAN[(monthSkyStart + monthIndex) % 10];
           const monthEarth = JIJI[(monthIndex + 2) % 12]; // 인월=2(寅), 묘월=3(卯), ..., 축월=1(丑)
           
-          // 일주/시주는 양력 기준 계산
-          const response = await fetch('/api/lunar-solar/convert/lunar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              solYear: solarYear,
-              solMonth: solarMonth,
-              solDay: solarDay
-            })
-          });
-          const lunarData = await response.json();
+          // 양력→음력 변환 (로컬 계산)
+          const solar = Solar.fromYmd(solarYear, solarMonth, solarDay);
+          const lunar = solar.getLunar();
+          const lunarData = {
+            success: true,
+            data: {
+              lunYear: lunar.getYear(),
+              lunMonth: lunar.getMonth(),
+              lunDay: lunar.getDay(),
+              isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false
+            }
+          };
           
           // 년주/월주는 클라이언트에서 계산, 일시주는 서버에서 계산됨
           // (DB 절기 데이터 없이는 정확한 계산 불가)
@@ -579,27 +540,30 @@ export default function SajuInput() {
           }
         }
         
-        const sajuCalcResponse = await fetch('/api/saju/calculate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            year: requestData.birthYear,
-            month: requestData.birthMonth,
-            day: requestData.birthDay,
-            hour: hour,
-            minute: minute,
-            isLunar: requestData.calendarType === "음력" || requestData.calendarType === "윤달"
-          })
-        });
+        // 클라이언트에서 직접 사주 계산 (오프라인 지원 + 속도 향상)
+        const calculationYear = requestData.birthYear;
+        const solarTermsForCalculation = await getSolarTermsForCalculation(calculationYear);
         
-        const sajuCalcResult = await sajuCalcResponse.json();
+        // requestData.birthYear/Month/Day는 이미 양력으로 변환되어 있으므로 isLunar=false
+        const sajuCalcResult = calculateSaju(
+          requestData.birthYear,
+          requestData.birthMonth,
+          requestData.birthDay,
+          hour,
+          minute,
+          false, // 이미 양력으로 변환됨
+          undefined, // solarDate
+          undefined, // apiData
+          undefined, // usePreviousMonthPillar
+          solarTermsForCalculation
+        );
         
-        if (!sajuCalcResult.success || !sajuCalcResult.data) {
+        if (!sajuCalcResult) {
           throw new Error("사주 계산에 실패했습니다.");
         }
         
-        calculatedSaju = sajuCalcResult.data;
-        console.log("✅ 서버에서 계산된 사주:", calculatedSaju);
+        calculatedSaju = sajuCalcResult;
+        console.log("✅ 클라이언트에서 계산된 사주:", calculatedSaju);
         
         // 절입일인 경우 클라이언트 계산 년월주 우선 사용
         if (requestData.clientCalculatedSaju) {
@@ -624,12 +588,15 @@ export default function SajuInput() {
         requestData.hourSky = formData.birthTimeUnknown ? '' : calculatedSaju.hour.sky;
         requestData.hourEarth = formData.birthTimeUnknown ? '' : calculatedSaju.hour.earth;
         
-        // 음력 정보도 추가 (서버가 계산한 경우)
-        if (calculatedSaju.lunarInfo) {
-          requestData.lunarYear = calculatedSaju.lunarInfo.lunarYear;
-          requestData.lunarMonth = calculatedSaju.lunarInfo.lunarMonth;
-          requestData.lunarDay = calculatedSaju.lunarInfo.lunarDay;
-          requestData.isLeapMonth = calculatedSaju.lunarInfo.isLeapMonth || false;
+        // 양력 입력의 경우 음력 정보 계산하여 저장
+        if (requestData.calendarType === "양력" && !requestData.lunarYear) {
+          const solar = Solar.fromYmd(requestData.birthYear, requestData.birthMonth, requestData.birthDay);
+          const lunar = solar.getLunar();
+          requestData.lunarYear = lunar.getYear();
+          requestData.lunarMonth = lunar.getMonth();
+          requestData.lunarDay = lunar.getDay();
+          requestData.isLeapMonth = (lunar as any).isLeap ? (lunar as any).isLeap() : false;
+          console.log(`✅ 양력→음력 변환: ${requestData.lunarYear}-${requestData.lunarMonth}-${requestData.lunarDay}${requestData.isLeapMonth ? ' (윤달)' : ''}`);
         }
       } catch (error) {
         console.error("❌ 사주 계산 실패:", error);
