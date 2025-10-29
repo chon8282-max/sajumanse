@@ -276,7 +276,7 @@ export default function Compatibility() {
     }
   });
 
-  // 왼쪽 사주 생시 변경 핸들러 (로컬 저장소 + 재계산)
+  // 왼쪽 사주 생시 변경 핸들러 (서버 API 사용)
   const handleLeftBirthTimeChange = async (timeCode: string) => {
     if (!leftSajuId || !leftSaju) return;
     
@@ -295,15 +295,25 @@ export default function Compatibility() {
         hour = parseInt(timeCode) || 0;
       }
       
-      // 사주 재계산
-      const sajuData = calculateSaju(
-        leftSaju.birthYear,
-        leftSaju.birthMonth || 1,
-        leftSaju.birthDay || 1,
-        hour,
-        minute,
-        leftSaju.calendarType === '음력' || leftSaju.calendarType === '윤달'
-      );
+      // 서버 API로 사주 재계산
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year: leftSaju.birthYear,
+          month: leftSaju.birthMonth || 1,
+          day: leftSaju.birthDay || 1,
+          hour,
+          minute,
+          isLunar: leftSaju.calendarType === '음력' || leftSaju.calendarType === '윤달'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('사주 계산에 실패했습니다.');
+      }
+      
+      const sajuData = await response.json();
       
       // 모든 간지 필드와 함께 업데이트
       await localDB.updateSajuRecord(leftSajuId, { 
@@ -335,7 +345,7 @@ export default function Compatibility() {
     }
   };
 
-  // 오른쪽 사주 생시 변경 핸들러 (로컬 저장소 + 재계산)
+  // 오른쪽 사주 생시 변경 핸들러 (서버 API 사용)
   const handleRightBirthTimeChange = async (timeCode: string) => {
     if (!rightSajuId || !rightSaju) return;
     
@@ -354,15 +364,25 @@ export default function Compatibility() {
         hour = parseInt(timeCode) || 0;
       }
       
-      // 사주 재계산
-      const sajuData = calculateSaju(
-        rightSaju.birthYear,
-        rightSaju.birthMonth || 1,
-        rightSaju.birthDay || 1,
-        hour,
-        minute,
-        rightSaju.calendarType === '음력' || rightSaju.calendarType === '윤달'
-      );
+      // 서버 API로 사주 재계산
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year: rightSaju.birthYear,
+          month: rightSaju.birthMonth || 1,
+          day: rightSaju.birthDay || 1,
+          hour,
+          minute,
+          isLunar: rightSaju.calendarType === '음력' || rightSaju.calendarType === '윤달'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('사주 계산에 실패했습니다.');
+      }
+      
+      const sajuData = await response.json();
       
       // 모든 간지 필드와 함께 업데이트
       await localDB.updateSajuRecord(rightSajuId, { 
@@ -394,7 +414,7 @@ export default function Compatibility() {
     }
   };
 
-  // 왼쪽 사주 생년월일 변경 핸들러 (로컬 저장소 + 재계산)
+  // 왼쪽 사주 생년월일 변경 핸들러 (서버 API 사용)
   const handleLeftBirthDateChange = async (year: number, month: number, day: number) => {
     if (!leftSajuId || !leftSaju) return;
     
@@ -414,15 +434,25 @@ export default function Compatibility() {
         hour = parseInt(birthTime) || 0;
       }
       
-      // 사주 재계산
-      const sajuData = calculateSaju(
-        year,
-        month,
-        day,
-        hour,
-        minute,
-        leftSaju.calendarType === '음력' || leftSaju.calendarType === '윤달'
-      );
+      // 서버 API로 사주 재계산
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          isLunar: leftSaju.calendarType === '음력' || leftSaju.calendarType === '윤달'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('사주 계산에 실패했습니다.');
+      }
+      
+      const sajuData = await response.json();
       
       // 음력 정보 계산 (양력→음력 변환)
       const solar = Solar.fromYmd(year, month, day);
@@ -464,7 +494,7 @@ export default function Compatibility() {
     }
   };
 
-  // 오른쪽 사주 생년월일 변경 핸들러 (로컬 저장소 + 재계산)
+  // 오른쪽 사주 생년월일 변경 핸들러 (서버 API 사용)
   const handleRightBirthDateChange = async (year: number, month: number, day: number) => {
     if (!rightSajuId || !rightSaju) return;
     
@@ -484,15 +514,25 @@ export default function Compatibility() {
         hour = parseInt(birthTime) || 0;
       }
       
-      // 사주 재계산
-      const sajuData = calculateSaju(
-        year,
-        month,
-        day,
-        hour,
-        minute,
-        rightSaju.calendarType === '음력' || rightSaju.calendarType === '윤달'
-      );
+      // 서버 API로 사주 재계산
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          isLunar: rightSaju.calendarType === '음력' || rightSaju.calendarType === '윤달'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('사주 계산에 실패했습니다.');
+      }
+      
+      const sajuData = await response.json();
       
       // 음력 정보 계산 (양력→음력 변환)
       const solar = Solar.fromYmd(year, month, day);

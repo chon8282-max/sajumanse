@@ -216,7 +216,7 @@ export default function GanjiInput() {
         {/* 현재 단계 */}
         <Card>
           <CardHeader className="pb-2 pt-3">
-            <CardTitle className="text-base">{renderStepTitle()}</CardTitle>
+            <CardTitle className="text-base mt-[-14px] mb-[-14px]">{renderStepTitle()}</CardTitle>
           </CardHeader>
           <CardContent className="pt-3">
             {currentStep === "year" && (

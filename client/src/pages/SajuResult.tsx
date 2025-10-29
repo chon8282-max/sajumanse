@@ -380,7 +380,7 @@ export default function SajuResult() {
     });
   }, []);
 
-  // 생시 변경 핸들러 (로컬 저장소)
+  // 생시 변경 핸들러 (서버 API 사용)
   const birthTimeUpdateMutation = useMutation({
     mutationFn: async (timeCode: string) => {
       if (!params?.id) throw new Error('No ID provided');
@@ -407,15 +407,25 @@ export default function SajuResult() {
         hour = parseInt(timeCode) || 0;
       }
       
-      // 사주 재계산
-      const sajuData = calculateSaju(
-        existingRecord.birthYear,
-        existingRecord.birthMonth || 1,
-        existingRecord.birthDay || 1,
-        hour,
-        minute,
-        existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
-      );
+      // 서버 API로 사주 재계산
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year: existingRecord.birthYear,
+          month: existingRecord.birthMonth || 1,
+          day: existingRecord.birthDay || 1,
+          hour,
+          minute,
+          isLunar: existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('사주 계산에 실패했습니다.');
+      }
+      
+      const sajuData = await response.json();
       
       // 모든 간지 필드와 함께 업데이트
       const result = await localDB.updateSajuRecord(params.id, { 
@@ -465,7 +475,7 @@ export default function SajuResult() {
     birthTimeUpdateMutation.mutate(timeCode);
   }, [birthTimeUpdateMutation]);
 
-  // 생년월일 변경 핸들러 (로컬 저장소)
+  // 생년월일 변경 핸들러 (서버 API 사용)
   const birthDateUpdateMutation = useMutation({
     mutationFn: async ({ year, month, day }: { year: number; month: number; day: number }) => {
       if (!params?.id) throw new Error('No ID provided');
@@ -492,15 +502,25 @@ export default function SajuResult() {
         hour = parseInt(birthTime) || 0;
       }
       
-      // 사주 재계산
-      const sajuData = calculateSaju(
-        year,
-        month,
-        day,
-        hour,
-        minute,
-        existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
-      );
+      // 서버 API로 사주 재계산
+      const response = await fetch('/api/saju/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          isLunar: existingRecord.calendarType === '음력' || existingRecord.calendarType === '윤달'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('사주 계산에 실패했습니다.');
+      }
+      
+      const sajuData = await response.json();
       
       // 음력 정보 계산 (양력→음력 변환)
       const solar = Solar.fromYmd(year, month, day);
