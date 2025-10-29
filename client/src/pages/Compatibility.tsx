@@ -313,7 +313,7 @@ export default function Compatibility() {
         throw new Error('사주 계산에 실패했습니다.');
       }
       
-      const sajuData = await response.json();
+      const { data: sajuData } = await response.json();
       
       // 모든 간지 필드와 함께 업데이트
       await localDB.updateSajuRecord(leftSajuId, { 
@@ -382,7 +382,7 @@ export default function Compatibility() {
         throw new Error('사주 계산에 실패했습니다.');
       }
       
-      const sajuData = await response.json();
+      const { data: sajuData } = await response.json();
       
       // 모든 간지 필드와 함께 업데이트
       await localDB.updateSajuRecord(rightSajuId, { 
@@ -452,7 +452,7 @@ export default function Compatibility() {
         throw new Error('사주 계산에 실패했습니다.');
       }
       
-      const sajuData = await response.json();
+      const { data: sajuData } = await response.json();
       
       // 음력 정보 계산 (양력→음력 변환)
       const solar = Solar.fromYmd(year, month, day);
@@ -532,7 +532,7 @@ export default function Compatibility() {
         throw new Error('사주 계산에 실패했습니다.');
       }
       
-      const sajuData = await response.json();
+      const { data: sajuData } = await response.json();
       
       // 음력 정보 계산 (양력→음력 변환)
       const solar = Solar.fromYmd(year, month, day);
