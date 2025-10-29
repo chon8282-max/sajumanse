@@ -241,28 +241,33 @@ export function calculateSaju(
       
       if (daySkyIndex === -1 || dayEarthIndex === -1) {
         console.warn(`API 일진 파싱 실패: ${dayPillar}, 기존 방식으로 폴백`);
-        // 기존 방식으로 폴백
-        const baseDate = new Date(2025, 7, 23);
+        // 기존 방식으로 폴백: 1900.1.1 = 甲戌일
+        const baseDate = new Date(1900, 0, 1);
         const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
-        const dayIndex = ((daysDiff % 60) + 60) % 60;
+        const baseIndex = 10; // 甲戌일
+        const dayIndex = ((baseIndex + daysDiff) % 60 + 60) % 60;
         daySkyIndex = dayIndex % 10;
         dayEarthIndex = dayIndex % 12;
       }
     } else {
-      // API 데이터가 잘못된 경우 기존 방식 사용
-      const baseDate = new Date(2025, 7, 23);
+      // API 데이터가 잘못된 경우 기준일로부터 계산
+      const baseDate = new Date(1900, 0, 1);
       const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
-      const dayIndex = ((daysDiff % 60) + 60) % 60;
+      const baseIndex = 10; // 甲戌일
+      const dayIndex = ((baseIndex + daysDiff) % 60 + 60) % 60;
       daySkyIndex = dayIndex % 10;
       dayEarthIndex = dayIndex % 12;
     }
   } else {
-    // API 데이터가 없는 경우 기존 방식 사용
-    const baseDate = new Date(2025, 7, 23); // 2025년 8월 23일 갑자일
+    // API 데이터가 없는 경우 기준일로부터 계산
+    // 기준일: 1900.1.1 (양력) = 甲戌일 = 60갑자 index 10
+    const baseDate = new Date(1900, 0, 1);
     const daysDiff = Math.floor((sajuDate.getTime() - baseDate.getTime()) / (1000 * 60 * 60 * 24));
-    const dayIndex = ((daysDiff % 60) + 60) % 60;
+    const baseIndex = 10; // 甲戌일 (甲=0, 戌=10)
+    const dayIndex = ((baseIndex + daysDiff) % 60 + 60) % 60;
     daySkyIndex = dayIndex % 10;
     dayEarthIndex = dayIndex % 12;
+    console.log(`일주 계산: baseDate=${baseDate.toISOString().slice(0,10)}, sajuDate=${sajuDate.toISOString().slice(0,10)}, daysDiff=${daysDiff}, dayIndex=${dayIndex}`);
   }
   
   // 시주 계산 (전통 시간 구간 기준 - 31분부터 시간 변경)
