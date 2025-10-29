@@ -6,11 +6,14 @@ import { Home, FolderOpen, RefreshCw, Save, X } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import SajuTable from "@/components/SajuTable";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { calculateCompleteDaeun, calculateCurrentAge, DaeunPeriod } from "@/lib/daeun-calculator";
-import { CHEONGAN, JIJI } from "@/lib/saju-calculator";
+import { CHEONGAN, JIJI, calculateSaju } from "@/lib/saju-calculator";
+import { localDB } from "@/lib/saju-local-storage";
+import { TRADITIONAL_TIME_PERIODS, SajuRecord } from "@shared/schema";
+import { Solar } from "lunar-javascript";
 
 // 다음 간지 계산 (60갑자 순환)
 function getNextGanji(sky: string, earth: string) {
@@ -108,25 +111,7 @@ function calculateSaeun(
   return { years, ages, skyStems, earthBranches };
 }
 
-interface SajuResultData {
-  id: string;
-  name: string;
-  birthYear: number;
-  birthMonth: number;
-  birthDay: number;
-  birthTime: string | null;
-  calendarType: string;
-  gender: string;
-  memo: string | null;
-  yearSky?: string;
-  yearEarth?: string;
-  monthSky?: string;
-  monthEarth?: string;
-  daySky?: string;
-  dayEarth?: string;
-  hourSky?: string;
-  hourEarth?: string;
-}
+type SajuResultData = SajuRecord;
 
 type DisplayMode = 'base' | 'daeun' | 'saeun';
 
@@ -219,13 +204,17 @@ export default function Compatibility() {
     };
   }, []);
 
-  // 왼쪽 사주 데이터
-  const { data: leftSajuResponse } = useQuery<{success: boolean, data: SajuResultData}>({
-    queryKey: ['/api/saju-records', leftSajuId],
+  // 왼쪽 사주 데이터 (로컬 저장소)
+  const { data: leftSaju } = useQuery<SajuResultData>({
+    queryKey: ['local-saju-records', leftSajuId],
+    queryFn: async () => {
+      if (!leftSajuId) throw new Error('No left saju ID');
+      const record = await localDB.getSajuRecord(leftSajuId);
+      if (!record) throw new Error('Left saju not found');
+      return record;
+    },
     enabled: !!leftSajuId,
   });
-
-  const leftSaju = leftSajuResponse?.data;
 
   useEffect(() => {
     if (leftSaju?.memo) {
@@ -233,13 +222,17 @@ export default function Compatibility() {
     }
   }, [leftSaju]);
 
-  // 오른쪽 사주 데이터
-  const { data: rightSajuResponse } = useQuery<{success: boolean, data: SajuResultData}>({
-    queryKey: ['/api/saju-records', rightSajuId],
+  // 오른쪽 사주 데이터 (로컬 저장소)
+  const { data: rightSaju } = useQuery<SajuResultData>({
+    queryKey: ['local-saju-records', rightSajuId],
+    queryFn: async () => {
+      if (!rightSajuId) throw new Error('No right saju ID');
+      const record = await localDB.getSajuRecord(rightSajuId);
+      if (!record) throw new Error('Right saju not found');
+      return record;
+    },
     enabled: !!rightSajuId,
   });
-
-  const rightSaju = rightSajuResponse?.data;
 
   useEffect(() => {
     if (rightSaju?.memo) {
@@ -249,11 +242,11 @@ export default function Compatibility() {
 
   console.log('[Compatibility] 사주 데이터:', { leftSaju, rightSaju });
 
-  // 왼쪽 저장 mutation
+  // 왼쪽 저장 mutation (로컬 저장소)
   const leftSaveMutation = useMutation({
     mutationFn: async (memo: string) => {
       if (!leftSajuId) return;
-      return apiRequest("PUT", `/api/saju-records/${leftSajuId}`, { memo });
+      return await localDB.updateSajuRecord(leftSajuId, { memo });
     },
     onSuccess: () => {
       toast({
@@ -261,15 +254,16 @@ export default function Compatibility() {
         description: "사주 1 메모가 저장되었습니다.",
         duration: 500
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', leftSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
     }
   });
 
-  // 오른쪽 저장 mutation
+  // 오른쪽 저장 mutation (로컬 저장소)
   const rightSaveMutation = useMutation({
     mutationFn: async (memo: string) => {
       if (!rightSajuId) return;
-      return apiRequest("PUT", `/api/saju-records/${rightSajuId}`, { memo });
+      return await localDB.updateSajuRecord(rightSajuId, { memo });
     },
     onSuccess: () => {
       toast({
@@ -277,26 +271,55 @@ export default function Compatibility() {
         description: "사주 2 메모가 저장되었습니다.",
         duration: 500
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', rightSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
     }
   });
 
-  // 왼쪽 사주 생시 변경 핸들러
+  // 왼쪽 사주 생시 변경 핸들러 (로컬 저장소 + 재계산)
   const handleLeftBirthTimeChange = async (timeCode: string) => {
     if (!leftSajuId || !leftSaju) return;
     
     try {
-      await apiRequest("PUT", `/api/saju-records/${leftSajuId}`, { 
+      // 생시 파싱
+      let hour = 0;
+      let minute = 0;
+      const timePeriod = TRADITIONAL_TIME_PERIODS.find((p: any) => p.code === timeCode);
+      if (timePeriod) {
+        hour = timePeriod.hour;
+      } else if (timeCode.includes(':')) {
+        const parts = timeCode.split(':');
+        hour = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+      } else {
+        hour = parseInt(timeCode) || 0;
+      }
+      
+      // 사주 재계산
+      const sajuData = calculateSaju(
+        leftSaju.birthYear,
+        leftSaju.birthMonth || 1,
+        leftSaju.birthDay || 1,
+        hour,
+        minute,
+        leftSaju.calendarType === '음력' || leftSaju.calendarType === '윤달'
+      );
+      
+      // 모든 간지 필드와 함께 업데이트
+      await localDB.updateSajuRecord(leftSajuId, { 
         birthTime: timeCode,
-        name: leftSaju.name,
-        birthYear: leftSaju.birthYear,
-        birthMonth: leftSaju.birthMonth,
-        birthDay: leftSaju.birthDay,
-        calendarType: leftSaju.calendarType,
-        gender: leftSaju.gender
+        yearSky: sajuData.year.sky,
+        yearEarth: sajuData.year.earth,
+        monthSky: sajuData.month.sky,
+        monthEarth: sajuData.month.earth,
+        daySky: sajuData.day.sky,
+        dayEarth: sajuData.day.earth,
+        hourSky: sajuData.hour.sky,
+        hourEarth: sajuData.hour.earth
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', leftSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       toast({
         title: "변경 완료",
         description: "생시가 변경되었습니다.",
@@ -312,22 +335,50 @@ export default function Compatibility() {
     }
   };
 
-  // 오른쪽 사주 생시 변경 핸들러
+  // 오른쪽 사주 생시 변경 핸들러 (로컬 저장소 + 재계산)
   const handleRightBirthTimeChange = async (timeCode: string) => {
     if (!rightSajuId || !rightSaju) return;
     
     try {
-      await apiRequest("PUT", `/api/saju-records/${rightSajuId}`, { 
+      // 생시 파싱
+      let hour = 0;
+      let minute = 0;
+      const timePeriod = TRADITIONAL_TIME_PERIODS.find((p: any) => p.code === timeCode);
+      if (timePeriod) {
+        hour = timePeriod.hour;
+      } else if (timeCode.includes(':')) {
+        const parts = timeCode.split(':');
+        hour = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+      } else {
+        hour = parseInt(timeCode) || 0;
+      }
+      
+      // 사주 재계산
+      const sajuData = calculateSaju(
+        rightSaju.birthYear,
+        rightSaju.birthMonth || 1,
+        rightSaju.birthDay || 1,
+        hour,
+        minute,
+        rightSaju.calendarType === '음력' || rightSaju.calendarType === '윤달'
+      );
+      
+      // 모든 간지 필드와 함께 업데이트
+      await localDB.updateSajuRecord(rightSajuId, { 
         birthTime: timeCode,
-        name: rightSaju.name,
-        birthYear: rightSaju.birthYear,
-        birthMonth: rightSaju.birthMonth,
-        birthDay: rightSaju.birthDay,
-        calendarType: rightSaju.calendarType,
-        gender: rightSaju.gender
+        yearSky: sajuData.year.sky,
+        yearEarth: sajuData.year.earth,
+        monthSky: sajuData.month.sky,
+        monthEarth: sajuData.month.earth,
+        daySky: sajuData.day.sky,
+        dayEarth: sajuData.day.earth,
+        hourSky: sajuData.hour.sky,
+        hourEarth: sajuData.hour.earth
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', rightSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       toast({
         title: "변경 완료",
         description: "생시가 변경되었습니다.",
@@ -343,22 +394,61 @@ export default function Compatibility() {
     }
   };
 
-  // 왼쪽 사주 생년월일 변경 핸들러
+  // 왼쪽 사주 생년월일 변경 핸들러 (로컬 저장소 + 재계산)
   const handleLeftBirthDateChange = async (year: number, month: number, day: number) => {
     if (!leftSajuId || !leftSaju) return;
     
     try {
-      await apiRequest("PUT", `/api/saju-records/${leftSajuId}`, { 
+      // 생시 파싱
+      let hour = 0;
+      let minute = 0;
+      const birthTime = leftSaju.birthTime || '';
+      const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+      if (timePeriod) {
+        hour = timePeriod.hour;
+      } else if (birthTime.includes(':')) {
+        const parts = birthTime.split(':');
+        hour = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+      } else if (birthTime) {
+        hour = parseInt(birthTime) || 0;
+      }
+      
+      // 사주 재계산
+      const sajuData = calculateSaju(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        leftSaju.calendarType === '음력' || leftSaju.calendarType === '윤달'
+      );
+      
+      // 음력 정보 계산 (양력→음력 변환)
+      const solar = Solar.fromYmd(year, month, day);
+      const lunar = solar.getLunar();
+      
+      // 모든 간지 필드와 음력 정보도 함께 업데이트
+      await localDB.updateSajuRecord(leftSajuId, { 
         birthYear: year,
         birthMonth: month,
         birthDay: day,
-        name: leftSaju.name,
-        birthTime: leftSaju.birthTime,
-        calendarType: leftSaju.calendarType,
-        gender: leftSaju.gender
+        lunarYear: lunar.getYear(),
+        lunarMonth: lunar.getMonth(),
+        lunarDay: lunar.getDay(),
+        isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false,
+        yearSky: sajuData.year.sky,
+        yearEarth: sajuData.year.earth,
+        monthSky: sajuData.month.sky,
+        monthEarth: sajuData.month.earth,
+        daySky: sajuData.day.sky,
+        dayEarth: sajuData.day.earth,
+        hourSky: sajuData.hour.sky,
+        hourEarth: sajuData.hour.earth
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', leftSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       toast({
         title: "변경 완료",
         description: "생년월일이 변경되었습니다.",
@@ -374,22 +464,61 @@ export default function Compatibility() {
     }
   };
 
-  // 오른쪽 사주 생년월일 변경 핸들러
+  // 오른쪽 사주 생년월일 변경 핸들러 (로컬 저장소 + 재계산)
   const handleRightBirthDateChange = async (year: number, month: number, day: number) => {
     if (!rightSajuId || !rightSaju) return;
     
     try {
-      await apiRequest("PUT", `/api/saju-records/${rightSajuId}`, { 
+      // 생시 파싱
+      let hour = 0;
+      let minute = 0;
+      const birthTime = rightSaju.birthTime || '';
+      const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
+      if (timePeriod) {
+        hour = timePeriod.hour;
+      } else if (birthTime.includes(':')) {
+        const parts = birthTime.split(':');
+        hour = parseInt(parts[0]) || 0;
+        minute = parseInt(parts[1]) || 0;
+      } else if (birthTime) {
+        hour = parseInt(birthTime) || 0;
+      }
+      
+      // 사주 재계산
+      const sajuData = calculateSaju(
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        rightSaju.calendarType === '음력' || rightSaju.calendarType === '윤달'
+      );
+      
+      // 음력 정보 계산 (양력→음력 변환)
+      const solar = Solar.fromYmd(year, month, day);
+      const lunar = solar.getLunar();
+      
+      // 모든 간지 필드와 음력 정보도 함께 업데이트
+      await localDB.updateSajuRecord(rightSajuId, { 
         birthYear: year,
         birthMonth: month,
         birthDay: day,
-        name: rightSaju.name,
-        birthTime: rightSaju.birthTime,
-        calendarType: rightSaju.calendarType,
-        gender: rightSaju.gender
+        lunarYear: lunar.getYear(),
+        lunarMonth: lunar.getMonth(),
+        lunarDay: lunar.getDay(),
+        isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false,
+        yearSky: sajuData.year.sky,
+        yearEarth: sajuData.year.earth,
+        monthSky: sajuData.month.sky,
+        monthEarth: sajuData.month.earth,
+        daySky: sajuData.day.sky,
+        dayEarth: sajuData.day.earth,
+        hourSky: sajuData.hour.sky,
+        hourEarth: sajuData.hour.earth
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', rightSajuId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       toast({
         title: "변경 완료",
         description: "생년월일이 변경되었습니다.",
@@ -422,13 +551,13 @@ export default function Compatibility() {
 
   // 왼쪽 사주 현재 나이 계산
   const leftCurrentAge = useMemo(() => {
-    if (!leftSaju) return null;
+    if (!leftSaju || leftSaju.birthMonth === null || leftSaju.birthDay === null) return null;
     return calculateCurrentAge(
       leftSaju.birthYear,
       leftSaju.birthMonth,
       leftSaju.birthDay,
-      leftSaju.yearSky,
-      leftSaju.yearEarth
+      leftSaju.yearSky || undefined,
+      leftSaju.yearEarth || undefined
     );
   }, [leftSaju]);
 
@@ -456,13 +585,13 @@ export default function Compatibility() {
 
   // 오른쪽 사주 현재 나이 계산
   const rightCurrentAge = useMemo(() => {
-    if (!rightSaju) return null;
+    if (!rightSaju || rightSaju.birthMonth === null || rightSaju.birthDay === null) return null;
     return calculateCurrentAge(
       rightSaju.birthYear,
       rightSaju.birthMonth,
       rightSaju.birthDay,
-      rightSaju.yearSky,
-      rightSaju.yearEarth
+      rightSaju.yearSky || undefined,
+      rightSaju.yearEarth || undefined
     );
   }, [rightSaju]);
 
@@ -480,12 +609,13 @@ export default function Compatibility() {
     );
   }, [rightSaju, rightFocusedDaeun, rightSaeunOffset]);
 
-  // 사주 목록 조회
-  const { data: sajuListResponse } = useQuery<{success: boolean, data: SajuResultData[]}>({
-    queryKey: ['/api/saju-records'],
+  // 사주 목록 조회 (로컬 저장소)
+  const { data: sajuList = [] } = useQuery<SajuResultData[]>({
+    queryKey: ['local-saju-records-list'],
+    queryFn: async () => {
+      return await localDB.getSajuRecords();
+    },
   });
-  
-  const sajuList = sajuListResponse?.data || [];
 
   console.log('[Compatibility] 렌더링 직전:', { leftSaju, rightSaju, sajuListLength: sajuList.length });
 
@@ -550,7 +680,7 @@ export default function Compatibility() {
           </div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
-          {leftSajuId && leftSaju ? (
+          {leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null ? (
             <SajuTable 
               saju={{
                 year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
@@ -639,7 +769,7 @@ export default function Compatibility() {
           </div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
-          {rightSajuId && rightSaju ? (
+          {rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null ? (
             <SajuTable 
               saju={{
                 year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },

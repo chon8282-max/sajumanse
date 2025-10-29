@@ -1,6 +1,9 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import type { SajuRecord, Group, InsertSajuRecord, InsertGroup, FortuneResult, InsertFortuneResult } from '@shared/schema';
 
+// Re-export FortuneResult for external use
+export type { FortuneResult };
+
 // IndexedDB 스키마 정의
 interface SajuDB extends DBSchema {
   sajuRecords: {
