@@ -110,7 +110,7 @@ export default function MobileHeader({
             }`}
           >
             <span className="text-xs font-medium">
-              {isAuthenticated ? '로그아웃' : '로그인'}
+              {/* 로그인 텍스트 제거 - 나중에 추가 예정 */}
             </span>
           </Button>
         </div>
