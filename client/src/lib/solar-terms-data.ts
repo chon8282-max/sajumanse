@@ -97,13 +97,13 @@ export async function getSolarTermsForCalculation(year: number): Promise<
   const terms = await getSolarTermsForYear(year);
 
   return terms.map((term) => {
+    // 서버에서 받은 날짜를 그대로 Date 객체로 변환
+    // term.date는 이미 KST 시간이므로 추가 오프셋 불필요
     const termDate = new Date(term.date);
-    const kstOffset = 9 * 60 * 60 * 1000;
-    const termDateKST = new Date(termDate.getTime() + kstOffset);
 
     return {
       name: term.name,
-      date: termDateKST,
+      date: termDate,
       month: getSolarTermMonth(term.name),
     };
   });
