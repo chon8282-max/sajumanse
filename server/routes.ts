@@ -1954,29 +1954,30 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       console.log(`Fetching solar terms for year: ${year}`);
-      const solarTerms = await storage.getSolarTermsForYear(year);
+      const allSolarTerms = await storage.getSolarTermsForYear(year);
       
-      // 절기 이름 → 사주 월 매핑 (0=인월, 1=묘월, ..., 11=축월)
+      // 12절기만 사용 (중기 제외)
       // 사주학에서는 입춘이 인월의 시작이므로 인월=0부터 시작
       const termMonthMap: Record<string, number> = {
-        '입춘': 0, '우수': 0,    // 인월
-        '경칩': 1, '춘분': 1,    // 묘월
-        '청명': 2, '곡우': 2,    // 진월
-        '입하': 3, '소만': 3,    // 사월
-        '망종': 4, '하지': 4,    // 오월
-        '소서': 5, '대서': 5,    // 미월
-        '입추': 6, '처서': 6,    // 신월
-        '백로': 7, '추분': 7,    // 유월
-        '한로': 8, '상강': 8,    // 술월
-        '입동': 9, '소설': 9,    // 해월
-        '대설': 10, '동지': 10,  // 자월
-        '소한': 11, '대한': 11,  // 축월
+        '입춘': 0,    // 인월 시작
+        '경칩': 1,    // 묘월 시작
+        '청명': 2,    // 진월 시작
+        '입하': 3,    // 사월 시작
+        '망종': 4,    // 오월 시작
+        '소서': 5,    // 미월 시작
+        '입추': 6,    // 신월 시작
+        '백로': 7,    // 유월 시작
+        '한로': 8,    // 술월 시작
+        '입동': 9,    // 해월 시작
+        '대설': 10,   // 자월 시작
+        '소한': 11,   // 축월 시작
       };
       
-      // month 필드 추가
+      // 12절기만 필터링하고 month 필드 추가
+      const solarTerms = allSolarTerms.filter(term => term.name in termMonthMap);
       const solarTermsWithMonth = solarTerms.map(term => ({
         ...term,
-        month: termMonthMap[term.name] ?? 0
+        month: termMonthMap[term.name]
       }));
       
       res.json({
