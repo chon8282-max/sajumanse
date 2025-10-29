@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { localDB } from "@/lib/saju-local-storage";
 import { useLocation } from "wouter";
 import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -29,13 +30,6 @@ import {
 } from "lucide-react";
 import type { SajuRecord, Group } from "@shared/schema";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-// API 응답 타입 정의
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  error?: string;
-}
 
 // 그룹 form schema
 const groupFormSchema = z.object({
@@ -79,60 +73,28 @@ export default function SajuList() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // 그룹 목록 조회
-  const { data: groupsList } = useQuery<ApiResponse<Group[]>, Error, Group[]>({
-    queryKey: ["/api/groups"],
+  // 그룹 목록 조회 (로컬 저장소)
+  const { data: groupsList } = useQuery<Group[]>({
+    queryKey: ["local-groups"],
     queryFn: async () => {
-      const response = await apiRequest('GET', '/api/groups');
-      
-      // 에러 상태 처리
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
-      }
-      
-      const responseJson = await response.json();
-      if (!responseJson.success) {
-        throw new Error(responseJson.error || '그룹 목록 조회에 실패했습니다.');
-      }
-      
-      return responseJson;
+      return await localDB.getGroups();
     },
-    select: (response: ApiResponse<Group[]>) => response?.data || [],
   });
 
-  // 저장된 사주 목록 조회 (전체 리스트 표시)
-  const { data: sajuResponse, isLoading, error, refetch } = useQuery<ApiResponse<SajuRecord[]>>({
-    queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId],
+  // 저장된 사주 목록 조회 (로컬 저장소)
+  const { data: rawSajuList, isLoading, error, refetch } = useQuery<SajuRecord[]>({
+    queryKey: ["local-saju-records", debouncedSearchQuery, selectedGroupId],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      params.set('limit', '10000'); // 전체 리스트 표시
-      if (debouncedSearchQuery.trim()) {
-        params.set('search', debouncedSearchQuery.trim());
-      }
-      if (selectedGroupId && selectedGroupId !== 'all') {
-        params.set('groupId', selectedGroupId);
-      }
-      const url = `/api/saju-records?${params.toString()}`;
-      const response = await apiRequest('GET', url);
-      
-      // 에러 상태 처리
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
-      }
-      
-      const responseJson = await response.json();
-      if (!responseJson.success) {
-        throw new Error(responseJson.error || '사주 목록 조회에 실패했습니다.');
-      }
-      
-      return responseJson;
+      const searchText = debouncedSearchQuery.trim() || undefined;
+      const groupId = selectedGroupId && selectedGroupId !== 'all' ? selectedGroupId : undefined;
+      return await localDB.getSajuRecords(undefined, searchText, groupId);
     },
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지 (성능 향상)
   });
 
   // 사주 목록 정렬
   const sajuList = useMemo(() => {
-    const list = [...(sajuResponse?.data || [])];
+    const list = [...(rawSajuList || [])];
     
     return list.sort((a, b) => {
       let comparison = 0;
@@ -156,21 +118,20 @@ export default function SajuList() {
       
       return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [sajuResponse?.data, sortType, sortOrder]);
+  }, [rawSajuList, sortType, sortOrder]);
 
-  // 사주 삭제 뮤테이션
+  // 사주 삭제 뮤테이션 (로컬 저장소)
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const res = await apiRequest("DELETE", `/api/saju-records/${id}`);
-      const response = await res.json();
-      if (!response.success) {
-        throw new Error(response.error || "사주 삭제에 실패했습니다.");
+      const success = await localDB.deleteSajuRecord(id);
+      if (!success) {
+        throw new Error("사주 삭제에 실패했습니다.");
       }
-      return response;
+      return { success };
     },
     onSuccess: () => {
-      // 모든 사주 리스트 쿼리 무효화 (페이지, 검색, 필터 상관없이)
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
+      // 모든 사주 리스트 쿼리 무효화
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
       toast({
         title: "삭제 완료",
         description: "사주가 성공적으로 삭제되었습니다.",
@@ -188,14 +149,12 @@ export default function SajuList() {
     }
   });
 
-  // 다중 삭제 mutation
+  // 다중 삭제 mutation (로컬 저장소)
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      const deletePromises = ids.map(id => 
-        apiRequest("DELETE", `/api/saju-records/${id}`).then(res => res.json())
-      );
+      const deletePromises = ids.map(id => localDB.deleteSajuRecord(id));
       const results = await Promise.all(deletePromises);
-      const failedCount = results.filter(r => !r.success).length;
+      const failedCount = results.filter(r => !r).length;
       
       if (failedCount > 0) {
         throw new Error(`${failedCount}개의 삭제에 실패했습니다.`);
@@ -204,7 +163,7 @@ export default function SajuList() {
       return results;
     },
     onSuccess: (_, ids) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
       setSelectedSajuIds([]);
       toast({
         title: "삭제 완료",
@@ -245,24 +204,13 @@ export default function SajuList() {
     }
   }, [editingGroup, groupForm]);
   
-  // 그룹 생성 mutation
+  // 그룹 생성 mutation (로컬 저장소)
   const createGroupMutation = useMutation({
     mutationFn: async (data: GroupFormData) => {
-      const response = await apiRequest('POST', '/api/groups', data);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
-      }
-      
-      const responseJson = await response.json();
-      if (!responseJson.success) {
-        throw new Error(responseJson.error || '그룹 생성에 실패했습니다.');
-      }
-      
-      return responseJson;
+      return await localDB.createGroup(data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
+      queryClient.invalidateQueries({ queryKey: ["local-groups"] });
       setShowGroupModal(false);
       groupForm.reset();
       toast({
@@ -281,25 +229,18 @@ export default function SajuList() {
     }
   });
   
-  // 그룹 수정 mutation
+  // 그룹 수정 mutation (로컬 저장소)
   const updateGroupMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string, data: GroupFormData }) => {
-      const response = await apiRequest('PUT', `/api/groups/${id}`, data);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      const result = await localDB.updateGroup(id, data);
+      if (!result) {
+        throw new Error('그룹 수정에 실패했습니다.');
       }
-      
-      const responseJson = await response.json();
-      if (!responseJson.success) {
-        throw new Error(responseJson.error || '그룹 수정에 실패했습니다.');
-      }
-      
-      return responseJson;
+      return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
+      queryClient.invalidateQueries({ queryKey: ["local-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
       setShowGroupModal(false);
       setEditingGroup(null);
       groupForm.reset();
@@ -319,25 +260,18 @@ export default function SajuList() {
     }
   });
   
-  // 그룹 삭제 mutation
+  // 그룹 삭제 mutation (로컬 저장소)
   const deleteGroupMutation = useMutation({
     mutationFn: async (groupId: string) => {
-      const response = await apiRequest('DELETE', `/api/groups/${groupId}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: 서버 요청에 실패했습니다.`);
+      const success = await localDB.deleteGroup(groupId);
+      if (!success) {
+        throw new Error('그룹 삭제에 실패했습니다.');
       }
-      
-      const responseJson = await response.json();
-      if (!responseJson.success) {
-        throw new Error(responseJson.error || '그룹 삭제에 실패했습니다.');
-      }
-      
-      return responseJson;
+      return { success };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/groups"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/saju-records", debouncedSearchQuery, selectedGroupId] });
+      queryClient.invalidateQueries({ queryKey: ["local-groups"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
       setShowDeleteGroupDialog(false);
       setDeletingGroupId(null);
       // 삭제된 그룹이 현재 선택된 그룹이면 전체로 변경
