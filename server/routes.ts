@@ -1980,6 +1980,13 @@ export async function registerRoutes(app: Express): Promise<void> {
         month: termMonthMap[term.name]
       }));
       
+      // 날짜순으로 정렬 (필수!)
+      solarTermsWithMonth.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA.getTime() - dateB.getTime();
+      });
+      
       res.json({
         success: true,
         data: solarTermsWithMonth,
