@@ -10,6 +10,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { localDB } from "@/lib/saju-local-storage";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
 import { calculateHourGanji } from "@/lib/ganji-calculator";
 import { CHEONGAN, JIJI } from "@shared/schema";
@@ -202,7 +203,7 @@ export default function GanjiResult() {
         });
       }
 
-      const response = await apiRequest('POST', '/api/saju-records', {
+      const newRecord = await localDB.createSajuRecord({
         name: name.trim() || '이름없음',
         birthYear: reversedDate.year,
         birthMonth: reversedDate.month,
@@ -225,15 +226,13 @@ export default function GanjiResult() {
         isLeapMonth: lunarData?.isLeapMonth || false,
       });
       
-      const data = await response.json();
-      return data;
+      return newRecord;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
+    onSuccess: (newRecord) => {
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       
-      const recordId = data.data?.record?.id || data.data?.id;
-      if (recordId) {
-        setLocation(`/saju-result/${recordId}`);
+      if (newRecord?.id) {
+        setLocation(`/saju-result/${newRecord.id}`);
       } else {
         toast({
           title: "저장 완료",
@@ -305,7 +304,7 @@ export default function GanjiResult() {
         });
       }
 
-      const response = await apiRequest('PUT', `/api/saju-records/${recordId}`, {
+      await localDB.updateSajuRecord(recordId, {
         birthYear: reversedDate.year,
         birthMonth: reversedDate.month,
         birthDay: reversedDate.day,
@@ -324,13 +323,10 @@ export default function GanjiResult() {
         lunarDay: lunarData?.lunarDay || null,
         isLeapMonth: lunarData?.isLeapMonth || false,
       });
-      
-      const data = await response.json();
-      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', recordId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/saju-records'] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', recordId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       
       setLocation(`/saju-result/${recordId}`);
     },
