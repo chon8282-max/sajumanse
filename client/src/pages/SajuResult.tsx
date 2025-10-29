@@ -699,7 +699,7 @@ export default function SajuResult() {
           daySky={record.daySky || ''}
           dayEarth={record.dayEarth || ''}
           gender={record.gender || '남자'}
-          memo={record.memo || ''}
+          memo={currentMemo}
           yearSky={record.yearSky || undefined}
           yearEarth={record.yearEarth || undefined}
           monthSky={record.monthSky || undefined}
