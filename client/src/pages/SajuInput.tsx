@@ -255,33 +255,8 @@ export default function SajuInput() {
       const solarTermCheck = await checkSolarTermDayLocal(solarYear, solarMonth, solarDay);
       console.log('📊 절입일 체크 결과:', solarTermCheck);
       
-      // 생시가 명확한 경우, 절입 시각과 비교해서 다이얼로그 표시 여부 결정
-      // 단, 입춘일은 연주가 바뀌므로 생시와 무관하게 무조건 다이얼로그 표시
-      let shouldShowDialog = true;
+      // 절입일이면 생시와 무관하게 무조건 다이얼로그 표시
       if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo) {
-        const isLichun = solarTermCheck.termInfo.name === '입춘';
-        
-        if (isLichun) {
-          console.log(`🌸 입춘일이므로 생시와 무관하게 다이얼로그 표시`);
-          shouldShowDialog = true;
-        } else if (inputHour !== null) {
-          const termHour = solarTermCheck.termInfo.hour;
-          const termMinute = solarTermCheck.termInfo.minute;
-          const inputTotalMinutes = inputHour * 60 + inputMinute;
-          const termTotalMinutes = termHour * 60 + termMinute;
-          const timeDiff = Math.abs(inputTotalMinutes - termTotalMinutes);
-          
-          // 절입 시각과 2시간(120분) 이상 차이나면 다이얼로그 표시 안함
-          if (timeDiff > 120) {
-            console.log(`⏭️ 생시(${inputHour}:${inputMinute})와 절입 시각(${termHour}:${termMinute})이 ${Math.floor(timeDiff/60)}시간 ${timeDiff%60}분 차이 → 다이얼로그 생략`);
-            shouldShowDialog = false;
-          } else {
-            console.log(`⚠️ 생시(${inputHour}:${inputMinute})와 절입 시각(${termHour}:${termMinute})이 ${Math.floor(timeDiff/60)}시간 ${timeDiff%60}분 차이 → 다이얼로그 표시`);
-          }
-        }
-      }
-      
-      if (solarTermCheck.isSolarTerm && solarTermCheck.termInfo && shouldShowDialog) {
         console.log('🎯 절입일 발견! 다이얼로그 표시');
         
         const CHEONGAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
