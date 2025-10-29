@@ -1,5 +1,8 @@
 import { CHEONGAN, JIJI, type SajuInfo, type WuXing } from "@shared/schema";
 
+// Re-export for use in other files
+export { CHEONGAN, JIJI };
+
 // 천간의 오행 매핑
 const CHEONGAN_WUXING: Record<string, WuXing> = {
   "甲": "목", "乙": "목",
