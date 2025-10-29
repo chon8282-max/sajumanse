@@ -86,6 +86,7 @@ export async function checkSolarTermDay(
 
 /**
  * calculateSaju에서 사용할 형식으로 절기 데이터 변환
+ * 전년도 소한 + 현재년도 + 다음년도 입춘 포함
  */
 export async function getSolarTermsForCalculation(year: number): Promise<
   Array<{
@@ -94,9 +95,19 @@ export async function getSolarTermsForCalculation(year: number): Promise<
     month: number;
   }>
 > {
-  const terms = await getSolarTermsForYear(year);
+  // 전년도, 현재년도, 다음년도 절기 모두 가져오기
+  const prevYearTerms = await getSolarTermsForYear(year - 1);
+  const currentYearTerms = await getSolarTermsForYear(year);
+  const nextYearTerms = await getSolarTermsForYear(year + 1);
+  
+  // 전년도 소한 + 현재년도 전체 + 다음년도 입춘 결합
+  const allTerms = [
+    ...prevYearTerms.filter(t => t.name === '소한'),
+    ...currentYearTerms,
+    ...nextYearTerms.filter(t => t.name === '입춘')
+  ];
 
-  return terms.map((term) => {
+  const result = allTerms.map((term) => {
     // 서버에서 받은 날짜를 그대로 Date 객체로 변환
     // term.date는 이미 KST 시간이므로 추가 오프셋 불필요
     const termDate = new Date(term.date);
@@ -106,7 +117,12 @@ export async function getSolarTermsForCalculation(year: number): Promise<
       date: termDate,
       month: getSolarTermMonth(term.name),
     };
-  });
+  }).filter(t => t.month !== -1); // 12절기만 필터링 (중기 제외)
+  
+  // 날짜순 정렬
+  result.sort((a, b) => a.date.getTime() - b.date.getTime());
+  
+  return result;
 }
 
 /**
