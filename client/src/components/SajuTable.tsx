@@ -158,6 +158,13 @@ const SINSAL_KOREAN_MAP: Record<string, string> = {
   '攀鞍殺': '반안살', '驛馬殺': '역마살', '六害殺': '육해살', '華蓋殺': '화개살'
 };
 
+// 12운성 한글 매핑
+const UNSEONG_KOREAN_MAP: Record<string, string> = {
+  '長生': '장생', '沐浴': '목욕', '冠帶': '관대', '建祿': '건록',
+  '帝旺': '제왕', '衰': '쇠', '病': '병', '死': '사',
+  '墓': '묘', '絕': '절', '胎': '태', '養': '양'
+};
+
 // 천간 이벤트 한글-한자 변환 매핑
 const CHEONGAN_EVENT_CHINESE_MAP: Record<string, string> = {
   '비화': '比和', '비화합': '比和合',
@@ -728,6 +735,19 @@ export default function SajuTable({
       // 그 외에는 한자로 유지
       return sinsal;
     };
+
+    // 12운성 변환 헬퍼 함수
+    // 한자1(showKorean1=true): 12운성을 한글로 변환
+    // 한자2(showKorean2=true): 12운성을 한자로 유지
+    const convert12Unseong = (unseong: string): string => {
+      if (!unseong) return '';
+      // showKorean1이 true면 12운성을 한글로 변환
+      if (showKorean1 && !showKorean2) {
+        return UNSEONG_KOREAN_MAP[unseong] || unseong;
+      }
+      // 그 외에는 한자로 유지
+      return unseong;
+    };
     
     // 각 주별로 세 결과를 합침 (12신살 맨 위 + 12운성 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
@@ -736,7 +756,7 @@ export default function SajuTable({
     if (hasHourPillar) {
       result.push([
         convert12Sinsal(sibiSinsalArray[0] || ''),
-        calculateTwelveUnseong(daySky, hourEarth) || '',
+        convert12Unseong(calculateTwelveUnseong(daySky, hourEarth) || ''),
         ...formatShinSalArray(secondRowResult.hourPillar, showKorean1),
         ...formatShinSalArray(firstRowResult.hourPillar, showKorean1)
       ].filter(s => s !== ''));
@@ -747,7 +767,7 @@ export default function SajuTable({
     // 일주
     result.push([
       convert12Sinsal(sibiSinsalArray[1] || ''),
-      calculateTwelveUnseong(daySky, dayEarth) || '',
+      convert12Unseong(calculateTwelveUnseong(daySky, dayEarth) || ''),
       ...formatShinSalArray(secondRowResult.dayPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.dayPillar, showKorean1)
     ].filter(s => s !== ''));
@@ -755,7 +775,7 @@ export default function SajuTable({
     // 월주
     result.push([
       convert12Sinsal(sibiSinsalArray[2] || ''),
-      calculateTwelveUnseong(daySky, monthEarth) || '',
+      convert12Unseong(calculateTwelveUnseong(daySky, monthEarth) || ''),
       ...formatShinSalArray(secondRowResult.monthPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.monthPillar, showKorean1)
     ].filter(s => s !== ''));
@@ -763,7 +783,7 @@ export default function SajuTable({
     // 년주
     result.push([
       convert12Sinsal(sibiSinsalArray[3] || ''),
-      calculateTwelveUnseong(daySky, yearEarth) || '',
+      convert12Unseong(calculateTwelveUnseong(daySky, yearEarth) || ''),
       ...formatShinSalArray(secondRowResult.yearPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.yearPillar, showKorean1)
     ].filter(s => s !== ''));

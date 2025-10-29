@@ -902,7 +902,25 @@ export default function SajuInput() {
 
         {/* 메모 */}
         <div className="space-y-1">
-          <Label htmlFor="memo" className="text-xs font-medium">메모</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="memo" className="text-xs font-medium">메모</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-xs"
+              onClick={() => {
+                const today = new Date();
+                const dateString = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+                const currentMemo = formData.memo;
+                const newMemo = currentMemo ? `${currentMemo}\n${dateString}` : dateString;
+                handleInputChange("memo", newMemo);
+              }}
+              data-testid="button-today-date"
+            >
+              오늘날짜
+            </Button>
+          </div>
           <Card>
             <CardContent className="p-2">
               <Textarea

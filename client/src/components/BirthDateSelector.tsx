@@ -66,7 +66,7 @@ export default function BirthDateSelector({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px] p-6">
+      <DialogContent className="sm:max-w-[400px] p-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-left text-base font-semibold">
             생년월일 변경 ({calendarType === 'ganji' ? '양력' : calendarType})
