@@ -1954,7 +1954,16 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       console.log(`Fetching solar terms for year: ${year}`);
-      const allSolarTerms = await storage.getSolarTermsForYear(year);
+      // 전년도 소한, 현재년도 전체, 다음년도 입춘 포함 (월주 계산용)
+      const prevYearTerms = await storage.getSolarTermsForYear(year - 1);
+      const currentYearTerms = await storage.getSolarTermsForYear(year);
+      const nextYearTerms = await storage.getSolarTermsForYear(year + 1);
+      
+      const allSolarTerms = [
+        ...prevYearTerms.filter(t => t.name === '소한'),
+        ...currentYearTerms,
+        ...nextYearTerms.filter(t => t.name === '입춘')
+      ];
       
       // 12절기만 사용 (중기 제외)
       // 사주학에서는 입춘이 인월의 시작이므로 인월=0부터 시작
