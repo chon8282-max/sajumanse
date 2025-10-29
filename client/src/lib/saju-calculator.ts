@@ -36,16 +36,35 @@ function calculateSajuMonth(date: Date, solarTerms?: Array<{ name: string; date:
     throw new Error('DB 절기 데이터가 필요합니다. /api/solar-terms/:year 에서 가져오세요.');
   }
   
-  console.log(`📅 calculateSajuMonth: date=${date.toISOString()}, solarTerms count=${solarTerms.length}`);
+  // 입력 날짜를 YYYY-MM-DD 형식으로 변환 (날짜만 비교)
+  const inputYear = date.getFullYear();
+  const inputMonth = date.getMonth() + 1;
+  const inputDay = date.getDate();
+  const inputDateOnly = inputYear * 10000 + inputMonth * 100 + inputDay;
+  
+  console.log(`📅 calculateSajuMonth: ${inputYear}-${inputMonth}-${inputDay} (${inputDateOnly})`);
   
   // 현재 날짜가 어느 절기 구간에 속하는지 확인
   for (let i = 0; i < solarTerms.length - 1; i++) {
     const currentTerm = solarTerms[i];
     const nextTerm = solarTerms[i + 1];
     
-    // 현재 날짜가 이 절기 구간에 속하는지 확인
-    if (date >= currentTerm.date && date < nextTerm.date) {
-      console.log(`✅ 절기 구간 찾음: ${currentTerm.name} (month=${currentTerm.month}), ${currentTerm.date.toISOString().slice(0,10)} ~ ${nextTerm.date.toISOString().slice(0,10)}`);
+    // 절기 날짜를 YYYY-MM-DD 형식으로 변환
+    const currentTermDate = new Date(currentTerm.date);
+    const currentYear = currentTermDate.getFullYear();
+    const currentMonth = currentTermDate.getMonth() + 1;
+    const currentDay = currentTermDate.getDate();
+    const currentDateOnly = currentYear * 10000 + currentMonth * 100 + currentDay;
+    
+    const nextTermDate = new Date(nextTerm.date);
+    const nextYear = nextTermDate.getFullYear();
+    const nextMonth = nextTermDate.getMonth() + 1;
+    const nextDay = nextTermDate.getDate();
+    const nextDateOnly = nextYear * 10000 + nextMonth * 100 + nextDay;
+    
+    // 날짜만 비교 (시간 무시)
+    if (inputDateOnly >= currentDateOnly && inputDateOnly < nextDateOnly) {
+      console.log(`✅ 절기 구간: ${currentTerm.name} (month=${currentTerm.month}), ${currentYear}-${currentMonth}-${currentDay} ~ ${nextYear}-${nextMonth}-${nextDay}`);
       return currentTerm.month;
     }
   }
