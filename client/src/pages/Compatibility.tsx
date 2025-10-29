@@ -163,6 +163,130 @@ export default function Compatibility() {
     }
   });
 
+  // 왼쪽 사주 생시 변경 핸들러
+  const handleLeftBirthTimeChange = async (timeCode: string) => {
+    if (!leftSajuId || !leftSaju) return;
+    
+    try {
+      await apiRequest("PUT", `/api/saju-records/${leftSajuId}`, { 
+        birthTime: timeCode,
+        name: leftSaju.name,
+        birthYear: leftSaju.birthYear,
+        birthMonth: leftSaju.birthMonth,
+        birthDay: leftSaju.birthDay,
+        calendarType: leftSaju.calendarType,
+        gender: leftSaju.gender
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
+      toast({
+        title: "변경 완료",
+        description: "생시가 변경되었습니다.",
+        duration: 1000
+      });
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "생시 변경에 실패했습니다.",
+        variant: "destructive",
+        duration: 1000
+      });
+    }
+  };
+
+  // 오른쪽 사주 생시 변경 핸들러
+  const handleRightBirthTimeChange = async (timeCode: string) => {
+    if (!rightSajuId || !rightSaju) return;
+    
+    try {
+      await apiRequest("PUT", `/api/saju-records/${rightSajuId}`, { 
+        birthTime: timeCode,
+        name: rightSaju.name,
+        birthYear: rightSaju.birthYear,
+        birthMonth: rightSaju.birthMonth,
+        birthDay: rightSaju.birthDay,
+        calendarType: rightSaju.calendarType,
+        gender: rightSaju.gender
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
+      toast({
+        title: "변경 완료",
+        description: "생시가 변경되었습니다.",
+        duration: 1000
+      });
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "생시 변경에 실패했습니다.",
+        variant: "destructive",
+        duration: 1000
+      });
+    }
+  };
+
+  // 왼쪽 사주 생년월일 변경 핸들러
+  const handleLeftBirthDateChange = async (year: number, month: number, day: number) => {
+    if (!leftSajuId || !leftSaju) return;
+    
+    try {
+      await apiRequest("PUT", `/api/saju-records/${leftSajuId}`, { 
+        birthYear: year,
+        birthMonth: month,
+        birthDay: day,
+        name: leftSaju.name,
+        birthTime: leftSaju.birthTime,
+        calendarType: leftSaju.calendarType,
+        gender: leftSaju.gender
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', leftSajuId] });
+      toast({
+        title: "변경 완료",
+        description: "생년월일이 변경되었습니다.",
+        duration: 1000
+      });
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "생년월일 변경에 실패했습니다.",
+        variant: "destructive",
+        duration: 1000
+      });
+    }
+  };
+
+  // 오른쪽 사주 생년월일 변경 핸들러
+  const handleRightBirthDateChange = async (year: number, month: number, day: number) => {
+    if (!rightSajuId || !rightSaju) return;
+    
+    try {
+      await apiRequest("PUT", `/api/saju-records/${rightSajuId}`, { 
+        birthYear: year,
+        birthMonth: month,
+        birthDay: day,
+        name: rightSaju.name,
+        birthTime: rightSaju.birthTime,
+        calendarType: rightSaju.calendarType,
+        gender: rightSaju.gender
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/saju-records', rightSajuId] });
+      toast({
+        title: "변경 완료",
+        description: "생년월일이 변경되었습니다.",
+        duration: 1000
+      });
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: "생년월일 변경에 실패했습니다.",
+        variant: "destructive",
+        duration: 1000
+      });
+    }
+  };
+
   const handleHomeClick = () => {
     // localStorage 정리 후 홈으로 이동
     localStorage.removeItem('compatibility_left_id');
@@ -264,12 +388,11 @@ export default function Compatibility() {
               birthDay={leftSaju.birthDay}
               birthHour={leftSaju.birthTime || undefined}
               gender={leftSaju.gender}
+              calendarType={leftSaju.calendarType}
               memo={leftMemo}
               onMemoChange={(newMemo) => setLeftMemo(newMemo)}
-              yearText="년"
-              monthText="월"
-              dayText="일"
-              hourText="시"
+              onBirthTimeChange={handleLeftBirthTimeChange}
+              onBirthDateChange={handleLeftBirthDateChange}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
@@ -348,12 +471,11 @@ export default function Compatibility() {
               birthDay={rightSaju.birthDay}
               birthHour={rightSaju.birthTime || undefined}
               gender={rightSaju.gender}
+              calendarType={rightSaju.calendarType}
               memo={rightMemo}
               onMemoChange={(newMemo) => setRightMemo(newMemo)}
-              yearText="년"
-              monthText="월"
-              dayText="일"
-              hourText="시"
+              onBirthTimeChange={handleRightBirthTimeChange}
+              onBirthDateChange={handleRightBirthDateChange}
             />
           ) : (
             <div className="flex items-center justify-center h-full">
