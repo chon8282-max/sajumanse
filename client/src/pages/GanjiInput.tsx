@@ -226,7 +226,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleYearSelect(ganji.sky, ganji.earth)}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover-elevate active-elevate-2 border [border-color:var(--button-outline)] shadow-xs active:shadow-none min-h-9 py-2 h-7 px-2 text-sm bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-800/40 border-green-300 dark:border-green-700 text-green-900 dark:text-green-100 pt-[7px] pb-[7px] mt-[-3px] mb-[-3px]"
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover-elevate active-elevate-2 border [border-color:var(--button-outline)] shadow-xs active:shadow-none min-h-9 py-2 h-7 px-2 text-sm bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-800/40 border-purple-300 dark:border-purple-700 text-purple-900 dark:text-purple-100 pt-[8px] pb-[8px] mt-[-3px] mb-[-3px]"
                     data-testid={`button-year-${ganji.label}`}
                   >
                     {ganji.label}
