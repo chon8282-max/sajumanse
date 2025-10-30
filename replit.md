@@ -2,6 +2,22 @@
 
 This mobile application is a traditional Korean calendar (만세력) and Saju (Four Pillars of Destiny) fortune-telling service. It calculates and displays traditional Korean calendar information, constructs birth charts using the 60-year cycle, and provides personalized fortune readings based on the Five Elements (오행) theory. The project aims to deliver accurate traditional astrological insights in a user-friendly mobile experience.
 
+# Recent Changes
+
+## 2025-10-30: Month Pillar Calculation Bug Fix
+- **Issue**: Month pillar (월주) was incorrectly calculated due to incomplete solar term to month mapping in server/routes.ts
+- **Solution**: Updated `solarTermMonthMap` to include all 24 solar terms (both 節氣 and 中氣) with correct month indices (0-11)
+- **Mapping**: 입춘/우수→인월(0), 경칩/춘분→묘월(1), 청명/곡우→진월(2), etc.
+- **Tests Verified**: 1965-08-15 → 甲申, 1975-01-14 → 丁丑, 1980-02-25 → 戊寅, 1992-03-25 → 癸卯
+
+## 2025-10-30: Mobile Scroll Optimization
+- **Issue**: Users could not scroll to access all content on mobile devices
+- **Solution**: 
+  - Added `overflow-y-auto` to main layout container in App.tsx
+  - Added mobile scroll CSS optimizations: `-webkit-overflow-scrolling: touch`, `overscroll-behavior-y: contain`
+  - Horizontal overflow suppression with `overflow-x: hidden`
+- **Impact**: All pages (사주 결과, 목록, 홈) now fully scrollable with smooth touch interaction
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

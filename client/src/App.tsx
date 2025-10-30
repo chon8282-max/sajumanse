@@ -252,7 +252,7 @@ function AppContent() {
             />
           )}
           
-          <main className="flex-1 flex flex-col min-h-0 pb-20">
+          <main className="flex-1 flex flex-col min-h-0 pb-20 overflow-y-auto">
             <Router />
           </main>
 
