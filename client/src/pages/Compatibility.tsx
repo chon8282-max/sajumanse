@@ -263,6 +263,12 @@ export default function Compatibility() {
 
   console.log('[Compatibility] 사주 데이터:', { leftSaju, rightSaju });
 
+  // yearSky가 없으면 경고 (왼쪽)
+  const leftHasGanji = leftSaju?.yearSky && leftSaju?.daySky;
+  
+  // yearSky가 없으면 경고 (오른쪽)
+  const rightHasGanji = rightSaju?.yearSky && rightSaju?.daySky;
+
   // 왼쪽 저장 mutation (로컬 저장소)
   const leftSaveMutation = useMutation({
     mutationFn: async (memo: string) => {
@@ -761,19 +767,40 @@ export default function Compatibility() {
                 </Button>
               </div>
             </div>
-          ) : leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null && leftSaju.yearSky && leftSaju.daySky ? (
+          ) : leftSajuId && leftSaju && !leftHasGanji ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center max-w-md p-6">
+                <p className="text-destructive mb-2 font-semibold">사주 데이터 오류</p>
+                <p className="text-muted-foreground mb-4 text-sm">
+                  이 사주는 간지 정보가 없어 표시할 수 없습니다.<br/>
+                  만세력 페이지에서 다시 저장해주세요.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setLeftSajuId(null);
+                    setShowLeftDialog(true);
+                  }}
+                  data-testid="button-left-reload"
+                >
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  다른 사주 선택
+                </Button>
+              </div>
+            </div>
+          ) : leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null && leftHasGanji ? (
             <SajuTable 
               saju={{
-                year: { sky: leftSaju.yearSky, earth: leftSaju.yearEarth || '' },
+                year: { sky: leftSaju.yearSky!, earth: leftSaju.yearEarth || '' },
                 month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
-                day: { sky: leftSaju.daySky, earth: leftSaju.dayEarth || '' },
+                day: { sky: leftSaju.daySky!, earth: leftSaju.dayEarth || '' },
                 hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' },
                 wuxing: {
-                  yearSky: CHEONGAN_WUXING[leftSaju.yearSky] || '',
+                  yearSky: CHEONGAN_WUXING[leftSaju.yearSky!] || '',
                   yearEarth: JIJI_WUXING[leftSaju.yearEarth || ''] || '',
                   monthSky: CHEONGAN_WUXING[leftSaju.monthSky || ''] || '',
                   monthEarth: JIJI_WUXING[leftSaju.monthEarth || ''] || '',
-                  daySky: CHEONGAN_WUXING[leftSaju.daySky] || '',
+                  daySky: CHEONGAN_WUXING[leftSaju.daySky!] || '',
                   dayEarth: JIJI_WUXING[leftSaju.dayEarth || ''] || '',
                   hourSky: leftSaju.hourSky ? CHEONGAN_WUXING[leftSaju.hourSky] || '' : '',
                   hourEarth: leftSaju.hourEarth ? JIJI_WUXING[leftSaju.hourEarth] || '' : ''
@@ -781,8 +808,8 @@ export default function Compatibility() {
               }}
               name={leftSaju.name}
               birthYear={leftSaju.birthYear}
-              birthMonth={leftSaju.birthMonth}
-              birthDay={leftSaju.birthDay}
+              birthMonth={leftSaju.birthMonth ?? undefined}
+              birthDay={leftSaju.birthDay ?? undefined}
               birthHour={leftSaju.birthTime || undefined}
               gender={leftSaju.gender}
               calendarType={leftSaju.calendarType}
@@ -874,19 +901,40 @@ export default function Compatibility() {
                 </Button>
               </div>
             </div>
-          ) : rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null && rightSaju.yearSky && rightSaju.daySky ? (
+          ) : rightSajuId && rightSaju && !rightHasGanji ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center max-w-md p-6">
+                <p className="text-destructive mb-2 font-semibold">사주 데이터 오류</p>
+                <p className="text-muted-foreground mb-4 text-sm">
+                  이 사주는 간지 정보가 없어 표시할 수 없습니다.<br/>
+                  만세력 페이지에서 다시 저장해주세요.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setRightSajuId(null);
+                    setShowRightDialog(true);
+                  }}
+                  data-testid="button-right-reload"
+                >
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  다른 사주 선택
+                </Button>
+              </div>
+            </div>
+          ) : rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null && rightHasGanji ? (
             <SajuTable 
               saju={{
-                year: { sky: rightSaju.yearSky, earth: rightSaju.yearEarth || '' },
+                year: { sky: rightSaju.yearSky!, earth: rightSaju.yearEarth || '' },
                 month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
-                day: { sky: rightSaju.daySky, earth: rightSaju.dayEarth || '' },
+                day: { sky: rightSaju.daySky!, earth: rightSaju.dayEarth || '' },
                 hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' },
                 wuxing: {
-                  yearSky: CHEONGAN_WUXING[rightSaju.yearSky] || '',
+                  yearSky: CHEONGAN_WUXING[rightSaju.yearSky!] || '',
                   yearEarth: JIJI_WUXING[rightSaju.yearEarth || ''] || '',
                   monthSky: CHEONGAN_WUXING[rightSaju.monthSky || ''] || '',
                   monthEarth: JIJI_WUXING[rightSaju.monthEarth || ''] || '',
-                  daySky: CHEONGAN_WUXING[rightSaju.daySky] || '',
+                  daySky: CHEONGAN_WUXING[rightSaju.daySky!] || '',
                   dayEarth: JIJI_WUXING[rightSaju.dayEarth || ''] || '',
                   hourSky: rightSaju.hourSky ? CHEONGAN_WUXING[rightSaju.hourSky] || '' : '',
                   hourEarth: rightSaju.hourEarth ? JIJI_WUXING[rightSaju.hourEarth] || '' : ''
@@ -894,8 +942,8 @@ export default function Compatibility() {
               }}
               name={rightSaju.name}
               birthYear={rightSaju.birthYear}
-              birthMonth={rightSaju.birthMonth}
-              birthDay={rightSaju.birthDay}
+              birthMonth={rightSaju.birthMonth ?? undefined}
+              birthDay={rightSaju.birthDay ?? undefined}
               birthHour={rightSaju.birthTime || undefined}
               gender={rightSaju.gender}
               calendarType={rightSaju.calendarType}

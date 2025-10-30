@@ -4,6 +4,15 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
 
 # Recent Changes
 
+## 2025-10-30: Compatibility Page yearSky Validation
+- **Issue**: Compatibility page showed "불러오기" buttons instead of saju tables when yearSky/daySky were not saved
+- **Root Cause**: Some saju records saved without yearSky/daySky due to calculateSaju failures or edit mode flows
+- **Solution**:
+  - Added validation in SajuInput.tsx (574-576번 줄) to ensure yearSky/daySky exist before saving
+  - Added error message display in Compatibility.tsx for records missing ganji data
+  - Display "사주 데이터 오류" message with option to select different saju when yearSky is missing
+- **Impact**: Prevents saving incomplete saju records and provides clear user feedback for existing incomplete data
+
 ## 2025-10-30: Month Pillar Calculation Bug Fix
 - **Issue**: Month pillar (월주) was incorrectly calculated due to incomplete solar term to month mapping in server/routes.ts
 - **Solution**: Updated `solarTermMonthMap` to include all 24 solar terms (both 節氣 and 中氣) with correct month indices (0-11)
