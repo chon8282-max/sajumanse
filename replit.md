@@ -23,6 +23,15 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
 - **Solution**: Changed `getSajuRecords()` sorting from `createdAt` to `updatedAt` in client/src/lib/saju-local-storage.ts
 - **Impact**: Recently modified/saved 사주 records now appear at the top of the selection list
 
+## 2025-10-30: Compatibility Page Error Handling Enhancement
+- **Issue**: When accessing compatibility page via URL parameter with non-existent saju ID (e.g., different device/cleared cache), page showed blank without any feedback
+- **Solution**: 
+  - Added `isLoading` and `error` states to useQuery hooks in client/src/pages/Compatibility.tsx
+  - Display loading spinner during data fetch
+  - Show error message + "다시 선택하기" button when data not found
+  - Added console.log debugging messages for troubleshooting
+- **Impact**: Users now receive clear feedback when saju data cannot be loaded, with option to select different record
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

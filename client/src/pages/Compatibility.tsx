@@ -206,11 +206,13 @@ export default function Compatibility() {
   }, []);
 
   // 왼쪽 사주 데이터 (로컬 저장소)
-  const { data: leftSaju } = useQuery<SajuResultData>({
+  const { data: leftSaju, isLoading: leftLoading, error: leftError } = useQuery<SajuResultData>({
     queryKey: ['local-saju-records', leftSajuId],
     queryFn: async () => {
       if (!leftSajuId) throw new Error('No left saju ID');
+      console.log('[Compatibility] Loading left saju:', leftSajuId);
       const record = await localDB.getSajuRecord(leftSajuId);
+      console.log('[Compatibility] Left saju loaded:', record);
       if (!record) throw new Error('Left saju not found');
       return record;
     },
@@ -224,11 +226,13 @@ export default function Compatibility() {
   }, [leftSaju]);
 
   // 오른쪽 사주 데이터 (로컬 저장소)
-  const { data: rightSaju } = useQuery<SajuResultData>({
+  const { data: rightSaju, isLoading: rightLoading, error: rightError } = useQuery<SajuResultData>({
     queryKey: ['local-saju-records', rightSajuId],
     queryFn: async () => {
       if (!rightSajuId) throw new Error('No right saju ID');
+      console.log('[Compatibility] Loading right saju:', rightSajuId);
       const record = await localDB.getSajuRecord(rightSajuId);
+      console.log('[Compatibility] Right saju loaded:', record);
       if (!record) throw new Error('Right saju not found');
       return record;
     },
@@ -717,7 +721,31 @@ export default function Compatibility() {
           </div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
-          {leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null ? (
+          {leftLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">사주 데이터를 불러오는 중...</p>
+              </div>
+            </div>
+          ) : leftError ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <p className="text-destructive mb-4">사주 데이터를 찾을 수 없습니다</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setLeftSajuId(null);
+                    setShowLeftDialog(true);
+                  }}
+                  data-testid="button-left-reload"
+                >
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  다시 선택하기
+                </Button>
+              </div>
+            </div>
+          ) : leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null ? (
             <SajuTable 
               saju={{
                 year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
@@ -806,7 +834,31 @@ export default function Compatibility() {
           </div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
-          {rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null ? (
+          {rightLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-muted-foreground">사주 데이터를 불러오는 중...</p>
+              </div>
+            </div>
+          ) : rightError ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <p className="text-destructive mb-4">사주 데이터를 찾을 수 없습니다</p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setRightSajuId(null);
+                    setShowRightDialog(true);
+                  }}
+                  data-testid="button-right-reload"
+                >
+                  <FolderOpen className="w-4 h-4 mr-2" />
+                  다시 선택하기
+                </Button>
+              </div>
+            </div>
+          ) : rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null ? (
             <SajuTable 
               saju={{
                 year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
