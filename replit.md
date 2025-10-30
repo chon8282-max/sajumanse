@@ -32,6 +32,14 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
   - Added console.log debugging messages for troubleshooting
 - **Impact**: Users now receive clear feedback when saju data cannot be loaded, with option to select different record
 
+## 2025-10-30: Compatibility Page URL Parameter Handling Fix
+- **Issue**: When clicking 궁합 button from SajuResult page, compatibility page showed empty data despite URL parameter being passed
+- **Root Cause**: Initial state was restored from localStorage first, then useEffect processed URL parameters, causing timing issues where useQuery executed before URL params were applied
+- **Solution**: 
+  - Modified initial state to check URL parameters FIRST, then fallback to localStorage
+  - Added detailed console logging for debugging (URL vs localStorage ID sources)
+- **Impact**: Compatibility page now correctly loads left saju data when navigating from SajuResult page via 궁합 button
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

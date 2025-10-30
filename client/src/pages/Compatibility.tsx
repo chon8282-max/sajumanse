@@ -130,16 +130,32 @@ export default function Compatibility() {
   const { toast } = useToast();
   
   const [leftSajuId, setLeftSajuId] = useState<string | null>(() => {
-    // 초기값: localStorage에서 복원
+    // 초기값: URL 파라미터 우선, 없으면 localStorage에서 복원
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('compatibility_left_id');
+      const params = new URLSearchParams(window.location.search);
+      const leftId = params.get('left');
+      if (leftId) {
+        console.log('[Compatibility] 초기 왼쪽 ID (URL):', leftId);
+        return leftId;
+      }
+      const storedId = localStorage.getItem('compatibility_left_id');
+      console.log('[Compatibility] 초기 왼쪽 ID (localStorage):', storedId);
+      return storedId;
     }
     return null;
   });
   const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
-    // 초기값: localStorage에서 복원
+    // 초기값: URL 파라미터 우선, 없으면 localStorage에서 복원
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('compatibility_right_id');
+      const params = new URLSearchParams(window.location.search);
+      const rightId = params.get('right');
+      if (rightId) {
+        console.log('[Compatibility] 초기 오른쪽 ID (URL):', rightId);
+        return rightId;
+      }
+      const storedId = localStorage.getItem('compatibility_right_id');
+      console.log('[Compatibility] 초기 오른쪽 ID (localStorage):', storedId);
+      return storedId;
     }
     return null;
   });
