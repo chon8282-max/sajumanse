@@ -124,10 +124,10 @@ class SajuLocalStorage {
     const db = await this.dbPromise;
     let records = await db.getAllFromIndex('sajuRecords', 'by-created');
     
-    // 최신순 정렬 (createdAt 내림차순)
+    // 최신순 정렬 (updatedAt 내림차순 - 최근 수정/저장된 사주가 먼저)
     records.sort((a, b) => {
-      const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
       return bTime - aTime;
     });
 

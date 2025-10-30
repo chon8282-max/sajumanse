@@ -18,6 +18,11 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
   - Horizontal overflow suppression with `overflow-x: hidden`
 - **Impact**: All pages (사주 결과, 목록, 홈) now fully scrollable with smooth touch interaction
 
+## 2025-10-30: Compatibility Load List Sorting Fix
+- **Issue**: In compatibility page, "불러오기" button showed old data instead of recently modified 사주 records
+- **Solution**: Changed `getSajuRecords()` sorting from `createdAt` to `updatedAt` in client/src/lib/saju-local-storage.ts
+- **Impact**: Recently modified/saved 사주 records now appear at the top of the selection list
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
