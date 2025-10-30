@@ -567,6 +567,11 @@ export default function SajuInput() {
         requestData.hourSky = formData.birthTimeUnknown ? '' : calculatedSaju.hour.sky;
         requestData.hourEarth = formData.birthTimeUnknown ? '' : calculatedSaju.hour.earth;
         
+        // 필수 간지 데이터 검증
+        if (!requestData.yearSky || !requestData.daySky) {
+          throw new Error("사주 계산에 실패했습니다. 년주 또는 일주 정보가 없습니다.");
+        }
+        
         // 양력 입력의 경우 음력 정보 계산하여 저장
         if (requestData.calendarType === "양력" && !requestData.lunarYear) {
           const solar = Solar.fromYmd(requestData.birthYear, requestData.birthMonth, requestData.birthDay);

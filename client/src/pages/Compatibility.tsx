@@ -761,19 +761,19 @@ export default function Compatibility() {
                 </Button>
               </div>
             </div>
-          ) : leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null ? (
+          ) : leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null && leftSaju.yearSky && leftSaju.daySky ? (
             <SajuTable 
               saju={{
-                year: { sky: leftSaju.yearSky || '', earth: leftSaju.yearEarth || '' },
+                year: { sky: leftSaju.yearSky, earth: leftSaju.yearEarth || '' },
                 month: { sky: leftSaju.monthSky || '', earth: leftSaju.monthEarth || '' },
-                day: { sky: leftSaju.daySky || '', earth: leftSaju.dayEarth || '' },
+                day: { sky: leftSaju.daySky, earth: leftSaju.dayEarth || '' },
                 hour: { sky: leftSaju.hourSky || '', earth: leftSaju.hourEarth || '' },
                 wuxing: {
-                  yearSky: CHEONGAN_WUXING[leftSaju.yearSky || ''] || '',
+                  yearSky: CHEONGAN_WUXING[leftSaju.yearSky] || '',
                   yearEarth: JIJI_WUXING[leftSaju.yearEarth || ''] || '',
                   monthSky: CHEONGAN_WUXING[leftSaju.monthSky || ''] || '',
                   monthEarth: JIJI_WUXING[leftSaju.monthEarth || ''] || '',
-                  daySky: CHEONGAN_WUXING[leftSaju.daySky || ''] || '',
+                  daySky: CHEONGAN_WUXING[leftSaju.daySky] || '',
                   dayEarth: JIJI_WUXING[leftSaju.dayEarth || ''] || '',
                   hourSky: leftSaju.hourSky ? CHEONGAN_WUXING[leftSaju.hourSky] || '' : '',
                   hourEarth: leftSaju.hourEarth ? JIJI_WUXING[leftSaju.hourEarth] || '' : ''
@@ -874,19 +874,19 @@ export default function Compatibility() {
                 </Button>
               </div>
             </div>
-          ) : rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null ? (
+          ) : rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null && rightSaju.yearSky && rightSaju.daySky ? (
             <SajuTable 
               saju={{
-                year: { sky: rightSaju.yearSky || '', earth: rightSaju.yearEarth || '' },
+                year: { sky: rightSaju.yearSky, earth: rightSaju.yearEarth || '' },
                 month: { sky: rightSaju.monthSky || '', earth: rightSaju.monthEarth || '' },
-                day: { sky: rightSaju.daySky || '', earth: rightSaju.dayEarth || '' },
+                day: { sky: rightSaju.daySky, earth: rightSaju.dayEarth || '' },
                 hour: { sky: rightSaju.hourSky || '', earth: rightSaju.hourEarth || '' },
                 wuxing: {
-                  yearSky: CHEONGAN_WUXING[rightSaju.yearSky || ''] || '',
+                  yearSky: CHEONGAN_WUXING[rightSaju.yearSky] || '',
                   yearEarth: JIJI_WUXING[rightSaju.yearEarth || ''] || '',
                   monthSky: CHEONGAN_WUXING[rightSaju.monthSky || ''] || '',
                   monthEarth: JIJI_WUXING[rightSaju.monthEarth || ''] || '',
-                  daySky: CHEONGAN_WUXING[rightSaju.daySky || ''] || '',
+                  daySky: CHEONGAN_WUXING[rightSaju.daySky] || '',
                   dayEarth: JIJI_WUXING[rightSaju.dayEarth || ''] || '',
                   hourSky: rightSaju.hourSky ? CHEONGAN_WUXING[rightSaju.hourSky] || '' : '',
                   hourEarth: rightSaju.hourEarth ? JIJI_WUXING[rightSaju.hourEarth] || '' : ''
