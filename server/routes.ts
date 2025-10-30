@@ -1365,20 +1365,21 @@ export async function registerRoutes(app: Express): Promise<void> {
       const calculationYear = solarDateForCalculation ? solarDateForCalculation.solarYear : parseInt(year);
       const dbSolarTerms = await storage.getSolarTermsForYear(calculationYear);
       
-      // 절기 이름 → 사주 월 매핑
+      // 절기 이름 → 사주 월 매핑 (24절기, 입춘=인월=0부터 시작)
+      // 각 월은 절기(節氣)에서 시작하여 중기(中氣)를 지나 다음 절기 전까지
       const solarTermMonthMap: Record<string, number> = {
-        "소한": 0, "대한": 0,  // 축월
-        "입춘": 1, "우수": 1,  // 인월
-        "경칩": 2, "춘분": 2,  // 묘월
-        "청명": 3, "곡우": 3,  // 진월
-        "입하": 4, "소만": 4,  // 사월
-        "망종": 5, "하지": 5,  // 오월
-        "소서": 6, "대서": 6,  // 미월
-        "입추": 7, "처서": 7,  // 신월
-        "백로": 8, "추분": 8,  // 유월
-        "한로": 9, "상강": 9,  // 술월
-        "입동": 10, "소설": 10, // 해월
-        "대설": 11, "동지": 11  // 자월
+        "입춘": 0, "우수": 0,  // 인월 (寅月)
+        "경칩": 1, "춘분": 1,  // 묘월 (卯月)
+        "청명": 2, "곡우": 2,  // 진월 (辰月)
+        "입하": 3, "소만": 3,  // 사월 (巳月)
+        "망종": 4, "하지": 4,  // 오월 (午月)
+        "소서": 5, "대서": 5,  // 미월 (未月)
+        "입추": 6, "처서": 6,  // 신월 (申月)
+        "백로": 7, "추분": 7,  // 유월 (酉月)
+        "한로": 8, "상강": 8,  // 술월 (戌月)
+        "입동": 9, "소설": 9,  // 해월 (亥月)
+        "대설": 10, "동지": 10, // 자월 (子月)
+        "소한": 11, "대한": 11, // 축월 (丑月)
       };
       
       const solarTermsForCalculation = dbSolarTerms.map((term: any) => ({
