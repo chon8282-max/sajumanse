@@ -130,8 +130,9 @@ export default function SajuList() {
       return { success };
     },
     onSuccess: () => {
-      // 모든 사주 리스트 쿼리 무효화
+      // 모든 사주 리스트 쿼리 무효화 (SajuList + Compatibility 페이지)
       queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records-list"] });
       toast({
         title: "삭제 완료",
         description: "사주가 성공적으로 삭제되었습니다.",
@@ -164,6 +165,7 @@ export default function SajuList() {
     },
     onSuccess: (_, ids) => {
       queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-records-list"] });
       setSelectedSajuIds([]);
       toast({
         title: "삭제 완료",
