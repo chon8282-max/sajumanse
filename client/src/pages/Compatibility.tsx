@@ -810,6 +810,10 @@ export default function Compatibility() {
               birthYear={leftSaju.birthYear}
               birthMonth={leftSaju.birthMonth ?? undefined}
               birthDay={leftSaju.birthDay ?? undefined}
+              lunarYear={leftSaju.lunarYear ?? undefined}
+              lunarMonth={leftSaju.lunarMonth ?? undefined}
+              lunarDay={leftSaju.lunarDay ?? undefined}
+              isLeapMonth={leftSaju.isLeapMonth ?? false}
               birthHour={leftSaju.birthTime || undefined}
               gender={leftSaju.gender}
               calendarType={leftSaju.calendarType}
@@ -944,6 +948,10 @@ export default function Compatibility() {
               birthYear={rightSaju.birthYear}
               birthMonth={rightSaju.birthMonth ?? undefined}
               birthDay={rightSaju.birthDay ?? undefined}
+              lunarYear={rightSaju.lunarYear ?? undefined}
+              lunarMonth={rightSaju.lunarMonth ?? undefined}
+              lunarDay={rightSaju.lunarDay ?? undefined}
+              isLeapMonth={rightSaju.isLeapMonth ?? false}
               birthHour={rightSaju.birthTime || undefined}
               gender={rightSaju.gender}
               calendarType={rightSaju.calendarType}
