@@ -171,6 +171,8 @@ export default function GanjiResult() {
         hourEarth
       }, selectedYear);
 
+      console.log('[GanjiResult] 역산된 날짜:', reversedDate);
+
       if (!reversedDate) {
         throw new Error('날짜 역산에 실패했습니다');
       }
@@ -203,7 +205,7 @@ export default function GanjiResult() {
         });
       }
 
-      const newRecord = await localDB.createSajuRecord({
+      const recordData = {
         name: name.trim() || '이름없음',
         birthYear: reversedDate.year,
         birthMonth: reversedDate.month,
@@ -224,7 +226,13 @@ export default function GanjiResult() {
         lunarMonth: lunarData?.lunarMonth || null,
         lunarDay: lunarData?.lunarDay || null,
         isLeapMonth: lunarData?.isLeapMonth || false,
-      });
+      };
+      
+      console.log('[GanjiResult saveMutation] 저장할 데이터:', recordData);
+      
+      const newRecord = await localDB.createSajuRecord(recordData);
+      
+      console.log('[GanjiResult saveMutation] 저장된 레코드:', newRecord);
       
       return newRecord;
     },
@@ -272,6 +280,8 @@ export default function GanjiResult() {
         hourEarth
       }, selectedYear);
 
+      console.log('[GanjiResult] 역산된 날짜:', reversedDate);
+
       if (!reversedDate) {
         throw new Error('날짜 역산에 실패했습니다');
       }
@@ -304,7 +314,7 @@ export default function GanjiResult() {
         });
       }
 
-      await localDB.updateSajuRecord(recordId, {
+      const updateData = {
         birthYear: reversedDate.year,
         birthMonth: reversedDate.month,
         birthDay: reversedDate.day,
@@ -322,7 +332,13 @@ export default function GanjiResult() {
         lunarMonth: lunarData?.lunarMonth || null,
         lunarDay: lunarData?.lunarDay || null,
         isLeapMonth: lunarData?.isLeapMonth || false,
-      });
+      };
+      
+      console.log('[GanjiResult updateMutation] 업데이트할 데이터:', updateData);
+      
+      await localDB.updateSajuRecord(recordId, updateData);
+      
+      console.log('[GanjiResult updateMutation] 업데이트 완료: ID =', recordId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['local-saju-records', recordId] });
