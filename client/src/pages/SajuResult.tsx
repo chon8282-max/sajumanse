@@ -243,10 +243,22 @@ export default function SajuResult() {
   // 모든 계산을 useMemo로 감싸기
   const calculatedData = useMemo(() => {
     if (!sajuData?.success || !sajuData.data) {
+      console.log('[SajuResult] sajuData 없음:', sajuData);
       return null;
     }
 
     const record = sajuData.data;
+    
+    // 필수 간지 데이터 검증
+    if (!record.yearSky || !record.daySky) {
+      console.error('[SajuResult] 간지 데이터 누락:', { 
+        yearSky: record.yearSky, 
+        daySky: record.daySky,
+        record 
+      });
+      return null;
+    }
+    
     const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === record.birthTime);
     
     // 육친 관계 계산
@@ -661,12 +673,31 @@ export default function SajuResult() {
     );
   }
 
-  // 데이터 없음
+  // 데이터 없음 또는 간지 데이터 누락
   if (!calculatedData) {
+    // 간지 데이터가 누락된 경우 감지
+    const hasMissingGanji = sajuData?.data && (!sajuData.data.yearSky || !sajuData.data.daySky);
+    
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <div className="text-lg text-muted-foreground">사주 정보를 찾을 수 없습니다.</div>
-        <Button onClick={handleBack}>돌아가기</Button>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-4">
+        <div className="text-center space-y-2">
+          <div className="text-lg text-muted-foreground">
+            {hasMissingGanji ? '사주 데이터에 오류가 있습니다' : '사주 정보를 찾을 수 없습니다'}
+          </div>
+          {hasMissingGanji && (
+            <div className="text-sm text-muted-foreground">
+              간지 정보가 누락되었습니다. 사주를 다시 계산해주세요.
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={handleBack}>돌아가기</Button>
+          {hasMissingGanji && sajuData?.data && (
+            <Button variant="default" onClick={handleEdit}>
+              다시 계산하기
+            </Button>
+          )}
+        </div>
       </div>
     );
   }
