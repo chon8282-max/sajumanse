@@ -4,6 +4,26 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
 
 # Recent Changes
 
+## 2025-11-01: Lunar Information Display Fix
+- **Issue**: Lunar date information not displayed in Compatibility page
+- **Solution**: Added lunarYear, lunarMonth, lunarDay, isLeapMonth props to SajuTable in Compatibility.tsx
+- **Impact**: Lunar dates now display correctly for both left and right saju in compatibility analysis
+
+## 2025-11-01: Compatibility List Cache Invalidation
+- **Issue**: Deleted saju records still appeared in compatibility page selection list
+- **Root Cause**: Cache key mismatch - SajuList used `["local-saju-records"]` but Compatibility used `["local-saju-records-list"]`
+- **Solution**: Updated SajuList.tsx delete mutations to invalidate both cache keys
+- **Impact**: Deleted records immediately disappear from compatibility selection list
+
+## 2025-11-01: Missing Ganji Error Handling
+- **Issue**: Saved saju records without yearSky/daySky showed blank pages
+- **Solution**: 
+  - Added ganji validation in SajuResult.tsx calculatedData useMemo
+  - Display clear error message: "간지 정보가 누락되었습니다. 사주를 다시 계산해주세요."
+  - Added "다시 계산하기" button to redirect to input page for recalculation
+- **Impact**: Users can easily identify and fix records with missing ganji data
+- **Note**: Existing records saved before validation may need to be re-saved
+
 ## 2025-10-30: Compatibility Page yearSky Validation
 - **Issue**: Compatibility page showed "불러오기" buttons instead of saju tables when yearSky/daySky were not saved
 - **Root Cause**: Some saju records saved without yearSky/daySky due to calculateSaju failures or edit mode flows
