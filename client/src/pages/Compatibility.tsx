@@ -268,6 +268,53 @@ export default function Compatibility() {
   
   // yearSky가 없으면 경고 (오른쪽)
   const rightHasGanji = rightSaju?.yearSky && rightSaju?.daySky;
+  
+  // 간지 입력 사주 디버깅
+  useEffect(() => {
+    if (leftSaju) {
+      console.log('[Compatibility] 왼쪽 사주 상세:', {
+        id: leftSaju.id,
+        name: leftSaju.name,
+        calendarType: leftSaju.calendarType,
+        birthYear: leftSaju.birthYear,
+        birthMonth: leftSaju.birthMonth,
+        birthDay: leftSaju.birthDay,
+        yearSky: leftSaju.yearSky,
+        daySky: leftSaju.daySky,
+        표시조건: {
+          leftSajuId: !!leftSajuId,
+          leftSaju: !!leftSaju,
+          birthMonthNotNull: leftSaju.birthMonth !== null,
+          birthDayNotNull: leftSaju.birthDay !== null,
+          leftHasGanji,
+          모든조건충족: !!(leftSajuId && leftSaju && leftSaju.birthMonth !== null && leftSaju.birthDay !== null && leftHasGanji)
+        }
+      });
+    }
+  }, [leftSaju, leftSajuId, leftHasGanji]);
+  
+  useEffect(() => {
+    if (rightSaju) {
+      console.log('[Compatibility] 오른쪽 사주 상세:', {
+        id: rightSaju.id,
+        name: rightSaju.name,
+        calendarType: rightSaju.calendarType,
+        birthYear: rightSaju.birthYear,
+        birthMonth: rightSaju.birthMonth,
+        birthDay: rightSaju.birthDay,
+        yearSky: rightSaju.yearSky,
+        daySky: rightSaju.daySky,
+        표시조건: {
+          rightSajuId: !!rightSajuId,
+          rightSaju: !!rightSaju,
+          birthMonthNotNull: rightSaju.birthMonth !== null,
+          birthDayNotNull: rightSaju.birthDay !== null,
+          rightHasGanji,
+          모든조건충족: !!(rightSajuId && rightSaju && rightSaju.birthMonth !== null && rightSaju.birthDay !== null && rightHasGanji)
+        }
+      });
+    }
+  }, [rightSaju, rightSajuId, rightHasGanji]);
 
   // 왼쪽 저장 mutation (로컬 저장소)
   const leftSaveMutation = useMutation({
