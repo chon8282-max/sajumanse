@@ -172,6 +172,24 @@ export default function SajuResult() {
       if (!record) {
         throw new Error("사주 데이터를 찾을 수 없습니다.");
       }
+      
+      // 간지 입력 사주 디버깅
+      if (record.calendarType === 'ganji') {
+        console.log('[SajuResult] 간지 입력 사주 로드:', {
+          id: record.id,
+          name: record.name,
+          calendarType: record.calendarType,
+          birthYear: record.birthYear,
+          birthMonth: record.birthMonth,
+          birthDay: record.birthDay,
+          yearSky: record.yearSky,
+          yearEarth: record.yearEarth,
+          daySky: record.daySky,
+          dayEarth: record.dayEarth,
+          간지데이터있음: !!(record.yearSky && record.daySky)
+        });
+      }
+      
       return { success: true, data: record as SajuResultData };
     },
     enabled: !!params?.id,

@@ -87,7 +87,25 @@ export default function SajuList() {
     queryFn: async () => {
       const searchText = debouncedSearchQuery.trim() || undefined;
       const groupId = selectedGroupId && selectedGroupId !== 'all' ? selectedGroupId : undefined;
-      return await localDB.getSajuRecords(undefined, searchText, groupId);
+      const records = await localDB.getSajuRecords(undefined, searchText, groupId);
+      
+      // 간지 입력 사주 디버깅
+      const ganjiRecords = records.filter(r => r.calendarType === 'ganji');
+      if (ganjiRecords.length > 0) {
+        console.log('[SajuList] 간지 입력 사주 목록:', ganjiRecords.map(r => ({
+          id: r.id,
+          name: r.name,
+          calendarType: r.calendarType,
+          birthYear: r.birthYear,
+          birthMonth: r.birthMonth,
+          birthDay: r.birthDay,
+          yearSky: r.yearSky,
+          daySky: r.daySky,
+          표시가능: !!(r.yearSky && r.daySky)
+        })));
+      }
+      
+      return records;
     },
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지 (성능 향상)
   });
