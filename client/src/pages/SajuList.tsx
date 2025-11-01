@@ -87,25 +87,7 @@ export default function SajuList() {
     queryFn: async () => {
       const searchText = debouncedSearchQuery.trim() || undefined;
       const groupId = selectedGroupId && selectedGroupId !== 'all' ? selectedGroupId : undefined;
-      const records = await localDB.getSajuRecords(undefined, searchText, groupId);
-      
-      // 간지 입력 사주 디버깅
-      const ganjiRecords = records.filter(r => r.calendarType === 'ganji');
-      if (ganjiRecords.length > 0) {
-        console.log('[SajuList] 간지 입력 사주 목록:', ganjiRecords.map(r => ({
-          id: r.id,
-          name: r.name,
-          calendarType: r.calendarType,
-          birthYear: r.birthYear,
-          birthMonth: r.birthMonth,
-          birthDay: r.birthDay,
-          yearSky: r.yearSky,
-          daySky: r.daySky,
-          표시가능: !!(r.yearSky && r.daySky)
-        })));
-      }
-      
-      return records;
+      return await localDB.getSajuRecords(undefined, searchText, groupId);
     },
     staleTime: 1000 * 60 * 5, // 5분간 캐시 유지 (성능 향상)
   });
@@ -729,8 +711,21 @@ export default function SajuList() {
                             
                             {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
                             <div className="text-xs mb-1" data-testid={`text-birth-${saju.id}`}>
-                              양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
-                              {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
+                              {saju.calendarType === 'ganji' ? (
+                                <span>
+                                  간지 입력: {saju.yearSky}{saju.yearEarth}년 {saju.monthSky}{saju.monthEarth}월 {saju.daySky}{saju.dayEarth}일
+                                  {saju.birthMonth && saju.birthDay && (
+                                    <span className="ml-2 text-muted-foreground">
+                                      (양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay})
+                                    </span>
+                                  )}
+                                </span>
+                              ) : (
+                                <>
+                                  양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
+                                </>
+                              )}
+                              {saju.calendarType !== 'ganji' && saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
                                 <span className="ml-2 text-muted-foreground">
                                   음력 {saju.lunarYear}.{saju.lunarMonth}.{saju.lunarDay}
                                 </span>
