@@ -4,6 +4,16 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
 
 # Recent Changes
 
+## 2025-11-10: Ganji Input Cache Fix and UX Improvements
+- **Issue**: Ganji-saved records showed "사주 데이터 오류" in Compatibility page despite saving correctly
+- **Root Cause**: React Query cache contained stale data without ganji fields, preventing proper display
+- **Solution**: Added `refetchOnMount: 'always'` and `staleTime: 0` to Compatibility useQuery hooks
+- **Additional Improvements**:
+  - Removed auto-memo generation for ganji inputs (memo field now empty string)
+  - Unified list display format for both ganji and birthdate inputs
+  - Enhanced cache invalidation in GanjiResult to update both query keys immediately
+- **Impact**: Ganji input records now save, list, and load in Compatibility without errors
+
 ## 2025-11-10: Complete Offline Migration
 - **Achievement**: Application now works 100% offline with zero server API dependency
 - **Changes**:

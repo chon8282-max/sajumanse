@@ -160,6 +160,11 @@ export default function GanjiResult() {
         throw new Error('연도를 선택해주세요');
       }
 
+      // 간지 정보 검증
+      if (!yearSky || !yearEarth || !monthSky || !monthEarth || !daySky || !dayEarth || !hourSky || !hourEarth) {
+        throw new Error('간지 정보가 누락되었습니다. 다시 입력해주세요.');
+      }
+
       // 간지로부터 양력 날짜 역산
       const reversedDate = reverseCalculateSolarDate({
         yearSky,
@@ -195,6 +200,13 @@ export default function GanjiResult() {
           variant: "destructive",
         });
       }
+
+      console.log('[GanjiResult] 저장할 간지 정보:', {
+        yearSky, yearEarth,
+        monthSky, monthEarth,
+        daySky, dayEarth,
+        hourSky, hourEarth
+      });
 
       const newRecord = await localDB.createSajuRecord({
         name: name.trim() || '이름없음',

@@ -233,6 +233,8 @@ export default function Compatibility() {
       return record;
     },
     enabled: !!leftSajuId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   useEffect(() => {
@@ -253,6 +255,8 @@ export default function Compatibility() {
       return record;
     },
     enabled: !!rightSajuId,
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   useEffect(() => {
@@ -262,6 +266,13 @@ export default function Compatibility() {
   }, [rightSaju]);
 
   console.log('[Compatibility] 사주 데이터:', { leftSaju, rightSaju });
+  console.log('[Compatibility] 왼쪽 간지 정보:', {
+    yearSky: leftSaju?.yearSky,
+    yearEarth: leftSaju?.yearEarth,
+    daySky: leftSaju?.daySky,
+    dayEarth: leftSaju?.dayEarth,
+    calendarType: leftSaju?.calendarType
+  });
 
   // yearSky가 없으면 경고 (왼쪽)
   const leftHasGanji = leftSaju?.yearSky && leftSaju?.daySky;

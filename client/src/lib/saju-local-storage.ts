@@ -117,7 +117,15 @@ class SajuLocalStorage {
   
   async getSajuRecord(id: string): Promise<SajuRecord | undefined> {
     const db = await this.dbPromise;
-    return await db.get('sajuRecords', id);
+    const record = await db.get('sajuRecords', id);
+    console.log('[LocalDB] getSajuRecord 결과:', {
+      id,
+      yearSky: record?.yearSky,
+      daySky: record?.daySky,
+      calendarType: record?.calendarType,
+      hasRecord: !!record
+    });
+    return record;
   }
 
   async getSajuRecords(limit?: number, searchText?: string, groupId?: string): Promise<SajuRecord[]> {
@@ -157,6 +165,18 @@ class SajuLocalStorage {
     const db = await this.dbPromise;
     const now = new Date();
     
+    console.log('[LocalDB] createSajuRecord 받은 데이터 (전체):', data);
+    console.log('[LocalDB] 간지 정보 확인:', {
+      yearSky: data.yearSky,
+      yearEarth: data.yearEarth,
+      monthSky: data.monthSky,
+      monthEarth: data.monthEarth,
+      daySky: data.daySky,
+      dayEarth: data.dayEarth,
+      hourSky: data.hourSky,
+      hourEarth: data.hourEarth
+    });
+    
     const record: SajuRecord = {
       id: generateUUID(),
       name: data.name || "이름없음",
@@ -173,14 +193,14 @@ class SajuLocalStorage {
       lunarMonth: data.lunarMonth ?? null,
       lunarDay: data.lunarDay ?? null,
       isLeapMonth: data.isLeapMonth ?? false,
-      yearSky: data.yearSky ?? null,
-      yearEarth: data.yearEarth ?? null,
-      monthSky: data.monthSky ?? null,
-      monthEarth: data.monthEarth ?? null,
-      daySky: data.daySky ?? null,
-      dayEarth: data.dayEarth ?? null,
-      hourSky: data.hourSky ?? null,
-      hourEarth: data.hourEarth ?? null,
+      yearSky: data.yearSky || null,
+      yearEarth: data.yearEarth || null,
+      monthSky: data.monthSky || null,
+      monthEarth: data.monthEarth || null,
+      daySky: data.daySky || null,
+      dayEarth: data.dayEarth || null,
+      hourSky: data.hourSky || null,
+      hourEarth: data.hourEarth || null,
       createdAt: now,
       updatedAt: now,
     };
