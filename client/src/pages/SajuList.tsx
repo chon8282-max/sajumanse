@@ -711,21 +711,8 @@ export default function SajuList() {
                             
                             {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
                             <div className="text-xs mb-1" data-testid={`text-birth-${saju.id}`}>
-                              {saju.calendarType === 'ganji' ? (
-                                <span>
-                                  간지 입력: {saju.yearSky}{saju.yearEarth}년 {saju.monthSky}{saju.monthEarth}월 {saju.daySky}{saju.dayEarth}일
-                                  {saju.birthMonth && saju.birthDay && (
-                                    <span className="ml-2 text-muted-foreground">
-                                      (양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay})
-                                    </span>
-                                  )}
-                                </span>
-                              ) : (
-                                <>
-                                  양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
-                                </>
-                              )}
-                              {saju.calendarType !== 'ganji' && saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
+                              양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
+                              {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
                                 <span className="ml-2 text-muted-foreground">
                                   음력 {saju.lunarYear}.{saju.lunarMonth}.{saju.lunarDay}
                                 </span>
