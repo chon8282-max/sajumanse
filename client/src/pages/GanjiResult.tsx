@@ -222,6 +222,7 @@ export default function GanjiResult() {
       return newRecord;
     },
     onSuccess: (newRecord) => {
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records'] });
       queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       
       if (newRecord?.id) {
@@ -310,7 +311,7 @@ export default function GanjiResult() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['local-saju-records', recordId] });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records'] });
       queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
       
       setLocation(`/saju-result/${recordId}`);

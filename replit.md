@@ -4,6 +4,26 @@ This mobile application is a traditional Korean calendar (만세력) and Saju (F
 
 # Recent Changes
 
+## 2025-11-10: Complete Offline Migration
+- **Achievement**: Application now works 100% offline with zero server API dependency
+- **Changes**:
+  - Migrated all server API calls to client-side calculations
+  - Replaced `/api/saju/calculate` with local `calculateSaju()` in SajuInput.tsx, Home.tsx, GanjiResult.tsx
+  - Implemented lunar-solar conversion using lunar-javascript library (Solar.fromYmd/getLunar)
+  - Bundled KASI solar terms data (1900-2050) for offline access
+  - All data stored in IndexedDB (device-local, not shared across devices)
+- **Impact**: App fully functional without internet - calculations, conversions, and storage all work offline
+
+## 2025-11-10: Ganji Input Display Improvements
+- **Issue 1**: Ganji input auto-saved memo text "간지 입력: 甲寅년 丁丑월..." which user wanted removed
+- **Issue 2**: Ganji records displayed differently from birth date records in list
+- **Issue 3**: Ganji records didn't appear immediately in list after saving - required saving another record to show
+- **Solutions**:
+  - Removed auto-memo generation in GanjiResult.tsx (memo field now empty string)
+  - Unified list display format in SajuList.tsx - both ganji and birth date inputs now show: "양력 YYYY.M.D 음력 YYYY.M.D 時"
+  - Fixed cache invalidation - now invalidates both `['local-saju-records']` and `['local-saju-records-list']` query keys
+- **Impact**: Clean, consistent display and immediate list updates for ganji input records
+
 ## 2025-11-01: Lunar Information Display Fix
 - **Issue**: Lunar date information not displayed in Compatibility page
 - **Solution**: Added lunarYear, lunarMonth, lunarDay, isLeapMonth props to SajuTable in Compatibility.tsx
