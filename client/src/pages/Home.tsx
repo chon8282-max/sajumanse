@@ -7,7 +7,9 @@ import CurrentTimeTable from "@/components/CurrentTimeTable";
 import DatePicker from "@/components/DatePicker";
 import MenuGrid from "@/components/MenuGrid";
 import { calculateSaju } from "@/lib/saju-calculator";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { getSolarTermsForCalculation } from "@/lib/solar-terms-data";
+import { Solar } from "lunar-javascript";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { type SajuInfo, type Announcement } from "@shared/schema";
 import { RefreshCw, Sparkles, Save, ChevronRight } from "lucide-react";
@@ -29,13 +31,11 @@ export default function Home() {
   } | null>(null);
   const [, setLocation] = useLocation();
   
-  // 절기 데이터 가져오기
+  // 절기 데이터 가져오기 (로컬 데이터 사용 - 오프라인 지원)
   const { data: solarTermsData } = useQuery({
-    queryKey: ["/api/solar-terms", lastUpdated.getFullYear()],
+    queryKey: ["local-solar-terms", lastUpdated.getFullYear()],
     queryFn: async () => {
-      const response = await fetch(`/api/solar-terms/${lastUpdated.getFullYear()}`);
-      const result = await response.json();
-      return result.success ? result.data : [];
+      return await getSolarTermsForCalculation(lastUpdated.getFullYear());
     },
     staleTime: 1000 * 60 * 60 * 24, // 24시간 캐시
     refetchOnWindowFocus: false,
@@ -50,25 +50,31 @@ export default function Home() {
 
   const announcements = announcementsData?.data || [];
 
-  // 음력 날짜 API 호출 (오프라인 환경에서는 비활성화)
-  const { data: lunarData, error: lunarError } = useQuery({
-    queryKey: ["/api/lunar-solar/convert/lunar", lastUpdated.getFullYear(), lastUpdated.getMonth() + 1, lastUpdated.getDate()],
+  // 음력 날짜 계산 (로컬 - 오프라인 지원)
+  const { data: lunarData } = useQuery({
+    queryKey: ["local-lunar-convert", lastUpdated.getFullYear(), lastUpdated.getMonth() + 1, lastUpdated.getDate()],
     queryFn: async () => {
       try {
-        const response = await apiRequest("POST", "/api/lunar-solar/convert/lunar", {
-          solYear: lastUpdated.getFullYear(),
-          solMonth: lastUpdated.getMonth() + 1,
-          solDay: lastUpdated.getDate()
-        }) as any;
-        return response;
+        const solar = Solar.fromYmd(
+          lastUpdated.getFullYear(),
+          lastUpdated.getMonth() + 1,
+          lastUpdated.getDate()
+        );
+        const lunar = solar.getLunar();
+        return {
+          success: true,
+          lunYear: lunar.getYear(),
+          lunMonth: lunar.getMonth(),
+          lunDay: lunar.getDay(),
+          lunLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false
+        };
       } catch (error) {
+        console.error('음력 변환 실패:', error);
         return null;
       }
     },
     staleTime: 1000 * 60 * 60, // 1시간 동안 캐시
-    refetchOnWindowFocus: false,
-    retry: false, // API 실패 시 재시도 안함
-    enabled: navigator.onLine !== false // 오프라인 감지 시 API 호출 비활성화
+    refetchOnWindowFocus: false
   });
 
   // 현재 날짜의 양력 정보 생성
@@ -125,15 +131,27 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  // 사주팔자 계산 뮤테이션 (서버 API 사용 - DB 절기 데이터 필수)
+  // 사주팔자 계산 뮤테이션 (로컬 계산 - 오프라인 지원)
   const calculateMutation = useMutation({
     mutationFn: async (data: { year: number; month: number; day: number; hour: number; isLunar: boolean }) => {
-      // 서버 API 사용 (정확한 음력-양력 변환 + DB 절기 데이터 포함)
-      const response = await apiRequest("POST", "/api/saju/calculate", data) as any;
-      if (!response.success) {
-        throw new Error(response.error || "서버 사주 계산에 실패했습니다.");
+      // 로컬에서 직접 계산 (오프라인 지원)
+      const solarTerms = await getSolarTermsForCalculation(data.year);
+      const saju = calculateSaju(
+        data.year,
+        data.month,
+        data.day,
+        data.hour,
+        0,
+        data.isLunar,
+        undefined,
+        null,
+        undefined,
+        solarTerms
+      );
+      if (!saju) {
+        throw new Error("사주 계산에 실패했습니다.");
       }
-      return response.data;
+      return saju;
     },
     onSuccess: (data) => {
       setCustomSaju(data);
@@ -152,38 +170,13 @@ export default function Home() {
     }
   });
 
-  // 만세력 저장 뮤테이션
-  const saveMutation = useMutation({
-    mutationFn: async (data: { 
-      birthYear: number; 
-      birthMonth: number; 
-      birthDay: number; 
-      birthHour: number; 
-      isLunar: string;
-      gender: string;
-    }) => {
-      const response = await apiRequest("POST", "/api/manse", data) as any;
-      if (!response.success) {
-        throw new Error(response.error || "저장에 실패했습니다.");
-      }
-      return response.data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "저장 완료",
-        description: "만세력 정보가 성공적으로 저장되었습니다.",
-        duration: 700
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/manse"] });
-    },
-    onError: () => {
-      toast({
-        title: "저장 오류",
-        description: "만세력 정보 저장 중 오류가 발생했습니다.",
-        variant: "destructive"
-      });
+  // 만세력 저장 기능 제거 (사주입력 페이지로 이동)
+  const handleSaveClick = () => {
+    if (lastInputData) {
+      // 사주입력 페이지로 이동 (데이터 전달)
+      setLocation(`/saju-input?year=${lastInputData.year}&month=${lastInputData.month}&day=${lastInputData.day}&hour=${lastInputData.hour}&calendarType=${lastInputData.isLunar ? '음력' : '양력'}`);
     }
-  });
+  };
 
   const handleDateSelect = (year: number, month: number, day: number, hour: number, isLunar: boolean) => {
     setLastInputData({ year, month, day, hour, isLunar });
@@ -249,26 +242,6 @@ export default function Home() {
     )[0] as any;
   };
 
-  const handleSaveCustomSaju = () => {
-    if (!customSaju || !lastInputData) {
-      toast({
-        title: "저장 오류",
-        description: "저장할 사주 정보가 없습니다.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // 실제 사용자가 입력한 데이터와 계산된 사주팔자를 함께 저장
-    saveMutation.mutate({
-      birthYear: lastInputData.year,
-      birthMonth: lastInputData.month,
-      birthDay: lastInputData.day,
-      birthHour: lastInputData.hour,
-      isLunar: lastInputData.isLunar ? "true" : "false",
-      gender: "기타" // 기본값 (추후 사용자 입력으로 확장 가능)
-    });
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -311,12 +284,11 @@ export default function Home() {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={handleSaveCustomSaju}
-                disabled={saveMutation.isPending}
+                onClick={handleSaveClick}
                 data-testid="button-save-custom"
               >
                 <Save className="w-4 h-4 mr-1" />
-                {saveMutation.isPending ? "저장중..." : "저장"}
+                저장
               </Button>
             </div>
             

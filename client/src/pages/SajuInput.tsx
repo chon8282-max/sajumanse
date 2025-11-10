@@ -202,7 +202,7 @@ export default function SajuInput() {
         // lunar-javascript로 로컬 변환 (윤달은 음수 월로 표현)
         const isLeapMonth = formData.calendarType === "윤달";
         const lunarMonth = isLeapMonth ? -monthNum : monthNum;
-        const lunar = Lunar.fromYmd(yearNum, lunarMonth, dayNum);
+        const lunar = (Lunar as any).fromYmd(yearNum, lunarMonth, dayNum);
         const solar = lunar.getSolar();
         
         const solarYear = solar.getYear();

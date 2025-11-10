@@ -8,7 +8,8 @@ import { findGanjiIndex } from "@/lib/ganji-calculator";
 import { calculateCompleteDaeun, calculateCurrentAge, DaeunPeriod, findCurrentDaeun } from "@/lib/daeun-calculator";
 import { useTheme } from "@/components/ThemeProvider";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { Solar } from "lunar-javascript";
 import { useToast } from "@/hooks/use-toast";
 import { localDB } from "@/lib/saju-local-storage";
 import { reverseCalculateSolarDate } from "@/lib/reverse-ganji-calculator";
@@ -175,25 +176,17 @@ export default function GanjiResult() {
         throw new Error('날짜 역산에 실패했습니다');
       }
 
-      // 양력을 음력으로 변환
+      // 양력을 음력으로 변환 (로컬)
       let lunarData = null;
       try {
-        const lunarResponse = await apiRequest('POST', '/api/lunar-solar/convert/lunar', {
-          solYear: reversedDate.year,
-          solMonth: reversedDate.month,
-          solDay: reversedDate.day
-        });
-        const lunarResult = await lunarResponse.json();
-        if (lunarResult.success && lunarResult.data) {
-          lunarData = {
-            lunarYear: lunarResult.data.lunYear,
-            lunarMonth: lunarResult.data.lunMonth,
-            lunarDay: lunarResult.data.lunDay,
-            isLeapMonth: lunarResult.data.lunLeapMonth === "윤"
-          };
-        } else {
-          console.warn('음력 변환 결과 없음:', lunarResult);
-        }
+        const solar = Solar.fromYmd(reversedDate.year, reversedDate.month, reversedDate.day);
+        const lunar = solar.getLunar();
+        lunarData = {
+          lunarYear: lunar.getYear(),
+          lunarMonth: lunar.getMonth(),
+          lunarDay: lunar.getDay(),
+          isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false
+        };
       } catch (error) {
         console.error('음력 변환 실패:', error);
         toast({
@@ -276,25 +269,17 @@ export default function GanjiResult() {
         throw new Error('날짜 역산에 실패했습니다');
       }
 
-      // 양력을 음력으로 변환
+      // 양력을 음력으로 변환 (로컬)
       let lunarData = null;
       try {
-        const lunarResponse = await apiRequest('POST', '/api/lunar-solar/convert/lunar', {
-          solYear: reversedDate.year,
-          solMonth: reversedDate.month,
-          solDay: reversedDate.day
-        });
-        const lunarResult = await lunarResponse.json();
-        if (lunarResult.success && lunarResult.data) {
-          lunarData = {
-            lunarYear: lunarResult.data.lunYear,
-            lunarMonth: lunarResult.data.lunMonth,
-            lunarDay: lunarResult.data.lunDay,
-            isLeapMonth: lunarResult.data.lunLeapMonth === "윤"
-          };
-        } else {
-          console.warn('음력 변환 결과 없음:', lunarResult);
-        }
+        const solar = Solar.fromYmd(reversedDate.year, reversedDate.month, reversedDate.day);
+        const lunar = solar.getLunar();
+        lunarData = {
+          lunarYear: lunar.getYear(),
+          lunarMonth: lunar.getMonth(),
+          lunarDay: lunar.getDay(),
+          isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false
+        };
       } catch (error) {
         console.error('음력 변환 실패:', error);
         toast({
@@ -391,29 +376,23 @@ export default function GanjiResult() {
   // 생일 변경 핸들러 - 날짜로부터 간지 재계산
   const handleBirthDateChange = useCallback(async (newYear: number, newMonth: number, newDay: number) => {
     try {
-      // 서버 API를 통해 정확한 사주 계산 (DB 절기 데이터 사용)
+      // 로컬에서 사주 계산 (오프라인 지원)
       const hourIndex = JIJI.indexOf(hourEarth as any);
       const calculatedHour = hourIndex !== -1 ? hourIndex * 2 + 1 : 1; // 지지에서 시간 복원
       
-      const response = await fetch('/api/saju/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          year: newYear,
-          month: newMonth,
-          day: newDay,
-          hour: calculatedHour,
-          isLunar: false
-        })
-      });
+      const newSaju = calculateSaju(
+        newYear,
+        newMonth,
+        newDay,
+        calculatedHour,
+        0,
+        false
+      );
       
-      const result = await response.json();
-      if (!result.success) {
-        console.error('사주 계산 실패:', result.error);
+      if (!newSaju) {
+        console.error('사주 계산 실패');
         return;
       }
-      
-      const newSaju = result.data;
       
       // 계산된 간지로 URL 파라미터 업데이트
       const params = new URLSearchParams(searchParams);
