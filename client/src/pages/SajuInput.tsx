@@ -490,7 +490,7 @@ export default function SajuInput() {
 
       console.log("사주 정보 저장 요청:", requestData);
 
-      // 서버에서 사주 계산 (절기 DB 데이터 활용)
+      // 클라이언트에서 사주 계산 (오프라인 지원)
       let calculatedSaju;
       try {
         // 시간 파싱
@@ -515,34 +515,26 @@ export default function SajuInput() {
           }
         }
         
-        // 서버 API를 호출하여 data.go.kr의 정확한 일진 데이터 사용
-        const sajuApiResponse = await fetch('/api/saju/calculate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            year: requestData.birthYear,
-            month: requestData.birthMonth,
-            day: requestData.birthDay,
-            hour: hour >= 0 ? hour : 12, // 생시모름일 경우 12시로
-            minute: minute,
-            isLunar: false // 이미 양력으로 변환됨
-          })
-        });
+        // 클라이언트에서 직접 사주 계산 (오프라인 지원 + 속도 향상)
+        const solarTerms = await getSolarTermsForCalculation(requestData.birthYear);
+        calculatedSaju = calculateSaju(
+          requestData.birthYear,
+          requestData.birthMonth,
+          requestData.birthDay,
+          hour >= 0 ? hour : 12, // 생시모름일 경우 12시로
+          minute,
+          false, // 이미 양력으로 변환됨
+          undefined,
+          undefined,
+          undefined,
+          solarTerms
+        );
         
-        if (!sajuApiResponse.ok) {
-          throw new Error("서버에서 사주 계산에 실패했습니다.");
+        if (!calculatedSaju) {
+          throw new Error("사주 계산에 실패했습니다.");
         }
         
-        const sajuApiResult = await sajuApiResponse.json();
-        if (!sajuApiResult.success || !sajuApiResult.data) {
-          throw new Error("사주 계산 결과가 올바르지 않습니다.");
-        }
-        
-        calculatedSaju = sajuApiResult.data;
-        console.log("✅ 서버에서 계산된 사주 (data.go.kr 일진 포함):", calculatedSaju);
-        if (sajuApiResult.data.apiInfo) {
-          console.log("  → data.go.kr 일진:", sajuApiResult.data.apiInfo.solJeongja);
-        }
+        console.log("✅ 클라이언트에서 계산된 사주:", calculatedSaju);
         
         // 절입일인 경우 클라이언트 계산 년월주 우선 사용
         if (requestData.clientCalculatedSaju) {
