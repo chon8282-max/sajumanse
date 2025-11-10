@@ -204,7 +204,7 @@ export default function GanjiResult() {
         birthTime: `${hourEarth}時`,
         calendarType: 'ganji',
         gender: gender,
-        memo: `간지 입력: ${yearSky}${yearEarth}년 ${monthSky}${monthEarth}월 ${daySky}${dayEarth}일 ${hourSky}${hourEarth}시${lunarData?.isLeapMonth ? ' (윤달)' : ''}`,
+        memo: '',
         yearSky,
         yearEarth,
         monthSky,
