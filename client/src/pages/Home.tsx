@@ -131,8 +131,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-2 pb-6 max-w-md space-y-4">
+    <div className="bg-background">
+      <div className="container mx-auto px-4 pt-2 pb-6 max-w-md space-y-4">c
 
         <div>
           {currentSaju ? (
