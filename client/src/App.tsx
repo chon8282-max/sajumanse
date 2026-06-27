@@ -252,11 +252,9 @@ function AppContent() {
             />
           )}
           
-          <main className="flex-1 flex flex-col min-h-0 pb-20 overflow-y-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-          
+          <main className="flex-1 flex flex-col min-h-0 pb-20 overflow-y-auto">
             <Router />
           </main>
-
           {/* 하단 네비게이션 표시 */}
           <BottomNavigation 
             activeTab={activeTab}
