@@ -61,7 +61,7 @@ export default function MobileHeader({
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b" style={{ paddingTop: 'max(env(safe-area-inset-top), 44px)' }}>
-      <div className="flex items-center justify-between p-2.5 mt-3">
+      <div className="flex items-center justify-between p-1 mt-[5px]">
         {/* 좌측: 메뉴 버튼 */}
         <Button 
           variant="ghost" 
