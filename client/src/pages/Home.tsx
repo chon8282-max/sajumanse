@@ -132,7 +132,7 @@ export default function Home() {
 
   return (
     <div className="bg-background">
-      <div className="container mx-auto px-4 pt-2 pb-6 max-w-md space-y-4">c
+      <div className="container mx-auto px-4 pt-0 pb-6 max-w-md space-y-4">
 
         <div>
           {currentSaju ? (
