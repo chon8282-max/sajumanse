@@ -224,9 +224,9 @@ export default function GanjiInput() {
                 {ganjiList.map((ganji, index) => (
                   <Button
                     key={index}
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => handleYearSelect(ganji.sky, ganji.earth)}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover-elevate active-elevate-2 border [border-color:var(--button-outline)] shadow-xs active:shadow-none min-h-9 py-2 h-7 px-2 text-sm bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-800/40 border-purple-300 dark:border-purple-700 text-purple-900 dark:text-purple-100 pt-[8px] pb-[8px] mt-[-3px] mb-[-3px]"
+                    className={`h-7 px-2 text-sm pt-[8px] pb-[8px] mt-[-3px] mb-[-3px] border ${getGanjiColorClass(index)}`}
                     data-testid={`button-year-${ganji.label}`}
                   >
                     {ganji.label}

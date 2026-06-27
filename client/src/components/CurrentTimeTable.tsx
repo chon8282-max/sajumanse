@@ -62,7 +62,19 @@ export default function CurrentTimeTable({
       <div className="text-center mb-0.5">
         <h2 className="font-bold text-primary mb-0.5" style={{ letterSpacing: '-0.02em', fontSize: '16px' }}>{title}</h2>
         <div className="text-muted-foreground" style={{ fontSize: '12px' }}>
-          <p style={{ letterSpacing: '-0.01em' }}>{solarDate || '양력 정보 없음'}</p>
+          <p style={{ letterSpacing: '-0.01em' }}>
+  {solarDate ? (
+    <>
+      {solarDate.split(/\(음력[^)]*\)/)[0].trimEnd()}
+      {solarDate.match(/\(음력[^)]*\)/) && (
+        <span style={{ color: '#6aa8d8', marginLeft: '2px', marginRight: '2px' }}>
+          {solarDate.match(/\(음력[^)]*\)/)?.[0]}
+        </span>
+      )}
+      {solarDate.split(/\(음력[^)]*\)/)[1] || ''}
+    </>
+  ) : '양력 정보 없음'}
+</p>
         </div>
       </div>
       {/* 현재 만세력 간단 테이블 (1-2행만) */}

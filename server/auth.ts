@@ -311,33 +311,18 @@ router.get("/callback", async (req: Request, res) => {
           // User-Agent로 모바일 감지
           const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
           
-          // opener가 있으면 (새 탭) 닫고 opener에 메시지 전송
+          // 모든 경우 즉시 홈으로 이동
           if (window.opener) {
             try {
               window.opener.postMessage({ type: 'auth_success' }, '${homeUrl}');
-              document.getElementById('message').textContent = '창을 닫는 중...';
               setTimeout(() => window.close(), 500);
             } catch (e) {
-              console.error('postMessage failed:', e);
               window.location.href = '${homeUrl}';
             }
-          } else if (isStandalone) {
-            // PWA standalone 모드인데 opener가 없음 - 홈으로 리다이렉트
-            window.location.href = '${homeUrl}';
-          } else if (isMobile) {
-            // 모바일 브라우저 - PWA 안내 표시 + 3초 후 auth_token과 함께 리다이렉트
-            document.getElementById('pwaHint').style.display = 'block';
-            document.getElementById('message').textContent = '로그인이 완료되었습니다!';
-            document.getElementById('returnBtn').style.display = 'inline-block';
-            
-            // 3초 후 자동으로 auth_token과 함께 리다이렉트 (PWA 세션 생성용)
-            setTimeout(() => {
-              window.location.href = '${authRedirectUrl}';
-            }, 3000);
           } else {
-            // 데스크톱 - 홈으로 이동 버튼 표시
-            document.getElementById('returnBtn').style.display = 'inline-block';
+            window.location.href = '${homeUrl}';
           }
+            
         </script>
       </body>
       </html>

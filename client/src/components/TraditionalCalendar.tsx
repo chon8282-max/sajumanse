@@ -1,11 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 import { generateCalendarMonth, getCalendarInfo, CalendarDayData } from "@/lib/calendar-calculator";
-import { CHINESE_TO_KOREAN_MAP } from "@shared/schema";
 import { Solar } from 'lunar-javascript';
 
 interface SolarTermInfo {
@@ -27,177 +24,109 @@ export default function TraditionalCalendar({
   const [currentYear, setCurrentYear] = useState(initialYear);
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
 
-  // 달력 정보 계산
-  const calendarInfo = useMemo(() => 
-    getCalendarInfo(currentYear, currentMonth), 
-    [currentYear, currentMonth]
-  );
+  const calendarInfo = useMemo(() => getCalendarInfo(currentYear, currentMonth), [currentYear, currentMonth]);
+  const calendarData = useMemo(() => generateCalendarMonth(currentYear, currentMonth), [currentYear, currentMonth]);
 
-  // 달력 데이터 생성
-  const calendarData = useMemo(() => 
-    generateCalendarMonth(currentYear, currentMonth), 
-    [currentYear, currentMonth]
-  );
-
-  // 절기 데이터 조회 - 현재년도 ±2년 미리 로드
   const { data: solarTermsData } = useQuery({
-    queryKey: [`/api/solar-terms-range`, currentYear],
+    queryKey: [`/local-solar-terms-range`, currentYear],
     queryFn: async () => {
-      const years = [currentYear - 1, currentYear, currentYear + 1];
-      const promises = years.map(year => 
-        apiRequest("GET", `/api/solar-terms/${year}`).then(res => res.json())
-      );
-      const results = await Promise.all(promises);
-      
-      // 모든 연도의 절기 데이터 병합
-      const allTerms = results.flatMap(result => 
-        result.success ? result.data : []
-      );
-      
+      const res = await fetch('/data/solar-terms.json');
+      const allTerms = await res.json();
       return { success: true, data: allTerms };
     },
-    staleTime: 1000 * 60 * 60, // 1시간 캐시
+    staleTime: 1000 * 60 * 60 * 24,
   });
 
-  // 현재 월의 절기만 필터링하여 표시 (KST 기준)
   const solarTerms: SolarTermInfo[] = useMemo(() => {
     if (!solarTermsData?.success) return [];
-    
     const allTerms: SolarTermInfo[] = solarTermsData.data.map((term: { name: string; date: string }) => {
       const utcDate = new Date(term.date);
-      // UTC를 KST로 변환 (UTC + 9시간)
       const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
-      
       return {
         name: term.name,
         date: kstDate,
-        dateString: kstDate.toLocaleDateString('ko-KR', { 
-          timeZone: 'UTC',
-          month: '2-digit', 
-          day: '2-digit' 
-        }).replace('. ', '/').replace('.', ''),
-        timeString: kstDate.toLocaleTimeString('ko-KR', { 
-          timeZone: 'UTC',
-          hour: '2-digit', 
-          minute: '2-digit',
-          hour12: false 
-        })
+        dateString: kstDate.toLocaleDateString('ko-KR', { timeZone: 'UTC', month: '2-digit', day: '2-digit' }).replace('. ', '/').replace('.', ''),
+        timeString: kstDate.toLocaleTimeString('ko-KR', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false })
       };
     });
-    
-    // 현재 월의 절기만 반환 (KST 기준)
     return allTerms.filter((term: SolarTermInfo) => {
-      const termMonth = term.date.getUTCMonth() + 1;
-      const termYear = term.date.getUTCFullYear();
-      return termYear === currentYear && termMonth === currentMonth;
+      return term.date.getUTCFullYear() === currentYear && term.date.getUTCMonth() + 1 === currentMonth;
     });
   }, [solarTermsData, currentYear, currentMonth]);
 
-  // 달력 데이터와 음력 데이터 결합 (lunar-javascript로 직접 계산)
   const enrichedCalendarData = useMemo(() => {
-    return calendarData.map(week => 
-      week.map(dayData => {
-        if (!dayData.isCurrentMonth) return dayData;
-        
-        try {
-          // lunar-javascript로 음력 계산 (즉시 계산, API 호출 없음)
-          const solar = Solar.fromYmd(currentYear, currentMonth, dayData.solarDay);
-          const lunar = solar.getLunar();
-          
-          return {
-            ...dayData,
-            lunarYear: lunar.getYear(),
-            lunarMonth: lunar.getMonth(),
-            lunarDay: lunar.getDay(),
-            isLunarFirst: lunar.getDay() === 1
-          };
-        } catch (error) {
-          console.error(`음력 변환 오류: ${currentYear}-${currentMonth}-${dayData.solarDay}`, error);
-          return dayData;
-        }
-      })
-    );
+    return calendarData.map(week => week.map(dayData => {
+      if (!dayData.isCurrentMonth) return dayData;
+      try {
+        const solar = Solar.fromYmd(currentYear, currentMonth, dayData.solarDay);
+        const lunar = solar.getLunar();
+        return { ...dayData, lunarYear: lunar.getYear(), lunarMonth: lunar.getMonth(), lunarDay: lunar.getDay(), isLunarFirst: lunar.getDay() === 1 };
+      } catch {
+        return dayData;
+      }
+    }));
   }, [calendarData, currentYear, currentMonth]);
 
-  const handlePrevMonth = () => {
-    if (currentMonth === 1) {
-      setCurrentYear(prev => prev - 1);
-      setCurrentMonth(12);
-    } else {
-      setCurrentMonth(prev => prev - 1);
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (currentMonth === 12) {
-      setCurrentYear(prev => prev + 1);
-      setCurrentMonth(1);
-    } else {
-      setCurrentMonth(prev => prev + 1);
-    }
-  };
-
-  const handlePrevYear = () => {
-    setCurrentYear(prev => prev - 1);
-  };
-
-  const handleNextYear = () => {
-    setCurrentYear(prev => prev + 1);
-  };
+  const handlePrevMonth = () => { if (currentMonth === 1) { setCurrentYear(p => p - 1); setCurrentMonth(12); } else setCurrentMonth(p => p - 1); };
+  const handleNextMonth = () => { if (currentMonth === 12) { setCurrentYear(p => p + 1); setCurrentMonth(1); } else setCurrentMonth(p => p + 1); };
+  const handlePrevYear = () => setCurrentYear(p => p - 1);
+  const handleNextYear = () => setCurrentYear(p => p + 1);
+  const handleToday = () => { setCurrentYear(new Date().getFullYear()); setCurrentMonth(new Date().getMonth() + 1); };
 
   const renderDayCell = (dayData: CalendarDayData) => {
     const isToday = dayData.isToday;
     const isLunarFirst = dayData.isLunarFirst;
     const isSunday = dayData.dayOfWeek === 0;
     const isSaturday = dayData.dayOfWeek === 6;
-    
-    // 절기 확인 (KST 기준 날짜 비교)
-    const solarTerm = solarTerms.find(term => {
-      // term.date는 이미 KST로 변환된 Date 객체
-      const termDay = term.date.getUTCDate(); // KST Date의 UTC 메서드로 날짜 추출
-      return termDay === dayData.solarDay && dayData.isCurrentMonth;
-    });
+    const solarTerm = solarTerms.find(term => term.date.getUTCDate() === dayData.solarDay && dayData.isCurrentMonth);
 
     return (
-      <div 
+      <div
         key={`${dayData.solarDate.getTime()}`}
-        className={`
-          relative min-h-[50px] p-0.5 border border-gray-200 
-          ${dayData.isCurrentMonth ? 'bg-white' : 'bg-gray-50 opacity-50'}
-          ${isToday ? 'bg-yellow-100 ring-2 ring-yellow-400' : ''}
+        style={{ borderRight: '0.5px solid #4a4a4a', borderTop: '0.5px solid #4a4a4a' }}
+        className={`relative min-h-[140px] flex flex-col items-center pt-1 pb-1
+          ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
+          ${dayData.isCurrentMonth && isSunday ? 'bg-red-50' : ''}
+          ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50' : ''}
+          ${dayData.isCurrentMonth && !isSunday && !isSaturday ? 'bg-white' : ''}
+          ${isToday ? '!bg-indigo-50' : ''}
         `}
         data-testid={`calendar-day-${dayData.solarDay}`}
       >
-        {/* 양력 날짜 */}
-        <div className={`
-          text-base font-bold mb-0
-          ${isSunday ? 'text-red-500' : ''}
-          ${isSaturday ? 'text-blue-500' : ''}
-          ${!dayData.isCurrentMonth ? 'text-gray-400' : 'text-gray-800'}
-        `}>
-          {dayData.solarDay}
+        {/* 윗줄: 날짜 + 간지 나란히 */}
+        <div className="flex items-start gap-0.5">
+          {/* 양력 날짜 */}
+          <div className={`w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold
+            ${isToday ? 'bg-indigo-500 text-white' : ''}
+            ${!isToday && isSunday ? 'text-red-400' : ''}
+            ${!isToday && isSaturday ? 'text-indigo-400' : ''}
+            ${!isToday && !isSunday && !isSaturday && dayData.isCurrentMonth ? 'text-gray-800' : ''}
+            ${!dayData.isCurrentMonth ? 'text-gray-300' : ''}
+          `}>
+            {dayData.solarDay}
+          </div>
+
+          {/* 간지 (천간/지지 세로로) */}
+          {dayData.lunarDayGanji && (
+            <div className="flex flex-col items-center leading-none">
+              <span className="text-[18px] text-gray-800 font-bold">{dayData.lunarDayGanji.sky}</span>
+              <span className="text-[18px] text-gray-800 font-bold">{dayData.lunarDayGanji.earth}</span>
+            </div>
+          )}
         </div>
-        
+
         {/* 음력 날짜 */}
         {dayData.lunarDay && (
-          <div className={`
-            text-xs mb-0
-            ${isLunarFirst ? 'font-bold text-red-600' : 'text-gray-600'}
+          <div className={`text-[14px] leading-tight font-bold mt-0.5
+            ${isLunarFirst ? 'text-red-500' : 'text-blue-900'}
           `}>
             {dayData.lunarMonth}/{dayData.lunarDay}
           </div>
         )}
-        
-        {/* 일간지 */}
-        {dayData.lunarDayGanji && (
-          <div className="text-xs text-blue-600">
-            {dayData.lunarDayGanji.sky}{dayData.lunarDayGanji.earth}
-          </div>
-        )}
-        
+
         {/* 절기 */}
         {solarTerm && (
-          <div className="absolute top-1 right-1 text-xs text-green-600 font-bold">
+          <div className="absolute top-0.5 right-0.5 text-[10px] text-emerald-600 font-bold">
             {solarTerm.name}
           </div>
         )}
@@ -206,110 +135,80 @@ export default function TraditionalCalendar({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto pl-[0px] pr-[0px] pt-[0px] pb-[0px]" data-testid="traditional-calendar">
-      <Card>
-        <CardHeader className="pb-0 pl-[0px] pr-[0px] pt-2">
-          {/* 1열: 년도간지(왼쪽) | 역학달력(가운데) | 월간지(오른쪽) */}
-          <div className="flex items-center justify-between mb-1 pl-[14px] pr-[14px] text-[15px]">
-            <div className="text-base font-bold text-blue-800">
-              {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
+    <div className="w-full max-w-4xl mx-auto" data-testid="traditional-calendar">
+      <Card className="overflow-hidden shadow-sm" style={{ border: '0.5px solid #4a4a4a' }}>
+        <CardHeader className="p-0">
+          <div className="px-4 py-3 bg-white">
+            {/* 년월 + 간지 표시 */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-semibold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-lg">
+                {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
+              </div>
+              <div className="text-lg font-bold text-gray-800">
+                {currentYear}년 {currentMonth}월
+              </div>
+              <div className="text-sm font-semibold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">
+                {calendarInfo.monthGanji[0]}{calendarInfo.monthGanji[1]}월
+              </div>
             </div>
-            
-            <div className="text-base font-bold">
-              {currentYear}년 {currentMonth}월
-            </div>
-            
-            <div className="text-base font-bold text-green-800">
-              {calendarInfo.monthGanji[0]}{calendarInfo.monthGanji[1]}월
-            </div>
-          </div>
 
-          {/* 2열: 과거 이동(왼쪽) | 미래 이동(오른쪽) */}
-          <div className="flex items-center justify-between pl-[14px] pr-[14px] pt-[2px] pb-[2px] mb-1">
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handlePrevYear} 
-                data-testid="button-prev-year" 
-                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
-              >
-                <ChevronLeft className="w-3 h-3" />
-                <ChevronLeft className="w-3 h-3 ml-[-8px]" />
-                <span>년</span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handlePrevMonth} 
-                data-testid="button-prev-month" 
-                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
-              >
-                <ChevronLeft className="w-3 h-3" />
-                <span>월</span>
-              </Button>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleNextMonth} 
-                data-testid="button-next-month" 
-                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
-              >
-                <span>월</span>
-                <ChevronRight className="w-3 h-3" />
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleNextYear} 
-                data-testid="button-next-year" 
-                className="h-7 px-2 gap-1 text-xs border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-900/30"
-              >
-                <span>년</span>
-                <ChevronRight className="w-3 h-3 ml-[-8px]" />
-                <ChevronRight className="w-3 h-3" />
-              </Button>
+            {/* 네비게이션 */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <button onClick={handlePrevYear} data-testid="button-prev-year"
+                  className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <ChevronsLeft className="w-3.5 h-3.5" /><span>년</span>
+                </button>
+                <button onClick={handlePrevMonth} data-testid="button-prev-month"
+                  className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <ChevronLeft className="w-3.5 h-3.5" /><span>월</span>
+                </button>
+              </div>
+
+              <button onClick={handleToday}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition-all">
+                오늘
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                <button onClick={handleNextMonth} data-testid="button-next-month"
+                  className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <span>월</span><ChevronRight className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={handleNextYear} data-testid="button-next-year"
+                  className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <span>년</span><ChevronsRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
 
           {/* 요일 헤더 */}
-          <div className="grid grid-cols-7 gap-0">
+          <div className="grid grid-cols-7" style={{ borderTop: '0.5px solid #4a4a4a', borderLeft: '0.5px solid #4a4a4a' }}>
             {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
-              <div 
-                key={day} 
-                className={`
-                  text-center font-bold py-1 border bg-gray-100
-                  ${index === 0 ? 'text-red-500' : ''}
-                  ${index === 6 ? 'text-blue-500' : ''}
-                `}
-              >
-                {day}
-              </div>
+              <div key={day} style={{ borderRight: '0.5px solid #4a4a4a' }}
+                className={`text-center text-base font-semibold py-2
+                  ${index === 0 ? 'text-red-400' : ''}
+                  ${index === 6 ? 'text-blue-400' : ''}
+                  ${index !== 0 && index !== 6 ? 'text-gray-500' : ''}
+                `}>{day}</div>
             ))}
           </div>
         </CardHeader>
 
         <CardContent className="p-0">
-          {/* 달력 그리드 */}
-          <div className="grid grid-cols-7 gap-0">
+          <div className="grid grid-cols-7" style={{ borderLeft: '0.5px solid #4a4a4a', borderBottom: '0.5px solid #4a4a4a' }}>
             {enrichedCalendarData.flat().map(dayData => renderDayCell(dayData))}
           </div>
-          
-          {/* 절기 정보 하단 표시 */}
+
           {solarTerms.length > 0 && (
-            <div className="p-4 bg-gray-50 border-t">
-              <div className="flex gap-8 justify-center text-[15px]">
+            <div className="px-4 py-3 bg-gray-50" style={{ borderTop: '0.5px solid #4a4a4a' }}>
+              <div className="flex gap-6 justify-center">
                 {solarTerms.map((term, index) => (
-                  <div key={index} className="text-center">
-                    <span className="font-bold text-blue-600">{term.name}</span>
-                    <span className="text-gray-600">: </span>
-                    <span className="font-bold text-gray-600">{term.dateString}</span>
-                    <span className="text-gray-600"> {term.timeString}</span>
+                  <div key={index} className="text-center text-sm">
+                    <span className="font-bold text-emerald-600">{term.name}</span>
+                    <span className="text-gray-400 mx-1">·</span>
+                    <span className="text-gray-600">{term.dateString} {term.timeString}</span>
                   </div>
                 ))}
               </div>

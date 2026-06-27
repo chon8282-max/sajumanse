@@ -2676,5 +2676,35 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+ // 유튜브 RSS 프록시
+  app.get("/api/youtube-videos", async (req, res) => {
+    try {
+      const channelId = "UCi09yack7CkCTWtP2j0b-eA";
+      const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+      const response = await fetch(rssUrl);
+      const xml = await response.text();
+      
+      const videoIdMatches = xml.match(/<yt:videoId>(.*?)<\/yt:videoId>/g) || [];
+      const titleMatches = xml.match(/<title>(.*?)<\/title>/g) || [];
+      
+      const videos = videoIdMatches.map((v, i) => {
+        const videoId = v.replace(/<\/?yt:videoId>/g, '');
+        const title = (titleMatches[i + 1] || '').replace(/<\/?title>/g, '');
+        return {
+          videoId,
+          title,
+          thumbnail: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+        };
+      });
+      
+      // 랜덤 6개 선택
+      const shuffled = videos.sort(() => Math.random() - 0.5).slice(0, 6);
+      res.json({ success: true, videos: shuffled });
+    } catch (error) {
+      console.error('유튜브 RSS 오류:', error);
+      res.status(500).json({ success: false, error: '유튜브 영상 로딩 실패' });
+    }
+  });
+
   // 라우트 등록만 수행 (서버는 index.ts에서 생성)
 }

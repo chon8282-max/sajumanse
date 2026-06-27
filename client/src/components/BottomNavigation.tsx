@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Archive, Home, Heart } from "lucide-react";
+import { Calendar, Archive, Home, Heart, MessageCircle } from "lucide-react";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -11,7 +11,8 @@ const tabs = [
   { id: "home", label: "홈", icon: Home },
   { id: "manse", label: "만세력", icon: Calendar },
   { id: "saved", label: "불러오기", icon: Archive },
-  { id: "compatibility", label: "궁합", icon: Heart }
+  { id: "compatibility", label: "궁합", icon: Heart },
+  { id: "consult", label: "상담", icon: MessageCircle }
 ];
 
 export default function BottomNavigation({ activeTab, onTabChange }: BottomNavigationProps) {
@@ -33,12 +34,20 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => {
+                if (tab.id === 'consult') {
+                  window.open('https://map.naver.com/p/entry/place/11819780?c=15.00,0,0,0,dh&placePath=%2Fhome%3Ffrom%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202606262329%26locale%3Dko%26svcName%3Dmap_pcv5', '_blank');
+                  return;
+                }
                 console.log(`Tab ${tab.id} clicked`);
                 onTabChange(tab.id);
               }}
               onTouchEnd={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                if (tab.id === 'consult') {
+                  window.open('https://map.naver.com/p/entry/place/11819780?c=15.00,0,0,0,dh&placePath=%2Fhome%3Ffrom%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202606262329%26locale%3Dko%26svcName%3Dmap_pcv5', '_blank');
+                  return;
+                }
                 console.log(`Tab ${tab.id} touched`);
                 onTabChange(tab.id);
               }}

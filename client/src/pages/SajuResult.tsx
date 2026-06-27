@@ -162,8 +162,8 @@ export default function SajuResult() {
   const { theme, toggleTheme } = useTheme();
   
   // 사주 데이터 조회 (로컬 저장소)
-  const { data: sajuData, isLoading } = useQuery<{success: boolean, data: SajuResultData}>({
-    queryKey: ["local-saju-records", params?.id || "null"],
+  const { data: sajuData, isLoading, error: sajuError } = useQuery<{success: boolean, data: SajuResultData}>({
+    queryKey: ["local-saju-record-detail", params?.id || "null"],
     queryFn: async () => {
       if (!params?.id) {
         throw new Error("No ID provided");
@@ -175,8 +175,10 @@ export default function SajuResult() {
       return { success: true, data: record as SajuResultData };
     },
     enabled: !!params?.id,
+    staleTime: 0,
+    gcTime: 0,
   });
-
+  
   // 저장 mutation (로컬 저장소)
   const saveMutation = useMutation({
     mutationFn: async (memo: string) => {
@@ -195,7 +197,7 @@ export default function SajuResult() {
         description: "사주 정보가 성공적으로 저장되었습니다.",
         duration: 700
       });
-      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-record-detail", params?.id] });
     },
     onError: (error) => {
       console.error('Save error:', error);
@@ -226,7 +228,7 @@ export default function SajuResult() {
         description: "이름이 성공적으로 변경되었습니다.",
         duration: 700
       });
-      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id] });
+      queryClient.invalidateQueries({ queryKey: ["local-saju-record-detail", params?.id] });
       setIsNameDialogOpen(false);
     },
     onError: (error) => {
@@ -241,6 +243,7 @@ export default function SajuResult() {
   });
 
   // 모든 계산을 useMemo로 감싸기
+  console.log('sajuData 상태:', { sajuData, sajuError, isLoading });
   const calculatedData = useMemo(() => {
     if (!sajuData?.success || !sajuData.data) {
       console.log('[SajuResult] sajuData 없음:', sajuData);
@@ -457,9 +460,9 @@ export default function SajuResult() {
       }
       return result;
     },
-    onSuccess: (_, timeCode) => {
-      // 업데이트 성공 시 쿼리 무효화하여 새 데이터 가져오기
-      queryClient.invalidateQueries({ queryKey: ["local-saju-records", params?.id || "null"] });
+    onSuccess: async (_, timeCode) => {
+      await queryClient.invalidateQueries({ queryKey: ["local-saju-record-detail"] });
+      await queryClient.refetchQueries({ queryKey: ["local-saju-record-detail"] });
       toast({
         title: "생시 변경됨",
         description: `생시가 ${timeCode}로 변경되었습니다.`,

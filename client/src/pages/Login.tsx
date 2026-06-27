@@ -36,12 +36,7 @@ export default function Login() {
   );
   const [isEmbedded] = useState(() => isEmbeddedBrowser());
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      setLocation("/");
-    }
-  }, [isAuthenticated, setLocation]);
-
+  
   // postMessage로 OAuth 성공 메시지 받기 (새 탭에서 로그인 완료 시)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {

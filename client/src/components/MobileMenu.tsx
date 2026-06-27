@@ -29,7 +29,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const { font, setFont } = useFont();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
@@ -319,8 +319,31 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </div>
             </Card>
 
+            
             <Card className="p-2">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">데이터 관리</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-muted-foreground">데이터 관리</h3>
+                {isAuthenticated ? (
+                  <button
+                    className="text-sm font-medium text-red-500"
+                    onClick={() => { logout(); onClose(); }}
+                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); logout(); onClose(); }}
+                    data-testid="button-logout"
+                  >
+                    로그아웃
+                  </button>
+                ) : (
+                  <button
+                    className="text-sm font-medium text-blue-500"
+                    onClick={() => { setLocation("/login"); onClose(); }}
+                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setLocation("/login"); onClose(); }}
+                    data-testid="button-login"
+                  >
+                    로그인
+                  </button>
+                )}
+              </div>
+
               <div className="space-y-1">
                 <Button
                   variant="ghost"
