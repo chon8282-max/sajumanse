@@ -312,3 +312,11 @@ html, body {
     font-family: var(--ganji-font-family);
   }
 }
+/* Safe area for notch/home indicator */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
