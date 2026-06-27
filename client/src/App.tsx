@@ -252,7 +252,8 @@ function AppContent() {
             />
           )}
           
-          <main className="flex-1 flex flex-col min-h-0 pb-20 overflow-y-auto pt-safe">
+          <main className="flex-1 flex flex-col min-h-0 pb-20 overflow-y-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          
             <Router />
           </main>
 
