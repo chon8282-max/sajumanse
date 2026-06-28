@@ -7,7 +7,10 @@ import {
   fortuneResults,
   announcements,
   solarTerms,
-  type User, 
+  fcmTokens,
+  type FcmToken,
+  type InsertFcmToken,
+  type User,
   type UpsertUser,
   type InsertUser, 
   type ManseRyeok, 
@@ -753,6 +756,19 @@ export class DatabaseStorage implements IStorage {
       const termMonth = termDate.getUTCMonth() + 1;
       return termMonth === month || termMonth === month - 1 || termMonth === month + 1;
     });
+  }
+
+  // FCM 토큰 저장
+  async saveFcmToken(data: { token: string; userId: string | null }): Promise<FcmToken> {
+    const [result] = await db
+      .insert(fcmTokens)
+      .values({ token: data.token, userId: data.userId })
+      .onConflictDoUpdate({
+        target: fcmTokens.token,
+        set: { userId: data.userId, updatedAt: new Date() }
+      })
+      .returning();
+    return result;
   }
 }
 

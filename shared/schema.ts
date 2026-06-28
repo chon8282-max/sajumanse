@@ -598,3 +598,16 @@ export const fortuneSaveRequestSchema = z.object({
 export type PreciseDeaunNumberRequest = z.infer<typeof preciseDeaunNumberRequestSchema>;
 export type FortuneCalculateRequest = z.infer<typeof fortuneCalculateRequestSchema>;
 export type FortuneSaveRequest = z.infer<typeof fortuneSaveRequestSchema>;
+
+// FCM 토큰
+export const fcmTokens = pgTable("fcm_tokens", {
+  id: serial("id").primaryKey(),
+  token: text("token").notNull().unique(),
+  userId: text("user_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertFcmTokenSchema = createInsertSchema(fcmTokens);
+export type InsertFcmToken = z.infer<typeof insertFcmTokenSchema>;
+export type FcmToken = typeof fcmTokens.$inferSelect;

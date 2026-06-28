@@ -2706,5 +2706,27 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // ========================================
+  // FCM 토큰 저장 API
+  // ========================================
+
+  // FCM 토큰 저장
+  app.post("/api/fcm/token", async (req, res) => {
+    try {
+      const { token, userId } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ error: "토큰이 없습니다." });
+      }
+
+      await storage.saveFcmToken({ token, userId: userId || null });
+      
+      res.json({ success: true, message: "FCM 토큰이 저장되었습니다." });
+    } catch (error) {
+      console.error('FCM token save error:', error);
+      res.status(500).json({ error: "FCM 토큰 저장 중 오류가 발생했습니다." });
+    }
+  });
+
   // 라우트 등록만 수행 (서버는 index.ts에서 생성)
 }
