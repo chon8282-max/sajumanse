@@ -96,7 +96,7 @@ export default function TraditionalCalendar({
         {/* 윗줄: 날짜 + 간지 나란히 */}
         <div className="flex items-start gap-0.5">
           {/* 양력 날짜 */}
-          <div className={`w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold
+          <div className={`w-10 h-10 flex items-center justify-center rounded-full text-2xl font-bold
             ${isToday ? 'bg-indigo-500 text-white' : ''}
             ${!isToday && isSunday ? 'text-red-400' : ''}
             ${!isToday && isSaturday ? 'text-indigo-400' : ''}
@@ -109,8 +109,8 @@ export default function TraditionalCalendar({
           {/* 간지 (천간/지지 세로로) */}
           {dayData.lunarDayGanji && (
             <div className="flex flex-col items-center leading-none">
-              <span className="text-[18px] text-gray-800 font-bold">{dayData.lunarDayGanji.sky}</span>
-              <span className="text-[18px] text-gray-800 font-bold">{dayData.lunarDayGanji.earth}</span>
+              <span className="text-[11px] text-gray-800 font-bold">{dayData.lunarDayGanji.sky}</span>
+              <span className="text-[11px] text-gray-800 font-bold">{dayData.lunarDayGanji.earth}</span>
             </div>
           )}
         </div>
