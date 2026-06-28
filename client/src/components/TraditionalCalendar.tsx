@@ -94,9 +94,9 @@ export default function TraditionalCalendar({
         data-testid={`calendar-day-${dayData.solarDay}`}
       >
         {/* 윗줄: 날짜 + 간지 나란히 */}
-        <div className="flex items-end gap-[2px]">
+        <div className="flex items-end gap-0">
           {/* 양력 날짜 */}
-          <div className={`w-7 h-7 flex items-center justify-center rounded-full text-xl font-bold
+          <div className={`w-6 h-6 flex items-center justify-center rounded-full text-lg font-bold
             ${isToday ? 'bg-indigo-500 text-white' : ''}
             ${!isToday && isSunday ? 'text-red-400' : ''}
             ${!isToday && isSaturday ? 'text-indigo-400' : ''}
