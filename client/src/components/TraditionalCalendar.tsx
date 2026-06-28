@@ -84,7 +84,7 @@ export default function TraditionalCalendar({
       <div
         key={`${dayData.solarDate.getTime()}`}
         style={{ borderRight: '0.5px solid #4a4a4a', borderTop: '0.5px solid #4a4a4a' }}
-        className={`relative min-h-[90px] flex flex-col items-center pt-1 pb-1
+        className={`relative min-h-[70px] flex flex-col items-center pt-0 pb-0
           ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
           ${dayData.isCurrentMonth && isSunday ? 'bg-red-50' : ''}
           ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50' : ''}
@@ -94,7 +94,7 @@ export default function TraditionalCalendar({
         data-testid={`calendar-day-${dayData.solarDay}`}
       >
         {/* 윗줄: 날짜 + 간지 나란히 */}
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-end gap-[2px]">
           {/* 양력 날짜 */}
           <div className={`w-10 h-10 flex items-center justify-center rounded-full text-2xl font-bold
             ${isToday ? 'bg-indigo-500 text-white' : ''}
@@ -117,7 +117,7 @@ export default function TraditionalCalendar({
 
         {/* 음력 날짜 */}
         {dayData.lunarDay && (
-          <div className={`text-[14px] leading-tight font-bold mt-0.5
+          <div className={`text-[14px] leading-tight font-bold mt-0
             ${isLunarFirst ? 'text-red-500' : 'text-blue-900'}
           `}>
             {dayData.lunarMonth}/{dayData.lunarDay}
