@@ -61,7 +61,7 @@ export default function MobileHeader({
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b">
-      <div className="flex items-center justify-between px-2 py-3">
+      <div className="flex items-center justify-between px-2 py-6">
         {/* 좌측: 메뉴 버튼 */}
         <Button 
           variant="ghost" 

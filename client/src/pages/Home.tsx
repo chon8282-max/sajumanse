@@ -132,7 +132,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 pt-6 pb-6 max-w-md space-y-4">
+      <div style={{ height: '30px' }}></div>
+<div className="container mx-auto px-4 pt-0 pb-6 max-w-md space-y-4">
 
         <div>
           {currentSaju ? (

@@ -187,7 +187,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleFeedback = () => {
-    window.open("https://open.kakao.com/o/pnk7MdVh", "_blank");
+    window.open("https://open.kakao.com/o/ggsR7tBi", "_blank");
     onClose();
   };
 
@@ -503,7 +503,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               앱 새로고침
             </Button>
             <p className="text-xs text-muted-foreground text-center">
-              V.1.25.10.76
+              {`V.${new Date().getFullYear().toString().slice(2)}.${String(new Date().getMonth()+1).padStart(2,'0')}.${String(new Date().getDate()).padStart(2,'0')}`}
             </p>
           </div>
         </div>

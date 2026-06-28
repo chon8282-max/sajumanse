@@ -54,7 +54,7 @@ export default function CurrentTimeTable({
 
   return (
     <Card 
-      className="p-1.5 shadow-md" 
+      className="p-3 shadow-md" 
       style={{ backgroundColor: 'hsl(var(--clock-bg))' }}
       data-testid="card-current-time-table"
     >
