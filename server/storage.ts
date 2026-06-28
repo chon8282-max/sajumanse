@@ -98,6 +98,10 @@ export interface IStorage {
     errors: string[];
   }>;
   
+  // FCM 토큰 관련
+  saveFcmToken(data: { token: string; userId: string | null }): Promise<FcmToken>;
+  getAllFcmTokens(): Promise<FcmToken[]>;
+
   // 공지사항 관련
   getAnnouncements(limit?: number): Promise<Announcement[]>;
   getAnnouncement(id: string): Promise<Announcement | undefined>;
