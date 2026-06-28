@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
+import { initializeFirebaseAdmin } from "./firebase-admin";
 import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
@@ -85,6 +86,9 @@ app.use((req, res, next) => {
     // 3️⃣ 백그라운드에서 라우트 및 정적 파일 설정
     (async () => {
       try {
+        // Firebase Admin 초기화
+        initializeFirebaseAdmin();
+        
         // 라우트 등록 (비동기 작업)
         await registerRoutes(app);
         log("✅ Routes registered");

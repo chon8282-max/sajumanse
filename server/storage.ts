@@ -758,6 +758,11 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // FCM 토큰 전체 조회
+  async getAllFcmTokens(): Promise<FcmToken[]> {
+    return await db.select().from(fcmTokens);
+  }
+
   // FCM 토큰 저장
   async saveFcmToken(data: { token: string; userId: string | null }): Promise<FcmToken> {
     const [result] = await db

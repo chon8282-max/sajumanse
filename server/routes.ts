@@ -2707,6 +2707,51 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   // ========================================
+  // FCM 토큰 저장 및 푸시 발송 API
+  // ========================================
+
+  // 푸시 알림 발송 (관리자 전용)
+  app.post("/api/fcm/send", async (req, res) => {
+    try {
+      const userId = req.signedCookies.userId;
+      if (!userId) return res.status(401).json({ error: "로그인이 필요합니다." });
+
+      const user = await storage.getUser(userId);
+      if (!user?.isMaster) return res.status(403).json({ error: "관리자 권한이 필요합니다." });
+
+      const { title, content } = req.body;
+      if (!title || !content) return res.status(400).json({ error: "제목과 내용을 입력해주세요." });
+
+      // FCM 토큰 목록 조회
+      const tokens = await storage.getAllFcmTokens();
+      if (tokens.length === 0) return res.json({ success: true, message: "등록된 기기가 없습니다.", sent: 0 });
+
+      // Firebase Admin SDK로 푸시 발송
+      const { getMessaging } = await import("firebase-admin/messaging");
+      const messaging = getMessaging();
+
+      let sent = 0;
+      for (const tokenData of tokens) {
+        try {
+          await messaging.send({
+            token: tokenData.token,
+            notification: { title, body: content },
+            android: { priority: "high" },
+          });
+          sent++;
+        } catch (e) {
+          console.error(`FCM send error for token ${tokenData.token}:`, e);
+        }
+      }
+
+      res.json({ success: true, message: `${sent}개 기기에 발송됐습니다.`, sent });
+    } catch (error) {
+      console.error('FCM send error:', error);
+      res.status(500).json({ error: "푸시 알림 발송 중 오류가 발생했습니다." });
+    }
+  });
+
+  // ========================================
   // FCM 토큰 저장 API
   // ========================================
 
