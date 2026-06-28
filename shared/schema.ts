@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, date, boolean, timestamp, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, serial, date, boolean, timestamp, jsonb, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -601,7 +601,7 @@ export type FortuneSaveRequest = z.infer<typeof fortuneSaveRequestSchema>;
 
 // FCM 토큰
 export const fcmTokens = pgTable("fcm_tokens", {
-  id: serial("id").primaryKey(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   token: text("token").notNull().unique(),
   userId: text("user_id"),
   createdAt: timestamp("created_at").defaultNow(),
