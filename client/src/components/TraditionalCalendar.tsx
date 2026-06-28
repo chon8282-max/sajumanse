@@ -84,7 +84,7 @@ export default function TraditionalCalendar({
       <div
         key={`${dayData.solarDate.getTime()}`}
         style={{ borderRight: '0.5px solid #4a4a4a', borderTop: '0.5px solid #4a4a4a' }}
-        className={`relative min-h-[70px] flex flex-col items-center pt-0 pb-0
+        className={`relative min-h-[60px] flex flex-col items-center pt-0 pb-0
           ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
           ${dayData.isCurrentMonth && isSunday ? 'bg-red-50' : ''}
           ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50' : ''}
