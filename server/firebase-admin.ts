@@ -1,9 +1,4 @@
 import admin from "firebase-admin";
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 let initialized = false;
 
@@ -11,8 +6,14 @@ export function initializeFirebaseAdmin() {
   if (initialized) return;
   
   try {
-    const serviceAccountPath = join(__dirname, "sajuacademy-9c161-firebase-adminsdk-fbsvc-e3a3544427.json");
-    const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf-8"));
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+    
+    if (!serviceAccountJson) {
+      console.warn("⚠️ FIREBASE_SERVICE_ACCOUNT 환경변수가 없습니다.");
+      return;
+    }
+    
+    const serviceAccount = JSON.parse(serviceAccountJson);
     
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
