@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Home, FolderOpen, RefreshCw, Save, X } from "lucide-react";
+import { FolderOpen, RefreshCw, Save, X } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import SajuTable from "@/components/SajuTable";
@@ -64,17 +64,22 @@ export default function Compatibility() {
   const searchParams = useSearch();
   const { toast } = useToast();
 
+  // 궁합 페이지는 진입할 때마다 새로 선택하도록 초기화 (URL 파라미터로 들어온 경우는 유지)
   const [leftSajuId, setLeftSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('left') || localStorage.getItem('compatibility_left_id');
+      const fromUrl = params.get('left');
+      if (fromUrl) return fromUrl;
+      localStorage.removeItem('compatibility_left_id');
     }
     return null;
   });
   const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('right') || localStorage.getItem('compatibility_right_id');
+      const fromUrl = params.get('right');
+      if (fromUrl) return fromUrl;
+      localStorage.removeItem('compatibility_right_id');
     }
     return null;
   });
@@ -325,16 +330,39 @@ export default function Compatibility() {
     } catch { toast({ title: "오류", description: "생년월일 변경에 실패했습니다.", variant: "destructive", duration: 1000 }); }
   };
 
-  const handleHomeClick = () => {
-    localStorage.removeItem('compatibility_left_id');
-    localStorage.removeItem('compatibility_right_id');
-    setLocation('/');
-  };
-
-  const { data: sajuList = [] } = useQuery<SajuResultData[]>({
+    const { data: sajuList = [] } = useQuery<SajuResultData[]>({
     queryKey: ['local-saju-records-list'],
     queryFn: async () => await localDB.getSajuRecords(),
   });
+
+  // 왼쪽 메뉴의 "저장" 버튼 클릭 시 궁합 저장
+  useEffect(() => {
+    const handleSaveCompatibility = () => {
+      if (!leftSajuId || !rightSajuId) {
+        toast({ title: "저장 불가", description: "두 사주를 모두 선택해야 궁합을 저장할 수 있어요.", variant: "destructive", duration: 1500 });
+        return;
+      }
+      try {
+        const raw = localStorage.getItem('compatibility-records');
+        const list = raw ? JSON.parse(raw) : [];
+        const record = {
+          id: `compat-${Date.now()}`,
+          leftId: leftSajuId,
+          rightId: rightSajuId,
+          leftName: leftSaju?.name || '',
+          rightName: rightSaju?.name || '',
+          createdAt: new Date().toISOString(),
+        };
+        list.unshift(record);
+        localStorage.setItem('compatibility-records', JSON.stringify(list));
+        toast({ title: "저장 완료", description: `${record.leftName} - ${record.rightName} 궁합이 저장되었습니다.`, duration: 1500 });
+      } catch (e) {
+        toast({ title: "저장 오류", description: "궁합 저장 중 문제가 발생했습니다.", variant: "destructive", duration: 1500 });
+      }
+    };
+    window.addEventListener('save-compatibility', handleSaveCompatibility);
+    return () => window.removeEventListener('save-compatibility', handleSaveCompatibility);
+  }, [leftSajuId, rightSajuId, leftSaju, rightSaju, toast]);
 
   const renderSajuTable = (
     saju: SajuResultData, memo: string, setMemo: (m: string) => void,
@@ -367,21 +395,45 @@ export default function Compatibility() {
       daeunPeriods={daeunData?.daeunPeriods || []} currentAge={currentAge || undefined}
       displayMode={displayMode} focusedDaeun={focusedDaeun} focusedSaeun={focusedSaeun} saeunData={saeunData}
       onDaeunClick={onDaeunClick} onSaeunClick={onSaeunClick} onSaeunScroll={onSaeunScroll}
+      showMemo={false}
     />
   );
+
+  const [dialogSearch, setDialogSearch] = useState("");
+
+  const filteredSajuList = useMemo(() => {
+    if (!dialogSearch.trim()) return sajuList;
+    const q = dialogSearch.trim().toLowerCase();
+    return sajuList.filter(s =>
+      (s.name || '').toLowerCase().includes(q) ||
+      `${s.birthYear}.${s.birthMonth}.${s.birthDay}`.includes(q)
+    );
+  }, [sajuList, dialogSearch]);
 
   const renderDialog = (show: boolean, onClose: () => void, title: string, onSelect: (id: string) => void) =>
     show && typeof document !== 'undefined' && createPortal(
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.85)' }} onClick={onClose}>
         <div style={{ width: '100%', maxWidth: '640px', maxHeight: '90vh', backgroundColor: 'white', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} className="dark:bg-gray-900" onClick={e => e.stopPropagation()}>
-          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }} className="dark:border-gray-700">
-            <h2 style={{ fontSize: '16px', fontWeight: '600' }} className="dark:text-white">{title}</h2>
-            <button onClick={onClose} style={{ padding: '4px', borderRadius: '4px' }} className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"><X className="h-4 w-4" /></button>
+          <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', flexShrink: 0 }} className="dark:border-gray-700">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600' }} className="dark:text-white">{title}</h2>
+              <button onClick={onClose} style={{ padding: '4px', borderRadius: '4px' }} className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"><X className="h-4 w-4" /></button>
+            </div>
+            <input
+              type="text"
+              value={dialogSearch}
+              onChange={e => setDialogSearch(e.target.value)}
+              placeholder="이름 또는 생년월일 검색..."
+              autoFocus
+              style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '13px', boxSizing: 'border-box' }}
+            />
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {sajuList.map(saju => (
-                <Card key={saju.id} className="p-3 cursor-pointer hover-elevate active-elevate-2" onClick={() => { onSelect(saju.id); onClose(); }}>
+              {filteredSajuList.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">검색 결과가 없습니다.</p>
+              ) : filteredSajuList.map(saju => (
+                <Card key={saju.id} className="p-3 cursor-pointer hover-elevate active-elevate-2" onClick={() => { onSelect(saju.id); onClose(); setDialogSearch(""); }}>
                   <div>
                     <h3 className="font-semibold text-sm">{saju.name}</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})</p>
@@ -401,15 +453,11 @@ export default function Compatibility() {
       <div className="bg-white dark:bg-gray-900" style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <Button variant="outline" size="sm" onClick={handleHomeClick} className="gap-1 h-8 text-sm px-3" data-testid="button-home"><Home className="w-4 h-4" />홈</Button>
-              <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
-            </div>
+            <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             {leftSajuId && (
-              <div style={{ display: 'flex', gap: '4px', transform: 'scale(0.8)', transformOrigin: 'right center' }}>
-                <Button variant="outline" size="sm" onClick={() => setLeftSajuId(null)} data-testid="button-left-change" className="px-3 py-1 text-xs rounded-r-none border-r-0"><RefreshCw className="w-3 h-3 mr-1" />수정</Button>
-                <Button variant="default" size="sm" onClick={() => leftSaveMutation.mutate(leftMemo)} disabled={leftSaveMutation.isPending} data-testid="button-left-save" className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"><Save className="w-3 h-3 mr-1" />{leftSaveMutation.isPending ? '저장 중...' : '저장'}</Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowLeftDialog(true)} data-testid="button-left-change">
+                <RefreshCw className="w-3.5 h-3.5 mr-1" />변경
+              </Button>
             )}
           </div>
         </div>
@@ -434,10 +482,9 @@ export default function Compatibility() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             {rightSajuId && (
-              <div style={{ display: 'flex', gap: '4px', transform: 'scale(0.8)', transformOrigin: 'right center' }}>
-                <Button variant="outline" size="sm" onClick={() => setRightSajuId(null)} data-testid="button-right-change" className="px-3 py-1 text-xs rounded-r-none border-r-0"><RefreshCw className="w-3 h-3 mr-1" />수정</Button>
-                <Button variant="default" size="sm" onClick={() => rightSaveMutation.mutate(rightMemo)} disabled={rightSaveMutation.isPending} data-testid="button-right-save" className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"><Save className="w-3 h-3 mr-1" />{rightSaveMutation.isPending ? '저장 중...' : '저장'}</Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowRightDialog(true)} data-testid="button-right-change">
+                <RefreshCw className="w-3.5 h-3.5 mr-1" />변경
+              </Button>
             )}
           </div>
         </div>
