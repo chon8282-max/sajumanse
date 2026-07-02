@@ -76,10 +76,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const backupData = await localDB.exportAllData();
 
       const response = await fetch('/api/backup/drive/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(backupData)
-      });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
+  body: JSON.stringify(backupData)
+});
 
       const result = await response.json();
       
@@ -125,9 +126,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       });
 
       const listResponse = await fetch('/api/backup/drive/list', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
+});
 
       const listResult = await listResponse.json();
       
@@ -144,10 +146,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const latestFile = listResult.files[0];
 
       const downloadResponse = await fetch('/api/backup/drive/download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileId: latestFile.id }),
-      });
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
+  body: JSON.stringify({ fileId: latestFile.id }),
+});
 
       const downloadResult = await downloadResponse.json();
       
