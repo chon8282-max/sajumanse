@@ -36,6 +36,7 @@ interface SajuTableProps {
   dayEarth?: string;
   gender?: string;
   memo?: string;
+  showMemo?: boolean;
   // 간지 정보 (역산용)
   yearSky?: string;
   yearEarth?: string;
@@ -257,6 +258,7 @@ export default function SajuTable({
   dayEarth,
   gender = '남자',
   memo,
+  showMemo = true,
   // 간지 정보
   yearSky,
   yearEarth,
