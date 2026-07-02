@@ -24,7 +24,7 @@ export const announcements = pgTable("announcements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(), // 제목
   content: text("content").notNull(), // 내용
-  authorId: varchar("author_id").references(() => users.id).notNull(), // 작성자
+  authorId: varchar("author_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -37,6 +37,97 @@ export const insertAnnouncementSchema = createInsertSchema(announcements).omit({
 
 export type InsertAnnouncement = z.infer<typeof insertAnnouncementSchema>;
 export type Announcement = typeof announcements.$inferSelect;
+
+// 예약 관리
+export const reservations = pgTable("reservations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull().default("새 예약"), // 제목
+  date: text("date").notNull(), // YYYY-MM-DD 형식
+  time: text("time").notNull(), // HH:MM 형식, 30분 단위 (예: "14:30")
+  content: text("content"), // 상세내용
+  customerName: text("customer_name"),
+  phone: text("phone"),
+  amount: integer("amount").default(0), // 금액
+  authorId: varchar("author_id").notNull(), // 등록한 사용자
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  dateIdx: index("reservations_date_idx").on(table.date),
+}));
+
+export const insertReservationSchema = createInsertSchema(reservations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertReservation = z.infer<typeof insertReservationSchema>;
+export type Reservation = typeof reservations.$inferSelect;
+
+// 예약 알람 (한 예약에 여러 개 가능)
+export const reservationAlarms = pgTable("reservation_alarms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reservationId: varchar("reservation_id").references(() => reservations.id).notNull(),
+  timing: text("timing").notNull(),
+  notified: boolean("notified").default(false), // 알림 발송 여부
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  reservationIdx: index("reservation_alarms_reservation_idx").on(table.reservationId),
+}));
+
+export const insertReservationAlarmSchema = createInsertSchema(reservationAlarms).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertReservationAlarm = z.infer<typeof insertReservationAlarmSchema>;
+export type ReservationAlarm = typeof reservationAlarms.$inferSelect;
+
+// 커뮤니티 게시판 - 게시글
+export const posts = pgTable("posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  board: text("board").notNull().default("free"), // 게시판 구분 (초기 1개: "free")
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  authorId: varchar("author_id").references(() => users.id).notNull(),
+  authorName: varchar("author_name").notNull(), // 작성 당시 표시 이름 (캐시)
+  viewCount: integer("view_count").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  boardIdx: index("posts_board_idx").on(table.board),
+  createdAtIdx: index("posts_created_at_idx").on(table.createdAt),
+}));
+
+export const insertPostSchema = createInsertSchema(posts).omit({
+  id: true,
+  viewCount: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertPost = z.infer<typeof insertPostSchema>;
+export type Post = typeof posts.$inferSelect;
+
+// 커뮤니티 게시판 - 댓글
+export const postComments = pgTable("post_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id").references(() => posts.id).notNull(),
+  content: text("content").notNull(),
+  authorId: varchar("author_id").references(() => users.id).notNull(),
+  authorName: varchar("author_name").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  postIdx: index("post_comments_post_idx").on(table.postId),
+}));
+
+export const insertPostCommentSchema = createInsertSchema(postComments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPostComment = z.infer<typeof insertPostCommentSchema>;
+export type PostComment = typeof postComments.$inferSelect;
 
 // 그룹 정보 테이블
 export const groups = pgTable("groups", {
@@ -202,7 +293,7 @@ export const YEAR_MONTH_SKY_MAP: Record<string, string[]> = {
 
 // 일간지 계산을 위한 기준일 (1900년 1월 1일 = 갑자일로 설정)
 export const DAY_GANJI_BASE_DATE = new Date(1900, 0, 1); // 1900년 1월 1일
-export const DAY_GANJI_BASE_INDEX = 0; // 갑자(甲子) = 0번 인덱스
+export const DAY_GANJI_BASE_INDEX = 10; // 갑술(甲戌) = 10번 인덱스 (甲=0, 戌=10)
 
 // 한자 → 한글 변환
 export const CHINESE_TO_KOREAN_MAP: Record<string, string> = {

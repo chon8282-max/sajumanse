@@ -2,7 +2,7 @@ import type { Express } from "express";
 import path from "path";
 import fs from "fs";
 import { storage } from "./storage";
-import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, insertAnnouncementSchema, TRADITIONAL_TIME_PERIODS, type InsertSolarTerms } from "@shared/schema";
+import { insertManseRyeokSchema, insertSajuRecordSchema, insertGroupSchema, insertLunarSolarCalendarSchema, insertAnnouncementSchema, insertPostSchema, insertPostCommentSchema, insertReservationSchema, insertReservationAlarmSchema, TRADITIONAL_TIME_PERIODS, type InsertSolarTerms } from "@shared/schema";
 import { calculateSaju } from "../client/src/lib/saju-calculator";
 import { convertSolarToLunarServer, convertLunarToSolarServer } from "./lib/lunar-converter";
 import { 
@@ -2439,6 +2439,270 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // ========================================
+  // 커뮤니티 게시판 API 라우트
+  // ========================================
+
+  // 게시글 목록 조회
+  app.get("/api/posts", async (req, res) => {
+    try {
+      const board = (req.query.board as string) || "free";
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const postList = await storage.getPosts(board, limit);
+      res.json({ success: true, data: postList });
+    } catch (error) {
+      console.error('Get posts error:', error);
+      res.status(500).json({ error: "게시글 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 특정 게시글 조회 (조회수 증가)
+  app.get("/api/posts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const post = await storage.getPost(id);
+      if (!post) {
+        return res.status(404).json({ error: "해당 게시글을 찾을 수 없습니다." });
+      }
+      await storage.incrementPostViewCount(id);
+      const comments = await storage.getPostComments(id);
+      res.json({ success: true, data: { ...post, viewCount: post.viewCount + 1, comments } });
+    } catch (error) {
+      console.error('Get post error:', error);
+      res.status(500).json({ error: "게시글 조회 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 게시글 작성 (로그인 필요)
+  app.post("/api/posts", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다." });
+      }
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: "사용자 정보를 찾을 수 없습니다." });
+      }
+
+      const validatedData = insertPostSchema.parse({
+        ...req.body,
+        authorId: userId,
+        authorName: user.displayName || "익명",
+      });
+
+      const newPost = await storage.createPost(validatedData);
+      res.json({ success: true, data: newPost, message: "게시글이 작성되었습니다." });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "입력 데이터가 올바르지 않습니다.", details: error.errors });
+      }
+      console.error('Create post error:', error);
+      res.status(500).json({ error: "게시글 작성 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 게시글 수정 (작성자 본인만)
+  app.put("/api/posts/:id", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다." });
+      }
+      const { id } = req.params;
+      const existing = await storage.getPost(id);
+      if (!existing) {
+        return res.status(404).json({ error: "해당 게시글을 찾을 수 없습니다." });
+      }
+      if (existing.authorId !== userId) {
+        return res.status(403).json({ error: "본인이 작성한 게시글만 수정할 수 있습니다." });
+      }
+
+      const updateData = insertPostSchema.partial().parse(req.body);
+      const updatedPost = await storage.updatePost(id, updateData);
+      res.json({ success: true, data: updatedPost, message: "게시글이 수정되었습니다." });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "입력 데이터가 올바르지 않습니다.", details: error.errors });
+      }
+      console.error('Update post error:', error);
+      res.status(500).json({ error: "게시글 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 게시글 삭제 (작성자 본인 또는 마스터)
+  app.delete("/api/posts/:id", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다." });
+      }
+      const { id } = req.params;
+      const existing = await storage.getPost(id);
+      if (!existing) {
+        return res.status(404).json({ error: "해당 게시글을 찾을 수 없습니다." });
+      }
+      const user = await storage.getUser(userId);
+      if (existing.authorId !== userId && !user?.isMaster) {
+        return res.status(403).json({ error: "본인이 작성한 게시글만 삭제할 수 있습니다." });
+      }
+
+      const success = await storage.deletePost(id);
+      if (!success) {
+        return res.status(404).json({ error: "게시글 삭제에 실패했습니다." });
+      }
+      res.json({ success: true, message: "게시글이 삭제되었습니다." });
+    } catch (error) {
+      console.error('Delete post error:', error);
+      res.status(500).json({ error: "게시글 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 댓글 작성 (로그인 필요)
+  app.post("/api/posts/:id/comments", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다." });
+      }
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(401).json({ error: "사용자 정보를 찾을 수 없습니다." });
+      }
+      const { id: postId } = req.params;
+      const post = await storage.getPost(postId);
+      if (!post) {
+        return res.status(404).json({ error: "해당 게시글을 찾을 수 없습니다." });
+      }
+
+      const validatedData = insertPostCommentSchema.parse({
+        postId,
+        content: req.body.content,
+        authorId: userId,
+        authorName: user.displayName || "익명",
+      });
+
+      const newComment = await storage.createPostComment(validatedData);
+      res.json({ success: true, data: newComment, message: "댓글이 작성되었습니다." });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "입력 데이터가 올바르지 않습니다.", details: error.errors });
+      }
+      console.error('Create comment error:', error);
+      res.status(500).json({ error: "댓글 작성 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 댓글 삭제 (작성자 본인 또는 마스터)
+  app.delete("/api/posts/:postId/comments/:commentId", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "로그인이 필요합니다." });
+      }
+      const { commentId } = req.params;
+      const success = await storage.deletePostComment(commentId);
+      if (!success) {
+        return res.status(404).json({ error: "댓글 삭제에 실패했습니다." });
+      }
+      res.json({ success: true, message: "댓글이 삭제되었습니다." });
+    } catch (error) {
+      console.error('Delete comment error:', error);
+      res.status(500).json({ error: "댓글 삭제 중 오류가 발생했습니다." });
+    }
+  });
+
+  // ========================================
+  // 예약 관리 API 라우트
+  // ========================================
+
+ // 예약 목록 조회 (날짜 범위 필터 가능: ?start=2026-07-01&end=2026-07-31), 각 예약에 alarms 포함
+  app.get("/api/reservations", async (req, res) => {
+    try {
+      const start = req.query.start as string | undefined;
+      const end = req.query.end as string | undefined;
+      const list = await storage.getReservations(start, end);
+      const withAlarms = await Promise.all(
+        list.map(async (r) => ({ ...r, alarms: await storage.getReservationAlarms(r.id) }))
+      );
+      res.json({ success: true, data: withAlarms });
+    } catch (error) {
+      console.error('Get reservations error:', error);
+      res.status(500).json({ error: "예약 목록 조회 중 오류가 발생했습니다." });
+    }
+  });
+  // 예약 등록. body에 alarms: string[] 배열을 같이 보내면 알람도 같이 등록됨
+  app.post("/api/reservations", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId || 'local-user';
+      const { alarms, ...reservationBody } = req.body;
+      const validatedData = insertReservationSchema.omit({ authorId: true }).parse({ ...reservationBody, amount: reservationBody.amount !== undefined ? Number(reservationBody.amount) : 0 });
+      const newReservation = await storage.createReservation({ ...validatedData, authorId: 'local-user' });
+      
+
+      if (Array.isArray(alarms) && alarms.length > 0) {
+        for (const timing of alarms) {
+          await storage.createReservationAlarm({ reservationId: newReservation.id, timing });
+        }
+      }
+
+      const savedAlarms = await storage.getReservationAlarms(newReservation.id);
+      res.json({ success: true, data: { ...newReservation, alarms: savedAlarms }, message: "예약이 등록되었습니다." });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "입력 데이터가 올바르지 않습니다.", details: error.errors });
+      }
+      console.error('Create reservation error:', error);
+      res.status(500).json({ error: "예약 등록 중 오류가 발생했습니다." });
+    }
+  });
+
+  /// 예약 수정
+  app.put("/api/reservations/:id", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId || 'local-user';
+      const { id } = req.params;
+      const existing = await storage.getReservation(id);
+      if (!existing) {
+        return res.status(404).json({ error: "해당 예약을 찾을 수 없습니다." });
+      }
+      const { alarms, ...reservationBody } = req.body;
+      const updateData = insertReservationSchema.partial().parse({ ...reservationBody, amount: reservationBody.amount !== undefined ? Number(reservationBody.amount) : undefined });
+      const updated = await storage.updateReservation(id, updateData);
+
+      if (Array.isArray(alarms)) {
+        await storage.deleteAlarmsByReservation(id);
+        for (const timing of alarms) {
+          await storage.createReservationAlarm({ reservationId: id, timing });
+        }
+      }
+
+      const savedAlarms = await storage.getReservationAlarms(id);
+      res.json({ success: true, data: { ...updated, alarms: savedAlarms }, message: "예약이 수정되었습니다." });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "입력 데이터가 올바르지 않습니다.", details: error.errors });
+      }
+      console.error('Update reservation error:', error);
+      res.status(500).json({ error: "예약 수정 중 오류가 발생했습니다." });
+    }
+  });
+
+  // 예약 삭제
+  app.delete("/api/reservations/:id", async (req: any, res) => {
+    try {
+      const userId = req.signedCookies.userId || 'local-user';
+      const { id } = req.params;
+      const success = await storage.deleteReservation(id);
+      if (!success) {
+        return res.status(404).json({ error: "예약 삭제에 실패했습니다." });
+      }
+      res.json({ success: true, message: "예약이 삭제되었습니다." });
+    } catch (error) {
+      console.error('Delete reservation error:', error);
+      res.status(500).json({ error: "예약 삭제 중 오류가 발생했습니다." });
+    }
+  });
   // ========================================
   // 24절기 데이터 수집 엔드포인트 (관리자 전용)
   // ========================================

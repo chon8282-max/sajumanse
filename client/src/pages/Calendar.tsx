@@ -1,36 +1,221 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useLocation } from "wouter";
-import TraditionalCalendar from "@/components/TraditionalCalendar";
+import { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { generateCalendarMonth, getCalendarInfo, CalendarDayData } from "@/lib/calendar-calculator";
+import { Solar } from 'lunar-javascript';
 
-export default function Calendar() {
-  const [, setLocation] = useLocation();
+interface SolarTermInfo {
+  name: string;
+  date: Date;
+  dateString: string;
+  timeString: string;
+}
 
-  const handleGoBack = () => {
-    setLocation("/");
+interface TraditionalCalendarProps {
+  initialYear?: number;
+  initialMonth?: number;
+}
+
+export default function TraditionalCalendar({
+  initialYear = new Date().getFullYear(),
+  initialMonth = new Date().getMonth() + 1
+}: TraditionalCalendarProps) {
+  const [currentYear, setCurrentYear] = useState(initialYear);
+  const [currentMonth, setCurrentMonth] = useState(initialMonth);
+
+  const calendarInfo = useMemo(() => getCalendarInfo(currentYear, currentMonth), [currentYear, currentMonth]);
+  const calendarData = useMemo(() => generateCalendarMonth(currentYear, currentMonth), [currentYear, currentMonth]);
+
+  const { data: solarTermsData } = useQuery({
+    queryKey: [`/local-solar-terms-range`, currentYear],
+    queryFn: async () => {
+      const res = await fetch('/data/solar-terms.json');
+      const allTerms = await res.json();
+      return { success: true, data: allTerms };
+    },
+    staleTime: 1000 * 60 * 60 * 24,
+  });
+
+  const solarTerms: SolarTermInfo[] = useMemo(() => {
+    if (!solarTermsData?.success) return [];
+    const allTerms: SolarTermInfo[] = solarTermsData.data.map((term: { name: string; date: string }) => {
+      const utcDate = new Date(term.date);
+      const kstDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+      return {
+        name: term.name,
+        date: kstDate,
+        dateString: kstDate.toLocaleDateString('ko-KR', { timeZone: 'UTC', month: '2-digit', day: '2-digit' }).replace('. ', '/').replace('.', ''),
+        timeString: kstDate.toLocaleTimeString('ko-KR', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false })
+      };
+    });
+    return allTerms.filter((term: SolarTermInfo) => {
+      return term.date.getUTCFullYear() === currentYear && term.date.getUTCMonth() + 1 === currentMonth;
+    });
+  }, [solarTermsData, currentYear, currentMonth]);
+
+  const enrichedCalendarData = useMemo(() => {
+    return calendarData.map(week => week.map(dayData => {
+      if (!dayData.isCurrentMonth) return dayData;
+      try {
+        const solar = Solar.fromYmd(currentYear, currentMonth, dayData.solarDay);
+        const lunar = solar.getLunar();
+        return { ...dayData, lunarYear: lunar.getYear(), lunarMonth: lunar.getMonth(), lunarDay: lunar.getDay(), isLunarFirst: lunar.getDay() === 1 };
+      } catch {
+        return dayData;
+      }
+    }));
+  }, [calendarData, currentYear, currentMonth]);
+
+  const handlePrevMonth = () => { if (currentMonth === 1) { setCurrentYear(p => p - 1); setCurrentMonth(12); } else setCurrentMonth(p => p - 1); };
+  const handleNextMonth = () => { if (currentMonth === 12) { setCurrentYear(p => p + 1); setCurrentMonth(1); } else setCurrentMonth(p => p + 1); };
+  const handlePrevYear = () => setCurrentYear(p => p - 1);
+  const handleNextYear = () => setCurrentYear(p => p + 1);
+  const handleToday = () => { setCurrentYear(new Date().getFullYear()); setCurrentMonth(new Date().getMonth() + 1); };
+
+  const renderDayCell = (dayData: CalendarDayData) => {
+    const isToday = dayData.isToday;
+    const isLunarFirst = dayData.isLunarFirst;
+    const isSunday = dayData.dayOfWeek === 0;
+    const isSaturday = dayData.dayOfWeek === 6;
+    const solarTerm = solarTerms.find(term => term.date.getUTCDate() === dayData.solarDay && dayData.isCurrentMonth);
+
+    return (
+      <div
+        key={`${dayData.solarDate.getTime()}`}
+        style={{ borderRight: '1px solid #e5e0d5', borderTop: '1px solid #e5e0d5' }}
+        className={`relative min-h-[78px] flex flex-col items-center pt-2 pb-1 px-1
+          ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
+          ${dayData.isCurrentMonth && isSunday ? 'bg-red-50/40' : ''}
+          ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50/40' : ''}
+          ${dayData.isCurrentMonth && !isSunday && !isSaturday ? 'bg-white' : ''}
+          ${isToday ? '!bg-indigo-50' : ''}
+        `}
+        data-testid={`calendar-day-${dayData.solarDay}`}
+      >
+        {/* 윗줄: 양력 날짜 + 간지 */}
+        <div className="flex items-center gap-2">
+          {/* 양력 날짜 */}
+          <div className={`flex items-center justify-center w-7 h-7 rounded-full text-[16px] font-bold
+            ${isToday ? 'bg-indigo-500 text-white' : ''}
+            ${!isToday && isSunday ? 'text-red-400' : ''}
+            ${!isToday && isSaturday ? 'text-indigo-400' : ''}
+            ${!isToday && !isSunday && !isSaturday && dayData.isCurrentMonth ? 'text-gray-800' : ''}
+            ${!dayData.isCurrentMonth ? 'text-gray-300' : ''}
+          `}>
+            {dayData.solarDay}
+          </div>
+
+          {/* 간지 (천간/지지 세로로) */}
+          {dayData.lunarDayGanji && (
+            <div className="flex flex-col items-center leading-tight">
+              <span className="text-[13px] text-gray-700 font-bold">{dayData.lunarDayGanji.sky}</span>
+              <span className="text-[13px] text-gray-700 font-bold">{dayData.lunarDayGanji.earth}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 음력 날짜 */}
+        {dayData.lunarDay && (
+          <div className={`text-[13px] leading-tight font-semibold mt-2
+            ${isLunarFirst ? 'text-red-500' : 'text-blue-800'}
+          `}>
+            {dayData.lunarMonth}/{dayData.lunarDay}
+          </div>
+        )}
+
+        {/* 절기 */}
+        {solarTerm && (
+          <div className="absolute top-1.5 right-1.5 text-[11px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+            {solarTerm.name}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-2">
-      {/* 상단 네비게이션 */}
-      <div className="flex items-center justify-start mb-1">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleGoBack}
-          className="gap-2"
-          data-testid="button-back-to-home"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          홈으로
-        </Button>
-      </div>
+    <div className="w-full max-w-5xl mx-auto" data-testid="traditional-calendar">
+      <Card className="overflow-hidden shadow-sm" style={{ border: '1px solid #e5e0d5' }}>
+        <CardHeader className="p-0">
+          <div className="px-6 py-5 bg-white">
+            {/* 연월 + 간지 표시 */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg">
+                {calendarInfo.yearGanji[0]}{calendarInfo.yearGanji[1]}년
+              </div>
+              <div className="text-xl font-bold text-gray-800">
+                {currentYear}년 {currentMonth}월
+              </div>
+              <div className="text-sm font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg">
+                {calendarInfo.monthGanji[0]}{calendarInfo.monthGanji[1]}월
+              </div>
+            </div>
 
-      {/* 전통 달력 컴포넌트 */}
-      <div className="flex justify-center">
-        <TraditionalCalendar />
-      </div>
+            {/* 네비게이션 */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button onClick={handlePrevYear} data-testid="button-prev-year"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <ChevronsLeft className="w-4 h-4" /><span>년</span>
+                </button>
+                <button onClick={handlePrevMonth} data-testid="button-prev-month"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <ChevronLeft className="w-4 h-4" /><span>월</span>
+                </button>
+              </div>
+
+              <button onClick={handleToday}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-indigo-500 hover:bg-indigo-600 transition-all">
+                오늘
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button onClick={handleNextMonth} data-testid="button-next-month"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <span>월</span><ChevronRight className="w-4 h-4" />
+                </button>
+                <button onClick={handleNextYear} data-testid="button-next-year"
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all">
+                  <span>년</span><ChevronsRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 요일 헤더 */}
+          <div className="grid grid-cols-7" style={{ borderTop: '1px solid #e5e0d5', borderLeft: '1px solid #e5e0d5' }}>
+            {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+              <div key={day} style={{ borderRight: '1px solid #e5e0d5' }}
+                className={`text-center text-base font-semibold py-3
+                  ${index === 0 ? 'text-red-400' : ''}
+                  ${index === 6 ? 'text-blue-400' : ''}
+                  ${index !== 0 && index !== 6 ? 'text-gray-500' : ''}
+                `}>{day}</div>
+            ))}
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-0">
+          <div className="grid grid-cols-7" style={{ borderLeft: '1px solid #e5e0d5', borderBottom: '1px solid #e5e0d5' }}>
+            {enrichedCalendarData.flat().map(dayData => renderDayCell(dayData))}
+          </div>
+
+          {solarTerms.length > 0 && (
+            <div className="px-6 py-4 bg-gray-50" style={{ borderTop: '1px solid #e5e0d5' }}>
+              <div className="flex gap-8 justify-center">
+                {solarTerms.map((term, index) => (
+                  <div key={index} className="text-center text-sm">
+                    <span className="font-bold text-emerald-600">{term.name}</span>
+                    <span className="text-gray-400 mx-2">·</span>
+                    <span className="text-gray-600">{term.dateString} {term.timeString}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

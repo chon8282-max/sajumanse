@@ -76,7 +76,7 @@ export function calculateMonthGanji(year: number, month: number): { sky: string;
   // 3. 월지 결정 (1월=인, 2월=묘, ..., 12월=축)
   const monthEarth = MONTH_EARTH_SEQUENCE[month - 1];
   
-  // 4. 월간 계산 (1월부터 순환)
+  // 4. 월간지 계산 (인월 기준, month-1이 올바름)
   const monthSkyIndex = (inWolSkyIndex + (month - 1)) % 10;
   const monthSky = CHEONGAN[monthSkyIndex];
   

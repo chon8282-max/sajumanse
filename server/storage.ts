@@ -8,6 +8,10 @@ import {
   announcements,
   solarTerms,
   fcmTokens,
+  posts,
+  postComments,
+  reservations,
+  reservationAlarms,
   type FcmToken,
   type InsertFcmToken,
   type User,
@@ -27,6 +31,14 @@ import {
   type InsertAnnouncement,
   type SolarTerms,
   type InsertSolarTerms,
+  type Post,
+  type InsertPost,
+  type PostComment,
+  type InsertPostComment,
+  type Reservation,
+  type InsertReservation,
+  type ReservationAlarm,
+  type InsertReservationAlarm,
   DEFAULT_GROUPS
 } from "@shared/schema";
 import { db } from "./db";
@@ -118,6 +130,30 @@ export interface IStorage {
   
   // 음양력 변환 데이터 관련
   bulkCreateLunarSolarCalendar(dataList: InsertLunarSolarCalendar[]): Promise<LunarSolarCalendar[]>;
+
+  // 커뮤니티 게시판 관련
+  getPosts(board?: string, limit?: number): Promise<Post[]>;
+  getPost(id: string): Promise<Post | undefined>;
+  createPost(data: InsertPost): Promise<Post>;
+  updatePost(id: string, data: Partial<Post>): Promise<Post | undefined>;
+  deletePost(id: string): Promise<boolean>;
+  incrementPostViewCount(id: string): Promise<void>;
+
+  getPostComments(postId: string): Promise<PostComment[]>;
+  createPostComment(data: InsertPostComment): Promise<PostComment>;
+  deletePostComment(id: string): Promise<boolean>;
+
+  // 예약 관리
+  getReservations(startDate?: string, endDate?: string): Promise<Reservation[]>;
+  getReservation(id: string): Promise<Reservation | undefined>;
+  createReservation(data: InsertReservation): Promise<Reservation>;
+  updateReservation(id: string, data: Partial<Reservation>): Promise<Reservation | undefined>;
+  deleteReservation(id: string): Promise<boolean>;
+
+  getReservationAlarms(reservationId: string): Promise<ReservationAlarm[]>;
+  createReservationAlarm(data: InsertReservationAlarm): Promise<ReservationAlarm>;
+  deleteReservationAlarm(id: string): Promise<boolean>;
+  deleteAlarmsByReservation(reservationId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -779,6 +815,121 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result;
   }
+
+  // 커뮤니티 게시판 관련 메서드
+  async getPosts(board: string = "free", limit: number = 50): Promise<Post[]> {
+    const result = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.board, board))
+      .orderBy(sql`${posts.createdAt} DESC`)
+      .limit(limit);
+    return result;
+  }
+
+  async getPost(id: string): Promise<Post | undefined> {
+    const [post] = await db.select().from(posts).where(eq(posts.id, id));
+    return post || undefined;
+  }
+
+  async createPost(data: InsertPost): Promise<Post> {
+    const [post] = await db.insert(posts).values(data).returning();
+    return post;
+  }
+
+  async updatePost(id: string, data: Partial<Post>): Promise<Post | undefined> {
+    const [post] = await db
+      .update(posts)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(posts.id, id))
+      .returning();
+    return post || undefined;
+  }
+
+  async deletePost(id: string): Promise<boolean> {
+    const result = await db.delete(posts).where(eq(posts.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async incrementPostViewCount(id: string): Promise<void> {
+    await db
+      .update(posts)
+      .set({ viewCount: sql`${posts.viewCount} + 1` })
+      .where(eq(posts.id, id));
+  }
+
+  async getPostComments(postId: string): Promise<PostComment[]> {
+    const result = await db
+      .select()
+      .from(postComments)
+      .where(eq(postComments.postId, postId))
+      .orderBy(sql`${postComments.createdAt} ASC`);
+    return result;
+  }
+
+  async createPostComment(data: InsertPostComment): Promise<PostComment> {
+    const [comment] = await db.insert(postComments).values(data).returning();
+    return comment;
+  }
+
+  async deletePostComment(id: string): Promise<boolean> {
+    const result = await db.delete(postComments).where(eq(postComments.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // 예약 관리 메서드
+  async getReservations(startDate?: string, endDate?: string): Promise<Reservation[]> {
+    if (startDate && endDate) {
+      return await db.select().from(reservations)
+        .where(and(gte(reservations.date, startDate), lte(reservations.date, endDate)))
+        .orderBy(sql`${reservations.date} ASC, ${reservations.time} ASC`);
+    }
+    return await db.select().from(reservations).orderBy(sql`${reservations.date} ASC, ${reservations.time} ASC`);
+  }
+
+  async getReservation(id: string): Promise<Reservation | undefined> {
+    const [r] = await db.select().from(reservations).where(eq(reservations.id, id));
+    return r || undefined;
+  }
+
+  async createReservation(data: InsertReservation): Promise<Reservation> {
+    const [r] = await db.insert(reservations).values(data).returning();
+    return r;
+  }
+
+  async updateReservation(id: string, data: Partial<Reservation>): Promise<Reservation | undefined> {
+    const [r] = await db
+      .update(reservations)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(reservations.id, id))
+      .returning();
+    return r || undefined;
+  }
+
+  async deleteReservation(id: string): Promise<boolean> {
+    await db.delete(reservationAlarms).where(eq(reservationAlarms.reservationId, id));
+    const result = await db.delete(reservations).where(eq(reservations.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // 예약 알람 메서드
+  async getReservationAlarms(reservationId: string): Promise<ReservationAlarm[]> {
+    return await db.select().from(reservationAlarms).where(eq(reservationAlarms.reservationId, reservationId));
+  }
+
+  async createReservationAlarm(data: InsertReservationAlarm): Promise<ReservationAlarm> {
+    const [a] = await db.insert(reservationAlarms).values(data).returning();
+    return a;
+  }
+
+  async deleteReservationAlarm(id: string): Promise<boolean> {
+    const result = await db.delete(reservationAlarms).where(eq(reservationAlarms.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async deleteAlarmsByReservation(reservationId: string): Promise<void> {
+    await db.delete(reservationAlarms).where(eq(reservationAlarms.reservationId, reservationId));
+  }
 }
 
 // 메모리 스토리지 (개발용 백업)
@@ -1322,7 +1473,152 @@ export class MemStorage implements IStorage {
     }
     return created;
   }
-}
 
+  // 커뮤니티 게시판 (MemStorage - 메모리 임시 저장)
+  private posts: Map<string, Post> = new Map();
+  private postComments: Map<string, PostComment> = new Map();
+
+  async getPosts(board: string = "free", limit: number = 50): Promise<Post[]> {
+    return Array.from(this.posts.values())
+      .filter(p => p.board === board)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
+      .slice(0, limit);
+  }
+
+  async getPost(id: string): Promise<Post | undefined> {
+    return this.posts.get(id);
+  }
+
+  async createPost(data: InsertPost): Promise<Post> {
+    const id = randomUUID();
+    const now = new Date();
+    const post: Post = {
+      id,
+      board: data.board ?? "free",
+      title: data.title,
+      content: data.content,
+      authorId: data.authorId,
+      authorName: data.authorName,
+      viewCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.posts.set(id, post);
+    return post;
+  }
+
+  async updatePost(id: string, data: Partial<Post>): Promise<Post | undefined> {
+    const existing = this.posts.get(id);
+    if (!existing) return undefined;
+    const updated: Post = { ...existing, ...data, id, updatedAt: new Date() };
+    this.posts.set(id, updated);
+    return updated;
+  }
+
+  async deletePost(id: string): Promise<boolean> {
+    return this.posts.delete(id);
+  }
+
+  async incrementPostViewCount(id: string): Promise<void> {
+    const post = this.posts.get(id);
+    if (post) {
+      post.viewCount = (post.viewCount || 0) + 1;
+      this.posts.set(id, post);
+    }
+  }
+
+  async getPostComments(postId: string): Promise<PostComment[]> {
+    return Array.from(this.postComments.values())
+      .filter(c => c.postId === postId)
+      .sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
+  }
+
+  async createPostComment(data: InsertPostComment): Promise<PostComment> {
+    const id = randomUUID();
+    const comment: PostComment = {
+      id,
+      postId: data.postId,
+      content: data.content,
+      authorId: data.authorId,
+      authorName: data.authorName,
+      createdAt: new Date(),
+    };
+    this.postComments.set(id, comment);
+    return comment;
+  }
+
+  async deletePostComment(id: string): Promise<boolean> {
+    return this.postComments.delete(id);
+  }
+
+  // 예약 관리 (MemStorage)
+  private reservations: Map<string, Reservation> = new Map();
+
+  async getReservations(startDate?: string, endDate?: string): Promise<Reservation[]> {
+    let list = Array.from(this.reservations.values());
+    if (startDate && endDate) {
+      list = list.filter(r => r.date >= startDate && r.date <= endDate);
+    }
+    return list.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  }
+
+  async getReservation(id: string): Promise<Reservation | undefined> {
+    return this.reservations.get(id);
+  }
+
+  async createReservation(data: InsertReservation): Promise<Reservation> {
+    const id = randomUUID();
+    const now = new Date();
+    const r: Reservation = {
+      id,
+      date: data.date,
+      time: data.time,
+      customerName: data.customerName,
+      phone: data.phone ?? null,
+      memo: data.memo ?? null,
+      authorId: data.authorId,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.reservations.set(id, r);
+    return r;
+  }
+
+  async updateReservation(id: string, data: Partial<Reservation>): Promise<Reservation | undefined> {
+    const existing = this.reservations.get(id);
+    if (!existing) return undefined;
+    const updated: Reservation = { ...existing, ...data, id, updatedAt: new Date() };
+    this.reservations.set(id, updated);
+    return updated;
+  }
+
+  async deleteReservation(id: string): Promise<boolean> {
+    return this.reservations.delete(id);
+  }
+
+  // 예약 알람 (MemStorage)
+  private reservationAlarms: Map<string, ReservationAlarm> = new Map();
+
+  async getReservationAlarms(reservationId: string): Promise<ReservationAlarm[]> {
+    return Array.from(this.reservationAlarms.values()).filter(a => a.reservationId === reservationId);
+  }
+
+  async createReservationAlarm(data: InsertReservationAlarm): Promise<ReservationAlarm> {
+    const id = randomUUID();
+    const a: ReservationAlarm = { id, reservationId: data.reservationId, timing: data.timing, createdAt: new Date() };
+    this.reservationAlarms.set(id, a);
+    return a;
+  }
+
+  async deleteReservationAlarm(id: string): Promise<boolean> {
+    return this.reservationAlarms.delete(id);
+  }
+
+  async deleteAlarmsByReservation(reservationId: string): Promise<void> {
+    Array.from(this.reservationAlarms.entries()).forEach(([id, a]) => {
+      if (a.reservationId === reservationId) this.reservationAlarms.delete(id);
+    });
+  }
+}
 // 데이터베이스 연결 실패 시 메모리 스토리지로 폴백
 export const storage = process.env.DATABASE_URL ? new DatabaseStorage() : new MemStorage();
