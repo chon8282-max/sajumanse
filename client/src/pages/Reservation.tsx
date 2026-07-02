@@ -1,0 +1,467 @@
+import { useState, useMemo } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { generateCalendarMonth, getCalendarInfo, CalendarDayData } from "@/lib/calendar-calculator";
+
+const ALARM_OPTIONS = [
+  { value: '10min', label: '10분 전' },
+  { value: '30min', label: '30분 전' },
+  { value: '1hour', label: '1시간 전' },
+  { value: '1day', label: '1일 전' },
+  { value: '3day', label: '3일 전' },
+];
+
+interface Reservation {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  content: string | null;
+  amount?: number;
+  alarms?: { id: string; timing: string; }[];
+}
+
+interface FormProps {
+  view: 'form' | 'edit';
+  selectedDate: string | null;
+  title: string; setTitle: (v: string) => void;
+  time: string; setTime: (v: string) => void;
+  content: string; setContent: (v: string) => void;
+  amount: string; setAmount: (v: string) => void;
+  alarms: string[]; setAlarms: (v: string[]) => void;
+  timeOptions: string[];
+  onCancel: () => void;
+  onSave: () => void;
+  isPending: boolean;
+  toast: any;
+  updateMutation: any;
+  createMutation: any;
+}
+
+function ScheduleForm({ view, selectedDate, title, setTitle, time, setTime, content, setContent, amount, setAmount, alarms, setAlarms, timeOptions, onCancel, toast, updateMutation, createMutation }: FormProps) {
+  const addAlarm = () => setAlarms([...alarms, '10min']);
+  const removeAlarm = (idx: number) => setAlarms(alarms.filter((_, i) => i !== idx));
+  const changeAlarm = (idx: number, value: string) => setAlarms(alarms.map((a, i) => i === idx ? value : a));
+
+  return (
+    <div className="max-w-xl mx-auto">
+      <Button variant="ghost" size="sm" onClick={onCancel} className="mb-3">
+        <ArrowLeft className="w-4 h-4 mr-1" /> 달력으로
+      </Button>
+      <Card className="p-5">
+        <div className="text-lg font-bold mb-4">{selectedDate} {view === 'edit' ? '스케줄 수정' : '새 스케줄'}</div>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">제목</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="스케줄 제목"
+              className="w-full px-3 py-2 rounded-md border text-sm" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">일시</label>
+            <div className="flex gap-2">
+              <div className="flex-1 px-3 py-2 rounded-md border bg-muted text-sm">{selectedDate}</div>
+              <select value={time} onChange={e => setTime(e.target.value)} className="flex-1 px-3 py-2 rounded-md border text-sm">
+                {timeOptions.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">금액</label>
+            <div className="flex items-center gap-1">
+              <input value={amount ? Number(amount).toLocaleString() : ''} 
+  onChange={e => setAmount(e.target.value.replace(/[^0-9,]/g, '').replace(/,/g, ''))}
+  placeholder="0" className="flex-1 px-3 py-2 rounded-md border text-sm text-right" />
+              <span className="text-sm text-gray-500">원</span>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">상세내용</label>
+            <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="상세 내용을 입력하세요..."
+              className="w-full h-24 px-3 py-2 rounded-md border text-sm resize-none" />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground block mb-1">알람</label>
+            {alarms.map((a, idx) => (
+              <div key={idx} className="flex gap-2 mb-2">
+                <select value={a} onChange={e => changeAlarm(idx, e.target.value)} className="flex-1 px-3 py-2 rounded-md border text-sm">
+                  {ALARM_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+                {alarms.length > 1 && <Button variant="outline" size="sm" onClick={() => removeAlarm(idx)} className="text-destructive">삭제</Button>}
+              </div>
+            ))}
+            <div onClick={addAlarm} className="text-xs text-primary underline cursor-pointer">+ 알람추가</div>
+          </div>
+        </div>
+        <div className="flex gap-2 mt-5">
+          <Button variant="outline" className="flex-1" onClick={onCancel}>취소</Button>
+          <Button className="flex-1"
+            onClick={() => {
+              if (!title.trim()) { toast({ title: "제목을 입력해주세요", variant: "destructive", duration: 1000 }); return; }
+              view === 'edit' ? updateMutation.mutate() : createMutation.mutate();
+            }}
+            disabled={view === 'edit' ? updateMutation.isPending : createMutation.isPending}
+          >
+            {view === 'edit' ? (updateMutation.isPending ? "수정 중..." : "수정") : (createMutation.isPending ? "저장 중..." : "저장")}
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export default function ReservationPage() {
+  const { toast } = useToast();
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [view, setView] = useState<'calendar' | 'form' | 'edit'>('calendar');
+  const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Reservation[] | null>(null);
+  const [popupDate, setPopupDate] = useState<string | null>(null);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [showAllPopup, setShowAllPopup] = useState(false);
+
+  const [title, setTitle] = useState('');
+  const [time, setTime] = useState('10:00');
+  const [content, setContent] = useState('');
+  const [alarms, setAlarms] = useState<string[]>(['10min']);
+  const [amount, setAmount] = useState('');
+
+  const calendarData = useMemo(() => generateCalendarMonth(currentYear, currentMonth), [currentYear, currentMonth]);
+
+  const monthStart = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+  const monthEndDay = new Date(currentYear, currentMonth, 0).getDate();
+  const monthEnd = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`;
+
+  const { data: reservationsData, refetch } = useQuery<{ success: boolean; data: Reservation[] }>({
+    queryKey: ["reservations-page", currentYear, currentMonth],
+    queryFn: async () => {
+      const res = await fetch(`/api/reservations?start=${monthStart}&end=${monthEnd}`);
+      return await res.json();
+    },
+  });
+
+  const reservations = reservationsData?.data || [];
+
+  const reservationsByDate = useMemo(() => {
+    const map: Record<string, Reservation[]> = {};
+    reservations.forEach(r => {
+      if (!map[r.date]) map[r.date] = [];
+      map[r.date].push(r);
+    });
+    Object.values(map).forEach(list => list.sort((a, b) => a.time.localeCompare(b.time)));
+    return map;
+  }, [reservations]);
+
+  const timeOptions = useMemo(() => {
+    const list: string[] = [];
+    for (let h = 0; h < 24; h++) {
+      for (const m of [0, 30]) {
+        list.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+      }
+    }
+    return list;
+  }, []);
+
+  const handlePrevMonth = () => { if (currentMonth === 1) { setCurrentYear(p => p - 1); setCurrentMonth(12); } else setCurrentMonth(p => p - 1); };
+  const handleNextMonth = () => { if (currentMonth === 12) { setCurrentYear(p => p + 1); setCurrentMonth(1); } else setCurrentMonth(p => p + 1); };
+  const handleToday = () => { setCurrentYear(new Date().getFullYear()); setCurrentMonth(new Date().getMonth() + 1); };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) { setSearchResults(null); return; }
+    const res = await fetch('/api/reservations');
+    const json = await res.json();
+    if (json.success) {
+      const q = searchQuery.trim().toLowerCase();
+      setSearchResults(json.data.filter((r: Reservation) =>
+        (r.title || '').toLowerCase().includes(q) ||
+        (r.content || '').toLowerCase().includes(q)
+      ));
+    }
+  };
+
+  const resetForm = () => { setTitle(''); setContent(''); setAlarms(['10min']); setTime('10:00'); setAmount(''); setEditingReservation(null); };
+
+  const openNewForm = (dateStr: string) => {
+    resetForm();
+    setSelectedDate(dateStr);
+    setPopupDate(null);
+    setShowAllPopup(false);
+    setSelectedReservation(null);
+    setView('form');
+  };
+
+  const openEditForm = (r: Reservation) => {
+    setEditingReservation(r);
+    setSelectedDate(r.date);
+    setTitle(r.title);
+    setTime(r.time);
+    setContent(r.content || '');
+    setAmount(r.amount ? String(r.amount) : '');
+    setAlarms(r.alarms && r.alarms.length > 0 ? r.alarms.map(a => a.timing) : ['10min']);
+    setPopupDate(null);
+    setShowAllPopup(false);
+    setSelectedReservation(null);
+    setView('edit');
+  };
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/reservations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, date: selectedDate, time, content, amount: amount ? Number(amount) : 0, alarms }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        if (res.status === 401) throw new Error('로그인이 필요합니다.');
+        throw new Error(json.error || '스케줄 등록 실패');
+      }
+      return json.data;
+    },
+    onSuccess: () => { refetch(); toast({ title: "등록 완료", duration: 1000 }); resetForm(); setView('calendar'); },
+    onError: (e: Error) => { toast({ title: "등록 실패", description: e.message, variant: "destructive", duration: 1500 }); }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingReservation) return;
+      const res = await fetch(`/api/reservations/${editingReservation.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, date: selectedDate, time, content, amount: amount ? Number(amount) : 0, alarms }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || '수정 실패');
+      return json.data;
+    },
+    onSuccess: () => { refetch(); toast({ title: "수정 완료", duration: 1000 }); resetForm(); setView('calendar'); },
+    onError: (e: Error) => { toast({ title: "수정 실패", description: e.message, variant: "destructive", duration: 1500 }); }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/reservations/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || '삭제 실패');
+    },
+    onSuccess: () => { refetch(); setPopupDate(null); setSelectedReservation(null); toast({ title: "삭제 완료", duration: 800 }); },
+    onError: (e: Error) => { toast({ title: "삭제 실패", description: e.message, variant: "destructive", duration: 1500 }); }
+  });
+
+  const popupReservations = popupDate ? (reservationsByDate[popupDate] || []) : [];
+
+  const renderDayCell = (dayData: CalendarDayData) => {
+    const isToday = dayData.isToday;
+    const isSunday = dayData.dayOfWeek === 0;
+    const isSaturday = dayData.dayOfWeek === 6;
+    const isHoliday = (dayData as any).isHoliday;
+    const dateStr = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(dayData.solarDay).padStart(2, '0')}`;
+    const dayReservations = dayData.isCurrentMonth ? (reservationsByDate[dateStr] || []) : [];
+
+    return (
+      <div
+        key={`${dayData.solarDate.getTime()}`}
+        onClick={() => { if (!dayData.isCurrentMonth) return; openNewForm(dateStr); }}
+        style={{ borderRight: '0.5px solid #ddd', borderTop: '0.5px solid #ddd', cursor: dayData.isCurrentMonth ? 'pointer' : 'default' }}
+        className={`relative min-h-[80px] flex flex-col pt-0.5 pl-1 pr-1 pb-0.5
+          ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
+          ${dayData.isCurrentMonth && !isHoliday && isSunday ? 'bg-red-50/30' : ''}
+          ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50/30' : ''}
+          ${dayData.isCurrentMonth && !isSunday && !isSaturday ? 'bg-white' : ''}
+          ${isToday ? '!bg-indigo-50' : ''}
+          hover:bg-indigo-50/60
+        `}
+      >
+        <div className="flex items-baseline gap-1">
+          <span className={`font-bold text-[13px] leading-none
+            ${isToday ? 'text-indigo-600' : ''}
+            ${!isToday && (isSunday || isHoliday) ? 'text-red-500' : ''}
+            ${!isToday && isSaturday && !isHoliday ? 'text-blue-500' : ''}
+            ${!isToday && !isSunday && !isSaturday && !isHoliday && dayData.isCurrentMonth ? 'text-gray-800' : ''}
+            ${!dayData.isCurrentMonth ? 'text-gray-300' : ''}
+          `}>{dayData.solarDay}</span>
+          {dayData.lunarDayGanji && dayData.isCurrentMonth && (
+            <span className="text-[11px] text-gray-500 leading-none">{dayData.lunarDayGanji.sky}{dayData.lunarDayGanji.earth}</span>
+          )}
+        </div>
+        <div className="mt-0.5 flex flex-col gap-0.5 overflow-hidden">
+          {dayReservations.slice(0, 3).map(r => (
+            <div key={r.id}
+              onClick={e => { e.stopPropagation(); setShowAllPopup(false); setSelectedReservation(r); setPopupDate(dateStr); }}
+              className="text-[12px] truncate text-black font-medium cursor-pointer hover:text-emerald-700"
+              style={{ lineHeight: '1.4' }}>
+              {r.time} {r.title}
+            </div>
+          ))}
+          {dayReservations.length > 3 && (
+            <div onClick={e => { e.stopPropagation(); setShowAllPopup(true); setSelectedReservation(null); setPopupDate(dateStr); }}
+              className="text-[10px] text-gray-400 cursor-pointer hover:text-gray-600">
+              +{dayReservations.length - 3}개 더보기
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (view === 'form' || view === 'edit') {
+    return (
+      <div className="w-full h-screen p-3 overflow-y-auto">
+        <ScheduleForm
+          view={view}
+          selectedDate={selectedDate}
+          title={title} setTitle={setTitle}
+          time={time} setTime={setTime}
+          content={content} setContent={setContent}
+          amount={amount} setAmount={setAmount}
+          alarms={alarms} setAlarms={setAlarms}
+          timeOptions={timeOptions}
+          onCancel={() => { resetForm(); setView('calendar'); }}
+          onSave={() => {}}
+          isPending={view === 'edit' ? updateMutation.isPending : createMutation.isPending}
+          toast={toast}
+          updateMutation={updateMutation}
+          createMutation={createMutation}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-screen p-3 overflow-y-auto" data-testid="reservation-calendar">
+      {searchResults && (
+        <div className="mb-3 border rounded-lg overflow-hidden">
+          <div className="px-3 py-2 bg-gray-50 text-sm font-medium border-b">검색 결과 {searchResults.length}건</div>
+          {searchResults.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-gray-400 text-center">결과가 없습니다</div>
+          ) : (
+            <div className="max-h-48 overflow-y-auto">
+              {searchResults.map(r => (
+                <div key={r.id} onClick={() => openEditForm(r)}
+                  className="px-3 py-2 border-b hover:bg-gray-50 cursor-pointer text-sm">
+                  <div className="font-medium">{r.title}</div>
+                  <div className="text-gray-400 text-xs">{r.date} {r.time}{r.amount ? ` · ${r.amount.toLocaleString()}원` : ''}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <Card className="overflow-hidden shadow-sm" style={{ border: '0.5px solid #ddd' }}>
+        <CardHeader className="p-0">
+          <div className="px-4 py-3 bg-white">
+            <div className="flex items-center justify-between mb-3">
+              <div />
+              <div className="text-lg font-bold text-gray-800">스케줄 {currentYear}년 {currentMonth}월</div>
+              <div />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => setCurrentYear(p => p - 1)} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                  <ChevronsLeft className="w-3.5 h-3.5" /><span>년</span>
+                </button>
+                <button onClick={handlePrevMonth} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                  <ChevronLeft className="w-3.5 h-3.5" /><span>월</span>
+                </button>
+                <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                  placeholder="검색..." className="px-2 py-1 rounded-lg border text-xs w-32" />
+                <button onClick={handleSearch} className="px-2 py-1 bg-indigo-500 text-white rounded-lg text-xs hover:bg-indigo-600">검색</button>
+                {searchResults && <button onClick={() => { setSearchResults(null); setSearchQuery(''); }} className="px-2 py-1 border rounded-lg text-xs">✕</button>}
+              </div>
+              <button onClick={handleToday} className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600">오늘</button>
+              <div className="flex items-center gap-1.5">
+                <button onClick={handleNextMonth} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                  <span>월</span><ChevronRight className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => setCurrentYear(p => p + 1)} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                  <span>년</span><ChevronsRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-7" style={{ borderTop: '0.5px solid #ddd', borderLeft: '0.5px solid #ddd' }}>
+            {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+              <div key={day} style={{ borderRight: '0.5px solid #ddd' }}
+                className={`text-center text-sm font-semibold py-1.5
+                  ${index === 0 ? 'text-red-500' : ''}
+                  ${index === 6 ? 'text-blue-500' : ''}
+                  ${index !== 0 && index !== 6 ? 'text-gray-500' : ''}
+                `}>{day}</div>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="grid grid-cols-7" style={{ borderLeft: '0.5px solid #ddd', borderBottom: '0.5px solid #ddd' }}>
+            {calendarData.flat().map(dayData => renderDayCell(dayData))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {popupDate && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}
+          onClick={() => { setPopupDate(null); setSelectedReservation(null); setShowAllPopup(false); }}>
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            backgroundColor: '#fff', borderRadius: '12px', width: '380px', maxHeight: '80vh',
+            overflowY: 'auto', boxShadow: '0 10px 40px rgba(0,0,0,0.2)', padding: '16px'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {selectedReservation && (
+                  <button onClick={() => setSelectedReservation(null)}
+                    style={{ fontSize: '12px', color: '#888', background: 'none', border: '1px solid #ddd', borderRadius: '4px', padding: '2px 8px', cursor: 'pointer' }}>
+                    ← 목록
+                  </button>
+                )}
+                <div style={{ fontSize: '16px', fontWeight: 'bold' }}>{popupDate}</div>
+              </div>
+              <button onClick={() => { setPopupDate(null); setSelectedReservation(null); }}
+                style={{ fontSize: '18px', color: '#999', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+            </div>
+            {popupReservations.length === 0 ? (
+              <div style={{ color: '#999', fontSize: '13px', textAlign: 'center', padding: '12px 0' }}>스케줄이 없습니다</div>
+            ) : (
+              <div style={{ marginBottom: '12px' }}>
+                {(selectedReservation ? [selectedReservation] : showAllPopup ? popupReservations : popupReservations.slice(0, 3)).map(r => (
+                  <div key={r.id}
+                    style={{ padding: '12px', border: '1px solid #e0d8cc', borderRadius: '8px', marginBottom: '8px', backgroundColor: '#faf7f2' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '15px', marginBottom: '6px' }}>{r.time} {r.title}</div>
+                    <div style={{ fontSize: '13px', color: '#555', marginBottom: '10px' }}>
+                      <div>📅 {r.date} {r.time}{r.amount ? ` · ${r.amount.toLocaleString()}원` : ''}</div>
+                      {r.content && (
+                        <div style={{ marginTop: '8px', padding: '8px', backgroundColor: '#f9f9f9', borderRadius: '6px', lineHeight: '1.5' }}>
+                          {r.content}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={e => { e.stopPropagation(); openEditForm(r); }}
+                        style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #3d2c1a', fontSize: '13px', cursor: 'pointer', background: '#fff', color: '#3d2c1a', fontWeight: 'bold' }}>
+                        ✏️ 수정
+                      </button>
+                      <button onClick={e => { e.stopPropagation(); if (window.confirm('삭제하시겠습니까?')) deleteMutation.mutate(r.id); }}
+                        style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #fcc', fontSize: '13px', cursor: 'pointer', background: '#fff5f5', color: '#c0392b', fontWeight: 'bold' }}>
+                        🗑️ 삭제
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button onClick={() => openNewForm(popupDate)}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', backgroundColor: '#3d2c1a', color: '#f5d78e', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold' }}>
+              + 새 스케줄 등록
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
