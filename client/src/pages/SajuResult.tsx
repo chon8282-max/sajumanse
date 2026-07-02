@@ -178,42 +178,6 @@ export default function SajuResult() {
     staleTime: 0,
     gcTime: 0,
   });
-
-  // ◀ ▶ 이전/다음 이동을 위한 전체 사주 목록 (저장일순 = 최신순, SajuList 기본 정렬과 동일)
-  const { data: allSajuList } = useQuery<any[]>({
-    queryKey: ["local-saju-records-nav-list"],
-    queryFn: async () => await localDB.getSajuRecords(),
-    staleTime: 1000 * 60,
-  });
-
-  const sortedSajuList = useMemo(() => {
-    const list = [...(allSajuList || [])];
-    return list.sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA; // 최신순
-    });
-  }, [allSajuList]);
-
-  const currentNavIndex = useMemo(() => {
-    if (!params?.id) return -1;
-    return sortedSajuList.findIndex(s => s.id === params.id);
-  }, [sortedSajuList, params?.id]);
-
-  const hasPrev = currentNavIndex > 0;
-  const hasNext = currentNavIndex >= 0 && currentNavIndex < sortedSajuList.length - 1;
-
-  const goToPrevSaju = () => {
-    if (hasPrev) {
-      setLocation(`/saju-result/${sortedSajuList[currentNavIndex - 1].id}`);
-    }
-  };
-
-  const goToNextSaju = () => {
-    if (hasNext) {
-      setLocation(`/saju-result/${sortedSajuList[currentNavIndex + 1].id}`);
-    }
-  };
   
   // 저장 mutation (로컬 저장소)
   const saveMutation = useMutation({
@@ -776,44 +740,9 @@ export default function SajuResult() {
           <ArrowLeft className="h-4 w-4" />
           <span className="text-sm">뒤로</span>
         </Button>
-        <button
-          onClick={goToPrevSaju}
-          disabled={!hasPrev}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: '26px', width: '34px', borderRadius: '5px',
-            border: '1px solid #c4c4c4',
-            background: 'linear-gradient(to bottom, #ffffff, #ececec)',
-            boxShadow: '0 1px 1px rgba(0,0,0,0.05)',
-            cursor: hasPrev ? 'pointer' : 'not-allowed',
-            opacity: hasPrev ? 1 : 0.35,
-          }}
-          data-testid="button-prev-saju"
-          title="이전고객DB"
-        >
-          <ArrowLeft className="h-4 w-4" style={{ color: '#c0392b' }} />
-        </button>
         <div className="flex-1 text-center">
           <h1 className="font-bold text-foreground font-tmon text-[16px]">사주명식</h1>
         </div>
-        <button
-          onClick={goToNextSaju}
-          disabled={!hasNext}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: '26px', width: '34px', borderRadius: '5px',
-            border: '1px solid #c4c4c4',
-            background: 'linear-gradient(to bottom, #ffffff, #ececec)',
-            boxShadow: '0 1px 1px rgba(0,0,0,0.05)',
-            cursor: hasNext ? 'pointer' : 'not-allowed',
-            opacity: hasNext ? 1 : 0.35,
-            marginRight: '4px',
-          }}
-          data-testid="button-next-saju"
-          title="다음고객DB"
-        >
-          <ArrowLeft className="h-4 w-4 rotate-180" style={{ color: '#c0392b' }} />
-        </button>
         <div className="flex items-center gap-0.5 mr-0">
           <Button 
             variant="ghost" 
@@ -953,7 +882,6 @@ export default function SajuResult() {
           onBirthDateChange={handleBirthDateChange}
           onNameClick={handleNameClick}
           onMemoChange={handleMemoChange}
-          showMemo={false}
         />
 
         {/* 이름 수정 다이얼로그 */}

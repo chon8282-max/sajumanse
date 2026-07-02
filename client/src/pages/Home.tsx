@@ -1,19 +1,33 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import SajuTable from "@/components/SajuTable";
 import CurrentTimeTable from "@/components/CurrentTimeTable";
+import DatePicker from "@/components/DatePicker";
+import MenuGrid from "@/components/MenuGrid";
 import { calculateSaju } from "@/lib/saju-calculator";
 import { getSolarTermsForCalculation } from "@/lib/solar-terms-data";
 import { Solar } from "lunar-javascript";
-import { useQuery } from "@tanstack/react-query";
-import { type Announcement } from "@shared/schema";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { type SajuInfo, type Announcement } from "@shared/schema";
+import { RefreshCw, Save, Play } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useLocation } from "wouter";
 
 export default function Home() {
-  const [currentSaju, setCurrentSaju] = useState<any>(null);
+  const [currentSaju, setCurrentSaju] = useState<SajuInfo | null>(null);
+  const [customSaju, setCustomSaju] = useState<SajuInfo | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [lastInputData, setLastInputData] = useState<{
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    isLunar: boolean;
+  } | null>(null);
   const [, setLocation] = useLocation();
 
   const { data: solarTermsData } = useQuery({
@@ -37,77 +51,143 @@ export default function Home() {
       try {
         const solar = Solar.fromYmd(lastUpdated.getFullYear(), lastUpdated.getMonth() + 1, lastUpdated.getDate());
         const lunar = solar.getLunar();
-        return { success: true, lunMonth: lunar.getMonth(), lunDay: lunar.getDay(), lunLeapMonth: (lunar as any).isLeap?.() ?? false };
-      } catch { return null; }
+        return {
+          success: true,
+          lunYear: lunar.getYear(),
+          lunMonth: lunar.getMonth(),
+          lunDay: lunar.getDay(),
+          lunLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false
+        };
+      } catch (error) {
+        return null;
+      }
     },
     staleTime: 1000 * 60 * 60,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false
   });
 
-  const getSolarDate = () => {
+  const getCurrentDateInfo = () => {
     const now = lastUpdated;
     const dayOfWeek = format(now, 'eeee', { locale: ko });
     let lunarStr = '';
-    if (lunarData?.success) {
-      lunarStr = ` (음력 ${lunarData.lunLeapMonth ? '윤' : ''}${lunarData.lunMonth}월 ${lunarData.lunDay}일)`;
+    if (lunarData && lunarData.success) {
+      const leapStr = lunarData.lunLeapMonth ? '윤' : '';
+      lunarStr = `(음력 ${leapStr}${lunarData.lunMonth}월 ${lunarData.lunDay}일)`;
     }
-    return `양력 ${format(now, 'yyyy년 M월 d일', { locale: ko })}${lunarStr} ${dayOfWeek}`;
+    return { solarDate: `양력 ${format(now, 'yyyy년 M월 d일', { locale: ko })}${lunarStr}${dayOfWeek}` };
   };
 
   useEffect(() => {
-    if (!solarTermsData?.length) return;
-    const update = () => {
-      const now = new Date();
-      setLastUpdated(now);
-      try {
-        const dbSolarTerms = solarTermsData.map((t: any) => ({ name: t.name, date: new Date(t.date), month: t.month }));
-        const saju = calculateSaju(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), false, undefined, null, undefined, dbSolarTerms);
-        setCurrentSaju(saju);
-      } catch (e) { console.error(e); }
-    };
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
+    if (solarTermsData && solarTermsData.length > 0) {
+      const updateCurrentSaju = () => {
+        const now = new Date();
+        setLastUpdated(now);
+        try {
+          const dbSolarTerms = solarTermsData.map((term: any) => ({
+            name: term.name,
+            date: new Date(term.date),
+            month: term.month
+          }));
+          const saju = calculateSaju(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), false, undefined, null, undefined, dbSolarTerms);
+          setCurrentSaju(saju);
+        } catch (error) {
+          console.error('현재 사주 계산 오류:', error);
+        }
+      };
+      updateCurrentSaju();
+      const interval = setInterval(updateCurrentSaju, 1000);
+      return () => clearInterval(interval);
+    }
   }, [solarTermsData]);
 
-  return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      {currentSaju ? (
-        <CurrentTimeTable
-          saju={currentSaju}
-          title="현재 만세력"
-          solarDate={getSolarDate()}
-          isOffline={navigator.onLine === false}
-          announcements={announcements}
-        />
-      ) : (
-        <Card className="p-6 text-center">
-          <div className="flex flex-col items-center gap-2">
-            <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">만세력 로딩 중...</p>
-          </div>
-        </Card>
-      )}
+  const { toast } = useToast();
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginTop: '20px' }}>
-        {[
-          { label: '만세력', icon: '📅', path: '/manseryeok' },
-          { label: '사주불러오기', icon: '📂', path: '/saju-list' },
-          { label: '역학달력', icon: '📖', path: '/calendar' },
-          { label: '궁합', icon: '💑', path: '/compatibility' },
-          { label: '사주공부', icon: '🎓', path: '' },
-          { label: '감정중인사주', icon: '⭐', path: '' },
-        ].map(item => (
-          <div key={item.label} onClick={() => item.path && setLocation(item.path)}
-            style={{ backgroundColor: '#fff', borderRadius: '12px', padding: '20px 12px', textAlign: 'center', cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.08)', border: '1px solid #e8e0d0' }}
-            onMouseOver={e => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)')}
-            onMouseOut={e => (e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)')}
-          >
-            <div style={{ fontSize: '28px', marginBottom: '6px' }}>{item.icon}</div>
-            <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#3d2c1a' }}>{item.label}</div>
+  const calculateMutation = useMutation({
+    mutationFn: async (data: { year: number; month: number; day: number; hour: number; isLunar: boolean }) => {
+      const solarTerms = await getSolarTermsForCalculation(data.year);
+      const saju = calculateSaju(data.year, data.month, data.day, data.hour, 0, data.isLunar, undefined, null, undefined, solarTerms);
+      if (!saju) throw new Error("사주 계산에 실패했습니다.");
+      return saju;
+    },
+    onSuccess: (data) => {
+      setCustomSaju(data);
+      setShowDatePicker(false);
+      toast({ title: "사주팔자 계산 완료", description: "개인 사주팔자가 성공적으로 계산되었습니다." });
+    },
+    onError: () => {
+      toast({ title: "계산 오류", description: "사주팔자 계산 중 오류가 발생했습니다.", variant: "destructive" });
+    }
+  });
+
+  const handleSaveClick = () => {
+    if (lastInputData) {
+      setLocation(`/saju-input?year=${lastInputData.year}&month=${lastInputData.month}&day=${lastInputData.day}&hour=${lastInputData.hour}&calendarType=${lastInputData.isLunar ? '음력' : '양력'}`);
+    }
+  };
+
+  const handleDateSelect = (year: number, month: number, day: number, hour: number, isLunar: boolean) => {
+    setLastInputData({ year, month, day, hour, isLunar });
+    calculateMutation.mutate({ year, month, day, hour, isLunar });
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div style={{ height: '30px' }}></div>
+<div className="container mx-auto px-4 pt-0 pb-6 max-w-md space-y-4">
+
+        <div>
+          {currentSaju ? (
+            <CurrentTimeTable
+              saju={currentSaju}
+              title="현재 만세력"
+              solarDate={getCurrentDateInfo().solarDate}
+              isOffline={navigator.onLine === false}
+              announcements={announcements}
+            />
+          ) : (
+            <Card className="p-6 text-center">
+              <div className="flex flex-col items-center gap-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">만세력 로딩 중...</p>
+              </div>
+            </Card>
+          )}
+        </div>
+
+        {showDatePicker && (
+          <div className="space-y-3">
+            <DatePicker onDateSelect={handleDateSelect} />
           </div>
-        ))}
-      </div>
+        )}
+
+        {customSaju && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">내 사주팔자</h3>
+              <Button variant="outline" size="sm" onClick={handleSaveClick}>
+                <Save className="w-4 h-4 mr-1" />저장
+              </Button>
+            </div>
+            <SajuTable
+              saju={customSaju}
+              title="개인 사주팔자"
+              birthYear={lastInputData?.year}
+              birthMonth={lastInputData?.month}
+              birthDay={lastInputData?.day}
+              daySky={customSaju.day.sky}
+              dayEarth={customSaju.day.earth}
+              gender="기타"
+            />
+            <Button variant="outline" size="sm" onClick={() => setCustomSaju(null)} className="w-full">
+              현재 시각 만세력으로 돌아가기
+            </Button>
+          </div>
+        )}
+
+        <MenuGrid />
+
+              </div>
     </div>
   );
 }
+

@@ -29,15 +29,6 @@ import {
   FolderPlus
 } from "lucide-react";
 import type { SajuRecord, Group } from "@shared/schema";
-
-interface CompatibilityRecord {
-  id: string;
-  leftId: string;
-  rightId: string;
-  leftName: string;
-  rightName: string;
-  createdAt: string;
-}
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // 그룹 form schema
@@ -69,57 +60,9 @@ export default function SajuList() {
   const [showDeleteSajuDialog, setShowDeleteSajuDialog] = useState(false);
   const [deletingSaju, setDeletingSaju] = useState<{ id: string; name: string } | null>(null);
   
- // 다중 선택 상태
+  // 다중 선택 상태
   const [selectedSajuIds, setSelectedSajuIds] = useState<string[]>([]);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
-
-  // 사주 / 궁합 탭
-  const [activeTab, setActiveTab] = useState<'saju' | 'compat'>('saju');
-  const [compatList, setCompatList] = useState<CompatibilityRecord[]>([]);
-  const [compatSearch, setCompatSearch] = useState("");
-  const [deletingCompatId, setDeletingCompatId] = useState<string | null>(null);
-  const [showDeleteCompatDialog, setShowDeleteCompatDialog] = useState(false);
-
-  useEffect(() => {
-    const loadCompat = () => {
-      try {
-        const raw = localStorage.getItem('compatibility-records');
-        setCompatList(raw ? JSON.parse(raw) : []);
-      } catch {
-        setCompatList([]);
-      }
-    };
-    loadCompat();
-    window.addEventListener('focus', loadCompat);
-    return () => window.removeEventListener('focus', loadCompat);
-  }, []);
-
-  const filteredCompatList = useMemo(() => {
-    if (!compatSearch.trim()) return compatList;
-    const q = compatSearch.trim().toLowerCase();
-    return compatList.filter(c =>
-      c.leftName.toLowerCase().includes(q) || c.rightName.toLowerCase().includes(q)
-    );
-  }, [compatList, compatSearch]);
-
-  const handleViewCompat = (record: CompatibilityRecord) => {
-    setLocation(`/compatibility?left=${record.leftId}&right=${record.rightId}`);
-  };
-
-  const handleDeleteCompat = (id: string) => {
-    setDeletingCompatId(id);
-    setShowDeleteCompatDialog(true);
-  };
-
-  const confirmDeleteCompat = () => {
-    if (!deletingCompatId) return;
-    const newList = compatList.filter(c => c.id !== deletingCompatId);
-    setCompatList(newList);
-    localStorage.setItem('compatibility-records', JSON.stringify(newList));
-    setShowDeleteCompatDialog(false);
-    setDeletingCompatId(null);
-    toast({ title: "삭제 완료", description: "궁합 기록이 삭제되었습니다.", duration: 700 });
-  };
   
   // 검색 debounce (성능 최적화)
   useEffect(() => {
@@ -494,31 +437,7 @@ export default function SajuList() {
             추가
           </Button>
         </div>
-
-        {/* 사주 / 궁합 탭 */}
-        <div className="flex gap-2 mb-4">
-          <Button
-            variant={activeTab === 'saju' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('saju')}
-            className="flex-1"
-            data-testid="tab-saju"
-          >
-            사주 ({sajuList?.length || 0})
-          </Button>
-          <Button
-            variant={activeTab === 'compat' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveTab('compat')}
-            className="flex-1"
-            data-testid="tab-compat"
-          >
-            궁합 ({compatList.length})
-          </Button>
-        </div>
-
-        {activeTab === 'saju' && (
-        <>
+        
         {/* 검색 바 및 그룹 필터 - 한 줄 배치 */}
         <div className="mb-6">
           <div className="flex gap-2 items-center">
@@ -765,9 +684,6 @@ export default function SajuList() {
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <span className="text-xs text-muted-foreground mr-1" data-testid={`text-created-${saju.id}`}>
-                                    {saju.createdAt ? new Date(saju.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' }) : ''}
-                                  </span>
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -793,23 +709,32 @@ export default function SajuList() {
                                 </div>
                               </div>
                             
-                            {/* 두 번째 줄: 양력생일, 음력생일, 생시, 그룹 */}
-                            <div className="text-xs flex items-center justify-between" data-testid={`text-birth-${saju.id}`}>
-                              <span>
-                                양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
-                                {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
-                                  <span className="ml-2 text-muted-foreground">
-                                    음력 {saju.lunarYear}.{saju.lunarMonth}.{saju.lunarDay}
-                                  </span>
-                                )}
-                                {saju.birthTime && (
-                                  <span className="ml-2 text-muted-foreground">
-                                    {saju.birthTime}
-                                  </span>
-                                )}
+                            {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
+                            <div className="text-xs mb-1" data-testid={`text-birth-${saju.id}`}>
+                              양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
+                              {saju.lunarYear && saju.lunarMonth && saju.lunarDay && (
+                                <span className="ml-2 text-muted-foreground">
+                                  음력 {saju.lunarYear}.{saju.lunarMonth}.{saju.lunarDay}
+                                </span>
+                              )}
+                              {saju.birthTime && (
+                                <span className="ml-2 text-muted-foreground">
+                                  {saju.birthTime}
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* 세 번째 줄: 저장일, 소속그룹 */}
+                            <div className="text-xs text-muted-foreground flex items-center justify-between">
+                              <span data-testid={`text-created-${saju.id}`}>
+                                {`정보 저장일: ${saju.createdAt ? new Date(saju.createdAt).toLocaleDateString('ko-KR', {
+                                  year: 'numeric',
+                                  month: 'numeric', 
+                                  day: 'numeric'
+                                }) : '날짜 미상'}`}
                               </span>
                               {groupName && (
-                                <span className="text-muted-foreground whitespace-nowrap ml-2">
+                                <span data-testid={`text-group-${saju.id}`}>
                                   [{groupName}]
                                 </span>
                               )}
@@ -825,84 +750,7 @@ export default function SajuList() {
             )}
           </>
         )}
-        </>
-        )}
-
-        {activeTab === 'compat' && (
-          <div>
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="이름으로 검색..."
-                value={compatSearch}
-                onChange={(e) => setCompatSearch(e.target.value)}
-                className="pl-9"
-                data-testid="input-compat-search"
-              />
-            </div>
-
-            {filteredCompatList.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <User className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-medium mb-2">저장된 궁합이 없습니다</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    궁합 페이지에서 두 사주를 선택하고 저장해보세요.
-                  </p>
-                  <Button onClick={() => setLocation("/compatibility")}>
-                    궁합 보러가기
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
-                {filteredCompatList.map((record) => {
-                  const leftSaju = sajuList.find(s => s.id === record.leftId);
-                  const rightSaju = sajuList.find(s => s.id === record.rightId);
-                  return (
-                    <Card
-                      key={record.id}
-                      className="p-3 cursor-pointer hover-elevate"
-                      onClick={() => handleViewCompat(record)}
-                      data-testid={`compat-item-${record.id}`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2 text-sm font-medium">
-                          <span>{record.leftName || '이름없음'}</span>
-                          <span className="text-muted-foreground">♥</span>
-                          <span>{record.rightName || '이름없음'}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-destructive h-6 w-6"
-                            onClick={(e) => { e.stopPropagation(); handleDeleteCompat(record.id); }}
-                            data-testid={`button-delete-compat-${record.id}`}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="text-xs text-muted-foreground flex items-center justify-between">
-                        <span>
-                          {leftSaju ? `${leftSaju.birthYear}.${leftSaju.birthMonth}.${leftSaju.birthDay}` : ''}
-                          {leftSaju && rightSaju ? '  /  ' : ''}
-                          {rightSaju ? `${rightSaju.birthYear}.${rightSaju.birthMonth}.${rightSaju.birthDay}` : ''}
-                        </span>
-                        <span>
-                          {new Date(record.createdAt).toLocaleDateString('ko-KR', { year: '2-digit', month: 'numeric', day: 'numeric' })}
-                        </span>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
+        
         {/* 그룹 생성/수정 모달 */}
         <Dialog open={showGroupModal} onOpenChange={setShowGroupModal}>
           <DialogContent>
@@ -1038,22 +886,6 @@ export default function SajuList() {
                 className="bg-destructive hover:bg-destructive/90"
               >
                 {bulkDeleteMutation.isPending ? "삭제 중..." : "삭제"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* 궁합 삭제 확인 대화상자 */}
-        <AlertDialog open={showDeleteCompatDialog} onOpenChange={setShowDeleteCompatDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>궁합 삭제</AlertDialogTitle>
-              <AlertDialogDescription>이 궁합 기록을 정말 삭제하시겠습니까?</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>취소</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDeleteCompat} className="bg-destructive hover:bg-destructive/90">
-                삭제
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
