@@ -72,7 +72,7 @@ router.get("/login", (req: Request, res) => {
     const state = crypto.randomBytes(16).toString("hex");
 
     // PKCE verifier와 state를 서명된 쿠키에 저장 (다중 인스턴스 환경 지원)
-    const isReplit = !!process.env.REPLIT_DOMAINS;
+    const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
     const cookieOptions = {
       signed: true,
       httpOnly: true,
@@ -304,26 +304,39 @@ router.get("/callback", async (req: Request, res) => {
           </div>
         </div>
         <script>
-          // PWA standalone 모드 감지
-          const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
-                              window.navigator.standalone;
-          
-          // User-Agent로 모바일 감지
-          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-          
-          // 모든 경우 즉시 홈으로 이동
-          if (window.opener) {
-            try {
-              window.opener.postMessage({ type: 'auth_success' }, '${homeUrl}');
-              setTimeout(() => window.close(), 500);
-            } catch (e) {
-              window.location.href = '${homeUrl}';
-            }
-          } else {
-            window.location.href = '${homeUrl}';
-          }
-            
-        </script>
+  // 1. 모바일 기기(안드로이드/iOS) 감지
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // 2. 안드로이드 앱에서 연 브라우저인지 감지 (AndroidApp 식별자)
+  // (참고: MainActivity.kt에서 User-Agent를 조작했지만 안드로이드 환경 자체는 isMobile로 잡힘)
+  const isAndroidApp = /Android/.test(navigator.userAgent);
+
+  if (window.opener) {
+    // 팝업으로 열렸을 경우 처리 (데스크탑 등)
+    try {
+      window.opener.postMessage({ type: 'auth_success' }, '${homeUrl}');
+      setTimeout(() => window.close(), 500);
+    } catch (e) {
+      window.location.href = '${homeUrl}';
+    }
+  } else if (isMobile) {
+    // 🔥 모바일 환경일 경우, 웹뷰 앱을 깨우는 딥링크 실행!
+    // 안드로이드 MainActivity.kt에 등록한 scheme(sajumanseapp)과 host(oauth) 호출
+    // 미리 만들어두신 authToken 파라미터를 그대로 넘깁니다.
+    const deepLink = 'sajumanseapp://oauth?auth_token=${authToken}';
+    
+    window.location.href = deepLink;
+    
+    // 만약 앱이 설치되어 있지 않은 순수 모바일 크롬 웹 유저라면 
+    // 딥링크 호출이 실패하므로, 1초 뒤에 일반 웹 홈 화면으로 이동시킴 (폴백)
+    setTimeout(() => {
+      window.location.href = '${authRedirectUrl}';
+    }, 1000);
+  } else {
+    // 데스크탑 일반 브라우저 환경
+    window.location.href = '${authRedirectUrl}';
+  }
+</script>
       </body>
       </html>
     `);
