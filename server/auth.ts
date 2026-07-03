@@ -4,6 +4,29 @@ import crypto from "crypto";
 
 const router = Router();
 
+// 인스턴스 메모리에 의존하지 않는 자체 서명 토큰 (Cloud Run 다중 인스턴스 대응)
+function signAuthToken(userId: string, expiry: number): string {
+  const secret = process.env.SESSION_SECRET || "fallback-secret";
+  const payload = Buffer.from(JSON.stringify({ userId, expiry })).toString("base64url");
+  const sig = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+  return `${payload}.${sig}`;
+}
+
+function verifyAuthToken(token: string): { userId: string; expiry: number } | null {
+  try {
+    const secret = process.env.SESSION_SECRET || "fallback-secret";
+    const [payload, sig] = token.split(".");
+    if (!payload || !sig) return null;
+    const expectedSig = crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+    if (sig !== expectedSig) return null;
+    const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf-8"));
+    if (Date.now() > data.expiry) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 // 임시 토큰 저장소 (메모리 기반, 5분 자동 만료)
 interface TempToken {
   userId: string;
@@ -93,7 +116,7 @@ router.get("/login", (req: Request, res) => {
       code_challenge_method: "S256",
       state,
       access_type: "offline", // refresh token을 받기 위해
-      prompt: "consent", // 항상 consent 화면 표시 (refresh token 받기 위해)
+      prompt: "select_account",
     });
 
     const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
@@ -218,11 +241,7 @@ router.get("/callback", async (req: Request, res) => {
     console.log("✅ Login successful, user ID:", user.id);
     
     // PWA용 임시 토큰 생성 및 메모리에 저장 (5분 유효)
-    const authToken = crypto.randomBytes(32).toString('hex');
-    tempTokens.set(authToken, {
-      userId: user.id,
-      expiry: Date.now() + 5 * 60 * 1000, // 5분
-    });
+    const authToken = signAuthToken(user.id, Date.now() + 5 * 60 * 1000);
     
     const host = req.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
@@ -368,17 +387,11 @@ router.post("/exchange-token", (req: Request, res) => {
       return res.status(400).json({ error: "Token required" });
     }
     
-    // 메모리에서 토큰 정보 가져오기
-    const tokenData = tempTokens.get(authToken);
+    // 자체 서명 검증 (메모리 불필요, 인스턴스 무관)
+    const tokenData = verifyAuthToken(authToken);
     
     if (!tokenData) {
       return res.status(401).json({ error: "Token expired or invalid" });
-    }
-    
-    // 만료 확인
-    if (Date.now() > tokenData.expiry) {
-      tempTokens.delete(authToken);
-      return res.status(401).json({ error: "Token expired" });
     }
     
     // 세션 쿠키 생성 (메인 세션)
