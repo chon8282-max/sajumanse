@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Home, FolderOpen, Save, X, Heart } from "lucide-react";
+import { Home, FolderOpen, RefreshCw, Save, X } from "lucide-react";
 import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import SajuTable from "@/components/SajuTable";
@@ -64,26 +64,17 @@ export default function Compatibility() {
   const searchParams = useSearch();
   const { toast } = useToast();
 
-  // 화면 진입 시 초기화
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    if (!params.get('left') && !params.get('right')) {
-      localStorage.removeItem('compatibility_left_id');
-      localStorage.removeItem('compatibility_right_id');
-    }
-  }, []);
-
   const [leftSajuId, setLeftSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('left') || null;
+      return params.get('left') || localStorage.getItem('compatibility_left_id');
     }
     return null;
   });
   const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('right') || null;
+      return params.get('right') || localStorage.getItem('compatibility_right_id');
     }
     return null;
   });
@@ -121,6 +112,7 @@ export default function Compatibility() {
     if (rightId) setRightSajuId(rightId);
   }, [searchParams]);
 
+  // 왼쪽 사주 데이터
   const { data: leftSaju, isLoading: leftLoading, error: leftError } = useQuery<SajuResultData>({
     queryKey: ['local-saju-records', leftSajuId],
     queryFn: async () => {
@@ -136,6 +128,7 @@ export default function Compatibility() {
 
   useEffect(() => { if (leftSaju?.memo) setLeftMemo(leftSaju.memo); }, [leftSaju]);
 
+  // 오른쪽 사주 데이터
   const { data: rightSaju, isLoading: rightLoading, error: rightError } = useQuery<SajuResultData>({
     queryKey: ['local-saju-records', rightSajuId],
     queryFn: async () => {
@@ -154,6 +147,7 @@ export default function Compatibility() {
   const leftHasGanji = leftSaju?.yearSky && leftSaju?.daySky;
   const rightHasGanji = rightSaju?.yearSky && rightSaju?.daySky;
 
+  // 왼쪽 대운/나이 계산
   const leftDaeunData = useMemo(() => {
     if (!leftSaju?.yearSky || !leftSaju?.yearEarth || !leftSaju?.monthSky || !leftSaju?.monthEarth) return null;
     return calculateCompleteDaeun(leftSaju as any);
@@ -164,6 +158,7 @@ export default function Compatibility() {
     return calculateCurrentAge(leftSaju.birthYear, leftSaju.birthMonth, leftSaju.birthDay, leftSaju.yearSky || undefined, leftSaju.yearEarth || undefined);
   }, [leftSaju]);
 
+  // 왼쪽 현재 대운 자동 선택
   useEffect(() => {
     if (leftDaeunData && leftCurrentAge !== null) {
       const currentDaeun = findCurrentDaeun(leftCurrentAge, leftDaeunData.daeunPeriods);
@@ -176,6 +171,7 @@ export default function Compatibility() {
     return calculateSaeun(leftSaju.birthYear, leftSaju.yearSky, leftSaju.yearEarth, 12, leftFocusedDaeun.startAge - 1 + leftSaeunOffset);
   }, [leftSaju, leftFocusedDaeun, leftSaeunOffset]);
 
+  // 오른쪽 대운/나이 계산
   const rightDaeunData = useMemo(() => {
     if (!rightSaju?.yearSky || !rightSaju?.yearEarth || !rightSaju?.monthSky || !rightSaju?.monthEarth) return null;
     return calculateCompleteDaeun(rightSaju as any);
@@ -186,6 +182,7 @@ export default function Compatibility() {
     return calculateCurrentAge(rightSaju.birthYear, rightSaju.birthMonth, rightSaju.birthDay, rightSaju.yearSky || undefined, rightSaju.yearEarth || undefined);
   }, [rightSaju]);
 
+  // 오른쪽 현재 대운 자동 선택
   useEffect(() => {
     if (rightDaeunData && rightCurrentAge !== null) {
       const currentDaeun = findCurrentDaeun(rightCurrentAge, rightDaeunData.daeunPeriods);
@@ -198,6 +195,7 @@ export default function Compatibility() {
     return calculateSaeun(rightSaju.birthYear, rightSaju.yearSky, rightSaju.yearEarth, 12, rightFocusedDaeun.startAge - 1 + rightSaeunOffset);
   }, [rightSaju, rightFocusedDaeun, rightSaeunOffset]);
 
+  // 왼쪽 핸들러들
   const handleLeftDaeunClick = (daeunPeriod: DaeunPeriod) => {
     if (leftDisplayMode === 'base') {
       setLeftFocusedDaeun(daeunPeriod); setLeftDisplayMode('daeun'); setLeftSaeunOffset(0);
@@ -222,6 +220,7 @@ export default function Compatibility() {
     setLeftSaeunOffset(prev => direction === 'left' ? Math.max(-5, prev - 5) : Math.min(10, prev + 5));
   };
 
+  // 오른쪽 핸들러들
   const handleRightDaeunClick = (daeunPeriod: DaeunPeriod) => {
     if (rightDisplayMode === 'base') {
       setRightFocusedDaeun(daeunPeriod); setRightDisplayMode('daeun'); setRightSaeunOffset(0);
@@ -246,6 +245,24 @@ export default function Compatibility() {
     setRightSaeunOffset(prev => direction === 'left' ? Math.max(-5, prev - 5) : Math.min(10, prev + 5));
   };
 
+  // 저장 mutation
+  const leftSaveMutation = useMutation({
+    mutationFn: async (memo: string) => { if (!leftSajuId) return; return await localDB.updateSajuRecord(leftSajuId, { memo }); },
+    onSuccess: () => {
+      toast({ title: "저장 완료", description: "사주 1 메모가 저장되었습니다.", duration: 500 });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', leftSajuId] });
+    }
+  });
+
+  const rightSaveMutation = useMutation({
+    mutationFn: async (memo: string) => { if (!rightSajuId) return; return await localDB.updateSajuRecord(rightSajuId, { memo }); },
+    onSuccess: () => {
+      toast({ title: "저장 완료", description: "사주 2 메모가 저장되었습니다.", duration: 500 });
+      queryClient.invalidateQueries({ queryKey: ['local-saju-records', rightSajuId] });
+    }
+  });
+
+  // 생시 변경 핸들러
   const handleLeftBirthTimeChange = async (timeCode: string) => {
     if (!leftSajuId || !leftSaju) return;
     try {
@@ -280,6 +297,7 @@ export default function Compatibility() {
     } catch { toast({ title: "오류", description: "생시 변경에 실패했습니다.", variant: "destructive", duration: 1000 }); }
   };
 
+  // 생년월일 변경 핸들러
   const handleLeftBirthDateChange = async (year: number, month: number, day: number) => {
     if (!leftSajuId || !leftSaju) return;
     try {
@@ -324,41 +342,27 @@ export default function Compatibility() {
     setLocation('/');
   };
 
-  // 궁합 기록 저장 로직
-  const compatibilitySaveMutation = useMutation({
-    mutationFn: async () => {
-      if (!leftSajuId || !rightSajuId || !leftSaju || !rightSaju) throw new Error("두 명의 사주가 모두 선택되어야 합니다.");
-      
-      const compatibilityRecord = {
-        leftSajuId: leftSajuId,
-        rightSajuId: rightSajuId,
-        leftName: leftSaju.name || "이름없음",
-        rightName: rightSaju.name || "이름없음",
-        createdAt: new Date().toISOString()
-      };
-      
-      return await localDB.saveCompatibilityRecord(compatibilityRecord);
-    },
-    onSuccess: () => {
-      toast({ title: "궁합 저장 완료", description: "궁합 목록에 저장되었습니다.", duration: 1000 });
-      queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'] });
-    },
-    onError: (err) => {
-      toast({ title: "저장 실패", description: err.message, variant: "destructive", duration: 1000 });
-    }
-  });
-
+  // 사주 목록
   const { data: sajuList = [] } = useQuery<SajuResultData[]>({
     queryKey: ['local-saju-records-list'],
     queryFn: async () => await localDB.getSajuRecords(),
   });
 
   const renderSajuTable = (
-    saju: SajuResultData, memo: string, setMemo: (m: string) => void,
-    displayMode: DisplayMode, focusedDaeun: DaeunPeriod | null, focusedSaeun: SaeunInfo | null,
-    saeunData: ReturnType<typeof calculateSaeun> | null, daeunData: ReturnType<typeof calculateCompleteDaeun> | null,
-    currentAge: number | null, onBirthTimeChange: (t: string) => void, onBirthDateChange: (y: number, m: number, d: number) => void,
-    onDaeunClick: (d: DaeunPeriod) => void, onSaeunClick: (age: number, sky: string, earth: string) => void, onSaeunScroll: (dir: 'left' | 'right') => void,
+    saju: SajuResultData,
+    memo: string,
+    setMemo: (m: string) => void,
+    displayMode: DisplayMode,
+    focusedDaeun: DaeunPeriod | null,
+    focusedSaeun: SaeunInfo | null,
+    saeunData: ReturnType<typeof calculateSaeun> | null,
+    daeunData: ReturnType<typeof calculateCompleteDaeun> | null,
+    currentAge: number | null,
+    onBirthTimeChange: (t: string) => void,
+    onBirthDateChange: (y: number, m: number, d: number) => void,
+    onDaeunClick: (d: DaeunPeriod) => void,
+    onSaeunClick: (age: number, sky: string, earth: string) => void,
+    onSaeunScroll: (dir: 'left' | 'right') => void,
   ) => (
     <SajuTable
       saju={{
@@ -377,125 +381,125 @@ export default function Compatibility() {
           hourEarth: saju.hourEarth ? JIJI_WUXING[saju.hourEarth] || '' : ''
         }
       }}
-      name={saju.name} birthYear={saju.birthYear} birthMonth={saju.birthMonth ?? undefined} birthDay={saju.birthDay ?? undefined}
-      lunarYear={saju.lunarYear ?? undefined} lunarMonth={saju.lunarMonth ?? undefined} lunarDay={saju.lunarDay ?? undefined}
-      isLeapMonth={saju.isLeapMonth ?? false} birthHour={saju.birthTime || undefined} gender={saju.gender} calendarType={saju.calendarType}
-      memo={memo} onMemoChange={setMemo} onBirthTimeChange={onBirthTimeChange} onBirthDateChange={onBirthDateChange}
-      daeunPeriods={daeunData?.daeunPeriods || []} currentAge={currentAge || undefined}
-      displayMode={displayMode} focusedDaeun={focusedDaeun} focusedSaeun={focusedSaeun} saeunData={saeunData}
-      onDaeunClick={onDaeunClick} onSaeunClick={onSaeunClick} onSaeunScroll={onSaeunScroll}
-      hideActions={true} 
+      name={saju.name}
+      birthYear={saju.birthYear}
+      birthMonth={saju.birthMonth ?? undefined}
+      birthDay={saju.birthDay ?? undefined}
+      lunarYear={saju.lunarYear ?? undefined}
+      lunarMonth={saju.lunarMonth ?? undefined}
+      lunarDay={saju.lunarDay ?? undefined}
+      isLeapMonth={saju.isLeapMonth ?? false}
+      birthHour={saju.birthTime || undefined}
+      gender={saju.gender}
+      calendarType={saju.calendarType}
+      memo={memo}
+      onMemoChange={setMemo}
+      onBirthTimeChange={onBirthTimeChange}
+      onBirthDateChange={onBirthDateChange}
+      daeunPeriods={daeunData?.daeunPeriods || []}
+      currentAge={currentAge || undefined}
+      displayMode={displayMode}
+      focusedDaeun={focusedDaeun}
+      focusedSaeun={focusedSaeun}
+      saeunData={saeunData}
+      onDaeunClick={onDaeunClick}
+      onSaeunClick={onSaeunClick}
+      onSaeunScroll={onSaeunScroll}
     />
   );
 
-  const [dialogSearch, setDialogSearch] = useState("");
-
-  const renderDialog = (show: boolean, onClose: () => void, title: string, onSelect: (id: string) => void) => {
-    const filtered = sajuList.filter(s => !dialogSearch || (s.name || '').includes(dialogSearch));
-    return show && typeof document !== 'undefined' && createPortal(
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.7)' }} onClick={() => { onClose(); setDialogSearch(""); }}>
-        <div style={{ width: '100%', maxWidth: '360px', maxHeight: '70vh', backgroundColor: 'white', borderRadius: '10px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
-          <div style={{ padding: '8px 12px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>{title}</span>
-            <button onClick={() => { onClose(); setDialogSearch(""); }} style={{ padding: '2px' }}><X className="h-3.5 w-3.5 text-gray-500" /></button>
-          </div>
-          <div style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6' }}>
-            <input type="text" placeholder="이름 검색..." value={dialogSearch} onChange={e => setDialogSearch(e.target.value)} style={{ width: '100%', padding: '4px 8px', fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '6px', outline: 'none' }} />
-          </div>
-          <div style={{ flex: 1, overflowY: 'auto', padding: '4px' }}>
-            {filtered.map(saju => (
-              <div key={saju.id} style={{ padding: '6px 8px', cursor: 'pointer', borderRadius: '6px', borderBottom: '1px solid #f9fafb' }} onClick={() => { onSelect(saju.id); onClose(); setDialogSearch(""); }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9fafb')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937' }}>{saju.name || "이름없음"}</div>
-                <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '1px' }}>{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} {saju.birthTime || ''}</div>
-              </div>
+  const renderSajuDialog = (
+    show: boolean,
+    onClose: () => void,
+    title: string,
+    onSelect: (id: string) => void,
+  ) => show && typeof document !== 'undefined' && createPortal(
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.85)' }} onClick={onClose}>
+      <div style={{ width: '100%', maxWidth: '640px', maxHeight: '90vh', backgroundColor: 'white', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} className="dark:bg-gray-900" onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }} className="dark:border-gray-700">
+          <h2 style={{ fontSize: '16px', fontWeight: '600' }} className="dark:text-white">{title}</h2>
+          <button onClick={onClose} style={{ padding: '4px', borderRadius: '4px' }} className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"><X className="h-4 w-4" /></button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {sajuList.map(saju => (
+              <Card key={saju.id} className="p-3 cursor-pointer hover-elevate active-elevate-2" onClick={() => { onSelect(saju.id); onClose(); }}>
+                <div>
+                  <h3 className="font-semibold text-sm">{saju.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})</p>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
-      </div>,
-      document.body
-    );
-  };
+      </div>
+    </div>,
+    document.body
+  );
 
   return (
-    <div className="bg-background flex flex-col h-screen overflow-hidden">
-      
-      {/* 상단 공통 헤더 */}
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center z-10 shrink-0">
-        <Button variant="outline" size="sm" onClick={handleHomeClick} className="gap-2 h-8 text-xs px-3 landscape:hidden">
-          <Home className="w-3 h-3" /> 홈
-        </Button>
-        <h2 className="font-bold text-base text-primary tracking-wider">궁합 보기</h2>
-        <Button 
-          variant="default" 
-          size="sm" 
-          onClick={() => compatibilitySaveMutation.mutate()} 
-          disabled={!leftSajuId || !rightSajuId || compatibilitySaveMutation.isPending}
-          className="gap-2 h-8 px-3 text-xs bg-rose-500 hover:bg-rose-600 text-white"
-        >
-          <Heart className="w-3 h-3" /> 
-          {compatibilitySaveMutation.isPending ? '저장 중...' : '궁합 저장'}
-        </Button>
-      </div>
-
-      <div className="flex-1 grid grid-cols-2 gap-[1px] bg-gray-300 dark:bg-gray-700 w-full overflow-hidden">
-        
-        {/* 왼쪽 사주 1 */}
-        <div className="bg-white dark:bg-gray-900 flex flex-col w-full h-full overflow-hidden">
-          <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800 shrink-0">
-            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주 1</h3>
+    <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', minHeight: '100vh', gap: '1px' }}>
+      {/* 왼쪽 사주 1 */}
+      <div className="bg-white dark:bg-gray-900" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Button variant="outline" size="sm" onClick={handleHomeClick} className="gap-1 h-8 text-sm px-3" data-testid="button-home"><Home className="w-4 h-4" />홈</Button>
+              <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
+            </div>
             {leftSajuId && (
-              <Button variant="ghost" size="sm" onClick={() => setLeftSajuId(null)} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary">
-                변경
-              </Button>
-            )}
-          </div>
-          {/* 🔥 패딩을 완전히 제거하고(p-0) 테이블이 좌우 끝에 꽉 차게 설정 */}
-          <div className="flex-1 overflow-x-hidden overflow-y-auto p-0 pb-16">
-            {leftLoading ? (
-              <div className="flex items-center justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
-            ) : leftError ? (
-              <div className="text-center mt-10"><Button variant="outline" size="sm" onClick={() => setShowLeftDialog(true)}>다시 선택</Button></div>
-            ) : leftSajuId && leftSaju && leftHasGanji ? (
-              renderSajuTable(leftSaju, leftMemo, setLeftMemo, leftDisplayMode, leftFocusedDaeun, leftFocusedSaeun, leftSaeunData, leftDaeunData, leftCurrentAge, handleLeftBirthTimeChange, handleLeftBirthDateChange, handleLeftDaeunClick, handleLeftSaeunClick, handleLeftSaeunScroll)
-            ) : (
-              <div className="flex items-center justify-center py-10">
-                <Button onClick={() => setShowLeftDialog(true)} size="sm" className="shadow-md text-xs h-8"><FolderOpen className="w-4 h-4 mr-1" />불러오기</Button>
+              <div style={{ display: 'flex', gap: '4px', transform: 'scale(0.8)', transformOrigin: 'right center' }}>
+                <Button variant="outline" size="sm" onClick={() => setLeftSajuId(null)} data-testid="button-left-change" className="px-3 py-1 text-xs rounded-r-none border-r-0"><RefreshCw className="w-3 h-3 mr-1" />수정</Button>
+                <Button variant="default" size="sm" onClick={() => leftSaveMutation.mutate(leftMemo)} disabled={leftSaveMutation.isPending} data-testid="button-left-save" className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"><Save className="w-3 h-3 mr-1" />{leftSaveMutation.isPending ? '저장 중...' : '저장'}</Button>
               </div>
             )}
           </div>
         </div>
-
-        {/* 오른쪽 사주 2 */}
-        <div className="bg-white dark:bg-gray-900 flex flex-col w-full h-full overflow-hidden">
-          <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800 shrink-0">
-            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주 2</h3>
-            {rightSajuId && (
-              <Button variant="ghost" size="sm" onClick={() => setRightSajuId(null)} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary">
-                변경
-              </Button>
-            )}
-          </div>
-          {/* 🔥 패딩을 완전히 제거하고(p-0) 테이블이 좌우 끝에 꽉 차게 설정 */}
-          <div className="flex-1 overflow-x-hidden overflow-y-auto p-0 pb-16">
-            {rightLoading ? (
-              <div className="flex items-center justify-center py-10"><div className="overflow-x-hidden p-0 pb-20">
-            {rightLoading ? (
-              <div className="flex items-center justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
-            ) : rightError ? (
-              <div className="text-center mt-10"><Button variant="outline" size="sm" onClick={() => setShowRightDialog(true)}>다시 선택</Button></div>
-            ) : rightSajuId && rightSaju && rightHasGanji ? (
-              renderSajuTable(rightSaju, rightMemo, setRightMemo, rightDisplayMode, rightFocusedDaeun, rightFocusedSaeun, rightSaeunData, rightDaeunData, rightCurrentAge, handleRightBirthTimeChange, handleRightBirthDateChange, handleRightDaeunClick, handleRightSaeunClick, handleRightSaeunScroll)
-            ) : (
-              <div className="flex items-center justify-center py-10">
-                <Button onClick={() => setShowRightDialog(true)} size="sm" className="shadow-md text-xs h-8"><FolderOpen className="w-4 h-4 mr-1" />불러오기</Button>
-              </div>
-            )}
-          </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
+          {leftLoading ? (
+            <div className="flex items-center justify-center h-full"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div><p className="text-muted-foreground">불러오는 중...</p></div></div>
+          ) : leftError ? (
+            <div className="flex items-center justify-center h-full"><div className="text-center"><p className="text-destructive mb-4">사주 데이터를 찾을 수 없습니다</p><Button variant="outline" onClick={() => { setLeftSajuId(null); setShowLeftDialog(true); }} data-testid="button-left-reload"><FolderOpen className="w-4 h-4 mr-2" />다시 선택하기</Button></div></div>
+          ) : leftSajuId && leftSaju && !leftHasGanji ? (
+            <div className="flex items-center justify-center h-full"><div className="text-center max-w-md p-6"><p className="text-destructive mb-2 font-semibold">사주 데이터 오류</p><Button variant="outline" onClick={() => { setLeftSajuId(null); setShowLeftDialog(true); }} data-testid="button-left-reload"><FolderOpen className="w-4 h-4 mr-2" />다른 사주 선택</Button></div></div>
+          ) : leftSajuId && leftSaju && leftHasGanji ? (
+            renderSajuTable(leftSaju, leftMemo, setLeftMemo, leftDisplayMode, leftFocusedDaeun, leftFocusedSaeun, leftSaeunData, leftDaeunData, leftCurrentAge, handleLeftBirthTimeChange, handleLeftBirthDateChange, handleLeftDaeunClick, handleLeftSaeunClick, handleLeftSaeunScroll)
+          ) : (
+            <div className="flex items-center justify-center h-full"><Button variant="outline" onClick={() => setShowLeftDialog(true)} data-testid="button-left-load" size="lg" className="h-12 px-6 text-base"><FolderOpen className="w-5 h-5 mr-2" />불러오기</Button></div>
+          )}
         </div>
       </div>
 
-      {renderDialog(showLeftDialog, () => setShowLeftDialog(false), "사주1 선택", (id) => setLeftSajuId(id))}
-      {renderDialog(showRightDialog, () => setShowRightDialog(false), "사주2 선택", (id) => setRightSajuId(id))}
+      {/* 오른쪽 사주 2 */}
+      <div className="bg-white dark:bg-gray-900" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
+            {rightSajuId && (
+              <div style={{ display: 'flex', gap: '4px', transform: 'scale(0.8)', transformOrigin: 'right center' }}>
+                <Button variant="outline" size="sm" onClick={() => setRightSajuId(null)} data-testid="button-right-change" className="px-3 py-1 text-xs rounded-r-none border-r-0"><RefreshCw className="w-3 h-3 mr-1" />수정</Button>
+                <Button variant="default" size="sm" onClick={() => rightSaveMutation.mutate(rightMemo)} disabled={rightSaveMutation.isPending} data-testid="button-right-save" className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"><Save className="w-3 h-3 mr-1" />{rightSaveMutation.isPending ? '저장 중...' : '저장'}</Button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
+          {rightLoading ? (
+            <div className="flex items-center justify-center h-full"><div className="text-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div><p className="text-muted-foreground">불러오는 중...</p></div></div>
+          ) : rightError ? (
+            <div className="flex items-center justify-center h-full"><div className="text-center"><p className="text-destructive mb-4">사주 데이터를 찾을 수 없습니다</p><Button variant="outline" onClick={() => { setRightSajuId(null); setShowRightDialog(true); }} data-testid="button-right-reload"><FolderOpen className="w-4 h-4 mr-2" />다시 선택하기</Button></div></div>
+          ) : rightSajuId && rightSaju && !rightHasGanji ? (
+            <div className="flex items-center justify-center h-full"><div className="text-center max-w-md p-6"><p className="text-destructive mb-2 font-semibold">사주 데이터 오류</p><Button variant="outline" onClick={() => { setRightSajuId(null); setShowRightDialog(true); }} data-testid="button-right-reload"><FolderOpen className="w-4 h-4 mr-2" />다른 사주 선택</Button></div></div>
+          ) : rightSajuId && rightSaju && rightHasGanji ? (
+            renderSajuTable(rightSaju, rightMemo, setRightMemo, rightDisplayMode, rightFocusedDaeun, rightFocusedSaeun, rightSaeunData, rightDaeunData, rightCurrentAge, handleRightBirthTimeChange, handleRightBirthDateChange, handleRightDaeunClick, handleRightSaeunClick, handleRightSaeunScroll)
+          ) : (
+            <div className="flex items-center justify-center h-full"><Button variant="outline" onClick={() => setShowRightDialog(true)} data-testid="button-right-load" size="lg" className="h-12 px-6 text-base"><FolderOpen className="w-5 h-5 mr-2" />불러오기</Button></div>
+          )}
+        </div>
+      </div>
+
+      {renderSajuDialog(showLeftDialog, () => setShowLeftDialog(false), "사주 1 선택", (id) => setLeftSajuId(id))}
+      {renderSajuDialog(showRightDialog, () => setShowRightDialog(false), "사주 2 선택", (id) => setRightSajuId(id))}
     </div>
   );
 }
