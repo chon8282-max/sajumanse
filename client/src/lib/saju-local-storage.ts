@@ -29,6 +29,21 @@ interface SajuDB extends DBSchema {
       'by-saju': string;
     };
   };
+  // 🔥 궁합 기록용 테이블 추가
+  compatibilityRecords: {
+    key: string;
+    value: {
+      id: string;
+      leftSajuId: string;
+      rightSajuId: string;
+      leftName: string;
+      rightName: string;
+      createdAt: string;
+    };
+    indexes: {
+      'by-created': string;
+    };
+  };
 }
 
 // UUID 생성 함수 (클라이언트용)
@@ -55,7 +70,8 @@ const DEFAULT_GROUPS = [
 class SajuLocalStorage {
   private dbPromise: Promise<IDBPDatabase<SajuDB>>;
   private dbName = 'SajuDB';
-  private dbVersion = 1;
+  // 🔥 테이블이 추가되었으므로 버전을 1에서 2로 올려 기존 사용자의 DB를 자동 업데이트합니다.
+  private dbVersion = 2; 
 
   constructor() {
     this.dbPromise = this.initDB();
@@ -82,6 +98,12 @@ class SajuLocalStorage {
         if (!db.objectStoreNames.contains('fortuneResults')) {
           const fortuneStore = db.createObjectStore('fortuneResults', { keyPath: 'id' });
           fortuneStore.createIndex('by-saju', 'sajuRecordId');
+        }
+
+        // 🔥 Compatibility store (궁합 저장용 생성)
+        if (!db.objectStoreNames.contains('compatibilityRecords')) {
+          const compatStore = db.createObjectStore('compatibilityRecords', { keyPath: 'id' });
+          compatStore.createIndex('by-created', 'createdAt');
         }
       },
     });
@@ -164,18 +186,6 @@ class SajuLocalStorage {
   async createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord> {
     const db = await this.dbPromise;
     const now = new Date();
-    
-    console.log('[LocalDB] createSajuRecord 받은 데이터 (전체):', data);
-    console.log('[LocalDB] 간지 정보 확인:', {
-      yearSky: data.yearSky,
-      yearEarth: data.yearEarth,
-      monthSky: data.monthSky,
-      monthEarth: data.monthEarth,
-      daySky: data.daySky,
-      dayEarth: data.dayEarth,
-      hourSky: data.hourSky,
-      hourEarth: data.hourEarth
-    });
     
     const record: SajuRecord = {
       id: generateUUID(),
@@ -499,14 +509,50 @@ class SajuLocalStorage {
   
   async clearAllData(): Promise<void> {
     const db = await this.dbPromise;
-    const tx = db.transaction(['sajuRecords', 'groups', 'fortuneResults'], 'readwrite');
+    const tx = db.transaction(['sajuRecords', 'groups', 'fortuneResults', 'compatibilityRecords'], 'readwrite');
     await tx.objectStore('sajuRecords').clear();
     await tx.objectStore('groups').clear();
     await tx.objectStore('fortuneResults').clear();
+    await tx.objectStore('compatibilityRecords').clear();
     await tx.done;
     
     // 기본 그룹 다시 초기화
     await this.initializeDefaultGroups(db);
+  }
+
+  // 🔥 === Compatibility Records (궁합 저장 기능) ===
+
+  async saveCompatibilityRecord(data: {
+    leftSajuId: string;
+    rightSajuId: string;
+    leftName: string;
+    rightName: string;
+    createdAt: string;
+  }): Promise<boolean> {
+    const db = await this.dbPromise;
+    const record = {
+      ...data,
+      id: generateUUID(),
+    };
+    await db.add('compatibilityRecords', record);
+    return true;
+  }
+
+  async getCompatibilityRecords(): Promise<any[]> {
+    const db = await this.dbPromise;
+    const records = await db.getAllFromIndex('compatibilityRecords', 'by-created');
+    // 최신순 정렬 (내림차순)
+    return records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async deleteCompatibilityRecord(id: string): Promise<boolean> {
+    const db = await this.dbPromise;
+    const existing = await db.get('compatibilityRecords', id);
+    if (!existing) {
+      return false;
+    }
+    await db.delete('compatibilityRecords', id);
+    return true;
   }
 }
 
