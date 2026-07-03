@@ -11,7 +11,6 @@ interface TempToken {
 }
 const tempTokens = new Map<string, TempToken>();
 
-// 만료된 토큰 정리 (1분마다)
 setInterval(() => {
   const now = Date.now();
   for (const [token, data] of Array.from(tempTokens.entries())) {
@@ -327,11 +326,9 @@ router.get("/callback", async (req: Request, res) => {
     
     window.location.href = deepLink;
     
-    // 만약 앱이 설치되어 있지 않은 순수 모바일 크롬 웹 유저라면 
-    // 딥링크 호출이 실패하므로, 1초 뒤에 일반 웹 홈 화면으로 이동시킴 (폴백)
     setTimeout(() => {
       window.location.href = '${authRedirectUrl}';
-    }, 1000);
+    }, 3000);
   } else {
     // 데스크탑 일반 브라우저 환경
     window.location.href = '${authRedirectUrl}';
