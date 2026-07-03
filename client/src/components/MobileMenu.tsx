@@ -34,6 +34,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
+  const scrollTouchStartY = useRef(0);
 
   // 메뉴 열릴 때 배경 스크롤 차단
   useEffect(() => {
@@ -76,11 +77,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const backupData = await localDB.exportAllData();
 
       const response = await fetch('/api/backup/drive/upload', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
-  body: JSON.stringify(backupData)
-});
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
+        body: JSON.stringify(backupData)
+      });
 
       const result = await response.json();
       
@@ -126,10 +127,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       });
 
       const listResponse = await fetch('/api/backup/drive/list', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
-});
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
+      });
 
       const listResult = await listResponse.json();
       
@@ -146,11 +147,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       const latestFile = listResult.files[0];
 
       const downloadResponse = await fetch('/api/backup/drive/download', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
-  body: JSON.stringify({ fileId: latestFile.id }),
-});
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // 🔥 쿠키 전송 옵션 추가!
+        body: JSON.stringify({ fileId: latestFile.id }),
+      });
 
       const downloadResult = await downloadResponse.json();
       
@@ -283,19 +284,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             ref={scrollContainerRef}
             className="flex-1 p-2 space-y-3 overflow-y-auto"
             style={{ overscrollBehavior: 'contain' }}
-            onTouchStart={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              scrollTouchStartY.current = e.touches[0].clientY;
+            }}
             onTouchMove={(e) => {
               e.stopPropagation();
               // 스크롤 끝에서 bounce 방지
               const container = scrollContainerRef.current;
               if (container) {
                 const { scrollTop, scrollHeight, clientHeight } = container;
-                const isAtTop = scrollTop === 0;
+                const isAtTop = scrollTop <= 0;
                 const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-                
-                // 맨 위에서 위로 스크롤하려고 하거나, 맨 아래에서 아래로 스크롤하려고 할 때 이벤트 차단
-                if ((isAtTop && (e.touches[0].clientY > (touchStart || 0))) || 
-                    (isAtBottom && (e.touches[0].clientY < (touchStart || 0)))) {
+                const currentY = e.touches[0].clientY;
+                const movingDown = currentY > scrollTouchStartY.current;
+                const movingUp = currentY < scrollTouchStartY.current;
+
+                // 맨 위에서 아래로 당기거나(pull down), 맨 아래에서 위로 당길 때(pull up) 이벤트 차단
+                if ((isAtTop && movingDown) || (isAtBottom && movingUp)) {
                   e.preventDefault();
                 }
               }
