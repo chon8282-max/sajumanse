@@ -494,8 +494,8 @@ export default function Compatibility() {
         </div>
       </div>
 
-      {renderDialog(showLeftDialog, () => setShowLeftDialog(false), "나의 사주 선택", (id) => setLeftSajuId(id))}
-      {renderDialog(showRightDialog, () => setShowRightDialog(false), "상대방 사주 선택", (id) => setRightSajuId(id))}
+      {renderDialog(showLeftDialog, () => setShowLeftDialog(false), "사주1 선택", (id) => setLeftSajuId(id))}
+      {renderDialog(showRightDialog, () => setShowRightDialog(false), "사주2 선택", (id) => setRightSajuId(id))}
     </div>
   );
 }
