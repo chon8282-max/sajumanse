@@ -71,9 +71,21 @@ export default function Login() {
     }
   }, []);
 
+  const isSigningInRef = (window as any).__isSigningInRef || { current: false };
+  (window as any).__isSigningInRef = isSigningInRef;
+
   const handleGoogleSignIn = async () => {
+    // 중복 클릭/터치 방지 (안드로이드 웹뷰에서 클릭이 중복 발생하면
+    // 로그인 요청이 두 번 나가서 서버의 state 쿠키가 덮어써지는 문제 방지)
+    if (isSigningInRef.current) return;
+    isSigningInRef.current = true;
+
     // 일반 브라우저: 현재 창에서 리다이렉트
     window.location.href = '/api/auth/login';
+
+    setTimeout(() => {
+      isSigningInRef.current = false;
+    }, 5000);
   };
 
   const handleCopyUrl = async () => {
@@ -159,6 +171,10 @@ export default function Login() {
                 className="w-full"
                 size="lg"
                 onClick={handleGoogleSignIn}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleGoogleSignIn();
+                }}
                 data-testid="button-google-signin"
               >
                 <LogIn className="w-5 h-5 mr-2" />
