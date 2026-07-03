@@ -195,7 +195,7 @@ router.get("/callback", async (req: Request, res) => {
     });
 
     // 서명된 쿠키에 사용자 ID 저장 (배포 환경에서 안정적)
-    const isReplit = !!process.env.REPLIT_DOMAINS;
+    const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
     res.cookie("userId", user.id, {
       signed: true,
       httpOnly: true,
@@ -402,14 +402,15 @@ router.post("/exchange-token", (req: Request, res) => {
 // 로그아웃
 router.post("/logout", (req: Request, res) => {
   // 서명된 쿠키 삭제 (설정과 동일한 옵션 필요)
-  const isReplit = !!process.env.REPLIT_DOMAINS;
-  res.clearCookie("userId", {
-    httpOnly: true,
-    secure: isReplit,
-    sameSite: isReplit ? "none" : "lax",
-    path: "/", // 명시적으로 path 설정
-    signed: true,
-  });
+  const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
+    res.cookie("userId", tokenData.userId, {
+      signed: true,
+      httpOnly: true,
+      secure: isReplit,
+      sameSite: isReplit ? "none" : "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
   
   res.json({ success: true });
 });
