@@ -429,7 +429,7 @@ router.get("/user", async (req: Request, res) => {
     
     if (!user) {
       // 쿠키 삭제 (설정과 동일한 옵션 필요)
-      const isReplit = !!process.env.REPLIT_DOMAINS;
+      const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
       res.clearCookie("userId", {
         httpOnly: true,
         secure: isReplit,
