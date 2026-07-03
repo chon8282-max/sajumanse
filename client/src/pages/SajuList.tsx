@@ -301,37 +301,29 @@ export default function SajuList() {
                   </div>
                 )}
                 
-                <div className="space-y-0">
+                <div className="border rounded-lg overflow-hidden divide-y">
                   {sajuList.map((saju) => {
                     const groupName = groupsList?.find(g => g.id === saju.groupId)?.name;
                     return (
-                      <Card key={saju.id} className={`overflow-hidden transition-all border-l-4 ${selectedSajuIds.includes(saju.id) ? 'border-l-primary ring-1 ring-primary/20' : 'border-l-transparent'}`}>
-                        <div className="flex items-stretch p-0 cursor-pointer" onClick={() => handleViewSaju(saju.id)}>
-                          <div className="flex items-center pl-4 pr-2" onClick={e => e.stopPropagation()}>
-                            <Checkbox checked={selectedSajuIds.includes(saju.id)} onCheckedChange={() => toggleSelectSaju(saju.id)} className="w-5 h-5 rounded-md border-gray-300" />
+                      <div key={saju.id} className={`flex items-center px-2 py-1.5 cursor-pointer hover:bg-gray-50 ${selectedSajuIds.includes(saju.id) ? 'bg-primary/5' : ''}`} onClick={() => handleViewSaju(saju.id)}>
+                        <div onClick={e => e.stopPropagation()} className="mr-2">
+                          <Checkbox checked={selectedSajuIds.includes(saju.id)} onCheckedChange={() => toggleSelectSaju(saju.id)} className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium text-xs text-gray-800">{saju.name || "이름없음"}</span>
+                            <span className="text-xs text-gray-400">{calculateAge(saju.birthYear)}세</span>
+                            {groupName && <span className="text-[10px] text-primary bg-primary/10 px-1 rounded">{groupName}</span>}
                           </div>
-                          <div className="flex-1 py-4 pr-4">
-                            <div className="flex justify-between items-start mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-sm text-gray-800 dark:text-gray-100">{saju.name || "이름없음"}</span>
-                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{calculateAge(saju.birthYear)}세</span>
-                              </div>
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-primary hover:bg-primary/10" onClick={(e) => handleEditSaju(saju, e)}><Edit className="w-4 h-4" /></Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-rose-500 hover:bg-rose-50" onClick={(e) => { e.stopPropagation(); handleDeleteSaju(saju.id, saju.name || ""); }}><Trash2 className="w-4 h-4" /></Button>
-                              </div>
-                            </div>
-                            <div className="text-sm text-gray-500 mb-2 font-medium tracking-tight">
-                              양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
-                              {saju.birthTime && <span className="ml-1 px-1.5 py-0.5 bg-gray-100 rounded text-xs">{saju.birthTime}</span>}
-                            </div>
-                            <div className="flex justify-between items-center mt-1">
-                              <span className="text-[11px] text-gray-400">{saju.createdAt ? new Date(saju.createdAt).toLocaleDateString() : '날짜미상'} 저장</span>
-                              {groupName && <span className="text-[11px] font-medium text-primary bg-primary/5 px-2 py-0.5 rounded-full">{groupName}</span>}
-                            </div>
+                          <div className="text-[11px] text-gray-400">
+                            {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}{saju.birthTime && ` ${saju.birthTime}`}
                           </div>
                         </div>
-                      </Card>
+                        <div className="flex items-center gap-0.5" onClick={e => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-primary" onClick={(e) => handleEditSaju(saju, e)}><Edit className="w-3 h-3" /></Button>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-400 hover:text-rose-500" onClick={(e) => { e.stopPropagation(); handleDeleteSaju(saju.id, saju.name || ""); }}><Trash2 className="w-3 h-3" /></Button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
