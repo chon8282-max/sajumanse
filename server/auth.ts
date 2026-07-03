@@ -326,9 +326,16 @@ router.get("/callback", async (req: Request, res) => {
     
     window.location.href = deepLink;
     
-    setTimeout(() => {
+    var fallbackTimer = setTimeout(() => {
       window.location.href = '${authRedirectUrl}';
     }, 3000);
+    
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden) {
+        // 앱으로 전환됨 (딥링크 성공) -> 폴백 취소
+        clearTimeout(fallbackTimer);
+      }
+    });
   } else {
     // 데스크탑 일반 브라우저 환경
     window.location.href = '${authRedirectUrl}';
