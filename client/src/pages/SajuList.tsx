@@ -301,7 +301,7 @@ export default function SajuList() {
                   </div>
                 )}
                 
-                <div className="space-y-3">
+                <div className="space-y-0">
                   {sajuList.map((saju) => {
                     const groupName = groupsList?.find(g => g.id === saju.groupId)?.name;
                     return (
@@ -313,7 +313,7 @@ export default function SajuList() {
                           <div className="flex-1 py-4 pr-4">
                             <div className="flex justify-between items-start mb-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg text-gray-800 dark:text-gray-100">{saju.name || "이름없음"}</span>
+                                <span className="font-bold text-sm text-gray-800 dark:text-gray-100">{saju.name || "이름없음"}</span>
                                 <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">{calculateAge(saju.birthYear)}세</span>
                               </div>
                               <div className="flex gap-1">
@@ -325,7 +325,7 @@ export default function SajuList() {
                               양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}
                               {saju.birthTime && <span className="ml-1 px-1.5 py-0.5 bg-gray-100 rounded text-xs">{saju.birthTime}</span>}
                             </div>
-                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                            <div className="flex justify-between items-center mt-1">
                               <span className="text-[11px] text-gray-400">{saju.createdAt ? new Date(saju.createdAt).toLocaleDateString() : '날짜미상'} 저장</span>
                               {groupName && <span className="text-[11px] font-medium text-primary bg-primary/5 px-2 py-0.5 rounded-full">{groupName}</span>}
                             </div>
