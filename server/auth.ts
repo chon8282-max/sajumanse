@@ -393,8 +393,6 @@ router.post("/exchange-token", (req: Request, res) => {
     });
     
     // 사용된 토큰 삭제 (일회용)
-    tempTokens.delete(authToken);
-    
     console.log("✅ Token exchanged successfully for user:", tokenData.userId);
     res.json({ success: true });
   } catch (error) {
