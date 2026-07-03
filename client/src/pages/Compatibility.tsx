@@ -442,7 +442,7 @@ export default function Compatibility() {
         {/* 왼쪽 사주 1 */}
         <div className="bg-white dark:bg-gray-900 flex flex-col w-full border-b">
           <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">나의 사주</h3>
+            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주1</h3>
             {leftSajuId && (
               <Button variant="ghost" size="sm" onClick={() => setLeftSajuId(null)} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary">
                 변경
@@ -452,13 +452,13 @@ export default function Compatibility() {
           {/* 🔥 패딩을 완전히 제거하고(p-0) 테이블이 좌우 끝에 꽉 차게 설정 */}
           <div className="overflow-x-hidden p-0">
             {leftLoading ? (
-              <div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
+              <div className="flex items-center justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
             ) : leftError ? (
               <div className="text-center mt-10"><Button variant="outline" size="sm" onClick={() => setShowLeftDialog(true)}>다시 선택</Button></div>
             ) : leftSajuId && leftSaju && leftHasGanji ? (
               renderSajuTable(leftSaju, leftMemo, setLeftMemo, leftDisplayMode, leftFocusedDaeun, leftFocusedSaeun, leftSaeunData, leftDaeunData, leftCurrentAge, handleLeftBirthTimeChange, handleLeftBirthDateChange, handleLeftDaeunClick, handleLeftSaeunClick, handleLeftSaeunScroll)
             ) : (
-              <div className="flex items-center justify-center h-full mt-10">
+              <div className="flex items-center justify-center py-10">
                 <Button onClick={() => setShowLeftDialog(true)} size="sm" className="shadow-md text-xs h-8"><FolderOpen className="w-4 h-4 mr-1" />불러오기</Button>
               </div>
             )}
@@ -468,7 +468,7 @@ export default function Compatibility() {
         {/* 오른쪽 사주 2 */}
         <div className="bg-white dark:bg-gray-900 flex flex-col w-full">
           <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">상대방 사주</h3>
+            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주2</h3>
             {rightSajuId && (
               <Button variant="ghost" size="sm" onClick={() => setRightSajuId(null)} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary">
                 변경
@@ -478,13 +478,13 @@ export default function Compatibility() {
           {/* 🔥 패딩을 완전히 제거하고(p-0) 테이블이 좌우 끝에 꽉 차게 설정 */}
           <div className="overflow-x-hidden p-0 pb-20">
             {rightLoading ? (
-              <div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
+              <div className="flex items-center justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
             ) : rightError ? (
               <div className="text-center mt-10"><Button variant="outline" size="sm" onClick={() => setShowRightDialog(true)}>다시 선택</Button></div>
             ) : rightSajuId && rightSaju && rightHasGanji ? (
               renderSajuTable(rightSaju, rightMemo, setRightMemo, rightDisplayMode, rightFocusedDaeun, rightFocusedSaeun, rightSaeunData, rightDaeunData, rightCurrentAge, handleRightBirthTimeChange, handleRightBirthDateChange, handleRightDaeunClick, handleRightSaeunClick, handleRightSaeunScroll)
             ) : (
-              <div className="flex items-center justify-center h-full mt-10">
+              <div className="flex items-center justify-center py-10">
                 <Button onClick={() => setShowRightDialog(true)} size="sm" className="shadow-md text-xs h-8"><FolderOpen className="w-4 h-4 mr-1" />불러오기</Button>
               </div>
             )}
