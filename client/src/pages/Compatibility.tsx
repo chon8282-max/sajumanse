@@ -358,7 +358,6 @@ export default function Compatibility() {
     },
     onError: (err) => { toast({ title: "저장 실패", description: err.message, variant: "destructive", duration: 1000 }); }
   });
-  };
 
   // 사주 목록
   const { data: sajuList = [] } = useQuery<SajuResultData[]>({
