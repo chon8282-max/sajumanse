@@ -437,12 +437,12 @@ export default function Compatibility() {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 grid grid-cols-2 gap-[1px] bg-gray-300 dark:bg-gray-700 w-full overflow-hidden">
         
         {/* 왼쪽 사주 1 */}
-        <div className="bg-white dark:bg-gray-900 flex flex-col w-full border-b">
-          <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주1</h3>
+        <div className="bg-white dark:bg-gray-900 flex flex-col w-full h-full overflow-hidden">
+          <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800 shrink-0">
+            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주 1</h3>
             {leftSajuId && (
               <Button variant="ghost" size="sm" onClick={() => setLeftSajuId(null)} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary">
                 변경
@@ -450,7 +450,7 @@ export default function Compatibility() {
             )}
           </div>
           {/* 🔥 패딩을 완전히 제거하고(p-0) 테이블이 좌우 끝에 꽉 차게 설정 */}
-          <div className="overflow-x-hidden p-0">
+          <div className="flex-1 overflow-x-hidden overflow-y-auto p-0 pb-16">
             {leftLoading ? (
               <div className="flex items-center justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
             ) : leftError ? (
@@ -466,9 +466,9 @@ export default function Compatibility() {
         </div>
 
         {/* 오른쪽 사주 2 */}
-        <div className="bg-white dark:bg-gray-900 flex flex-col w-full">
-          <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800">
-            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주2</h3>
+        <div className="bg-white dark:bg-gray-900 flex flex-col w-full h-full overflow-hidden">
+          <div className="py-2 px-2 border-b flex justify-between items-center bg-gray-50 dark:bg-gray-800 shrink-0">
+            <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-200">사주 2</h3>
             {rightSajuId && (
               <Button variant="ghost" size="sm" onClick={() => setRightSajuId(null)} className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary">
                 변경
@@ -476,7 +476,9 @@ export default function Compatibility() {
             )}
           </div>
           {/* 🔥 패딩을 완전히 제거하고(p-0) 테이블이 좌우 끝에 꽉 차게 설정 */}
-          <div className="overflow-x-hidden p-0 pb-20">
+          <div className="flex-1 overflow-x-hidden overflow-y-auto p-0 pb-16">
+            {rightLoading ? (
+              <div className="flex items-center justify-center py-10"><div className="overflow-x-hidden p-0 pb-20">
             {rightLoading ? (
               <div className="flex items-center justify-center py-10"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div></div>
             ) : rightError ? (
