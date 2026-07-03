@@ -76,14 +76,14 @@ export default function Compatibility() {
   const [leftSajuId, setLeftSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('left') || localStorage.getItem('compatibility_left_id');
+      return params.get('left') || null;
     }
     return null;
   });
   const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('right') || localStorage.getItem('compatibility_right_id');
+      return params.get('right') || null;
     }
     return null;
   });
