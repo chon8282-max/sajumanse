@@ -116,7 +116,7 @@ router.get("/login", (req: Request, res) => {
       code_challenge_method: "S256",
       state,
       access_type: "offline", // refresh token을 받기 위해
-      prompt: "select_account",
+      prompt: "consent",
     });
 
     const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;
@@ -240,13 +240,14 @@ router.get("/callback", async (req: Request, res) => {
 
     console.log("✅ Login successful, user ID:", user.id);
     
-    // PWA용 임시 토큰 생성 및 메모리에 저장 (5분 유효)
+    // PWA용 임시 토큰 생성 (자체 서명, 5분 유효)
     const authToken = signAuthToken(user.id, Date.now() + 5 * 60 * 1000);
     
     const host = req.get('host');
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const homeUrl = `${protocol}://${host}/`;
     const authRedirectUrl = `${protocol}://${host}/?auth_token=${authToken}`;
+    const deepLink = `sajumanseapp://oauth?auth_token=${authToken}`;
     
     // 브릿지 페이지 렌더링 (PWA와 일반 브라우저 모두 처리)
     res.send(`
@@ -286,26 +287,20 @@ router.get("/callback", async (req: Request, res) => {
           }
           .btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 14px 28px;
             background: #3d2c1a;
             color: white;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 17px;
           }
-          .pwa-hint {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: #d1ecf1;
-            border: 2px solid #0c5460;
-            border-radius: 12px;
-            color: #0c5460;
-            font-size: 15px;
-            line-height: 1.6;
-          }
-          .pwa-hint strong {
-            color: #0c5460;
-            font-weight: 700;
+          .sub-link {
+            display: block;
+            margin-top: 1.5rem;
+            font-size: 13px;
+            color: #999;
+            text-decoration: underline;
           }
         </style>
       </head>
@@ -314,20 +309,14 @@ router.get("/callback", async (req: Request, res) => {
           <div class="success">✅</div>
           <h1>로그인 완료!</h1>
           <p class="message" id="message">로그인이 성공적으로 완료되었습니다.</p>
+
+          <a href="${deepLink}" class="btn" id="appBtn" style="display: none;">📱 앱으로 돌아가기</a>
           <a href="${homeUrl}" class="btn" id="returnBtn" style="display: none;">홈으로 이동</a>
-          <div class="pwa-hint" id="pwaHint" style="display: none;">
-            <strong>📱 PWA 앱 사용자</strong><br/>
-            이 브라우저 창을 닫고 <strong>만세력 앱으로 돌아가세요</strong>.<br/>
-            앱에서 자동으로 로그인됩니다.
-          </div>
+          <a href="${authRedirectUrl}" class="sub-link" id="webFallbackLink" style="display: none;">앱이 없으신가요? 웹에서 계속하기</a>
         </div>
         <script>
-  // 1. 모바일 기기(안드로이드/iOS) 감지
+  // 모바일 기기(안드로이드/iOS) 감지
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  
-  // 2. 안드로이드 앱에서 연 브라우저인지 감지 (AndroidApp 식별자)
-  // (참고: MainActivity.kt에서 User-Agent를 조작했지만 안드로이드 환경 자체는 isMobile로 잡힘)
-  const isAndroidApp = /Android/.test(navigator.userAgent);
 
   if (window.opener) {
     // 팝업으로 열렸을 경우 처리 (데스크탑 등)
@@ -338,25 +327,19 @@ router.get("/callback", async (req: Request, res) => {
       window.location.href = '${homeUrl}';
     }
   } else if (isMobile) {
-    // 🔥 모바일 환경일 경우, 웹뷰 앱을 깨우는 딥링크 실행!
-    // 안드로이드 MainActivity.kt에 등록한 scheme(sajumanseapp)과 host(oauth) 호출
-    // 미리 만들어두신 authToken 파라미터를 그대로 넘깁니다.
-    const deepLink = 'sajumanseapp://oauth?auth_token=${authToken}';
-    
-    window.location.href = deepLink;
-    
-    var fallbackTimer = setTimeout(() => {
-      window.location.href = '${authRedirectUrl}';
-    }, 3000);
-    
-    document.addEventListener('visibilitychange', function() {
-      if (document.hidden) {
-        // 앱으로 전환됨 (딥링크 성공) -> 폴백 취소
-        clearTimeout(fallbackTimer);
-      }
-    });
+    // 🔥 모바일: 자동 이동 대신, 사용자가 직접 누르는 버튼만 노출
+    // (자동 리다이렉트는 Chrome 보안 정책으로 딥링크가 막히고,
+    //  그 경우 Chrome 자체가 웹사이트를 열어 세션을 가로채는 문제가 있었음)
+    document.getElementById('appBtn').style.display = 'inline-block';
+    document.getElementById('webFallbackLink').style.display = 'block';
+
+    // 최초 1회 자동 시도는 하되(설치 안내 등), 실패해도 절대 Chrome에서
+    // authRedirectUrl로 자동 이동하지 않음 (세션 가로채기 방지)
+    try {
+      window.location.href = '${deepLink}';
+    } catch (e) {}
   } else {
-    // 데스크탑 일반 브라우저 환경
+    // 데스크탑 일반 브라우저 환경만 자동 이동
     window.location.href = '${authRedirectUrl}';
   }
 </script>
@@ -405,7 +388,6 @@ router.post("/exchange-token", (req: Request, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30일
     });
     
-    // 사용된 토큰 삭제 (일회용)
     console.log("✅ Token exchanged successfully for user:", tokenData.userId);
     res.json({ success: true });
   } catch (error) {
