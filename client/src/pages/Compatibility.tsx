@@ -408,34 +408,41 @@ export default function Compatibility() {
     />
   );
 
+  const [dialogSearch, setDialogSearch] = useState("");
+
   const renderSajuDialog = (
     show: boolean,
     onClose: () => void,
     title: string,
     onSelect: (id: string) => void,
-  ) => show && typeof document !== 'undefined' && createPortal(
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.85)' }} onClick={onClose}>
-      <div style={{ width: '100%', maxWidth: '640px', maxHeight: '90vh', backgroundColor: 'white', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }} className="dark:bg-gray-900" onClick={e => e.stopPropagation()}>
-        <div style={{ padding: '16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }} className="dark:border-gray-700">
-          <h2 style={{ fontSize: '16px', fontWeight: '600' }} className="dark:text-white">{title}</h2>
-          <button onClick={onClose} style={{ padding: '4px', borderRadius: '4px' }} className="opacity-70 hover:opacity-100 transition-opacity hover:bg-gray-100 dark:hover:bg-gray-800"><X className="h-4 w-4" /></button>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {sajuList.map(saju => (
-              <Card key={saju.id} className="p-3 cursor-pointer hover-elevate active-elevate-2" onClick={() => { onSelect(saju.id); onClose(); }}>
-                <div>
-                  <h3 className="font-semibold text-sm">{saju.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} ({saju.gender})</p>
-                </div>
-              </Card>
+  ) => {
+    const filtered = sajuList.filter(s => !dialogSearch || (s.name || '').includes(dialogSearch));
+    return show && typeof document !== 'undefined' && createPortal(
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.7)' }} onClick={() => { onClose(); setDialogSearch(""); }}>
+        <div style={{ width: '100%', maxWidth: '360px', maxHeight: '70vh', backgroundColor: 'white', borderRadius: '10px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>{title}</span>
+            <button onClick={() => { onClose(); setDialogSearch(""); }} style={{ padding: '2px' }}><X className="h-3.5 w-3.5 text-gray-500" /></button>
+          </div>
+          <div style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6' }}>
+            <input type="text" placeholder="이름 검색..." value={dialogSearch} onChange={e => setDialogSearch(e.target.value)} style={{ width: '100%', padding: '4px 8px', fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '6px', outline: 'none' }} />
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '4px' }}>
+            {filtered.map(saju => (
+              <div key={saju.id} style={{ padding: '6px 8px', cursor: 'pointer', borderRadius: '6px', borderBottom: '1px solid #f9fafb' }}
+                onClick={() => { onSelect(saju.id); onClose(); setDialogSearch(""); }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9fafb')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937' }}>{saju.name || "이름없음"}</div>
+                <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '1px' }}>{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} {saju.birthTime || ''}</div>
+              </div>
             ))}
           </div>
         </div>
-      </div>
-    </div>,
-    document.body
-  );
+      </div>,
+      document.body
+    );
+  };
 
   return (
     <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', minHeight: '100vh', gap: '1px' }}>
