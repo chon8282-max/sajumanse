@@ -378,7 +378,7 @@ router.post("/exchange-token", (req: Request, res) => {
     }
     
     // 세션 쿠키 생성 (메인 세션)
-    const isReplit = !!process.env.REPLIT_DOMAINS;
+    const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
     res.cookie("userId", tokenData.userId, {
       signed: true,
       httpOnly: true,
