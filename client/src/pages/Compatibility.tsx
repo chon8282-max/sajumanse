@@ -342,6 +342,24 @@ export default function Compatibility() {
     setLocation('/');
   };
 
+  const compatibilitySaveMutation = useMutation({
+    mutationFn: async () => {
+      if (!leftSajuId || !rightSajuId || !leftSaju || !rightSaju) throw new Error("두 명의 사주가 모두 선택되어야 합니다.");
+      return await localDB.saveCompatibilityRecord({
+        leftSajuId, rightSajuId,
+        leftName: leftSaju.name || "이름없음",
+        rightName: rightSaju.name || "이름없음",
+        createdAt: new Date().toISOString()
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "궁합 저장 완료", description: "궁합 목록에 저장되었습니다.", duration: 1000 });
+      queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'] });
+    },
+    onError: (err) => { toast({ title: "저장 실패", description: err.message, variant: "destructive", duration: 1000 }); }
+  });
+  };
+
   // 사주 목록
   const { data: sajuList = [] } = useQuery<SajuResultData[]>({
     queryKey: ['local-saju-records-list'],
@@ -455,10 +473,7 @@ export default function Compatibility() {
               <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <div style={{ display: 'flex', gap: '4px', transform: 'scale(0.8)', transformOrigin: 'right center' }}>
-                <Button variant="outline" size="sm" onClick={() => setLeftSajuId(null)} data-testid="button-left-change" className="px-3 py-1 text-xs rounded-r-none border-r-0"><RefreshCw className="w-3 h-3 mr-1" />수정</Button>
-                <Button variant="default" size="sm" onClick={() => leftSaveMutation.mutate(leftMemo)} disabled={leftSaveMutation.isPending} data-testid="button-left-save" className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"><Save className="w-3 h-3 mr-1" />{leftSaveMutation.isPending ? '저장 중...' : '저장'}</Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={() => setLeftSajuId(null)} data-testid="button-left-change" className="px-2 py-1 text-xs"><RefreshCw className="w-3 h-3 mr-1" />변경</Button>
             )}
           </div>
         </div>
@@ -482,12 +497,12 @@ export default function Compatibility() {
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
-            {rightSajuId && (
-              <div style={{ display: 'flex', gap: '4px', transform: 'scale(0.8)', transformOrigin: 'right center' }}>
-                <Button variant="outline" size="sm" onClick={() => setRightSajuId(null)} data-testid="button-right-change" className="px-3 py-1 text-xs rounded-r-none border-r-0"><RefreshCw className="w-3 h-3 mr-1" />수정</Button>
-                <Button variant="default" size="sm" onClick={() => rightSaveMutation.mutate(rightMemo)} disabled={rightSaveMutation.isPending} data-testid="button-right-save" className="px-3 py-1 text-xs rounded-l-none ml-[-1px]"><Save className="w-3 h-3 mr-1" />{rightSaveMutation.isPending ? '저장 중...' : '저장'}</Button>
-              </div>
-            )}
+            <div className="flex gap-1">
+              {rightSajuId && (
+                <Button variant="outline" size="sm" onClick={() => setRightSajuId(null)} className="px-2 py-1 text-xs"><RefreshCw className="w-3 h-3 mr-1" />변경</Button>
+              )}
+              <Button variant="default" size="sm" onClick={() => compatibilitySaveMutation.mutate()} disabled={!leftSajuId || !rightSajuId || compatibilitySaveMutation.isPending} className="px-2 py-1 text-xs bg-rose-500 hover:bg-rose-600 text-white">♥ 궁합저장</Button>
+            </div>
           </div>
         </div>
         <div style={{ flex: 1, overflow: 'auto', padding: '12px' }}>
