@@ -401,16 +401,14 @@ router.post("/exchange-token", (req: Request, res) => {
 
 // 로그아웃
 router.post("/logout", (req: Request, res) => {
-  // 서명된 쿠키 삭제 (설정과 동일한 옵션 필요)
   const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
-    res.cookie("userId", tokenData.userId, {
-      signed: true,
-      httpOnly: true,
-      secure: isReplit,
-      sameSite: isReplit ? "none" : "lax",
-      path: "/",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
+  res.clearCookie("userId", {
+    httpOnly: true,
+    secure: isReplit,
+    sameSite: isReplit ? "none" : "lax",
+    path: "/",
+    signed: true,
+  });
   
   res.json({ success: true });
 });
