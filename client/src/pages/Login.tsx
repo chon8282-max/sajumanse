@@ -1,17 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
-import { LogIn, Info, Copy, ExternalLink, AlertTriangle } from "lucide-react";
+import { LogIn, Copy, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
 // Embedded browser 감지 함수
 function isEmbeddedBrowser(): boolean {
   const ua = navigator.userAgent || navigator.vendor;
-  
+
   const embeddedBrowsers = [
     'Instagram',
     'FBAN', 'FBAV',        // Facebook
@@ -22,7 +22,7 @@ function isEmbeddedBrowser(): boolean {
     'KAKAOTALK',          // KakaoTalk
     'wv'                   // WebView indicator
   ];
-  
+
   return embeddedBrowsers.some(browser => ua.includes(browser));
 }
 
@@ -30,19 +30,22 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
-  const [isStandalone] = useState(() => 
-    window.matchMedia('(display-mode: standalone)').matches || 
+  const [isStandalone] = useState(() =>
+    window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as any).standalone
   );
   const [isEmbedded] = useState(() => isEmbeddedBrowser());
 
-  
+  // 중복 클릭/터치 방지 (onClick과 onTouchEnd가 겹쳐서 두 번 실행되는 것을 막음)
+  const isSigningInRef = useRef(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
   // postMessage로 OAuth 성공 메시지 받기 (새 탭에서 로그인 완료 시)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // origin 검증
       if (event.origin !== window.location.origin) return;
-      
+
       if (event.data?.type === 'auth_success') {
         // 로그인 성공 시 사용자 정보 다시 가져오기
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
@@ -55,10 +58,10 @@ export default function Login() {
 
   // PWA 모드에서 시스템 브라우저로 로그인 후 돌아왔을 때 감지 (fallback)
   useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+    const standalone = window.matchMedia('(display-mode: standalone)').matches ||
                         (window.navigator as any).standalone;
-    
-    if (isStandalone) {
+
+    if (standalone) {
       // PWA가 포커스될 때마다 로그인 상태 재확인
       const handleVisibilityChange = () => {
         if (!document.hidden) {
@@ -71,26 +74,26 @@ export default function Login() {
     }
   }, []);
 
-  const isSigningInRef = (window as any).__isSigningInRef || { current: false };
-  (window as any).__isSigningInRef = isSigningInRef;
-
-  const handleGoogleSignIn = async () => {
-    // 중복 클릭/터치 방지 (안드로이드 웹뷰에서 클릭이 중복 발생하면
-    // 로그인 요청이 두 번 나가서 서버의 state 쿠키가 덮어써지는 문제 방지)
+  // 로그인 시도 (중복 요청 방지가 핵심)
+  const handleGoogleSignIn = () => {
+    // 이미 로그인 시도 중이면 무시 (터치/클릭 중복 발생으로 인한
+    // /api/auth/login 중복 호출 -> 서버 state 쿠키 덮어쓰기 -> 로그인 실패 방지)
     if (isSigningInRef.current) return;
     isSigningInRef.current = true;
+    setIsSigningIn(true);
 
-    // 일반 브라우저: 현재 창에서 리다이렉트
     window.location.href = '/api/auth/login';
 
+    // 혹시 페이지 이동이 지연되거나 실패하는 경우를 대비한 안전장치
     setTimeout(() => {
       isSigningInRef.current = false;
-    }, 5000);
+      setIsSigningIn(false);
+    }, 4000);
   };
 
   const handleCopyUrl = async () => {
     const loginUrl = `${window.location.origin}/api/auth/login`;
-    
+
     // clipboard API 시도
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
@@ -105,7 +108,7 @@ export default function Login() {
         // clipboard 실패 - fallback으로 진행
       }
     }
-    
+
     // clipboard 미지원 또는 실패 시: 선택 가능한 텍스트로 표시
     const urlDisplay = document.createElement('div');
     urlDisplay.innerHTML = `
@@ -121,19 +124,19 @@ export default function Login() {
         </p>
       </div>
     `;
-    
+
     document.body.appendChild(urlDisplay);
     const input = urlDisplay.querySelector('input') as HTMLInputElement;
     input.focus();
     input.select();
-    
+
     // 10초 후 또는 클릭 시 제거
     const removeDisplay = () => {
       if (document.body.contains(urlDisplay)) {
         document.body.removeChild(urlDisplay);
       }
     };
-    
+
     setTimeout(removeDisplay, 10000);
     urlDisplay.addEventListener('click', removeDisplay);
   };
@@ -164,12 +167,13 @@ export default function Login() {
                 </AlertDescription>
               </Alert>
             )}
-            
+
             {/* 일반 브라우저용 로그인 버튼 */}
             {!isStandalone && !isEmbedded && (
               <Button
                 className="w-full"
                 size="lg"
+                disabled={isSigningIn}
                 onClick={handleGoogleSignIn}
                 onTouchEnd={(e) => {
                   e.preventDefault();
@@ -178,27 +182,35 @@ export default function Login() {
                 data-testid="button-google-signin"
               >
                 <LogIn className="w-5 h-5 mr-2" />
-                Google로 로그인
+                {isSigningIn ? "이동 중..." : "Google로 로그인"}
               </Button>
             )}
-            
+
             {/* PWA/Embedded용 URL 복사 버튼 */}
             {(isStandalone || isEmbedded) && (
               <Button
                 className="w-full"
                 size="lg"
                 onClick={handleCopyUrl}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleCopyUrl();
+                }}
                 data-testid="button-copy-login-url"
               >
                 <Copy className="w-5 h-5 mr-2" />
                 로그인 URL 복사
               </Button>
             )}
-            
+
             <div className="text-center">
               <Button
                 variant="ghost"
                 onClick={() => setLocation("/")}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setLocation("/");
+                }}
                 data-testid="button-back-home"
               >
                 홈으로 돌아가기
