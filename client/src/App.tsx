@@ -98,24 +98,15 @@ function AppContent() {
         .then(res => {
           if (res.ok) {
             console.log('✅ Token exchange successful');
-            alert('교환성공. document.cookie = [' + document.cookie + ']');
-            // 성공 시 사용자 정보 갱신
-            queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-
-            // 디버그: 실제로 로그인 상태가 반영됐는지 바로 확인
-            fetch('/api/auth/user', { credentials: 'include' })
-              .then(r => r.json())
-              .then(data => {
-                alert('user 응답: ' + JSON.stringify(data));
-              });
+            // react-query 캐시 타이밍 문제를 완전히 피하기 위해
+            // 캐시 무효화 대신 페이지를 통째로 새로고침 (쿠키는 이미 저장되어 있어 자동 반영됨)
+            window.location.href = '/';
           } else {
-            alert('교환 실패. status=' + res.status);
-            throw new Error('Token exchange failed');
+            console.error('Token exchange failed:', res.status);
           }
         })
         .catch(err => {
           console.error('❌ Token exchange error:', err);
-          alert('교환 에러: ' + err.message);
         });
     }
   }, []);
