@@ -122,7 +122,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         toast({
           title: "백업 완료",
           description: `${backupData.sajuRecords.length}개의 사주 레코드가 Google Drive에 백업되었습니다.`,
-          duration: 800,
+          duration: 1500,
         });
       } else {
         throw new Error(result.error || '백업 실패');

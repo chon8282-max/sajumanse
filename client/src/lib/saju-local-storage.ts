@@ -341,21 +341,24 @@ class SajuLocalStorage {
     sajuRecords: SajuRecord[];
     groups: Group[];
     fortuneResults: FortuneResult[];
+    compatibilityRecords: any[];
     version: string;
     exportDate: string;
   }> {
     const db = await this.dbPromise;
     
-    const [sajuRecords, groups, fortuneResults] = await Promise.all([
+    const [sajuRecords, groups, fortuneResults, compatibilityRecords] = await Promise.all([
       db.getAll('sajuRecords'),
       db.getAll('groups'),
       db.getAll('fortuneResults'),
+      db.getAll('compatibilityRecords'),
     ]);
 
     return {
       sajuRecords,
       groups,
       fortuneResults,
+      compatibilityRecords,
       version: '1.0',
       exportDate: new Date().toISOString(),
     };
@@ -379,11 +382,13 @@ class SajuLocalStorage {
     sajuRecords?: any[];
     groups?: any[];
     fortuneResults?: any[];
+    compatibilityRecords?: any[];
   }): Promise<{
     imported: number;
     sajuRecordsCount: number;
     groupsCount: number;
     fortuneResultsCount: number;
+    compatibilityRecordsCount: number;
     errors: string[];
   }> {
     const db = await this.dbPromise;
@@ -391,6 +396,7 @@ class SajuLocalStorage {
     let sajuRecordsCount = 0;
     let groupsCount = 0;
     let fortuneResultsCount = 0;
+    let compatibilityRecordsCount = 0;
 
     // Groups 먼저 임포트
     if (data.groups && data.groups.length > 0) {
@@ -448,17 +454,34 @@ class SajuLocalStorage {
       await tx.done;
     }
 
-    const imported = sajuRecordsCount + groupsCount + fortuneResultsCount;
+    // CompatibilityRecords 임포트
+    if (data.compatibilityRecords && data.compatibilityRecords.length > 0) {
+      const tx = db.transaction('compatibilityRecords', 'readwrite');
+      for (const rawRecord of data.compatibilityRecords) {
+        try {
+          const record = this.convertDates(rawRecord as Record<string, any>);
+          const existing = await tx.store.get(record.id);
+          if (!existing) {
+            await tx.store.add(record);
+            compatibilityRecordsCount++;
+          }
+        } catch (error) {
+          errors.push(`CompatibilityRecord import error: ${error}`);
+        }
+      }
+      await tx.done;
+    }
 
+    const imported = sajuRecordsCount + groupsCount + fortuneResultsCount + compatibilityRecordsCount;
     return {
       imported,
       sajuRecordsCount,
       groupsCount,
       fortuneResultsCount,
+      compatibilityRecordsCount,
       errors,
     };
   }
-
   // === Fortune Results ===
   
   async saveFortuneResult(data: InsertFortuneResult & { id?: string; createdAt?: Date }): Promise<FortuneResult> {
