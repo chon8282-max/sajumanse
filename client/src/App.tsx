@@ -98,14 +98,24 @@ function AppContent() {
         .then(res => {
           if (res.ok) {
             console.log('✅ Token exchange successful');
+            alert('교환성공. document.cookie = [' + document.cookie + ']');
             // 성공 시 사용자 정보 갱신
             queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+
+            // 디버그: 실제로 로그인 상태가 반영됐는지 바로 확인
+            fetch('/api/auth/user', { credentials: 'include' })
+              .then(r => r.json())
+              .then(data => {
+                alert('user 응답: ' + JSON.stringify(data));
+              });
           } else {
+            alert('교환 실패. status=' + res.status);
             throw new Error('Token exchange failed');
           }
         })
         .catch(err => {
           console.error('❌ Token exchange error:', err);
+          alert('교환 에러: ' + err.message);
         });
     }
   }, []);
