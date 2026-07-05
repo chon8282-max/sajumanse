@@ -32,8 +32,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const { isAuthenticated, logout } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
   const scrollTouchStartY = useRef(0);
 
   // 메뉴 열릴 때 배경 스크롤 차단
@@ -52,6 +50,41 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     };
   }, [isOpen]);
 
+  // 스크롤 영역 끝에서 bounce/새어나감 방지
+  // React의 onTouchMove는 passive:true로 등록되어 preventDefault가 무시되므로
+  // 네이티브 addEventListener로 passive:false 지정하여 직접 등록
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || !isOpen) return;
+
+    const handleNativeTouchStart = (e: TouchEvent) => {
+      e.stopPropagation();
+      scrollTouchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleNativeTouchMove = (e: TouchEvent) => {
+      e.stopPropagation();
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtTop = scrollTop <= 0;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
+      const currentY = e.touches[0].clientY;
+      const movingDown = currentY > scrollTouchStartY.current;
+      const movingUp = currentY < scrollTouchStartY.current;
+
+      if ((isAtTop && movingDown) || (isAtBottom && movingUp)) {
+        e.preventDefault();
+      }
+    };
+
+    container.addEventListener('touchstart', handleNativeTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleNativeTouchMove, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', handleNativeTouchStart);
+      container.removeEventListener('touchmove', handleNativeTouchMove);
+    };
+  }, [isOpen]);
+
   const handleDriveBackup = async () => {
     // 로그인 체크
     if (!isAuthenticated) {
@@ -59,7 +92,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         title: "로그인 필요",
         description: "Google Drive 백업은 로그인이 필요합니다.",
         variant: "destructive",
-        duration: 800,
+        duration: 1500,
       });
       onClose();
       setLocation("/login");
@@ -165,9 +198,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
       // localDB에 데이터 복원 (중복 체크 후 병합)
       const importResult = await localDB.importAllData(backupData);
-
-      // 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['local-saju-records-list'] });
+// 쿼리 키가 정확히 일치해야 화면이 갱신됨 ("local-saju-records"는 검색어/그룹ID가 뒤에 붙는 형태라 exact:false 필요)
+queryClient.invalidateQueries({ queryKey: ['local-saju-records'], exact: false });
+queryClient.invalidateQueries({ queryKey: ['local-groups'] });
 
       toast({
         title: "복원 완료",
@@ -200,23 +233,50 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     onClose();
   };
 
-  // 스와이프 감지
+  // 스와이프 감지 (ref 사용 - state 지연 문제 방지, 가로/세로 방향 엄격 구분)
+  const swipeStartX = useRef(0);
+  const swipeStartY = useRef(0);
+  const swipeCurrentX = useRef(0);
+  const swipeCurrentY = useRef(0);
+  const swipeIsHorizontal = useRef<boolean | null>(null);
+
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
+    swipeStartX.current = e.targetTouches[0].clientX;
+    swipeStartY.current = e.targetTouches[0].clientY;
+    swipeCurrentX.current = swipeStartX.current;
+    swipeCurrentY.current = swipeStartY.current;
+    swipeIsHorizontal.current = null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    swipeCurrentX.current = e.targetTouches[0].clientX;
+    swipeCurrentY.current = e.targetTouches[0].clientY;
+
+    // 최초 방향 판정 (한 번만): 가로 이동량이 세로 이동량보다 뚜렷하게 클 때만 "가로 스와이프"로 간주
+    if (swipeIsHorizontal.current === null) {
+      const dx = Math.abs(swipeCurrentX.current - swipeStartX.current);
+      const dy = Math.abs(swipeCurrentY.current - swipeStartY.current);
+      if (dx > 10 || dy > 10) {
+        swipeIsHorizontal.current = dx > dy * 1.5;
+      }
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart - touchEnd > 50) {
-      // 왼쪽으로 50px 이상 스와이프하면 닫기
+    const dx = swipeStartX.current - swipeCurrentX.current;
+    const dy = Math.abs(swipeCurrentY.current - swipeStartY.current);
+
+    // 가로 스와이프로 판정되었고, 왼쪽으로 80px 이상, 세로 이동은 60px 미만일 때만 닫기
+    if (swipeIsHorizontal.current === true && dx > 80 && dy < 60) {
       e.stopPropagation();
       onClose();
     }
-    setTouchStart(0);
-    setTouchEnd(0);
+
+    swipeStartX.current = 0;
+    swipeStartY.current = 0;
+    swipeCurrentX.current = 0;
+    swipeCurrentY.current = 0;
+    swipeIsHorizontal.current = null;
   };
 
   if (!isOpen) return null;
@@ -284,28 +344,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             ref={scrollContainerRef}
             className="flex-1 p-2 space-y-3 overflow-y-auto"
             style={{ overscrollBehavior: 'contain' }}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              scrollTouchStartY.current = e.touches[0].clientY;
-            }}
-            onTouchMove={(e) => {
-              e.stopPropagation();
-              // 스크롤 끝에서 bounce 방지
-              const container = scrollContainerRef.current;
-              if (container) {
-                const { scrollTop, scrollHeight, clientHeight } = container;
-                const isAtTop = scrollTop <= 0;
-                const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-                const currentY = e.touches[0].clientY;
-                const movingDown = currentY > scrollTouchStartY.current;
-                const movingUp = currentY < scrollTouchStartY.current;
-
-                // 맨 위에서 아래로 당기거나(pull down), 맨 아래에서 위로 당길 때(pull up) 이벤트 차단
-                if ((isAtTop && movingDown) || (isAtBottom && movingUp)) {
-                  e.preventDefault();
-                }
-              }
-            }}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
           >
             <Card className="p-2">
