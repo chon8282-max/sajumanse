@@ -49,11 +49,15 @@ export async function getDriveClient(userId: string) {
   let accessToken = user.accessToken;
 
   // 토큰 갱신 (refresh token이 있는 경우)
+  console.log("DEBUG getDriveClient - user.refreshToken exists:", !!user.refreshToken);
+  console.log("DEBUG getDriveClient - user.accessToken exists:", !!user.accessToken);
+
   if (user.refreshToken) {
     try {
       accessToken = await refreshAccessToken(user.id, user.refreshToken);
-    } catch (error) {
-      console.error("Failed to refresh token:", error);
+      console.log("DEBUG getDriveClient - token refresh succeeded");
+    } catch (error: any) {
+      console.error("Failed to refresh token - message:", error.message);
       // 갱신 실패 시 기존 토큰으로 시도
     }
   }
@@ -92,8 +96,10 @@ export async function uploadBackupToDrive(
     });
 
     return response.data;
-  } catch (error: any) {
-    console.error("Error uploading to Google Drive:", error);
+ } catch (error: any) {
+    console.error("Error uploading to Google Drive - message:", error.message);
+    console.error("Error uploading to Google Drive - status:", error.response?.status || error.status || error.code);
+    console.error("Error uploading to Google Drive - data:", JSON.stringify(error.response?.data || {}));
     
     // 401/403 에러는 인증 문제 (Google API는 error.response.status 또는 error.status에 HTTP 상태 코드 저장)
     const status = error.response?.status || error.status || error.code;
@@ -104,7 +110,6 @@ export async function uploadBackupToDrive(
     throw error;
   }
 }
-
 // Google Drive 백업 목록 조회
 export async function listBackupsFromDrive(userId: string) {
   const drive = await getDriveClient(userId);
