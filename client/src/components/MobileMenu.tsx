@@ -198,9 +198,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
       // localDB에 데이터 복원 (중복 체크 후 병합)
       const importResult = await localDB.importAllData(backupData);
-// 쿼리 키가 정확히 일치해야 화면이 갱신됨 ("local-saju-records"는 검색어/그룹ID가 뒤에 붙는 형태라 exact:false 필요)
-queryClient.invalidateQueries({ queryKey: ['local-saju-records'], exact: false });
-queryClient.invalidateQueries({ queryKey: ['local-groups'] });
+// staleTime이 길게 설정되어 있어 invalidate만으로는 화면에 즉시 반영되지 않을 수 있어
+// refetchType: 'active'로 현재 열려있는 쿼리를 강제로 다시 불러오게 함
+queryClient.invalidateQueries({ queryKey: ['local-saju-records'], exact: false, refetchType: 'active' });
+queryClient.invalidateQueries({ queryKey: ['local-groups'], refetchType: 'active' });
+queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refetchType: 'active' });
 
       toast({
         title: "복원 완료",
