@@ -214,7 +214,7 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
         title: "복원 실패",
         description: error instanceof Error ? error.message : "Google Drive 복원 중 오류가 발생했습니다.",
         variant: "destructive",
-        duration: 800,
+        duration: 1500,
       });
     }
     onClose();

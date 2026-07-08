@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "만세력 - 전통 사주명리",
-  "short_name": "만세력",
+  "name": "지천명 만세력",
+  "short_name": "지천명만세력",
   "version": "1.25.10.76",
   "description": "한국 역학달력 - 사주명리학 기반 운세 정보 제공",
   "start_url": "/",
@@ -14,19 +14,19 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/attached_assets/만세력로고_1758875108140.png",
+      "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/attached_assets/만세력로고_1758875108140.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/attached_assets/바탕로고png_1759021446229.png",
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

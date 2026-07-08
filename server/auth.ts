@@ -111,12 +111,12 @@ router.get("/login", (req: Request, res) => {
       client_id: process.env.GOOGLE_CLIENT_ID!,
       redirect_uri: getRedirectUri(req),
       response_type: "code",
-      scope: "openid email profile https://www.googleapis.com/auth/drive.appdata",
+      scope: "openid email profile https://www.googleapis.com/auth/drive.file",
       code_challenge: codeChallenge,
       code_challenge_method: "S256",
       state,
       access_type: "offline", // refresh token을 받기 위해
-      prompt: "consent",
+      prompt: "select_account",
     });
 
     const authUrl = `${GOOGLE_AUTH_URL}?${params.toString()}`;

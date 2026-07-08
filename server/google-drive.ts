@@ -48,7 +48,6 @@ export async function getDriveClient(userId: string) {
   // 토큰이 만료되었을 수 있으므로 refresh token이 있으면 갱신 시도
   let accessToken = user.accessToken;
 
-  // 토큰 갱신 (refresh token이 있는 경우)
   console.log("DEBUG getDriveClient - user.refreshToken exists:", !!user.refreshToken);
   console.log("DEBUG getDriveClient - user.accessToken exists:", !!user.accessToken);
 
@@ -70,6 +69,30 @@ export async function getDriveClient(userId: string) {
   return google.drive({ version: "v3", auth: oauth2Client });
 }
 
+// ===== 백업 폴더 ("지천명만세력 백업") 찾기 또는 생성 =====
+const BACKUP_FOLDER_NAME = "지천명만세력 백업";
+
+async function getOrCreateBackupFolder(drive: any): Promise<string> {
+  // 기존 폴더 검색 (drive.file 권한이라 이 앱이 만든 것만 보임)
+  const found = await drive.files.list({
+    q: `name = '${BACKUP_FOLDER_NAME}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: "files(id)",
+    pageSize: 1,
+  });
+  if (found.data.files && found.data.files.length > 0) {
+    return found.data.files[0].id;
+  }
+  // 없으면 생성
+  const created = await drive.files.create({
+    requestBody: {
+      name: BACKUP_FOLDER_NAME,
+      mimeType: "application/vnd.google-apps.folder",
+    },
+    fields: "id",
+  });
+  return created.data.id;
+}
+
 // Google Drive 백업 업로드
 export async function uploadBackupToDrive(
   userId: string,
@@ -78,17 +101,19 @@ export async function uploadBackupToDrive(
 ) {
   const drive = await getDriveClient(userId);
 
-  const fileMetadata = {
-    name: fileName,
-    parents: ["appDataFolder"],
-  };
-
-  const media = {
-    mimeType: "application/json",
-    body: fileContent,
-  };
-
   try {
+    const folderId = await getOrCreateBackupFolder(drive);
+
+    const fileMetadata = {
+      name: fileName,
+      parents: [folderId],
+    };
+
+    const media = {
+      mimeType: "application/json",
+      body: fileContent,
+    };
+
     const response = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
@@ -96,27 +121,27 @@ export async function uploadBackupToDrive(
     });
 
     return response.data;
- } catch (error: any) {
+  } catch (error: any) {
     console.error("Error uploading to Google Drive - message:", error.message);
     console.error("Error uploading to Google Drive - status:", error.response?.status || error.status || error.code);
     console.error("Error uploading to Google Drive - data:", JSON.stringify(error.response?.data || {}));
-    
-    // 401/403 에러는 인증 문제 (Google API는 error.response.status 또는 error.status에 HTTP 상태 코드 저장)
+
     const status = error.response?.status || error.status || error.code;
     if (status === 401 || status === 403) {
       throw new Error("AUTH_EXPIRED");
     }
-    
+
     throw error;
   }
 }
+
 // Google Drive 백업 목록 조회
 export async function listBackupsFromDrive(userId: string) {
   const drive = await getDriveClient(userId);
 
   try {
     const response = await drive.files.list({
-      spaces: "appDataFolder",
+      q: "mimeType != 'application/vnd.google-apps.folder' and trashed = false",
       fields: "files(id, name, modifiedTime)",
       orderBy: "modifiedTime desc",
       pageSize: 10,
@@ -125,13 +150,12 @@ export async function listBackupsFromDrive(userId: string) {
     return response.data.files || [];
   } catch (error: any) {
     console.error("Error listing from Google Drive:", error);
-    
-    // 401/403 에러는 인증 문제 (Google API는 error.response.status 또는 error.status에 HTTP 상태 코드 저장)
+
     const status = error.response?.status || error.status || error.code;
     if (status === 401 || status === 403) {
       throw new Error("AUTH_EXPIRED");
     }
-    
+
     throw error;
   }
 }
@@ -152,13 +176,12 @@ export async function downloadBackupFromDrive(userId: string, fileId: string) {
     return response.data;
   } catch (error: any) {
     console.error("Error downloading from Google Drive:", error);
-    
-    // 401/403 에러는 인증 문제 (Google API는 error.response.status 또는 error.status에 HTTP 상태 코드 저장)
+
     const status = error.response?.status || error.status || error.code;
     if (status === 401 || status === 403) {
       throw new Error("AUTH_EXPIRED");
     }
-    
+
     throw error;
   }
 }
