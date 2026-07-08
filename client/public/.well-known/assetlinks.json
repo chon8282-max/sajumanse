@@ -1,8 +1,10 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "YOUR_PACKAGE_NAME",
-    "sha256_cert_fingerprints": ["YOUR_SHA256_FINGERPRINT"]
-  }
-}]
+(
+echo [{
+echo   "relation": ["delegate_permission/common.handle_all_urls"],
+echo   "target": {
+echo     "namespace": "android_app",
+echo     "package_name": "com.jicheonmyeong.manseryeok",
+echo     "sha256_cert_fingerprints": ["3C:42:3E:D9:1B:B4:BC:DA:5C:4A:F5:68:2A:E8:A6:0F:D4:7B:EE:B1:8F:C0:35:FB:C6:FE:44:63:DB:7B:BD:01"]
+echo   }
+echo }]
+) > client\public\.well-known\assetlinks.json
