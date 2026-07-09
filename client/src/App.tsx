@@ -35,6 +35,7 @@ import Announcements from "@/pages/Announcements";
 import AnnouncementDetail from "@/pages/AnnouncementDetail";
 import AnnouncementAdmin from "@/pages/AnnouncementAdmin";
 import Login from "@/pages/Login";
+import InstallGuide from "@/pages/InstallGuide";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import CacheClear from "@/pages/CacheClear";
@@ -45,6 +46,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/install" component={InstallGuide} />
       <Route path="/manseryeok" component={Manseryeok} />
       <Route path="/calendar" component={Calendar} />
       <Route path="/saju-input" component={SajuInput} />
