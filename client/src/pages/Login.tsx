@@ -8,6 +8,26 @@ import { LogIn, Copy, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 
+// TWA(Trusted Web Activity) 감지 - 안드로이드 앱으로 실행된 경우
+// TWA는 실제 Chrome을 사용하므로 Google 로그인이 정상 작동함
+function isTWA(): boolean {
+  if (typeof document === 'undefined') return false;
+  // TWA로 열리면 referrer가 android-app:// 로 시작
+  if (document.referrer.startsWith('android-app://')) return true;
+  // 세션에 기록해두고 이후 페이지 이동에도 유지
+  try {
+    if (sessionStorage.getItem('is-twa') === '1') return true;
+  } catch {}
+  return false;
+}
+
+// 최초 진입 시 TWA 여부를 세션에 저장 (내부 이동 시 referrer가 사라지므로)
+try {
+  if (typeof document !== 'undefined' && document.referrer.startsWith('android-app://')) {
+    sessionStorage.setItem('is-twa', '1');
+  }
+} catch {}
+
 // Embedded browser 감지 함수
 function isEmbeddedBrowser(): boolean {
   const ua = navigator.userAgent || navigator.vendor;
@@ -30,11 +50,14 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
+  const [isTwaApp] = useState(() => isTWA());
   const [isStandalone] = useState(() =>
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as any).standalone
+    !isTWA() && (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone
+    )
   );
-  const [isEmbedded] = useState(() => isEmbeddedBrowser());
+  const [isEmbedded] = useState(() => !isTWA() && isEmbeddedBrowser());
 
   // 중복 클릭/터치 방지 (onClick과 onTouchEnd가 겹쳐서 두 번 실행되는 것을 막음)
   const isSigningInRef = useRef(false);
