@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { ArrowLeft, Share, PlusSquare, Copy, Check } from "lucide-react";
+import { ArrowLeft, Copy, Check } from "lucide-react";
+
+const Share = () => <span>□↑</span>;
+const PlusSquare = () => <span>⊞</span>;
 
 // 기기 / 브라우저 감지
 function detect() {
