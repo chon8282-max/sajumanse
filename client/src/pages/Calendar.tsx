@@ -16,15 +16,15 @@ export default function Calendar() {
       {/* 상단 네비게이션 */}
       <div className="flex items-center justify-start mb-1">
         <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleGoBack}
-          className="gap-2"
-          data-testid="button-back-to-home"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          홈으로
-        </Button>
+  variant="outline" 
+  size="sm" 
+  onClick={handleGoBack}
+  className="gap-2 rounded-full"
+  data-testid="button-back-to-home"
+>
+  <ArrowLeft className="w-4 h-4" />
+  홈으로
+</Button>
       </div>
 
       {/* 전통 달력 컴포넌트 */}

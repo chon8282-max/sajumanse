@@ -468,11 +468,11 @@ export default function Compatibility() {
         <div style={{ padding: '12px', borderBottom: '1px solid #e5e7eb' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <Button variant="outline" size="sm" onClick={handleHomeClick} className="gap-1 h-8 text-sm px-3" data-testid="button-home"><Home className="w-4 h-4" />홈</Button>
+              <Button variant="outline" size="sm" onClick={handleHomeClick} className="gap-1 h-8 text-sm px-4 rounded-full" data-testid="button-home"><Home className="w-4 h-4" />홈</Button>
               <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 1</h3>
             </div>
             {leftSajuId && (
-              <Button variant="outline" size="sm" onClick={() => setLeftSajuId(null)} data-testid="button-left-change" className="px-2 py-1 text-xs"><RefreshCw className="w-3 h-3 mr-1" />변경</Button>
+              <button onClick={() => setLeftSajuId(null)} data-testid="button-left-change" style={{ display: 'flex', alignItems: 'center', gap: '4px', borderRadius: '20px', padding: '6px 14px', background: '#faf6ee', color: '#7a5c33', border: '1px solid #d8c9a8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}><RefreshCw className="w-3 h-3" />변경</button>
             )}
           </div>
         </div>
@@ -486,7 +486,7 @@ export default function Compatibility() {
           ) : leftSajuId && leftSaju && leftHasGanji ? (
             renderSajuTable(leftSaju, leftMemo, setLeftMemo, leftDisplayMode, leftFocusedDaeun, leftFocusedSaeun, leftSaeunData, leftDaeunData, leftCurrentAge, handleLeftBirthTimeChange, handleLeftBirthDateChange, handleLeftDaeunClick, handleLeftSaeunClick, handleLeftSaeunScroll)
           ) : (
-            <div className="flex items-center justify-center h-full"><Button variant="outline" onClick={() => setShowLeftDialog(true)} data-testid="button-left-load" size="lg" className="h-12 px-6 text-base"><FolderOpen className="w-5 h-5 mr-2" />불러오기</Button></div>
+            <div className="flex items-center justify-center h-full"><button onClick={() => setShowLeftDialog(true)} data-testid="button-left-load" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '26px', padding: '13px 30px', background: '#3d2c1a', color: '#f5d78e', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 16px rgba(61,44,26,0.35)' }}><FolderOpen className="w-5 h-5" />불러오기</button></div>
           )}
         </div>
       </div>
@@ -498,9 +498,9 @@ export default function Compatibility() {
             <h3 style={{ fontSize: '16px', fontWeight: '600' }}>사주 2</h3>
             <div className="flex gap-1">
               {rightSajuId && (
-                <Button variant="outline" size="sm" onClick={() => setRightSajuId(null)} className="px-2 py-1 text-xs"><RefreshCw className="w-3 h-3 mr-1" />변경</Button>
+                <button onClick={() => setRightSajuId(null)} style={{ display: 'flex', alignItems: 'center', gap: '4px', borderRadius: '20px', padding: '6px 14px', background: '#faf6ee', color: '#7a5c33', border: '1px solid #d8c9a8', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}><RefreshCw className="w-3 h-3" />변경</button>
               )}
-              <Button variant="default" size="sm" onClick={() => compatibilitySaveMutation.mutate()} disabled={!leftSajuId || !rightSajuId || compatibilitySaveMutation.isPending} className="px-2 py-1 text-xs bg-rose-500 hover:bg-rose-600 text-white">♥ 궁합저장</Button>
+              <button onClick={() => compatibilitySaveMutation.mutate()} disabled={!leftSajuId || !rightSajuId || compatibilitySaveMutation.isPending} style={{ display: 'flex', alignItems: 'center', gap: '4px', borderRadius: '20px', padding: '6px 16px', background: (!leftSajuId || !rightSajuId) ? '#e5b8c4' : '#e5476f', color: '#fff', border: 'none', fontSize: '12px', fontWeight: 'bold', cursor: (!leftSajuId || !rightSajuId) ? 'default' : 'pointer' }}>♥ 궁합저장</button>
             </div>
           </div>
         </div>
@@ -514,7 +514,7 @@ export default function Compatibility() {
           ) : rightSajuId && rightSaju && rightHasGanji ? (
             renderSajuTable(rightSaju, rightMemo, setRightMemo, rightDisplayMode, rightFocusedDaeun, rightFocusedSaeun, rightSaeunData, rightDaeunData, rightCurrentAge, handleRightBirthTimeChange, handleRightBirthDateChange, handleRightDaeunClick, handleRightSaeunClick, handleRightSaeunScroll)
           ) : (
-            <div className="flex items-center justify-center h-full"><Button variant="outline" onClick={() => setShowRightDialog(true)} data-testid="button-right-load" size="lg" className="h-12 px-6 text-base"><FolderOpen className="w-5 h-5 mr-2" />불러오기</Button></div>
+            <div className="flex items-center justify-center h-full"><button onClick={() => setShowRightDialog(true)} data-testid="button-right-load" style={{ display: 'flex', alignItems: 'center', gap: '8px', borderRadius: '26px', padding: '13px 30px', background: '#3d2c1a', color: '#f5d78e', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 16px rgba(61,44,26,0.35)' }}><FolderOpen className="w-5 h-5" />불러오기</button></div>
           )}
         </div>
       </div>

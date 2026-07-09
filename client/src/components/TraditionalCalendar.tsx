@@ -56,9 +56,9 @@ export default function TraditionalCalendar({
 
   const enrichedCalendarData = useMemo(() => {
     return calendarData.map(week => week.map(dayData => {
-      if (!dayData.isCurrentMonth) return dayData;
       try {
-        const solar = Solar.fromYmd(currentYear, currentMonth, dayData.solarDay);
+        const d = dayData.solarDate;
+        const solar = Solar.fromYmd(d.getFullYear(), d.getMonth() + 1, d.getDate());
         const lunar = solar.getLunar();
         return { ...dayData, lunarYear: lunar.getYear(), lunarMonth: lunar.getMonth(), lunarDay: lunar.getDay(), isLunarFirst: lunar.getDay() === 1 };
       } catch {
@@ -83,8 +83,8 @@ export default function TraditionalCalendar({
     return (
       <div
         key={`${dayData.solarDate.getTime()}`}
-        style={{ borderRight: '0.5px solid #4a4a4a', borderTop: '0.5px solid #4a4a4a' }}
-        className={`relative min-h-[60px] flex flex-col items-center pt-0 pb-0
+        style={{ borderRight: '0.5px solid #4a4a4a', borderTop: '0.5px solid #4a4a4a', minHeight: '68px', paddingTop: '5px', paddingBottom: '4px' }}
+        className={`relative flex flex-col items-center justify-start
           ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
           ${dayData.isCurrentMonth && isSunday ? 'bg-red-50' : ''}
           ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50' : ''}
@@ -94,7 +94,7 @@ export default function TraditionalCalendar({
         data-testid={`calendar-day-${dayData.solarDay}`}
       >
         {/* 윗줄: 날짜 + 간지 나란히 */}
-        <div className="flex items-end gap-0">
+        <div className="flex items-end" style={{ gap: '5px' }}>
           {/* 양력 날짜 */}
           <div className={`flex items-center justify-center rounded-full text-[15px] font-bold
             ${isToday ? 'bg-indigo-500 text-white' : ''}
@@ -117,7 +117,7 @@ export default function TraditionalCalendar({
 
         {/* 음력 날짜 */}
         {dayData.lunarDay && (
-          <div className={`text-[14px] leading-tight font-bold mt-0
+          <div style={{ marginTop: '8px' }} className={`text-[14px] leading-tight font-bold
             ${isLunarFirst ? 'text-red-500' : 'text-blue-900'}
           `}>
             {dayData.lunarMonth}/{dayData.lunarDay}
