@@ -11,16 +11,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import MobileHeader from "@/components/MobileHeader";
 import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import Home from "@/pages/Home";
 import Manseryeok from "@/pages/Manseryeok";
 import Calendar from "@/pages/Calendar";
@@ -48,7 +38,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/install" component={InstallGuide} />
-      <Route path="/install" component={InstallGuide} />
       <Route path="/manseryeok" component={Manseryeok} />
       <Route path="/calendar" component={Calendar} />
       <Route path="/saju-input" component={SajuInput} />
@@ -72,27 +61,25 @@ function Router() {
 
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("home");
-  const [showMobileMenu, setShowMobileMenu] = useState(false); // 메뉴 기본값: 닫힘
-  const [showExitDialog, setShowExitDialog] = useState(false); // 종료 확인 다이얼로그
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [location, setLocation] = useLocation();
-  
+
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+  const backPressedRef = useRef(false); // 뒤로가기 두 번 감지용
 
   // PWA 로그인: URL에서 auth_token 감지하고 세션 생성
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authToken = params.get('auth_token');
-    
+
     if (authToken) {
       console.log('🔑 Auth token detected, exchanging for session...');
-      
-      // URL에서 토큰 제거
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
-      
-      // 토큰을 세션으로 교환
+
       fetch('/api/auth/exchange-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,8 +89,6 @@ function AppContent() {
         .then(res => {
           if (res.ok) {
             console.log('✅ Token exchange successful');
-            // react-query 캐시 타이밍 문제를 완전히 피하기 위해
-            // 캐시 무효화 대신 페이지를 통째로 새로고침 (쿠키는 이미 저장되어 있어 자동 반영됨)
             window.location.href = '/';
           } else {
             console.error('Token exchange failed:', res.status);
@@ -127,31 +112,25 @@ function AppContent() {
         }, 300);
       }
     };
-    
-    // 첫 렌더링 후 약간의 지연을 두고 로딩 화면 숨김
     const timer = setTimeout(hideLoadingScreen, 200);
     return () => clearTimeout(timer);
   }, []);
 
   // PWA/TWA 뒤로가기 처리: 홈 화면에서 뒤로가기 두 번 누르면 앱 종료
   useEffect(() => {
-    // 홈 화면일 때만 뒤로가기 가로채기용 더미 히스토리 추가
     if (location === "/") {
       window.history.pushState(null, '', window.location.pathname);
     }
 
     const handlePopState = () => {
-      // 홈 화면이 아니면 기본 뒤로가기 동작(이전 화면 이동) 그대로 둠
       if (location !== "/") return;
 
       if (backPressedRef.current) {
-        // 2초 이내 두 번째 뒤로가기 → 앱 종료 (더미 히스토리 제거 후 실제 뒤로가기)
         window.removeEventListener('popstate', handlePopState);
         window.history.back();
         return;
       }
 
-      // 첫 번째 뒤로가기 → 안내 토스트 + 더미 히스토리 다시 쌓기
       backPressedRef.current = true;
       toast({ title: "한 번 더 누르면 종료됩니다", duration: 2000 });
       window.history.pushState(null, '', window.location.pathname);
@@ -167,7 +146,6 @@ function AppContent() {
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
-    console.log('Mobile menu toggled');
   };
 
   const handleCloseMenu = () => {
@@ -183,16 +161,13 @@ function AppContent() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (!touchStartX.current) return;
-      
-      // 왼쪽 가장자리에서 시작했는지 확인 (30px 이내)
       if (touchStartX.current > 30) return;
-      
+
       const touchCurrentX = e.touches[0].clientX;
       const touchCurrentY = e.touches[0].clientY;
       const diffX = touchCurrentX - touchStartX.current;
       const diffY = touchCurrentY - touchStartY.current;
-      
-      // 오른쪽으로 50px 이상 스와이프하고, 수평 이동이 수직 이동보다 클 때
+
       if (diffX > 50 && Math.abs(diffX) > Math.abs(diffY)) {
         setShowMobileMenu(true);
         touchStartX.current = 0;
@@ -217,9 +192,6 @@ function AppContent() {
   }, []);
 
   const handleTabChange = (tab: string) => {
-    console.log(`Navigation changed to: ${tab}`);
-    
-    // 탭 클릭 시 해당 페이지로 이동
     switch (tab) {
       case 'home':
         setLocation('/');
@@ -251,20 +223,16 @@ function AppContent() {
     } else if (location === '/saju-list') {
       setActiveTab('saved');
     }
-    // 기타 경로는 기본값 유지
   }, [location]);
 
-  // 궁합 페이지인지 확인
   const isCompatibilityPage = location === "/compatibility";
 
   return (
     <div className="flex h-screen flex-col bg-background font-sans">
-      {/* 궁합 페이지는 완전 독립 */}
       {isCompatibilityPage ? (
         <Router />
       ) : (
         <>
-          {/* 메인 페이지 상단 헤더 표시 */}
           {location === "/" && (
             <MobileHeader
               currentDate={new Date()}
@@ -273,26 +241,24 @@ function AppContent() {
               onMenuClick={handleMenuClick}
             />
           )}
-          
+
           <main className="flex-1 flex flex-col min-h-0 pb-20 overflow-y-auto">
             <Router />
           </main>
-          {/* 하단 네비게이션 표시 */}
-          <BottomNavigation 
+          <BottomNavigation
             activeTab={activeTab}
             onTabChange={handleTabChange}
           />
         </>
       )}
 
-      {/* 메인 페이지일 때만 모바일 메뉴 표시 */}
       {!isCompatibilityPage && location === "/" && (
-        <MobileMenu 
+        <MobileMenu
           isOpen={showMobileMenu}
           onClose={handleCloseMenu}
         />
       )}
-      
+
       <Toaster />
     </div>
   );
