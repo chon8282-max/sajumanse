@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon } from "lucide-react";
 import { format } from "date-fns";
-import logoPath from "@assets/메인화면로고_1760616257592.png";
+import logoPath from "@assets/512icon.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -75,11 +75,11 @@ export default function MobileHeader({
 
         {/* 중앙: 앱 제목과 날짜 */}
         <div className="flex-1 text-center">
-          <h1 className="text-base font-bold font-serif flex items-center justify-center gap-1.5" data-testid="text-app-title">
+          <h1 className="text-2xl font-bold font-serif flex items-center justify-center gap-2" data-testid="text-app-title">
             <img 
               src={logoPath} 
               alt="만세력 로고" 
-              className="w-5 h-5"
+              className="w-11 h-11 rounded-lg"
             />
             지천명 만세력
           </h1>

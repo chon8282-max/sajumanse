@@ -319,11 +319,7 @@ export default function SajuInput() {
           const currMonth = getMonthGanji(currYear.skyIndex, 0); // 인월 = 0
           afterGanji = `${currYear.sky}${currYear.earth}년 ${currMonth.sky}${currMonth.earth}월`;
         } else {
-          // 다른 절기: 년주는 그대로, 월주만 전월/당월
-          const currYear = getYearGanji(solarYear);
-          
-          // 현재 절기의 월 인덱스 (인월=0, 묘월=1, ...)
-          // 각 월은 2개의 절기로 구성: 첫 번째 절기와 두 번째 절기 모두 같은 월
+          // 다른 절기: 월주만 전월/당월
           const termMonthMap: { [key: string]: number } = {
             '소한': 11, '대한': 11,  // 축월
             '입춘': 0, '우수': 0,    // 인월
@@ -340,10 +336,18 @@ export default function SajuInput() {
           };
           const currentMonthIndex = termMonthMap[solarTermCheck.termInfo.name] ?? 0;
           const prevMonthIndex = (currentMonthIndex - 1 + 12) % 12;
-          
-          const prevMonth = getMonthGanji(currYear.skyIndex, prevMonthIndex);
-          previousGanji = `${currYear.sky}${currYear.earth}년 ${prevMonth.sky}${prevMonth.earth}월`;
-          
+
+          // 축월(소한/대한)·자월(대설/동지)은 입춘 전이므로 년주 -1
+          // 인월(0)~해월(9): 입춘 후 당해년도 / 자월(10)·축월(11): 입춘 전 전년도
+          const yearForCurr = currentMonthIndex >= 10 ? solarYear - 1 : solarYear;
+          const yearForPrev = prevMonthIndex >= 10 ? solarYear - 1 : solarYear;
+
+          const currYear = getYearGanji(yearForCurr);
+          const prevYearGanji = getYearGanji(yearForPrev);
+
+          const prevMonth = getMonthGanji(prevYearGanji.skyIndex, prevMonthIndex);
+          previousGanji = `${prevYearGanji.sky}${prevYearGanji.earth}년 ${prevMonth.sky}${prevMonth.earth}월`;
+
           const currMonth = getMonthGanji(currYear.skyIndex, currentMonthIndex);
           afterGanji = `${currYear.sky}${currYear.earth}년 ${currMonth.sky}${currMonth.earth}월`;
         }
@@ -446,11 +450,20 @@ export default function SajuInput() {
             '대설': 10, '동지': 10   // 자월
           };
           
-          // 년주 계산 (입춘 절입전만 년도 변경)
+          // 월 인덱스 먼저 계산 (년주 조정 판단에 필요)
+          const currentMonthIndexForYear = solarTermInfo ? (termMonthMap[solarTermInfo.name] ?? 0) : 0;
+          const monthIndexForYear = usePreviousMonthPillar
+            ? (currentMonthIndexForYear - 1 + 12) % 12
+            : currentMonthIndexForYear;
+
+          // 년주 계산
+          // 인월(0)~해월(9): 입춘 후 → 당해년도
+          // 자월(10)·축월(11): 입춘 전 → 전년도 (-1)
           let targetYear = solarYear;
-          if (solarTermInfo?.name === '입춘' && usePreviousMonthPillar) {
+          if (monthIndexForYear >= 10) {
             targetYear = solarYear - 1;
           }
+          // 입춘 절입 전 선택 시 추가 처리 (입춘의 전월=축월이라 이미 위에서 -1됨)
           
           const yearIndex = ((targetYear - 1924) % 60 + 60) % 60;
           const yearSky = CHEONGAN[yearIndex % 10];
@@ -672,30 +685,30 @@ export default function SajuInput() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-3 py-1">
+    <div className="min-h-screen bg-background px-4 py-3">
       {/* 헤더 */}
-      <div className="relative flex items-center mb-1.5">
-        <Button 
-          variant="ghost" 
+      <div className="mb-3">
+        <Button
+          variant="ghost"
           size="sm"
           onClick={handleBackToManseryeok}
           data-testid="button-back-manseryeok"
-          className="absolute left-0 hover-elevate active-elevate-2 flex items-center gap-1 px-2"
+          className="flex items-center gap-1 px-2"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span className="text-xs">뒤로</span>
+          <ArrowLeft className="h-5 w-5" />
+          <span className="text-sm">뒤로</span>
         </Button>
-        <div className="w-full text-center">
-          <h1 className="text-lg font-bold text-foreground">사주입력</h1>
-          <p className="text-xs text-muted-foreground">정확한 생년월일을 입력하주세요</p>
+        <div className="text-center -mt-7">
+          <h1 className="text-xl font-bold text-foreground">사주입력</h1>
+          <p className="text-sm text-muted-foreground">정확한 생년월일을 입력하세요</p>
         </div>
       </div>
 
       {/* 입력 폼 */}
-      <div className="max-w-md mx-auto space-y-2">
+      <div className="max-w-md mx-auto space-y-3">
         {/* 성명 */}
-        <div className="space-y-0.5">
-          <Label htmlFor="name" className="text-xs font-medium">성명</Label>
+        <div className="space-y-1">
+          <Label htmlFor="name" className="text-base font-semibold">성명</Label>
           <Input
             id="name"
             value={formData.name}
@@ -703,37 +716,37 @@ export default function SajuInput() {
             onKeyDown={(e) => handleKeyDown(e, "year")}
             placeholder="이름을 입력하세요"
             data-testid="input-name"
-            className="text-sm h-8"
+            className="text-base h-11 border-gray-400"
           />
         </div>
 
         {/* 음양 */}
         <div className="space-y-1">
-          <Label className="text-xs font-medium">음양</Label>
-          <RadioGroup 
-            value={formData.calendarType} 
+          <Label className="text-base font-semibold">음양</Label>
+          <RadioGroup
+            value={formData.calendarType}
             onValueChange={(value) => handleInputChange("calendarType", value)}
-            className="flex gap-4"
+            className="flex gap-5"
             data-testid="radio-calendar-type"
           >
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               <RadioGroupItem value="양력" id="yang" data-testid="radio-calendar-yang" />
-              <Label htmlFor="yang" className="text-xs">양력</Label>
+              <Label htmlFor="yang" className="text-base">양력</Label>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               <RadioGroupItem value="음력" id="eum" data-testid="radio-calendar-eum" />
-              <Label htmlFor="eum" className="text-xs">음력</Label>
+              <Label htmlFor="eum" className="text-base">음력</Label>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               <RadioGroupItem value="윤달" id="yoon" data-testid="radio-calendar-yoon" />
-              <Label htmlFor="yoon" className="text-xs">윤달</Label>
+              <Label htmlFor="yoon" className="text-base">윤달</Label>
             </div>
           </RadioGroup>
         </div>
 
         {/* 년월일 */}
         <div className="space-y-1">
-          <Label className="text-xs font-medium">생년월일</Label>
+          <Label className="text-base font-semibold">생년월일</Label>
           <div className="flex gap-2 items-center">
             <Input
               id="year"
@@ -746,12 +759,12 @@ export default function SajuInput() {
               }}
               onFocus={(e) => e.target.select()}
               onKeyDown={(e) => handleKeyDown(e, "month")}
-              placeholder=""
+              placeholder="년도"
               maxLength={4}
               data-testid="input-year"
-              className="w-20 text-center h-8"
+              className="w-20 text-center h-11 text-base border-gray-400"
             />
-            <span className="text-xs">년</span>
+            <span className="text-base font-medium">년</span>
             <Input
               id="month"
               type="text"
@@ -763,12 +776,12 @@ export default function SajuInput() {
               }}
               onFocus={(e) => e.target.select()}
               onKeyDown={(e) => handleKeyDown(e, "day")}
-              placeholder=""
+              placeholder="월"
               maxLength={2}
               data-testid="input-month"
-              className="w-16 text-center h-8"
+              className="w-14 text-center h-11 text-base border-gray-400"
             />
-            <span className="text-xs">월</span>
+            <span className="text-base font-medium">월</span>
             <Input
               id="day"
               type="text"
@@ -782,34 +795,31 @@ export default function SajuInput() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
-                  // 생시 Select 컴포넌트 열기
                   const selectTrigger = document.querySelector('[data-testid="select-birth-time"]') as HTMLButtonElement;
-                  if (selectTrigger) {
-                    selectTrigger.click();
-                  }
+                  if (selectTrigger) selectTrigger.click();
                 }
               }}
-              placeholder=""
+              placeholder="일"
               maxLength={2}
               data-testid="input-day"
-              className="w-16 text-center h-8"
+              className="w-14 text-center h-11 text-base border-gray-400"
             />
-            <span className="text-xs">일</span>
+            <span className="text-base font-medium">일</span>
           </div>
         </div>
 
-        {/* 서머타임 안내 문구 */}
+        {/* 서머타임 안내 */}
         {dstCheck.isDST && dstCheck.period && formData.calendarType === "양력" && (
           <Alert className="bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800">
             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <AlertDescription className="text-xs text-amber-900 dark:text-amber-200 space-y-1">
+            <AlertDescription className="text-sm text-amber-900 dark:text-amber-200 space-y-1">
               <div className="font-bold">⚠️ 서머타임 적용 기간 안내</div>
               <div>
-                양력 {dstCheck.period.year}년 {dstCheck.period.startMonth}월 {dstCheck.period.startDay}일부터<br />
+                양력 {dstCheck.period.year}년 {dstCheck.period.startMonth}월 {dstCheck.period.startDay}일부터{" "}
                 양력 {dstCheck.period.year}년 {dstCheck.period.endMonth}월 {dstCheck.period.endDay}일까지 서머타임을 실시하였습니다.
               </div>
               <div className="pt-1">
-                이 시간은 서머타임 적용기간입니다. 알고 계신 시간에서 <span className="font-bold text-amber-700 dark:text-amber-300">1시간을 빼고</span> 계산하여야 맞습니다.
+                알고 계신 시간에서 <span className="font-bold text-amber-700 dark:text-amber-300">1시간을 빼고</span> 계산하여야 맞습니다.
               </div>
               <div className="text-amber-800 dark:text-amber-300 pt-0.5">
                 (예: 출생시간 5시 10분 → 실제적용시간 4시 10분)
@@ -820,9 +830,9 @@ export default function SajuInput() {
 
         {/* 생시 */}
         <div className="space-y-1">
-          <Label className="text-xs font-medium">생시 (전통 십이시)</Label>
+          <Label className="text-base font-semibold">생시 (전통 십이시)</Label>
           <div className="flex gap-2 items-center">
-            <Select 
+            <Select
               value={formData.selectedTimeCode}
               onValueChange={(value) => {
                 handleInputChange("selectedTimeCode", value);
@@ -830,15 +840,16 @@ export default function SajuInput() {
               }}
               disabled={formData.birthTimeUnknown}
             >
-              <SelectTrigger data-testid="select-birth-time" className="text-sm h-8 flex-1">
+              <SelectTrigger data-testid="select-birth-time" className="text-base flex-1 h-11 border-gray-400">
                 <SelectValue placeholder="생시를 선택하세요" />
               </SelectTrigger>
               <SelectContent>
                 {TRADITIONAL_TIME_PERIODS.map((period) => (
-                  <SelectItem 
-                    key={period.code} 
+                  <SelectItem
+                    key={period.code}
                     value={period.code}
                     data-testid={`select-time-${period.code}`}
+                    className="text-base"
                   >
                     {period.name} ({period.range})
                   </SelectItem>
@@ -846,7 +857,7 @@ export default function SajuInput() {
               </SelectContent>
             </Select>
             <div className="flex items-center space-x-1.5 whitespace-nowrap">
-              <Checkbox 
+              <Checkbox
                 id="birthTimeUnknown"
                 checked={formData.birthTimeUnknown}
                 onCheckedChange={(checked) => {
@@ -857,9 +868,10 @@ export default function SajuInput() {
                   }
                 }}
                 data-testid="checkbox-birth-time-unknown"
+                className="w-5 h-5"
               />
-              <Label htmlFor="birthTimeUnknown" className="text-xs cursor-pointer leading-tight">
-                생시<br/>모름
+              <Label htmlFor="birthTimeUnknown" className="text-base cursor-pointer leading-tight">
+                생시모름
               </Label>
             </div>
           </div>
@@ -867,39 +879,39 @@ export default function SajuInput() {
 
         {/* 성별 */}
         <div className="space-y-1">
-          <Label className="text-xs font-medium">성별</Label>
-          <RadioGroup 
-            value={formData.gender} 
+          <Label className="text-base font-semibold">성별</Label>
+          <RadioGroup
+            value={formData.gender}
             onValueChange={(value) => handleInputChange("gender", value)}
-            className="flex gap-4"
+            className="flex gap-5"
             data-testid="radio-gender"
           >
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               <RadioGroupItem value="남자" id="male" data-testid="radio-gender-male" />
-              <Label htmlFor="male" className="text-xs">남자</Label>
+              <Label htmlFor="male" className="text-base">남자</Label>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1.5">
               <RadioGroupItem value="여자" id="female" data-testid="radio-gender-female" />
-              <Label htmlFor="female" className="text-xs">여자</Label>
+              <Label htmlFor="female" className="text-base">여자</Label>
             </div>
           </RadioGroup>
         </div>
 
         {/* 그룹 */}
         <div className="space-y-1">
-          <Label className="text-xs font-medium">그룹</Label>
+          <Label className="text-base font-semibold">그룹</Label>
           <div className="flex gap-2">
-            <Select 
-              value={formData.groupId} 
+            <Select
+              value={formData.groupId}
               onValueChange={(value) => handleInputChange("groupId", value)}
             >
-              <SelectTrigger data-testid="select-group" className="text-sm flex-1 h-8">
+              <SelectTrigger data-testid="select-group" className="text-base flex-1 h-11 border-gray-400">
                 <SelectValue placeholder="그룹 선택" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none" data-testid="select-group-none">그룹 없음</SelectItem>
+                <SelectItem value="none" data-testid="select-group-none" className="text-base">그룹 없음</SelectItem>
                 {groups.map((group) => (
-                  <SelectItem key={group.id} value={group.id} data-testid={`select-group-${group.id}`}>
+                  <SelectItem key={group.id} value={group.id} data-testid={`select-group-${group.id}`} className="text-base">
                     {group.name}
                   </SelectItem>
                 ))}
@@ -907,15 +919,15 @@ export default function SajuInput() {
             </Select>
             <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
               <DialogTrigger asChild>
-                <Button 
+                <Button
                   type="button"
-                  variant="outline" 
-                  size="sm" 
-                  className="whitespace-nowrap h-8"
+                  variant="outline"
+                  size="sm"
+                  className="whitespace-nowrap h-11 text-base px-3"
                   data-testid="button-create-group"
                 >
-                  <Plus className="w-3 h-3 mr-1" />
-                  <span className="text-xs">그룹생성</span>
+                  <Plus className="w-4 h-4 mr-1" />
+                  그룹생성
                 </Button>
               </DialogTrigger>
               <DialogContent data-testid="dialog-create-group">
@@ -934,15 +946,15 @@ export default function SajuInput() {
                     />
                   </div>
                   <div className="flex gap-2 justify-end">
-                    <Button 
+                    <Button
                       type="button"
-                      variant="outline" 
+                      variant="outline"
                       onClick={() => setIsGroupDialogOpen(false)}
                       data-testid="button-cancel-group"
                     >
                       취소
                     </Button>
-                    <Button 
+                    <Button
                       type="button"
                       onClick={() => {
                         if (newGroupName.trim()) {
@@ -961,47 +973,12 @@ export default function SajuInput() {
           </div>
         </div>
 
-        {/* 메모 */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="memo" className="text-xs font-medium">메모</Label>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-xs"
-              onClick={() => {
-                const today = new Date();
-                const dateString = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
-                const currentMemo = formData.memo;
-                const newMemo = currentMemo ? `${currentMemo}\n${dateString}` : dateString;
-                handleInputChange("memo", newMemo);
-              }}
-              data-testid="button-today-date"
-            >
-              오늘날짜
-            </Button>
-          </div>
-          <Card>
-            <CardContent className="p-2">
-              <Textarea
-                id="memo"
-                value={formData.memo}
-                onChange={(e) => handleInputChange("memo", e.target.value)}
-                placeholder="메모 입력하는 곳"
-                data-testid="textarea-memo"
-                className="min-h-14 resize-none border-0 focus-visible:ring-0 text-xs"
-              />
-            </CardContent>
-          </Card>
-        </div>
-
         {/* 제출 버튼 */}
-        <div className="pt-1">
-          <Button 
+        <div className="pt-1 pb-4">
+          <Button
             onClick={() => handleSubmit()}
             disabled={isSubmitting}
-            className="w-full text-sm"
+            className="w-full text-base h-12"
             data-testid="button-submit-saju"
           >
             {isSubmitting ? "저장 중..." : "사주 뽑기"}
@@ -1042,7 +1019,7 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(true); // 전월 간지: 월주 -1 (정묘, 계축)
+                handleSubmit(true);
               }}
               data-testid="button-solar-term-previous"
             >
@@ -1052,7 +1029,7 @@ export default function SajuInput() {
               className="flex-1"
               onClick={() => {
                 setShowSolarTermDialog(false);
-                handleSubmit(false); // 절입 후 간지: 그대로 유지 (무진, 갑인)
+                handleSubmit(false);
               }}
               data-testid="button-solar-term-after"
             >
