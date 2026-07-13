@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI, CHINESE_TO_KOREAN_MAP, KOREAN_TO_CHINESE_MAP } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateMonthGanji } from "@/lib/calendar-calculator";
-import { calculateDaeunNumber, calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
+import { calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import type { TouchEvent } from "react";
@@ -794,26 +794,21 @@ export default function SajuTable({
 
   // 대운수 계산 (메모이제이션)
   const daeunAges = useMemo(() => {
-    if (!birthYear || !birthMonth || !birthDay || !gender || !saju.year.sky) {
-      return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
+    // props로 받은 정확한 대운(정밀 계산) 사용
+    if (daeunPeriods && daeunPeriods.length > 0) {
+      // 화면은 우측→좌측(큰 나이→작은 나이) 순서이므로 역순 정렬
+      return [...daeunPeriods]
+        .map(p => p.startAge)
+        .sort((a, b) => b - a);
     }
-
-    try {
-      const startDaeun = calculateDaeunNumber(birthYear, birthMonth, birthDay, gender, saju.year.sky);
-      return Array.from({ length: 10 }, (_, i) => startDaeun + (9 - i) * 10);
-    } catch {
-      return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
-    }
-  }, [birthYear, birthMonth, birthDay, gender, saju.year.sky]);
+    // 폴백: 대운 데이터 아직 로딩 중
+    return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
+  }, [daeunPeriods]);
 
   // 정확한 간지년 계산 함수
   const calculateActualGanjiYear = useCallback((birthYear: number, yearSky: string, yearEarth: string): number => {
     const skyIndex = CHEONGAN.indexOf(yearSky as any);
     const earthIndex = JIJI.indexOf(yearEarth as any);
-    
-    if (skyIndex === -1 || earthIndex === -1) {
-      return birthYear;
-    }
     
     // 60갑자에서의 위치 계산
     let ganjiIndex = -1;

@@ -1,202 +1,111 @@
-// 대운 계산 로직
-// 한국 전통 사주학의 대운 산출 방식 구현
+// 대운 계산 로직 (정밀법 / 절장법)
+// 절기의 실제 시각을 이용해 대운수를 정밀 계산
 
-// 60갑자 순서 (천간과 지지의 조합)
+import { getSolarTermsForYear } from "@/lib/solar-terms-data";
+
 const CHEONGAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
 const JIJI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
 
-// 60갑자 전체 목록 생성
 const SIXTY_GAPJA: string[] = [];
 for (let i = 0; i < 60; i++) {
-  const cheongan = CHEONGAN[i % 10];
-  const jiji = JIJI[i % 12];
-  SIXTY_GAPJA.push(cheongan + jiji);
+  SIXTY_GAPJA.push(CHEONGAN[i % 10] + JIJI[i % 12]);
 }
 
-// 양년(陽年) 천간: 甲丙戊庚壬
 const YANG_YEARS = ['甲', '丙', '戊', '庚', '壬'];
 
-// 음년(陰年) 천간: 乙丁己辛癸  
-const YIN_YEARS = ['乙', '丁', '己', '辛', '癸'];
-
-/**
- * 년간이 양년인지 음년인지 판단
- * @param yearSky 년간
- * @returns true if 양년, false if 음년
- */
 function isYangYear(yearSky: string): boolean {
   return YANG_YEARS.includes(yearSky);
 }
 
-/**
- * 대운 순행/역행 판단
- * @param gender 성별 ('남자' | '여자')
- * @param yearSky 년간
- * @returns true if 순행, false if 역행
- */
 export function isDaeunForward(gender: string, yearSky: string): boolean {
   const isYang = isYangYear(yearSky);
-  
-  if (gender === '남자') {
-    // 양년 남자 = 순행, 음년 남자 = 역행
-    return isYang;
-  } else {
-    // 양년 여자 = 역행, 음년 여자 = 순행
-    return !isYang;
-  }
+  if (gender === '남자') return isYang;      // 양남 순행, 음남 역행
+  return !isYang;                             // 양녀 역행, 음녀 순행
 }
 
-/**
- * 월주를 기준으로 대운 간지 10개 생성
- * @param monthSky 월간
- * @param monthEarth 월지  
- * @param isForward 순행 여부
- * @returns 대운 간지 배열 (10개)
- */
 export function generateDaeunGapja(monthSky: string, monthEarth: string, isForward: boolean): string[] {
-  // 방어적 코딩: null/undefined 값 체크
   if (!monthSky || !monthEarth) {
-    console.warn('generateDaeunGapja: monthSky 또는 monthEarth가 없습니다:', { monthSky, monthEarth });
-    // 기본값으로 丁丑 사용 (일반적인 월주)
+    console.warn('generateDaeunGapja: monthSky/monthEarth 없음:', { monthSky, monthEarth });
     monthSky = monthSky || '丁';
     monthEarth = monthEarth || '丑';
   }
-  
   const monthGapja = monthSky + monthEarth;
   const currentIndex = SIXTY_GAPJA.indexOf(monthGapja);
-  
   if (currentIndex === -1) {
-    throw new Error(`Invalid month gapja: ${monthGapja} (monthSky: ${monthSky}, monthEarth: ${monthEarth})`);
+    throw new Error(`Invalid month gapja: ${monthGapja}`);
   }
-  
   const daeunList: string[] = [];
-  
   for (let i = 1; i <= 10; i++) {
-    let targetIndex;
-    
-    if (isForward) {
-      // 순행: 다음 간지들
-      targetIndex = (currentIndex + i) % 60;
-    } else {
-      // 역행: 이전 간지들  
-      targetIndex = (currentIndex - i + 60) % 60;
-    }
-    
+    const targetIndex = isForward
+      ? (currentIndex + i) % 60
+      : (currentIndex - i + 60) % 60;
     daeunList.push(SIXTY_GAPJA[targetIndex]);
   }
-  
   return daeunList;
 }
 
 /**
- * 절기별 절입일 정보 (대략적)
- * 실제로는 매년 변동되지만 기본값 사용
+ * 정밀 대운수 계산 (절장법)
+ * 순행: 출생시각 → 다음 절입시각까지의 실제 시간
+ * 역행: 이전 절입시각 → 출생시각까지의 실제 시간
+ * 3일(72시간) = 대운 1
  */
-const SOLAR_TERMS = [
-  { name: '입춘', month: 2, day: 4 },
-  { name: '경칩', month: 3, day: 6 },
-  { name: '청명', month: 4, day: 5 },
-  { name: '입하', month: 5, day: 6 },
-  { name: '망종', month: 6, day: 6 },
-  { name: '소서', month: 7, day: 7 },
-  { name: '입추', month: 8, day: 8 },
-  { name: '백로', month: 9, day: 8 },
-  { name: '한로', month: 10, day: 8 },
-  { name: '입동', month: 11, day: 7 },
-  { name: '대설', month: 12, day: 7 },
-  { name: '소한', month: 1, day: 6 }
-];
-
-/**
- * 대운수 계산
- * @param birthYear 생년
- * @param birthMonth 생월  
- * @param birthDay 생일
- * @param gender 성별
- * @param yearSky 년간
- * @returns 대운수 (1-10)
- */
-export function calculateDaeunNumber(
+export async function calculateDaeunNumberPrecise(
   birthYear: number,
-  birthMonth: number, 
+  birthMonth: number,
   birthDay: number,
-  gender: string,
-  yearSky: string
-): number {
-  const isForward = isDaeunForward(gender, yearSky);
-  
-  // 해당 월의 절기 찾기
-  let solarTerm;
-  if (birthMonth === 1) {
-    solarTerm = SOLAR_TERMS.find(term => term.month === 1); // 소한
-  } else {
-    solarTerm = SOLAR_TERMS.find(term => term.month === birthMonth);
-  }
-  
-  if (!solarTerm) {
-    // 기본값으로 대운수 3 반환
-    return 3;
-  }
-  
-  let daysDiff: number;
-  
+  birthHour: number,
+  birthMinute: number,
+  isForward: boolean
+): Promise<number> {
+  // 출생 시각 (KST)
+  const birthDate = new Date(birthYear, birthMonth - 1, birthDay, birthHour, birthMinute);
+
+  // 전년/당년/다음년 12절기 모두 모아서 시각순 정렬
+  const [prev, curr, next] = await Promise.all([
+    getSolarTermsForYear(birthYear - 1),
+    getSolarTermsForYear(birthYear),
+    getSolarTermsForYear(birthYear + 1),
+  ]);
+
+  const TERM_NAMES = ['입춘','경칩','청명','입하','망종','소서','입추','백로','한로','입동','대설','소한'];
+
+  const terms = [...prev, ...curr, ...next]
+    .filter(t => TERM_NAMES.includes(t.name))
+    .map(t => ({ name: t.name, date: new Date(t.date) }))  // date는 KST 시각
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+  let diffMs: number;
+
   if (isForward) {
-    // 미래절: 태어난 날부터 다음 절입일까지 남은 일수
-    if (birthDay <= solarTerm.day) {
-      daysDiff = solarTerm.day - birthDay;
-    } else {
-      // 다음 달 절기까지
-      const nextMonth = birthMonth === 12 ? 1 : birthMonth + 1;
-      const nextSolarTerm = SOLAR_TERMS.find(term => term.month === nextMonth);
-      if (nextSolarTerm) {
-        const daysInMonth = new Date(birthYear, birthMonth, 0).getDate();
-        daysDiff = (daysInMonth - birthDay) + nextSolarTerm.day;
-      } else {
-        daysDiff = 15; // 기본값
-      }
-    }
+    // 다음 절입 시각 찾기
+    const nextTerm = terms.find(t => t.date.getTime() > birthDate.getTime());
+    if (!nextTerm) return 3;
+    diffMs = nextTerm.date.getTime() - birthDate.getTime();
   } else {
-    // 과거절: 태어난 날로부터 절입일까지 지나온 일수
-    if (birthDay >= solarTerm.day) {
-      daysDiff = birthDay - solarTerm.day;
-    } else {
-      // 이전 달 절기부터
-      const prevMonth = birthMonth === 1 ? 12 : birthMonth - 1;
-      const prevSolarTerm = SOLAR_TERMS.find(term => term.month === prevMonth);
-      if (prevSolarTerm) {
-        const daysInPrevMonth = new Date(birthYear, prevMonth, 0).getDate();
-        daysDiff = (daysInPrevMonth - prevSolarTerm.day) + birthDay;
-      } else {
-        daysDiff = 15; // 기본값
-      }
-    }
+    // 이전 절입 시각 찾기 (출생 시각 이하 중 가장 늦은 것)
+    const prevTerms = terms.filter(t => t.date.getTime() <= birthDate.getTime());
+    const prevTerm = prevTerms[prevTerms.length - 1];
+    if (!prevTerm) return 3;
+    diffMs = birthDate.getTime() - prevTerm.date.getTime();
   }
-  
-  // 대운수 계산: 일수 ÷ 3
-  const baseDaeun = Math.floor(daysDiff / 3);
-  const remainder = daysDiff % 3;
-  
-  // 나머지가 2 이상이면 반올림
-  const finalDaeun = remainder >= 2 ? baseDaeun + 1 : baseDaeun;
-  
-  // 1-10 범위로 제한
-  return Math.max(1, Math.min(10, finalDaeun));
+
+  // 3일 = 대운 1. 일수로 환산 후 /3
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  const daeunRaw = diffDays / 3;
+
+  // 반올림 (전통: 소수점 0.5 이상 올림 / 3일=1년, 1일=4개월 개념의 반올림)
+  const daeunNumber = Math.round(daeunRaw);
+
+  return Math.max(1, Math.min(10, daeunNumber === 0 ? 1 : daeunNumber));
 }
 
-/**
- * 대운 나이 계산 (10년 주기)
- * @param daeunNumber 대운수
- * @returns 대운 나이 배열 (10개)
- */
 export function calculateDaeunAges(daeunNumber: number): number[] {
   const ages: number[] = [];
-  for (let i = 0; i < 10; i++) {
-    ages.push(daeunNumber + (i * 10));
-  }
+  for (let i = 0; i < 10; i++) ages.push(daeunNumber + i * 10);
   return ages;
 }
 
-// 대운 기간 정보 타입
 export interface DaeunPeriod {
   startAge: number;
   endAge: number;
@@ -207,191 +116,99 @@ export interface DaeunPeriod {
   earth: string;
 }
 
-/**
- * yearSky와 yearEarth를 이용해 정확한 간지년 계산
- * @param birthYear 생년 (양력)
- * @param yearSky 년간 (천간)
- * @param yearEarth 년지 (지지)
- * @returns 정확한 간지년
- */
 function calculateActualGanjiYear(birthYear: number, yearSky?: string, yearEarth?: string): number {
-  if (!yearSky || !yearEarth) {
-    return birthYear; // 간지 정보가 없으면 생년 그대로 사용
-  }
-  
-  // 천간 인덱스 (갑=0, 을=1, ...)
+  if (!yearSky || !yearEarth) return birthYear;
   const skyIndex = CHEONGAN.indexOf(yearSky);
-  // 지지 인덱스 (자=0, 축=1, ...)
   const earthIndex = JIJI.indexOf(yearEarth);
-  
-  if (skyIndex === -1 || earthIndex === -1) {
-    return birthYear;
-  }
-  
-  // 60갑자에서의 위치 계산
+  if (skyIndex === -1 || earthIndex === -1) return birthYear;
   let ganjiIndex = -1;
   for (let i = 0; i < 60; i++) {
-    if (i % 10 === skyIndex && i % 12 === earthIndex) {
-      ganjiIndex = i;
-      break;
-    }
+    if (i % 10 === skyIndex && i % 12 === earthIndex) { ganjiIndex = i; break; }
   }
-  
-  if (ganjiIndex === -1) {
-    return birthYear;
-  }
-  
-  // 갑자년(1924년) 기준으로 정확한 간지년 계산
-  // 입력된 생년 주변에서 해당 간지가 나오는 년도 찾기
+  if (ganjiIndex === -1) return birthYear;
   const baseYear = 1924;
-  const yearDiff = birthYear - baseYear;
-  const cyclePosition = yearDiff % 60;
-  
-  // 가장 가까운 해당 간지년 찾기
   let targetYear = birthYear;
   for (let offset = -5; offset <= 5; offset++) {
     const testYear = birthYear + offset;
-    const testYearDiff = testYear - baseYear;
-    const testCyclePosition = ((testYearDiff % 60) + 60) % 60;
-    
-    if (testCyclePosition === ganjiIndex) {
-      targetYear = testYear;
-      break;
-    }
+    const testCyclePosition = (((testYear - baseYear) % 60) + 60) % 60;
+    if (testCyclePosition === ganjiIndex) { targetYear = testYear; break; }
   }
-  
   return targetYear;
 }
 
-/**
- * 현재 나이 계산
- * @param birthYear 생년 (양력)
- * @param birthMonth 생월 (사용 안함)
- * @param birthDay 생일 (사용 안함)
- * @param yearSky 년간 (선택사항)
- * @param yearEarth 년지 (선택사항)
- * @returns 사주 간지년 기준 나이 (태어난 해가 1세)
- */
 export function calculateCurrentAge(birthYear: number, birthMonth: number, birthDay: number, yearSky?: string, yearEarth?: string): number {
-  // 나이 계산은 사주의 간지를 기준으로 계산
-  // 간지 정보가 있으면 간지년으로 조정하여 계산
   const actualGanjiYear = calculateActualGanjiYear(birthYear, yearSky, yearEarth);
   const currentYear = new Date().getFullYear();
   return currentYear - actualGanjiYear + 1;
 }
 
-/**
- * 대운 기간들을 상세 정보와 함께 계산
- * @param birthYear 생년
- * @param daeunAges 대운 시작 나이들
- * @param daeunGapja 대운 간지들
- * @returns 대운 기간 상세 정보 배열
- */
 export function calculateDaeunPeriods(birthYear: number, daeunAges: number[], daeunGapja: string[]): DaeunPeriod[] {
   return daeunAges.map((startAge, index) => {
     const endAge = index < daeunAges.length - 1 ? daeunAges[index + 1] - 1 : startAge + 9;
     const startYear = birthYear + startAge;
     const endYear = birthYear + endAge;
     const gapja = daeunGapja[index];
-    const sky = gapja.charAt(0);
-    const earth = gapja.charAt(1);
-    
     return {
-      startAge,
-      endAge,
-      startYear,
-      endYear,
-      gapja,
-      sky,
-      earth
+      startAge, endAge, startYear, endYear, gapja,
+      sky: gapja.charAt(0), earth: gapja.charAt(1),
     };
   });
 }
 
-/**
- * 현재 나이에 해당하는 대운 찾기
- * @param currentAge 현재 나이
- * @param daeunPeriods 대운 기간들
- * @returns 현재 대운 또는 null
- */
 export function findCurrentDaeun(currentAge: number, daeunPeriods: DaeunPeriod[]): DaeunPeriod | null {
-  return daeunPeriods.find(period => currentAge >= period.startAge && currentAge <= period.endAge) || null;
+  return daeunPeriods.find(p => currentAge >= p.startAge && currentAge <= p.endAge) || null;
 }
 
 /**
- * 완전한 대운 정보 계산 (확장된 버전)
- * @param sajuData 사주 데이터
- * @returns 대운 정보 (메타데이터 포함)
+ * 완전한 대운 정보 계산 (정밀법, async)
+ * @param sajuData record (birthHour/birthTime 필요)
+ * @param birthHour 출생 시 (0-23), 모르면 12
+ * @param birthMinute 출생 분, 기본 0
  */
-export function calculateCompleteDaeun(sajuData: any) {
-  console.log('calculateCompleteDaeun 호출됨:', { 
-    gender: sajuData.gender, 
-    yearSky: sajuData.yearSky, 
-    monthSky: sajuData.monthSky, 
-    monthEarth: sajuData.monthEarth,
-    birthYear: sajuData.birthYear,
-    birthMonth: sajuData.birthMonth,
-    birthDay: sajuData.birthDay
-  });
-  
-  // 간지년 기준으로 정확한 출생 연도 계산
+export async function calculateCompleteDaeun(
+  sajuData: any,
+  birthHour: number = 12,
+  birthMinute: number = 0
+) {
   const actualGanjiYear = calculateActualGanjiYear(sajuData.birthYear, sajuData.yearSky, sajuData.yearEarth);
-  
-  // 방어적 코딩: 필수 데이터 체크
+
   if (!sajuData.gender || !sajuData.yearSky) {
-    console.warn('calculateCompleteDaeun: 필수 데이터가 없습니다');
+    console.warn('calculateCompleteDaeun: 필수 데이터 없음');
     const defaultAges = [7, 17, 27, 37, 47, 57, 67, 77, 87, 97];
-    const defaultGapja = ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'];
-    const defaultPeriods = calculateDaeunPeriods(actualGanjiYear, defaultAges, defaultGapja);
-    
+    const defaultGapja = ['戊寅','己卯','庚辰','辛巳','壬午','癸未','甲申','乙酉','丙戌','丁亥'];
     return {
       isForward: true,
       daeunNumber: 7,
       daeunGapja: defaultGapja,
       daeunAges: defaultAges,
-      daeunPeriods: defaultPeriods,
-      direction: '순행'
+      daeunPeriods: calculateDaeunPeriods(actualGanjiYear, defaultAges, defaultGapja),
+      direction: '순행',
     };
   }
-  
+
   const isForward = isDaeunForward(sajuData.gender, sajuData.yearSky);
-  
-  // 김재완님 사주 특별 처리 (음력 1974년 12월 3일, 남자, 甲寅년, 丁丑월)
-  if (sajuData.birthYear === 1974 && sajuData.birthMonth === 12 && sajuData.birthDay === 3 && 
-      sajuData.gender === '남자' && sajuData.yearSky === '甲' && sajuData.monthSky === '丁' && sajuData.monthEarth === '丑') {
-    
-    const specialAges = [7, 17, 27, 37, 47, 57, 67, 77, 87, 97];
-    const specialGapja = ['戊寅', '己卯', '庚辰', '辛巳', '壬午', '癸未', '甲申', '乙酉', '丙戌', '丁亥'];
-    const specialPeriods = calculateDaeunPeriods(actualGanjiYear, specialAges, specialGapja);
-    
-    return {
-      isForward: true, // 순행으로 표시
-      daeunNumber: 7,
-      daeunGapja: specialGapja,
-      daeunAges: specialAges,
-      daeunPeriods: specialPeriods,
-      direction: '순행'
-    };
-  }
-  
-  // 기존 계산 로직 유지 (간지년 기준으로 계산)
   const daeunGapja = generateDaeunGapja(sajuData.monthSky, sajuData.monthEarth, isForward);
-  const daeunNumber = calculateDaeunNumber(
+
+  const daeunNumber = await calculateDaeunNumberPrecise(
     sajuData.birthYear,
-    sajuData.birthMonth, 
+    sajuData.birthMonth,
     sajuData.birthDay,
-    sajuData.gender,
-    sajuData.yearSky
+    birthHour,
+    birthMinute,
+    isForward
   );
+
   const daeunAges = calculateDaeunAges(daeunNumber);
   const daeunPeriods = calculateDaeunPeriods(actualGanjiYear, daeunAges, daeunGapja);
-  
+
+  console.log(`✅ 대운(정밀): ${isForward ? '순행' : '역행'}, 대운수=${daeunNumber}`);
+
   return {
     isForward,
     daeunNumber,
     daeunGapja,
     daeunAges,
     daeunPeriods,
-    direction: isForward ? '순행' : '역행'
+    direction: isForward ? '순행' : '역행',
   };
 }

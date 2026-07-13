@@ -269,10 +269,7 @@ export default function SajuResult() {
     const heavenlyYukjin = yukjinData.heavenly;
     const earthlyYukjin = yukjinData.earthly;
     
-    // 대운 계산
-    const daeunData = calculateCompleteDaeun(record);
-    
-    // 현재 나이 계산 및 현재 대운 찾기
+    // 현재 나이 계산
     const currentAge = calculateCurrentAge(
       record.birthYear, 
       record.birthMonth, 
@@ -280,7 +277,6 @@ export default function SajuResult() {
       record.yearSky || undefined,
       record.yearEarth || undefined
     );
-    const currentDaeun = findCurrentDaeun(currentAge, daeunData.daeunPeriods);
     
     return {
       record,
@@ -288,11 +284,46 @@ export default function SajuResult() {
       yukjinData,
       heavenlyYukjin,
       earthlyYukjin,
-      daeunData,
       currentAge,
-      currentDaeun
     };
   }, [sajuData]);
+
+  // 대운 계산 (정밀법, 비동기)
+  const [daeunData, setDaeunData] = useState<Awaited<ReturnType<typeof calculateCompleteDaeun>> | null>(null);
+  const [currentDaeun, setCurrentDaeun] = useState<DaeunPeriod | null>(null);
+
+  useEffect(() => {
+    if (!calculatedData?.record) {
+      setDaeunData(null);
+      setCurrentDaeun(null);
+      return;
+    }
+    const record = calculatedData.record;
+
+    // 출생 시각 파싱
+    let hour = 12;
+    let minute = 0;
+    const bt = record.birthTime || '';
+    const tp = TRADITIONAL_TIME_PERIODS.find(p => p.code === bt);
+    if (tp) {
+      hour = tp.hour;
+    } else if (bt.includes(':')) {
+      const parts = bt.split(':');
+      hour = parseInt(parts[0]) || 12;
+      minute = parseInt(parts[1]) || 0;
+    } else if (bt) {
+      hour = parseInt(bt) || 12;
+    }
+
+    let cancelled = false;
+    calculateCompleteDaeun(record, hour, minute).then((result) => {
+      if (cancelled) return;
+      setDaeunData(result);
+      const cd = findCurrentDaeun(calculatedData.currentAge, result.daeunPeriods);
+      setCurrentDaeun(cd);
+    });
+    return () => { cancelled = true; };
+  }, [calculatedData]);
 
   // 歲運 계산
   const saeunData = useMemo(() => {
@@ -311,13 +342,12 @@ export default function SajuResult() {
 
   // focusedDaeun 초기 설정 및 스크롤 맨 위로 이동
   useEffect(() => {
-    if (calculatedData?.currentDaeun) {
-      setFocusedDaeun(calculatedData.currentDaeun);
-      setSaeunOffset(0); // 歲運 오프셋도 초기화
-      // 페이지 로드 시 스크롤을 맨 위로 이동
+    if (currentDaeun) {
+      setFocusedDaeun(currentDaeun);
+      setSaeunOffset(0);
       window.scrollTo(0, 0);
     }
-  }, [calculatedData?.currentDaeun]); // focusedDaeun 의존성 제거하여 항상 설정되도록
+  }, [currentDaeun]);
 
   // 감정중인 사주로 sessionStorage에 저장
   useEffect(() => {
@@ -362,7 +392,7 @@ export default function SajuResult() {
 
   // 歲運 클릭 핸들러 
   const handleSaeunClick = useCallback((age: number, sky: string, earth: string) => {
-    if (!calculatedData?.daeunData.daeunPeriods) return;
+    if (!daeunData?.daeunPeriods) return;
     
     if (displayMode === 'daeun') {
       // B → C: 세운 선택 및 세운 모드로 전환
@@ -378,7 +408,7 @@ export default function SajuResult() {
         setFocusedSaeun({ age, sky, earth });
       }
     }
-  }, [calculatedData, displayMode, focusedSaeun]);
+  }, [daeunData, displayMode, focusedSaeun]);
 
   // 歲運 드래그/스크롤 핸들러
   const handleSaeunScroll = useCallback((direction: 'left' | 'right') => {
@@ -705,10 +735,10 @@ export default function SajuResult() {
     );
   }
 
-  const { record, timePeriod, heavenlyYukjin, earthlyYukjin, daeunData } = calculatedData;
+  const { record, timePeriod, heavenlyYukjin, earthlyYukjin } = calculatedData;
 
   // 메인 테이블 그리드 컬럼 수 계산 (사주 4주 + 대운 개수)
-  const mainTableCols = 4 + daeunData.daeunPeriods.length;
+  const mainTableCols = 4 + (daeunData?.daeunPeriods.length || 0);
   const getMainGridCols = (cols: number) => {
     if (cols <= 12) return "grid-cols-12";
     if (cols <= 13) return "grid-cols-13";
@@ -868,7 +898,7 @@ export default function SajuResult() {
           hourSky={record.hourSky || undefined}
           hourEarth={record.hourEarth || undefined}
           calendarType={record.calendarType || undefined}
-          daeunPeriods={calculatedData?.daeunData.daeunPeriods || []}
+          daeunPeriods={daeunData?.daeunPeriods || []}
           focusedDaeun={focusedDaeun}
           focusedSaeun={focusedSaeun}
           displayMode={displayMode}
