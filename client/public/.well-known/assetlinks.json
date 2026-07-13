@@ -1,1 +1,10 @@
-[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "com.jicheonmyeong.manseryeok", "sha256_cert_fingerprints": ["3C:42:3E:D9:1B:B4:BC:DA:5C:4A:F5:68:2A:E8:A6:0F:D4:7B:EE:B1:8F:C0:35:FB:C6:FE:44:63:DB:7B:BD:01"]}}]
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.jicheonmyeong.manseryeok",
+    "sha256_cert_fingerprints": [
+      "38:A2:40:DE:06:3E:78:C1:6B:A8:6A:21:52:00:48:3A:E1:28:5C:A3:F4:A4:04:83:30:1A:82:91:BD:79:AF:82"
+    ]
+  }
+}]
