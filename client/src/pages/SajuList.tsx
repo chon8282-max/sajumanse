@@ -289,6 +289,11 @@ export default function SajuList() {
                             </div>
                             <div className="text-xs text-gray-500 mt-0.5">
                               양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}{saju.birthTime && ` ${saju.birthTime}`}
+                              {saju.lunarYear && (
+                                <span className="text-gray-400">
+                                  {' / '}{saju.isLeapMonth ? '윤달' : '음력'} {saju.lunarYear}.{saju.lunarMonth}.{saju.lunarDay}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-0.5 ml-1" onClick={e => e.stopPropagation()}>
