@@ -119,9 +119,11 @@ app.use((req, res, next) => {
           await setupVite(app, server);
           log("✅ Vite dev server ready");
         } else {
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
           const possiblePaths = [
-            path.resolve(import.meta.dirname, "..", "dist", "public"),
-            path.resolve(import.meta.dirname, "public"),
+            path.resolve(__dirname, "..", "dist", "public"),
+            path.resolve(__dirname, "public"),
             path.resolve(process.cwd(), "dist", "public"),
             path.join("/app", "dist", "public")
           ];
