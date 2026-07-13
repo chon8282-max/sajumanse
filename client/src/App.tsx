@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
+import { useToast } from "@/hooks/use-toast";
 import { FontProvider } from "@/contexts/FontContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import MobileHeader from "@/components/MobileHeader";
@@ -132,25 +133,37 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
 
-  // PWA 뒤로가기 처리: 홈 화면에서 뒤로가기 시 앱 종료 확인
+  // PWA/TWA 뒤로가기 처리: 홈 화면에서 뒤로가기 두 번 누르면 앱 종료
   useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
-      if (location === "/" && window.history.length <= 2) {
-        // 홈 화면이고 히스토리가 거의 없으면 종료 확인 다이얼로그 표시
-        setShowExitDialog(true);
-        // 히스토리에 다시 추가하여 뒤로가기 방지 (다이얼로그에서 취소 시)
-        window.history.pushState(null, '', window.location.pathname);
-      }
-    };
-
-    // 초기 진입 시 히스토리 상태 추가 (뒤로가기 감지용)
-    if (location === "/" && window.history.state === null) {
+    // 홈 화면일 때만 뒤로가기 가로채기용 더미 히스토리 추가
+    if (location === "/") {
       window.history.pushState(null, '', window.location.pathname);
     }
 
+    const handlePopState = () => {
+      // 홈 화면이 아니면 기본 뒤로가기 동작(이전 화면 이동) 그대로 둠
+      if (location !== "/") return;
+
+      if (backPressedRef.current) {
+        // 2초 이내 두 번째 뒤로가기 → 앱 종료 (더미 히스토리 제거 후 실제 뒤로가기)
+        window.removeEventListener('popstate', handlePopState);
+        window.history.back();
+        return;
+      }
+
+      // 첫 번째 뒤로가기 → 안내 토스트 + 더미 히스토리 다시 쌓기
+      backPressedRef.current = true;
+      toast({ title: "한 번 더 누르면 종료됩니다", duration: 2000 });
+      window.history.pushState(null, '', window.location.pathname);
+
+      setTimeout(() => {
+        backPressedRef.current = false;
+      }, 2000);
+    };
+
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [location]);
+  }, [location, toast]);
 
   const handleMenuClick = () => {
     setShowMobileMenu(!showMobileMenu);
@@ -279,30 +292,6 @@ function AppContent() {
           onClose={handleCloseMenu}
         />
       )}
-      
-      {/* 앱 종료 확인 다이얼로그 */}
-      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>앱을 종료하시겠습니까?</AlertDialogTitle>
-            <AlertDialogDescription>
-              정말로 앱을 종료하시겠습니까?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-exit-cancel">아니오</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => {
-                // 앱 종료 (브라우저 뒤로가기)
-                window.history.back();
-              }}
-              data-testid="button-exit-confirm"
-            >
-              예
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       
       <Toaster />
     </div>
