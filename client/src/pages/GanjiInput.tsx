@@ -226,7 +226,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="ghost"
                     onClick={() => handleYearSelect(ganji.sky, ganji.earth)}
-                    className={`h-7 px-2 text-sm pt-[8px] pb-[8px] mt-[-3px] mb-[-3px] border ${getGanjiColorClass(index)}`}
+                    className={`h-10 px-2 text-lg font-semibold pt-[8px] pb-[8px] mt-[-3px] mb-[-3px] border ${getGanjiColorClass(index)}`}
                     data-testid={`button-year-${ganji.label}`}
                   >
                     {ganji.label}
@@ -245,7 +245,7 @@ export default function GanjiInput() {
                       key={index}
                       variant="outline"
                       onClick={() => handleMonthSelect(ganji.sky, ganji.earth)}
-                      className={`h-7 px-2 text-sm ${getGanjiColorClass(fullGanjiIndex)}`}
+                      className={`h-9 px-2 text-base font-semibold ${getGanjiColorClass(fullGanjiIndex)}`}
                       data-testid={`button-month-${ganji.label}`}
                     >
                       {ganji.label}
@@ -262,7 +262,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleDaySelect(ganji.sky, ganji.earth)}
-                    className={`h-7 px-2 text-sm ${getGanjiColorClass(index)}`}
+                    className={`h-9 px-2 text-base font-semibold ${getGanjiColorClass(index)}`}
                     data-testid={`button-day-${ganji.label}`}
                   >
                     {ganji.label}
