@@ -51,7 +51,11 @@ self.addEventListener('activate', function(event) {
   return self.clients.claim();
 });
 
-self.addEventListener('fetch', function(event) {
+self.addEventListener('fetch', (event) => {
+  // API 요청은 SW가 절대 건드리지 않음 (항상 네트워크 직행)
+  if (event.request.url.includes('/api/')) {
+    return;
+  }
   if (event.request.method !== 'GET') {
     return;
   }

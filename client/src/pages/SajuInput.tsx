@@ -197,22 +197,40 @@ export default function SajuInput() {
     let currentConvertedSolarDate = convertedSolarDate; // 기존 state 값
     if (formData.calendarType === "음력" || formData.calendarType === "윤달") {
       try {
-        console.log(`🔄 음력→양력 변환 시작 (로컬): ${yearNum}-${monthNum}-${dayNum} (${formData.calendarType})`);
-        
-        // lunar-javascript로 로컬 변환 (윤달은 음수 월로 표현)
+        console.log(`🔄 음력→양력 변환 시작: ${yearNum}-${monthNum}-${dayNum} (${formData.calendarType})`);
         const isLeapMonth = formData.calendarType === "윤달";
-        const lunarMonth = isLeapMonth ? -monthNum : monthNum;
-        const lunar = (Lunar as any).fromYmd(yearNum, lunarMonth, dayNum);
-        const solar = lunar.getSolar();
-        
-        const solarYear = solar.getYear();
-        const solarMonth = solar.getMonth();
-        const solarDay = solar.getDay();
-        
-        // 로컬 변수와 state 모두 업데이트
+
+        let solarYear = 0;
+        let solarMonth = 0;
+        let solarDay = 0;
+        let converted = false;
+
+        try {
+          const resp = await fetch(`/api/convert/lunar-to-solar?year=${yearNum}&month=${monthNum}&day=${dayNum}&leapMonth=${isLeapMonth}`);
+          const data = await resp.json();
+          if (data.success) {
+            solarYear = data.solYear;
+            solarMonth = data.solMonth;
+            solarDay = data.solDay;
+            converted = true;
+            console.log(`✅ 서버 DB 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
+          }
+        } catch (e) {
+          console.log('⚠️ 서버 DB 조회 실패, 로컬 변환 시도');
+        }
+
+        if (!converted) {
+          const lunarMonth = isLeapMonth ? -monthNum : monthNum;
+          const lunar = (Lunar as any).fromYmd(yearNum, lunarMonth, dayNum);
+          const solar = lunar.getSolar();
+          solarYear = solar.getYear();
+          solarMonth = solar.getMonth();
+          solarDay = solar.getDay();
+          console.log(`✅ 로컬 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
+        }
+
         currentConvertedSolarDate = { year: solarYear, month: solarMonth, day: solarDay };
         setConvertedSolarDate(currentConvertedSolarDate);
-        console.log(`✅ 로컬 변환 완료: ${solarYear}-${solarMonth}-${solarDay}`);
       } catch (error) {
         console.error('❌ 음력→양력 변환 실패:', error);
         currentConvertedSolarDate = null;
@@ -566,13 +584,34 @@ export default function SajuInput() {
         
         // 양력 입력의 경우 음력 정보 계산하여 저장
         if (requestData.calendarType === "양력" && !requestData.lunarYear) {
-          const solar = Solar.fromYmd(requestData.birthYear, requestData.birthMonth, requestData.birthDay);
-          const lunar = solar.getLunar();
-          requestData.lunarYear = lunar.getYear();
-          requestData.lunarMonth = lunar.getMonth();
-          requestData.lunarDay = lunar.getDay();
-          requestData.isLeapMonth = (lunar as any).isLeap ? (lunar as any).isLeap() : false;
-          console.log(`✅ 양력→음력 변환: ${requestData.lunarYear}-${requestData.lunarMonth}-${requestData.lunarDay}${requestData.isLeapMonth ? ' (윤달)' : ''}`);
+          let converted = false;
+          
+          // 1차: 서버 DB 조회
+          try {
+            const resp = await fetch(`/api/convert/solar-to-lunar?year=${requestData.birthYear}&month=${requestData.birthMonth}&day=${requestData.birthDay}`);
+            const data = await resp.json();
+            if (data.success) {
+              requestData.lunarYear = data.lunYear;
+              requestData.lunarMonth = data.lunMonth;
+              requestData.lunarDay = data.lunDay;
+              requestData.isLeapMonth = data.isLeapMonth;
+              converted = true;
+              console.log(`✅ 서버 DB 양력→음력: ${requestData.lunarYear}-${requestData.lunarMonth}-${requestData.lunarDay}`);
+            }
+          } catch (e) {
+            console.log('⚠️ 서버 DB 조회 실패, 로컬 변환 시도');
+          }
+          
+          // 2차: 폴백 (lunar-javascript)
+          if (!converted) {
+            const solar = Solar.fromYmd(requestData.birthYear, requestData.birthMonth, requestData.birthDay);
+            const lunar = solar.getLunar();
+            requestData.lunarYear = lunar.getYear();
+            requestData.lunarMonth = lunar.getMonth();
+            requestData.lunarDay = lunar.getDay();
+            requestData.isLeapMonth = (lunar as any).isLeap ? (lunar as any).isLeap() : false;
+            console.log(`✅ 로컬 양력→음력: ${requestData.lunarYear}-${requestData.lunarMonth}-${requestData.lunarDay}${requestData.isLeapMonth ? ' (윤달)' : ''}`);
+          }
         }
       } catch (error) {
         console.error("❌ 사주 계산 실패:", error);

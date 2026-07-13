@@ -6,6 +6,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import path from "path";
 import { fileURLToPath } from "url";
+import calendarConvertRouter from "./routes/calendar-convert";
 import fs from "fs";
 
 const app = express();
@@ -19,6 +20,9 @@ app.get("/health", (_req, res) => {
 });
 
 app.use(express.json());
+
+// 음양력 변환 API
+app.use("/api/convert", calendarConvertRouter);
 
 // CORS 설정
 app.use((req, res, next) => {
