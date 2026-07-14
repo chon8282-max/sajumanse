@@ -204,10 +204,10 @@ export default function GanjiInput() {
               </div>
               {/* 라벨 행 */}
               <div className="grid grid-cols-4 border-t border-border bg-muted/30">
-                <div className="text-center text-xs py-1 border-r border-border last:border-r-0 text-muted-foreground">시주</div>
-                <div className="text-center text-xs py-1 border-r border-border last:border-r-0 text-muted-foreground">일주</div>
-                <div className="text-center text-xs py-1 border-r border-border last:border-r-0 text-muted-foreground">월주</div>
-                <div className="text-center text-xs py-1 text-muted-foreground">년주</div>
+                <div className="text-center text-sm font-bold text-foreground mt-1">시주</div>
+                <div className="text-center text-sm font-bold text-foreground mt-1">일주</div>
+                <div className="text-center text-sm font-bold text-foreground mt-1">월주</div>
+                <div className="text-center text-sm font-bold text-foreground mt-1">년주</div>
               </div>
             </div>
           </CardContent>
