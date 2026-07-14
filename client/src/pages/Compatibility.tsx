@@ -67,14 +67,10 @@ export default function Compatibility() {
   const [leftSajuId, setLeftSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('left') || localStorage.getItem('compatibility_left_id');
-    }
-    return null;
-  });
-  const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
+      return params.get('left') || sessionStorage.getItem('compatibility_left_id');
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('right') || localStorage.getItem('compatibility_right_id');
+      return params.get('right') || sessionStorage.getItem('compatibility_right_id');
     }
     return null;
   });
@@ -95,13 +91,13 @@ export default function Compatibility() {
   const [rightSaeunOffset, setRightSaeunOffset] = useState(0);
 
   useEffect(() => {
-    if (leftSajuId) localStorage.setItem('compatibility_left_id', leftSajuId);
-    else localStorage.removeItem('compatibility_left_id');
+    if (leftSajuId) sessionStorage.setItem('compatibility_left_id', leftSajuId);
+    else sessionStorage.removeItem('compatibility_left_id');
   }, [leftSajuId]);
 
   useEffect(() => {
-    if (rightSajuId) localStorage.setItem('compatibility_right_id', rightSajuId);
-    else localStorage.removeItem('compatibility_right_id');
+    if (rightSajuId) sessionStorage.setItem('compatibility_right_id', rightSajuId);
+    else sessionStorage.removeItem('compatibility_right_id');
   }, [rightSajuId]);
 
   useEffect(() => {
@@ -381,8 +377,8 @@ export default function Compatibility() {
   };
 
   const handleHomeClick = () => {
-    localStorage.removeItem('compatibility_left_id');
-    localStorage.removeItem('compatibility_right_id');
+    sessionStorage.removeItem('compatibility_left_id');
+    sessionStorage.removeItem('compatibility_right_id');
     setLocation('/');
   };
 
