@@ -203,7 +203,7 @@ export default function SajuList() {
         {/* 상단 헤더 */}
         <div className="relative flex items-center mb-2 border-b pb-2">
           <Button variant="ghost" size="sm" onClick={handleBack} className="absolute left-0 px-2 text-muted-foreground"><ArrowLeft className="w-4 h-4" /></Button>
-          <div className="w-full text-center"><h1 className="text-base font-bold text-gray-800">저장 목록</h1></div>
+          <div className="w-full text-center"><h1 className="text-base font-bold text-gray-800 dark:text-gray-100">저장 목록</h1></div>
           <Button size="sm" onClick={() => setLocation("/saju-input")} className="absolute right-0 bg-primary hover:bg-primary/90 h-7 text-xs px-2"><Plus className="w-3 h-3 mr-1" />추가</Button>
         </div>
 
@@ -282,12 +282,12 @@ export default function SajuList() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-sm text-gray-800">{saju.name || "이름없음"}</span>
+                              <span className="font-semibold text-sm text-gray-800 dark:text-gray-100">{saju.name || "이름없음"}</span>
                               <span className="text-xs text-gray-500">{calculateAge(saju.birthYear)}세</span>
                               {groupName && <span className="text-[10px] text-primary bg-primary/10 px-1.5 rounded-full">{groupName}</span>}
                               <span className="text-[10px] text-gray-400 ml-auto">{saju.createdAt ? new Date(saju.createdAt).toLocaleDateString() : ''}</span>
                             </div>
-                            <div className="text-xs text-gray-500 mt-0.5">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                               양력 {saju.birthYear}.{saju.birthMonth}.{saju.birthDay}{saju.birthTime && ` ${saju.birthTime}`}
                               {saju.lunarYear && (
                                 <span className="text-gray-400">
