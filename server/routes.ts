@@ -223,7 +223,6 @@ export async function registerRoutes(app: Express): Promise<void> {
               // 전통 시간대 코드인지 확인 (예: "子時")
               const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
               if (timePeriod) {
-                // 전통 시간대의 대표 시간 사용
                 hour = timePeriod.hour;
                 // 야자시는 23:31부터 시작하므로 minute을 31로 설정
                 minute = timePeriod.code === "夜子時" ? 31 : 0;
@@ -661,9 +660,8 @@ export async function registerRoutes(app: Express): Promise<void> {
               // 전통 시간대 코드인지 확인 (예: "子時")
               const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === finalBirthTime);
               if (timePeriod) {
-                // 전통 시간대의 대표 시간 사용
                 hour = timePeriod.hour;
-                minute = 0;
+                minute = timePeriod.minute;
               } else {
                 // 일반 시간 형식 파싱 (예: "22:00" 또는 "오후 10시")
                 const timeStr = finalBirthTime;
@@ -962,7 +960,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === validatedData.birthTime);
           if (timePeriod) {
             hour = timePeriod.hour;
-            minute = 0;
+            minute = timePeriod.minute;
           } else {
             const timeStr = validatedData.birthTime;
             if (timeStr.includes(':')) {
@@ -1182,10 +1180,12 @@ export async function registerRoutes(app: Express): Promise<void> {
         try {
           // 시간 계산
           let hour = 0;
+          let minute = 0;
           if (finalBirthTime) {
             const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === finalBirthTime);
             if (timePeriod) {
               hour = timePeriod.hour;
+              minute = timePeriod.minute;
             } else {
               const timeStr = finalBirthTime;
               if (timeStr.includes(':')) {
@@ -1232,7 +1232,7 @@ export async function registerRoutes(app: Express): Promise<void> {
             sajuCalculationMonth,
             sajuCalculationDay,
             hour,
-            0, // minute
+            minute,
             isLunar,
             {
               solarYear: finalBirthYear,

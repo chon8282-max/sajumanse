@@ -73,11 +73,12 @@ export function calculateMonthGanji(year: number, month: number): { sky: string;
   const inWolSky = MONTH_SKY_START_MAP[yearSky] || "丙";
   const inWolSkyIndex = CHEONGAN.indexOf(inWolSky);
   
-  // 3. 월지 결정 (1월=인, 2월=묘, ..., 12월=축)
-  const monthEarth = MONTH_EARTH_SEQUENCE[month - 1];
+  // 3. 월지 결정 (2월=인월 기준: 1월=축, 2월=인, 3월=묘, ..., 12월=자)
+  const monthIndex = (month - 2 + 12) % 12; // 2월=0(寅), 7월=5(未), 1월=11(丑)
+  const monthEarth = MONTH_EARTH_SEQUENCE[monthIndex];
   
-  // 4. 월간 계산 (1월부터 순환)
-  const monthSkyIndex = (inWolSkyIndex + (month - 1)) % 10;
+  // 4. 월간 계산 (인월부터 순환)
+  const monthSkyIndex = (inWolSkyIndex + monthIndex) % 10;
   const monthSky = CHEONGAN[monthSkyIndex];
   
   return { sky: monthSky, earth: monthEarth };

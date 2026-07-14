@@ -147,10 +147,32 @@ export default function Compatibility() {
   const leftHasGanji = leftSaju?.yearSky && leftSaju?.daySky;
   const rightHasGanji = rightSaju?.yearSky && rightSaju?.daySky;
 
-  // 왼쪽 대운/나이 계산
-  const leftDaeunData = useMemo(() => {
-    if (!leftSaju?.yearSky || !leftSaju?.yearEarth || !leftSaju?.monthSky || !leftSaju?.monthEarth) return null;
-    return calculateCompleteDaeun(leftSaju as any);
+  // 왼쪽 대운/나이 계산 (비동기)
+  const [leftDaeunData, setLeftDaeunData] = useState<Awaited<ReturnType<typeof calculateCompleteDaeun>> | null>(null);
+  useEffect(() => {
+    if (!leftSaju?.yearSky || !leftSaju?.yearEarth || !leftSaju?.monthSky || !leftSaju?.monthEarth) {
+      setLeftDaeunData(null);
+      return;
+    }
+    // 출생 시각 파싱
+    let hour = 12, minute = 0;
+    const bt = leftSaju.birthTime || '';
+    const tp = TRADITIONAL_TIME_PERIODS.find(p => p.code === bt);
+    if (tp) {
+      hour = tp.hour;
+      minute = tp.minute;
+    } else if (bt.includes(':')) {
+      const parts = bt.split(':');
+      hour = parseInt(parts[0]) || 12;
+      minute = parseInt(parts[1]) || 0;
+    } else if (bt) {
+      hour = parseInt(bt) || 12;
+    }
+    let cancelled = false;
+    calculateCompleteDaeun(leftSaju as any, hour, minute).then((result) => {
+      if (!cancelled) setLeftDaeunData(result);
+    });
+    return () => { cancelled = true; };
   }, [leftSaju]);
 
   const leftCurrentAge = useMemo(() => {
@@ -171,10 +193,32 @@ export default function Compatibility() {
     return calculateSaeun(leftSaju.birthYear, leftSaju.yearSky, leftSaju.yearEarth, 12, leftFocusedDaeun.startAge - 1 + leftSaeunOffset);
   }, [leftSaju, leftFocusedDaeun, leftSaeunOffset]);
 
-  // 오른쪽 대운/나이 계산
-  const rightDaeunData = useMemo(() => {
-    if (!rightSaju?.yearSky || !rightSaju?.yearEarth || !rightSaju?.monthSky || !rightSaju?.monthEarth) return null;
-    return calculateCompleteDaeun(rightSaju as any);
+  // 오른쪽 대운/나이 계산 (비동기)
+  const [rightDaeunData, setRightDaeunData] = useState<Awaited<ReturnType<typeof calculateCompleteDaeun>> | null>(null);
+  useEffect(() => {
+    if (!rightSaju?.yearSky || !rightSaju?.yearEarth || !rightSaju?.monthSky || !rightSaju?.monthEarth) {
+      setRightDaeunData(null);
+      return;
+    }
+    // 출생 시각 파싱
+    let hour = 12, minute = 0;
+    const bt = rightSaju.birthTime || '';
+    const tp = TRADITIONAL_TIME_PERIODS.find(p => p.code === bt);
+    if (tp) {
+      hour = tp.hour;
+      minute = tp.minute;
+    } else if (bt.includes(':')) {
+      const parts = bt.split(':');
+      hour = parseInt(parts[0]) || 12;
+      minute = parseInt(parts[1]) || 0;
+    } else if (bt) {
+      hour = parseInt(bt) || 12;
+    }
+    let cancelled = false;
+    calculateCompleteDaeun(rightSaju as any, hour, minute).then((result) => {
+      if (!cancelled) setRightDaeunData(result);
+    });
+    return () => { cancelled = true; };
   }, [rightSaju]);
 
   const rightCurrentAge = useMemo(() => {
@@ -268,7 +312,7 @@ export default function Compatibility() {
     try {
       let hour = 0, minute = 0;
       const timePeriod = TRADITIONAL_TIME_PERIODS.find((p: any) => p.code === timeCode);
-      if (timePeriod) { hour = timePeriod.hour; }
+      if (timePeriod) { hour = timePeriod.hour; minute = timePeriod.minute; }
       else if (timeCode.includes(':')) { const parts = timeCode.split(':'); hour = parseInt(parts[0]) || 0; minute = parseInt(parts[1]) || 0; }
       else { hour = parseInt(timeCode) || 0; }
       const solarTerms = await getSolarTermsForCalculation(leftSaju.birthYear);
@@ -285,7 +329,7 @@ export default function Compatibility() {
     try {
       let hour = 0, minute = 0;
       const timePeriod = TRADITIONAL_TIME_PERIODS.find((p: any) => p.code === timeCode);
-      if (timePeriod) { hour = timePeriod.hour; }
+      if (timePeriod) { hour = timePeriod.hour; minute = timePeriod.minute; }
       else if (timeCode.includes(':')) { const parts = timeCode.split(':'); hour = parseInt(parts[0]) || 0; minute = parseInt(parts[1]) || 0; }
       else { hour = parseInt(timeCode) || 0; }
       const solarTerms = await getSolarTermsForCalculation(rightSaju.birthYear);
@@ -304,7 +348,7 @@ export default function Compatibility() {
       let hour = 0, minute = 0;
       const birthTime = leftSaju.birthTime || '';
       const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
-      if (timePeriod) { hour = timePeriod.hour; }
+      if (timePeriod) { hour = timePeriod.hour; minute = timePeriod.minute; }
       else if (birthTime.includes(':')) { const parts = birthTime.split(':'); hour = parseInt(parts[0]) || 0; minute = parseInt(parts[1]) || 0; }
       else if (birthTime) { hour = parseInt(birthTime) || 0; }
       const solarTerms = await getSolarTermsForCalculation(year);
@@ -323,7 +367,7 @@ export default function Compatibility() {
       let hour = 0, minute = 0;
       const birthTime = rightSaju.birthTime || '';
       const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
-      if (timePeriod) { hour = timePeriod.hour; }
+      if (timePeriod) { hour = timePeriod.hour; minute = timePeriod.minute; }
       else if (birthTime.includes(':')) { const parts = birthTime.split(':'); hour = parseInt(parts[0]) || 0; minute = parseInt(parts[1]) || 0; }
       else if (birthTime) { hour = parseInt(birthTime) || 0; }
       const solarTerms = await getSolarTermsForCalculation(year);
@@ -373,7 +417,7 @@ export default function Compatibility() {
     focusedDaeun: DaeunPeriod | null,
     focusedSaeun: SaeunInfo | null,
     saeunData: ReturnType<typeof calculateSaeun> | null,
-    daeunData: ReturnType<typeof calculateCompleteDaeun> | null,
+    daeunData: Awaited<ReturnType<typeof calculateCompleteDaeun>> | null,
     currentAge: number | null,
     onBirthTimeChange: (t: string) => void,
     onBirthDateChange: (y: number, m: number, d: number) => void,
@@ -438,20 +482,20 @@ export default function Compatibility() {
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', backgroundColor: 'rgba(0,0,0,0.7)' }} onClick={() => { onClose(); setDialogSearch(""); }}>
         <div style={{ width: '100%', maxWidth: '360px', maxHeight: '70vh', backgroundColor: 'white', borderRadius: '10px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
           <div style={{ padding: '8px 12px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '12px', fontWeight: '600', color: '#374151' }}>{title}</span>
+            <span style={{ fontSize: '15px', fontWeight: '600', color: '#374151' }}>{title}</span>
             <button onClick={() => { onClose(); setDialogSearch(""); }} style={{ padding: '2px' }}><X className="h-3.5 w-3.5 text-gray-500" /></button>
           </div>
           <div style={{ padding: '6px 8px', borderBottom: '1px solid #f3f4f6' }}>
-            <input type="text" placeholder="이름 검색..." value={dialogSearch} onChange={e => setDialogSearch(e.target.value)} style={{ width: '100%', padding: '4px 8px', fontSize: '11px', border: '1px solid #e5e7eb', borderRadius: '6px', outline: 'none' }} />
+            <input type="text" placeholder="이름 검색..." value={dialogSearch} onChange={e => setDialogSearch(e.target.value)} style={{ width: '100%', padding: '6px 10px', fontSize: '14px', border: '1px solid #e5e7eb', borderRadius: '6px', outline: 'none' }} />
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '4px' }}>
             {filtered.map(saju => (
-              <div key={saju.id} style={{ padding: '6px 8px', cursor: 'pointer', borderRadius: '6px', borderBottom: '1px solid #f9fafb' }}
+              <div key={saju.id} style={{ padding: '5px 10px', cursor: 'pointer', borderRadius: '6px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'baseline', gap: '8px' }}
                 onClick={() => { onSelect(saju.id); onClose(); setDialogSearch(""); }}
                 onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#f9fafb')}
                 onMouseLeave={e => (e.currentTarget.style.backgroundColor = '')}>
-                <div style={{ fontSize: '12px', fontWeight: '600', color: '#1f2937' }}>{saju.name || "이름없음"}</div>
-                <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '1px' }}>{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} {saju.birthTime || ''}</div>
+                <div style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937' }}>{saju.name || "이름없음"}</div>
+                <div style={{ fontSize: '14px', color: '#6b7280' }}>{saju.birthYear}.{saju.birthMonth}.{saju.birthDay} {saju.birthTime || ''}</div>
               </div>
             ))}
           </div>

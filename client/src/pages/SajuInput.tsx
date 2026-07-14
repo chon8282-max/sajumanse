@@ -108,15 +108,19 @@ export default function SajuInput() {
     const urlParams = new URLSearchParams(window.location.search);
     // edit=true이고 id가 있을 때만 편집 모드로 데이터 로드
     if (urlParams.get('edit') === 'true' && urlParams.has('id')) {
+      const savedBirthTime = urlParams.get('birthTime') || "";
+      // 저장된 birthTime이 전통시간대 코드(子時, 丑時 등)와 일치하면 selectedTimeCode도 복원
+      const matchedPeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === savedBirthTime);
+      
       const queryData = {
         name: urlParams.get('name') || "",
         calendarType: urlParams.get('calendarType') || "양력",
         year: urlParams.get('year') || "",
         month: urlParams.get('month') || "",
         day: urlParams.get('day') || "",
-        birthTime: urlParams.get('birthTime') || "",
-        selectedTimeCode: "",
-        birthTimeUnknown: !urlParams.get('birthTime'),
+        birthTime: savedBirthTime,
+        selectedTimeCode: matchedPeriod ? matchedPeriod.code : "",
+        birthTimeUnknown: !savedBirthTime,
         gender: urlParams.get('gender') || "남자",
         groupId: urlParams.get('groupId') || "",
         memo: urlParams.get('memo') || "",
@@ -256,6 +260,7 @@ export default function SajuInput() {
         const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode);
         if (timePeriod) {
           inputHour = timePeriod.hour;
+          inputMinute = timePeriod.minute;
         }
       } else if (formData.birthTime && !formData.birthTimeUnknown) {
         const timeStr = formData.birthTime.trim();
@@ -418,13 +423,14 @@ export default function SajuInput() {
           const CHEONGAN = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
           const JIJI = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
           
-          // 시주 파싱
+         // 시주 파싱
           let hour = 12;
           let minute = 0;
           if (formData.selectedTimeCode) {
             const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode);
             if (timePeriod) {
               hour = timePeriod.hour;
+              minute = timePeriod.minute;
             }
           }
           
@@ -527,13 +533,14 @@ export default function SajuInput() {
         // 시간 파싱
         let hour = 12; // 기본값
         let minute = 0;
-        
+
         if (formData.birthTimeUnknown) {
           hour = -1; // 생시모름 표시
         } else if (formData.selectedTimeCode) {
           const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === formData.selectedTimeCode);
           if (timePeriod) {
             hour = timePeriod.hour;
+            minute = timePeriod.minute;
           }
         } else if (formData.birthTime && formData.birthTime.trim()) {
           const timeStr = formData.birthTime.trim();

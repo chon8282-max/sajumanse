@@ -80,14 +80,17 @@ export default function TraditionalCalendar({
     const isSaturday = dayData.dayOfWeek === 6;
     const solarTerm = solarTerms.find(term => term.date.getUTCDate() === dayData.solarDay && dayData.isCurrentMonth);
 
+    // 요일별 글자색 결정 (일요일=빨강, 토요일=파랑)
+    const weekdayTextColor = isSunday ? 'text-red-600' : isSaturday ? 'text-blue-600' : '';
+
     return (
       <div
         key={`${dayData.solarDate.getTime()}`}
         style={{ borderRight: '0.5px solid #4a4a4a', borderTop: '0.5px solid #4a4a4a', minHeight: '68px', paddingTop: '5px', paddingBottom: '4px' }}
         className={`relative flex flex-col items-center justify-start
           ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
-          ${dayData.isCurrentMonth && isSunday ? 'bg-red-50' : ''}
-          ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-50' : ''}
+          ${dayData.isCurrentMonth && isSunday ? 'bg-red-100' : ''}
+          ${dayData.isCurrentMonth && isSaturday ? 'bg-blue-100' : ''}
           ${dayData.isCurrentMonth && !isSunday && !isSaturday ? 'bg-white' : ''}
           ${isToday ? '!bg-indigo-50' : ''}
         `}
@@ -98,8 +101,8 @@ export default function TraditionalCalendar({
           {/* 양력 날짜 */}
           <div className={`flex items-center justify-center rounded-full text-[15px] font-bold
             ${isToday ? 'bg-indigo-500 text-white' : ''}
-            ${!isToday && isSunday ? 'text-red-400' : ''}
-            ${!isToday && isSaturday ? 'text-indigo-400' : ''}
+            ${!isToday && isSunday ? 'text-red-600' : ''}
+            ${!isToday && isSaturday ? 'text-blue-600' : ''}
             ${!isToday && !isSunday && !isSaturday && dayData.isCurrentMonth ? 'text-gray-800' : ''}
             ${!dayData.isCurrentMonth ? 'text-gray-300' : ''}
           `}>
@@ -109,8 +112,8 @@ export default function TraditionalCalendar({
           {/* 간지 (천간/지지 세로로) */}
           {dayData.lunarDayGanji && (
             <div className="flex flex-col items-center leading-none">
-              <span className="text-[12px] text-gray-800 font-bold">{dayData.lunarDayGanji.sky}</span>
-              <span className="text-[12px] text-gray-800 font-bold">{dayData.lunarDayGanji.earth}</span>
+              <span className={`text-[12px] font-bold ${dayData.isCurrentMonth && weekdayTextColor ? weekdayTextColor : 'text-gray-800'}`}>{dayData.lunarDayGanji.sky}</span>
+              <span className={`text-[12px] font-bold ${dayData.isCurrentMonth && weekdayTextColor ? weekdayTextColor : 'text-gray-800'}`}>{dayData.lunarDayGanji.earth}</span>
             </div>
           )}
         </div>
@@ -118,7 +121,10 @@ export default function TraditionalCalendar({
         {/* 음력 날짜 */}
         {dayData.lunarDay && (
           <div style={{ marginTop: '8px' }} className={`text-[14px] leading-tight font-bold
-            ${isLunarFirst ? 'text-red-500' : 'text-blue-900'}
+            ${isLunarFirst ? 'text-red-500' : ''}
+            ${!isLunarFirst && dayData.isCurrentMonth && isSunday ? 'text-red-600' : ''}
+            ${!isLunarFirst && dayData.isCurrentMonth && isSaturday ? 'text-blue-600' : ''}
+            ${!isLunarFirst && (!dayData.isCurrentMonth || (!isSunday && !isSaturday)) ? 'text-blue-900' : ''}
           `}>
             {dayData.lunarMonth}/{dayData.lunarDay}
           </div>

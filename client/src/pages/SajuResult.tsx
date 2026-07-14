@@ -445,6 +445,7 @@ export default function SajuResult() {
       const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === timeCode);
       if (timePeriod) {
         hour = timePeriod.hour;
+        minute = timePeriod.minute;
       } else if (timeCode.includes(':')) {
         const parts = timeCode.split(':');
         hour = parseInt(parts[0]) || 0;
@@ -521,6 +522,7 @@ export default function SajuResult() {
   }, [birthTimeUpdateMutation]);
 
   // 생년월일 변경 핸들러 (서버 API 사용)
+// 생년월일 변경 핸들러 (서버 API 사용)
   const birthDateUpdateMutation = useMutation({
     mutationFn: async ({ year, month, day }: { year: number; month: number; day: number }) => {
       if (!params?.id) throw new Error('No ID provided');
@@ -539,6 +541,7 @@ export default function SajuResult() {
       const timePeriod = TRADITIONAL_TIME_PERIODS.find(p => p.code === birthTime);
       if (timePeriod) {
         hour = timePeriod.hour;
+        minute = timePeriod.minute;
       } else if (birthTime.includes(':')) {
         const parts = birthTime.split(':');
         hour = parseInt(parts[0]) || 0;
@@ -858,7 +861,8 @@ export default function SajuResult() {
                 record.birthYear, 
                 record.birthMonth, 
                 record.birthDay, 
-                timePeriod?.hour as any  // undefined일 수 있음 (생시 미상)
+                timePeriod?.hour as any,  // undefined일 수 있음 (생시 미상)
+                timePeriod?.minute ?? 0
               );
             } catch (error) {
               console.warn('Failed to calculate saju:', error);
