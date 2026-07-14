@@ -68,6 +68,10 @@ export default function Compatibility() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       return params.get('left') || sessionStorage.getItem('compatibility_left_id');
+    }
+    return null;
+  });
+  const [rightSajuId, setRightSajuId] = useState<string | null>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       return params.get('right') || sessionStorage.getItem('compatibility_right_id');
