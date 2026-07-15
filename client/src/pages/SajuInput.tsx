@@ -694,7 +694,7 @@ export default function SajuInput() {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-3">
+    <div className="min-h-screen bg-background px-4 py-3 pb-60">
       {/* 헤더 */}
       <div className="mb-3">
         <Button

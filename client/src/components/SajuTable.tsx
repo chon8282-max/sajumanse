@@ -1234,8 +1234,9 @@ export default function SajuTable({
           {/* 세 번째 줄: 5개 버튼 */}
           <div className="relative flex flex-wrap justify-center gap-1">
             {gongmang && (
-              <span className="absolute right-0 top-1/2 -translate-y-1/2 px-2 py-1 text-xs inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-foreground whitespace-nowrap">
-                {gongmang} 공망
+              <span className="absolute -right-1 bottom-0 px-1 py-0.5 text-[11px] leading-none inline-flex items-center rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 whitespace-nowrap">
+                <span className="text-foreground">{gongmang}</span>
+                <span className="text-amber-900 dark:text-amber-600 font-semibold">空</span>
               </span>
             )}
             <button 
@@ -2197,7 +2198,7 @@ export default function SajuTable({
         </div>
 
         {/* 18행: 메모 입력 박스 */}
-        <div className="border-b border-border">
+        <div className="border-b border-border pb-40">
           <div className="p-4 bg-white dark:bg-gray-900 flex justify-center">
             <textarea
               className="w-full max-w-2xl min-h-[10rem] text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 resize-vertical bg-white dark:bg-gray-800 text-black dark:text-white"

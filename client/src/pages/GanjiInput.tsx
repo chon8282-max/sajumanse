@@ -123,6 +123,9 @@ export default function GanjiInput() {
     }
   };
 
+  // 음간(乙丁己辛癸) 여부 - 글자색 구분용
+  const isYinSky = (sky: string) => ['乙', '丁', '己', '辛', '癸'].includes(sky);
+  
   // 10개 단위로 색상 구분 (0-9, 10-19, 20-29, 30-39, 40-49, 50-59)
   const getGanjiColorClass = (index: number) => {
     const group = Math.floor(index / 10);
@@ -145,7 +148,7 @@ export default function GanjiInput() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3 pb-60">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3 pb-96">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="mb-3">
@@ -226,7 +229,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="ghost"
                     onClick={() => handleYearSelect(ganji.sky, ganji.earth)}
-                    className={`h-10 px-2 text-lg font-semibold pt-[8px] pb-[8px] mt-[-3px] mb-[-3px] border ${getGanjiColorClass(index)}`}
+                    className={`h-10 px-2 text-xl font-semibold pt-[8px] pb-[8px] mt-[-3px] mb-[-3px] border ${getGanjiColorClass(index)} ${isYinSky(ganji.sky) ? '!text-blue-800 dark:!text-blue-300' : '!text-black dark:!text-white'}`}
                     data-testid={`button-year-${ganji.label}`}
                   >
                     {ganji.label}
@@ -245,7 +248,7 @@ export default function GanjiInput() {
                       key={index}
                       variant="outline"
                       onClick={() => handleMonthSelect(ganji.sky, ganji.earth)}
-                      className={`h-9 px-2 text-base font-semibold ${getGanjiColorClass(fullGanjiIndex)}`}
+                      className={`h-9 px-2 text-lg font-semibold ${getGanjiColorClass(fullGanjiIndex)} ${isYinSky(ganji.sky) ? '!text-blue-800 dark:!text-blue-300' : '!text-black dark:!text-white'}`}
                       data-testid={`button-month-${ganji.label}`}
                     >
                       {ganji.label}
@@ -262,7 +265,7 @@ export default function GanjiInput() {
                     key={index}
                     variant="outline"
                     onClick={() => handleDaySelect(ganji.sky, ganji.earth)}
-                    className={`h-9 px-2 text-base font-semibold ${getGanjiColorClass(index)}`}
+                    className={`h-9 px-2 text-lg font-semibold ${getGanjiColorClass(index)} ${isYinSky(ganji.sky) ? '!text-blue-800 dark:!text-blue-300' : '!text-black dark:!text-white'}`}
                     data-testid={`button-day-${ganji.label}`}
                   >
                     {ganji.label}
@@ -281,7 +284,7 @@ export default function GanjiInput() {
                       key={index}
                       variant="outline"
                       onClick={() => handleHourSelect(ganji.sky, ganji.earth)}
-                      className={`h-7 px-2 text-sm ${getGanjiColorClass(fullGanjiIndex)}`}
+                      className={`h-7 px-2 text-base font-semibold ${getGanjiColorClass(fullGanjiIndex)} ${isYinSky(ganji.sky) ? '!text-blue-800 dark:!text-blue-300' : '!text-black dark:!text-white'}`}
                       data-testid={`button-hour-${ganji.label}`}
                     >
                       {ganji.label}

@@ -105,7 +105,7 @@ export default function MenuGrid() {
             <div className={`${item.iconColor} mb-2 drop-shadow-sm`}>
               {item.icon}
             </div>
-            <p className="font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm whitespace-nowrap" style={{ fontSize: '0.9rem' }}>
+            <p className="font-medium leading-tight text-gray-800 dark:text-gray-200 drop-shadow-sm whitespace-nowrap" style={{ fontSize: '1.025rem' }}>
               {item.title}
             </p>
           </div>

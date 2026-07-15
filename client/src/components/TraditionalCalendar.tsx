@@ -49,9 +49,11 @@ export default function TraditionalCalendar({
         timeString: kstDate.toLocaleTimeString('ko-KR', { timeZone: 'UTC', hour: '2-digit', minute: '2-digit', hour12: false })
       };
     });
-    return allTerms.filter((term: SolarTermInfo) => {
-      return term.date.getUTCFullYear() === currentYear && term.date.getUTCMonth() + 1 === currentMonth;
-    });
+    return allTerms
+      .filter((term: SolarTermInfo) => {
+        return term.date.getUTCFullYear() === currentYear && term.date.getUTCMonth() + 1 === currentMonth;
+      })
+      .sort((a: SolarTermInfo, b: SolarTermInfo) => a.date.getTime() - b.date.getTime());
   }, [solarTermsData, currentYear, currentMonth]);
 
   const enrichedCalendarData = useMemo(() => {
@@ -99,7 +101,7 @@ export default function TraditionalCalendar({
         {/* 윗줄: 날짜 + 간지 나란히 */}
         <div className="flex items-end" style={{ gap: '5px' }}>
           {/* 양력 날짜 */}
-          <div className={`flex items-center justify-center rounded-full text-[15px] font-bold
+          <div className={`flex items-center justify-center rounded-full text-[22px] font-bold
             ${isToday ? 'bg-indigo-500 text-white' : ''}
             ${!isToday && isSunday ? 'text-red-600' : ''}
             ${!isToday && isSaturday ? 'text-blue-600' : ''}
