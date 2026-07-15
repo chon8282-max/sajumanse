@@ -187,9 +187,13 @@ export async function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: num
       const rangeEnd = endTerm ? new Date(endTerm.date) : new Date(rangeStart.getTime() + 31 * 86400000);
 
       // 3. 이 절기 구간 안에서만 일주가 일치하는 날짜 찾기
-      //    (일주는 60일 주기이므로 약 30일 구간에는 최대 하나만 존재)
-      const cur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate());
-      const last = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate());
+      //    절기 시각은 KST 기준이다. 기기 타임존에 상관없이 항상 KST 날짜를 뽑아야
+      //    PC/모바일에서 결과가 달라지지 않는다. (UTC+9로 강제 변환 후 UTC 게터 사용)
+      const KST = 9 * 60 * 60 * 1000;
+      const sK = new Date(rangeStart.getTime() + KST);
+      const eK = new Date(rangeEnd.getTime() + KST);
+      const cur = new Date(Date.UTC(sK.getUTCFullYear(), sK.getUTCMonth(), sK.getUTCDate()));
+      const last = new Date(Date.UTC(eK.getUTCFullYear(), eK.getUTCMonth(), eK.getUTCDate()));
       while (cur <= last) {
         const dayGanji = calculateDayGanji(cur);
         if (dayGanji.sky === ganji.daySky && dayGanji.earth === ganji.dayEarth) {
@@ -206,11 +210,11 @@ export async function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: num
       return null;
     }
     
-    // 양력 날짜 반환
+    // 양력 날짜 반환 (UTC 게터 사용 - 기기 타임존 무관)
     return {
-      year: foundDate.getFullYear(),
-      month: foundDate.getMonth() + 1,
-      day: foundDate.getDate()
+      year: foundDate.getUTCFullYear(),
+      month: foundDate.getUTCMonth() + 1,
+      day: foundDate.getUTCDate()
     };
   } catch (error) {
     console.error("Error in reverseCalculateSolarDate:", error);
