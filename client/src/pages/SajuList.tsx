@@ -197,7 +197,7 @@ export default function SajuList() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-40">
       <div className="container mx-auto px-3 py-3 max-w-md">
 
         {/* 상단 헤더 */}

@@ -176,15 +176,7 @@ html, body {
     @apply font-sans antialiased bg-background text-foreground;
   }
 
-  /* 스크롤바 숨기기 */
-  ::-webkit-scrollbar {
-    display: none;
-  }
-  
-  * {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
+  /* 스크롤바 숨기기 (제거됨 - 스크롤 가능 여부가 안 보여서 사용성 저하) */
 }
 
 /**
