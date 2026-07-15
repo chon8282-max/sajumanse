@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import BirthTimeSelector from "@/components/BirthTimeSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,7 @@ function checkDSTPeriod(year: number, month: number, day: number): { isDST: bool
 export default function SajuInput() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [isBirthTimeSelectorOpen, setIsBirthTimeSelectorOpen] = useState(false);
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
@@ -839,30 +841,21 @@ export default function SajuInput() {
         <div className="space-y-1">
           <Label className="text-base font-semibold">생시 (전통 십이시)</Label>
           <div className="flex gap-2 items-center">
-            <Select
-              value={formData.selectedTimeCode}
-              onValueChange={(value) => {
-                handleInputChange("selectedTimeCode", value);
-                handleInputChange("birthTime", value);
-              }}
+            <Button
+              type="button"
+              variant="outline"
               disabled={formData.birthTimeUnknown}
+              onClick={() => setIsBirthTimeSelectorOpen(true)}
+              data-testid="select-birth-time"
+              className="text-base flex-1 h-11 border-gray-400 justify-start font-normal"
             >
-              <SelectTrigger data-testid="select-birth-time" className="text-base flex-1 h-11 border-gray-400">
-                <SelectValue placeholder="생시를 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {TRADITIONAL_TIME_PERIODS.map((period) => (
-                  <SelectItem
-                    key={period.code}
-                    value={period.code}
-                    data-testid={`select-time-${period.code}`}
-                    className="text-base"
-                  >
-                    {period.name} ({period.range})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {formData.selectedTimeCode
+                ? (() => {
+                    const p = TRADITIONAL_TIME_PERIODS.find(t => t.code === formData.selectedTimeCode);
+                    return p ? `${p.name} (${p.range})` : formData.selectedTimeCode;
+                  })()
+                : <span className="text-muted-foreground">생시를 선택하세요</span>}
+            </Button>
             <div className="flex items-center space-x-1.5 whitespace-nowrap">
               <Checkbox
                 id="birthTimeUnknown"
@@ -883,6 +876,17 @@ export default function SajuInput() {
             </div>
           </div>
         </div>
+
+        {/* 생시 선택 모달 (화면 중앙에 표시) */}
+        <BirthTimeSelector
+          isOpen={isBirthTimeSelectorOpen}
+          onClose={() => setIsBirthTimeSelectorOpen(false)}
+          onSelect={(timeCode) => {
+            handleInputChange("selectedTimeCode", timeCode);
+            handleInputChange("birthTime", timeCode);
+          }}
+          currentTime={formData.selectedTimeCode}
+        />
 
         {/* 성별 */}
         <div className="space-y-1">

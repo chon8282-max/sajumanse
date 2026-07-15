@@ -145,7 +145,7 @@ export default function GanjiInput() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-3 pb-32">
       <div className="max-w-2xl mx-auto">
         {/* 헤더 */}
         <div className="mb-3">

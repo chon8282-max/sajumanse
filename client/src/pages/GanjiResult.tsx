@@ -1,3 +1,4 @@
+import { TRADITIONAL_TIME_PERIODS } from "@shared/schema";
 import { useLocation as useWouterLocation, useSearch } from "wouter";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -165,8 +166,8 @@ export default function GanjiResult() {
         throw new Error('간지 정보가 누락되었습니다. 다시 입력해주세요.');
       }
 
-      // 간지로부터 양력 날짜 역산
-      const reversedDate = reverseCalculateSolarDate({
+      // 간지로부터 양력 날짜 역산 (KASI 절기 기반)
+      const reversedDate = await reverseCalculateSolarDate({
         yearSky,
         yearEarth,
         monthSky,
@@ -267,7 +268,7 @@ export default function GanjiResult() {
       }
 
       // 간지로부터 양력 날짜 역산
-      const reversedDate = reverseCalculateSolarDate({
+      const reversedDate = await reverseCalculateSolarDate({
         yearSky,
         yearEarth,
         monthSky,
@@ -276,6 +277,7 @@ export default function GanjiResult() {
         dayEarth,
         hourSky,
         hourEarth
+        
       }, selectedYear);
 
       if (!reversedDate) {
@@ -497,14 +499,24 @@ export default function GanjiResult() {
 
   const possibleYears = calculatePossibleYears();
 
-  // 표시용 연도 (선택된 연도가 없으면 첫 번째 가능한 연도 사용)
-  const displayYear = selectedYear || possibleYears[0];
+  // 표시용 연도 (선택된 연도가 없으면 현재에 가장 가까운 연도를 기본으로)
+  const displayYear = selectedYear || (() => {
+    if (possibleYears.length === 0) return undefined;
+    const now = new Date().getFullYear();
+    // 현재 연도 이하 중 가장 최근 것, 없으면 첫 번째
+    const past = possibleYears.filter(y => y <= now);
+    return past.length > 0 ? past[past.length - 1] : possibleYears[0];
+  })();
 
-  // 표시용 역산 날짜 (항상 계산)
-  const displayReversedDate = useMemo(() => {
-    if (!displayYear) return null;
-    
-    return reverseCalculateSolarDate({
+  // 표시용 역산 날짜 (KASI 절기 기반 async 계산)
+  const [displayReversedDate, setDisplayReversedDate] = useState<{ year: number; month: number; day: number } | null>(null);
+  useEffect(() => {
+    if (!displayYear) {
+      setDisplayReversedDate(null);
+      return;
+    }
+    let cancelled = false;
+    reverseCalculateSolarDate({
       yearSky,
       yearEarth,
       monthSky,
@@ -513,8 +525,29 @@ export default function GanjiResult() {
       dayEarth,
       hourSky,
       hourEarth
-    }, displayYear);
+    }, displayYear).then((result) => {
+      if (!cancelled) setDisplayReversedDate(result);
+    });
+    return () => { cancelled = true; };
   }, [displayYear, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
+
+  // 역산된 양력 날짜로부터 음력 계산 (저장 전에도 화면에 표시)
+  const reversedLunarDate = useMemo(() => {
+    if (!displayReversedDate) return null;
+    try {
+      const solar = Solar.fromYmd(displayReversedDate.year, displayReversedDate.month, displayReversedDate.day);
+      const lunar = solar.getLunar();
+      return {
+        year: lunar.getYear(),
+        month: lunar.getMonth(),
+        day: lunar.getDay(),
+        isLeapMonth: (lunar as any).isLeap ? (lunar as any).isLeap() : false
+      };
+    } catch (e) {
+      console.error('음력 변환 실패:', e);
+      return null;
+    }
+  }, [displayReversedDate]);
 
   // 선택된 연도가 있을 때 나이 계산
   const currentAge = useMemo(() => {
@@ -522,11 +555,22 @@ export default function GanjiResult() {
     return calculateCurrentAge(displayReversedDate.year, displayReversedDate.month, displayReversedDate.day);
   }, [displayReversedDate]);
 
-  // 선택된 연도가 있을 때 대운 계산
-  const daeunData = useMemo(() => {
-    if (!displayReversedDate) return null;
-    
-    return calculateCompleteDaeun({
+  // 선택된 연도가 있을 때 대운 계산 (비동기 정밀 계산)
+  const [daeunData, setDaeunData] = useState<Awaited<ReturnType<typeof calculateCompleteDaeun>> | null>(null);
+  useEffect(() => {
+    if (!displayReversedDate) {
+      setDaeunData(null);
+      return;
+    }
+    // 시주(時柱)에서 출생 시각 추출 (대운수 정밀 계산에 필요)
+    let hour = 12, minute = 0;
+    const tp = TRADITIONAL_TIME_PERIODS.find(p => p.code.charAt(0) === hourEarth);
+    if (tp) {
+      hour = tp.hour;
+      minute = tp.minute;
+    }
+    let cancelled = false;
+    calculateCompleteDaeun({
       gender: gender,
       yearSky: yearSky,
       monthSky: monthSky,
@@ -534,8 +578,11 @@ export default function GanjiResult() {
       birthYear: displayReversedDate.year,
       birthMonth: displayReversedDate.month,
       birthDay: displayReversedDate.day
+    }, hour, minute).then((result) => {
+      if (!cancelled) setDaeunData(result);
     });
-  }, [displayReversedDate, gender, yearSky, monthSky, monthEarth]);
+    return () => { cancelled = true; };
+  }, [displayReversedDate, gender, yearSky, monthSky, monthEarth, hourEarth]);
 
   // 현재 대운 찾기
   const currentDaeun = useMemo(() => {
@@ -743,6 +790,7 @@ export default function GanjiResult() {
           hourSky={hourSky || undefined}
           hourEarth={hourEarth || undefined}
           calendarType="ganji"
+          reversedDate={displayReversedDate || undefined}
           daeunPeriods={daeunData?.daeunPeriods || []}
           focusedDaeun={focusedDaeun}
           focusedSaeun={focusedSaeun}

@@ -1,4 +1,5 @@
 import { CHEONGAN, JIJI } from "@shared/schema";
+import { getSolarTermsForCalculation } from "@/lib/solar-terms-data";
 
 interface GanjiInfo {
   yearSky: string;
@@ -130,40 +131,76 @@ function calculateDayGanji(date: Date): { sky: string; earth: string } {
   };
 }
 
-// 간지 정보로부터 양력 날짜 역산
-export function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): { year: number; month: number; day: number } | null {
+// 간지 정보로부터 양력 날짜 역산 (KASI 정확 절기 데이터 사용, async)
+export async function reverseCalculateSolarDate(ganji: GanjiInfo, birthYear: number): Promise<{ year: number; month: number; day: number } | null> {
   try {
-    // 1. 월주의 지지로 절기 월 인덱스 찾기
+    // 1. 월주의 지지로 절기 월 인덱스 찾기 (인월=0 ... 축월=11)
     const monthIndex = getMonthIndexFromEarth(ganji.monthEarth);
     if (monthIndex === -1) {
       console.error("Invalid month earth:", ganji.monthEarth);
       return null;
     }
-    
-    // 2. 해당 연도, 월의 절기 날짜 범위 찾기
-    const { start: termStart, end: termEnd } = getSolarTermDateRange(birthYear, monthIndex);
-    
-    // 3. 절기 범위 내에서 일주가 일치하는 날짜 찾기
-    let foundDate: Date | null = null;
-    const startDate = new Date(termStart);
-    const endDate = new Date(termEnd);
-    
-    // 범위를 조금 넓혀서 검색 (절기 전후 30일로 확장)
-    startDate.setDate(startDate.getDate() - 30);
-    endDate.setDate(endDate.getDate() + 30);
-    
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      const dayGanji = calculateDayGanji(currentDate);
-      
-      if (dayGanji.sky === ganji.daySky && dayGanji.earth === ganji.dayEarth) {
-        foundDate = new Date(currentDate);
-        break;
-      }
-      
-      currentDate.setDate(currentDate.getDate() + 1);
+
+    // 2. KASI 정확 절기 데이터로 해당 월(절기 구간) 범위 계산
+    //    사주 연도 Y는 입춘(Y년) ~ 다음 입춘(Y+1년) 구간이다.
+    //    따라서 인월~대설월은 양력 Y년, 축월(소한)은 양력 Y+1년 1월에 해당한다.
+    const termsThisYear = await getSolarTermsForCalculation(birthYear);
+    const termsNextYear = await getSolarTermsForCalculation(birthYear + 1);
+    // 두 해 절기를 합쳐 날짜순 정렬 (중복 제거)
+    const seen = new Set<number>();
+    const terms = [...termsThisYear, ...termsNextYear]
+      .filter(t => {
+        const k = t.date.getTime();
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      })
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    // 이 사주 연도의 시작점 = birthYear년의 입춘
+    const lichun = terms.find(t => t.month === 0 && t.date.getFullYear() === birthYear);
+    if (!lichun) {
+      console.error("입춘 데이터를 찾을 수 없음:", birthYear);
+      return null;
     }
-    
+    // 사주 연도 구간: birthYear 입춘 ~ (birthYear+1) 입춘 직전
+    const nextLichun = terms.find(t => t.month === 0 && t.date.getFullYear() === birthYear + 1);
+
+    // 이 구간 안에 있는 해당 월(monthIndex)의 절기만 후보로
+    const candidates = terms.filter(t =>
+      t.month === monthIndex &&
+      t.date.getTime() >= lichun.date.getTime() &&
+      (!nextLichun || t.date.getTime() < nextLichun.date.getTime())
+    );
+    if (candidates.length === 0) {
+      console.error("절기 데이터에서 해당 월을 찾을 수 없음:", ganji.monthEarth, birthYear);
+      return null;
+    }
+
+    let foundDate: Date | null = null;
+
+    for (const startTerm of candidates) {
+      // 이 절기 다음 절기 = 구간의 끝
+      const idx = terms.findIndex(t => t.date.getTime() === startTerm.date.getTime());
+      const endTerm = terms[idx + 1];
+      const rangeStart = new Date(startTerm.date);
+      const rangeEnd = endTerm ? new Date(endTerm.date) : new Date(rangeStart.getTime() + 31 * 86400000);
+
+      // 3. 이 절기 구간 안에서만 일주가 일치하는 날짜 찾기
+      //    (일주는 60일 주기이므로 약 30일 구간에는 최대 하나만 존재)
+      const cur = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate());
+      const last = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate());
+      while (cur <= last) {
+        const dayGanji = calculateDayGanji(cur);
+        if (dayGanji.sky === ganji.daySky && dayGanji.earth === ganji.dayEarth) {
+          foundDate = new Date(cur);
+          break;
+        }
+        cur.setDate(cur.getDate() + 1);
+      }
+      if (foundDate) break;
+    }
+
     if (!foundDate) {
       console.error("Could not find matching date for ganji:", ganji);
       return null;

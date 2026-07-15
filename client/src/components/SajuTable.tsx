@@ -20,6 +20,7 @@ import { calculateEarthlyBranchRelation, convertRelationsToKorean } from "@/lib/
 import { useToast } from "@/hooks/use-toast";
 
 interface SajuTableProps {
+  reversedDate?: { year: number; month: number; day: number };
   saju: SajuInfo;
   id?: string;
   title?: string;
@@ -279,7 +280,8 @@ export default function SajuTable({
   onBirthTimeChange,
   onBirthDateChange,
   onNameClick,
-  onMemoChange
+  onMemoChange,
+  reversedDate: reversedDateProp
 }: SajuTableProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -296,11 +298,18 @@ export default function SajuTable({
     return calculateCurrentAge(birthYear, birthMonth || 1, birthDay || 1, yearSky, yearEarth);
   }, [birthYear, birthMonth, birthDay, saju?.year?.sky, saju?.year?.earth]);
 
-  // 간지 레코드인 경우 역산된 생년월일 계산
-  const reversedDate = useMemo(() => {
+  // 간지 레코드인 경우 역산된 생년월일 계산 (async 함수이므로 state로 관리)
+  const [reversedDate, setReversedDate] = useState<{ year: number; month: number; day: number } | null>(null);
+  useEffect(() => {
+    // 상위에서 역산 날짜를 직접 넘겨준 경우 그것을 우선 사용 (팔자 역산 화면)
+    if (reversedDateProp) {
+      setReversedDate(reversedDateProp);
+      return;
+    }
     // 간지 입력으로 저장된 레코드이고 월/일이 없는 경우에만 역산
     if (calendarType === 'ganji' && (!birthMonth || !birthDay) && birthYear && yearSky && yearEarth && monthSky && monthEarth && daySky && dayEarth) {
-      return reverseCalculateSolarDate({
+      let cancelled = false;
+      reverseCalculateSolarDate({
         yearSky,
         yearEarth,
         monthSky,
@@ -309,10 +318,13 @@ export default function SajuTable({
         dayEarth,
         hourSky: hourSky || '',
         hourEarth: hourEarth || ''
-      }, birthYear);
+      }, birthYear).then((result) => {
+        if (!cancelled) setReversedDate(result);
+      });
+      return () => { cancelled = true; };
     }
-    return null;
-  }, [calendarType, birthYear, birthMonth, birthDay, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
+    setReversedDate(null);
+  }, [reversedDateProp, calendarType, birthYear, birthMonth, birthDay, yearSky, yearEarth, monthSky, monthEarth, daySky, dayEarth, hourSky, hourEarth]);
 
   // 역산된 양력 날짜를 음력으로 변환
   const [reversedLunarDate, setReversedLunarDate] = useState<{ year: number; month: number; day: number; isLeapMonth: boolean } | null>(null);
