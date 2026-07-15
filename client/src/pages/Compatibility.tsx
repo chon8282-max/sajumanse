@@ -407,6 +407,8 @@ export default function Compatibility() {
   const { data: sajuList = [] } = useQuery<SajuResultData[]>({
     queryKey: ['local-saju-records-list'],
     queryFn: async () => await localDB.getSajuRecords(),
+    refetchOnMount: 'always',
+    staleTime: 0,
   });
 
   const renderSajuTable = (
