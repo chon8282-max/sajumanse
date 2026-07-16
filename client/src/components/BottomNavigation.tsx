@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Archive, Home, Heart, MessageCircle, Settings } from "lucide-react";
+import { Calendar, Archive, Home, Heart, MessageCircle, Settings, CalendarDays } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface BottomNavigationProps {
@@ -22,6 +22,7 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
     { id: "manse", label: "만세력", icon: Calendar },
     { id: "saved", label: "불러오기", icon: Archive },
     { id: "compatibility", label: "궁합", icon: Heart },
+    { id: "calendar", label: "역학달력", icon: CalendarDays },
     { id: "consult", label: "상담", icon: MessageCircle },
     ...(isAdmin ? [{ id: "admin", label: "관리자", icon: Settings }] : []),
   ];

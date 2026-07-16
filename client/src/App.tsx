@@ -205,6 +205,9 @@ function AppContent() {
       case 'compatibility':
         setLocation('/compatibility');
         break;
+      case 'calendar':
+        setLocation('/calendar');
+        break;
       case 'admin':
         setLocation('/admin');
         break;
