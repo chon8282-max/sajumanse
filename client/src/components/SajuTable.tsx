@@ -1268,7 +1268,7 @@ export default function SajuTable({
           <div className="relative flex flex-wrap justify-center gap-1">
            
             <button 
-              className={`px-3 py-1 text-xs ${
+              className={`px-2 py-1 text-xs
                 viewMode === 'beginner'
                   ? 'bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700 border-green-300 dark:border-green-700'
                   : viewMode === 'expert'
@@ -1281,7 +1281,7 @@ export default function SajuTable({
               {viewMode === 'base' ? '기본M' : viewMode === 'beginner' ? '초보M' : '전문M'}
             </button>
             <button 
-              className={`px-3 py-1 text-xs ${
+              className={`px-2 py-1 text-xs ${
                 showWuxing 
                   ? 'bg-orange-200 hover:bg-orange-300 dark:bg-orange-800 dark:hover:bg-orange-700' 
                   : 'bg-orange-100 hover:bg-orange-200 dark:bg-orange-900 dark:hover:bg-orange-800'
@@ -1292,7 +1292,7 @@ export default function SajuTable({
               오행
             </button>
             <button 
-              className={`px-3 py-1 text-xs ${
+              className={`px-2 py-1 text-xs ${
                 showShinsal 
                   ? 'bg-purple-200 hover:bg-purple-300 dark:bg-purple-800 dark:hover:bg-purple-700' 
                   : 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-900 dark:hover:bg-purple-800'
@@ -1303,7 +1303,7 @@ export default function SajuTable({
               신살
             </button>
             <button 
-              className={`px-3 py-1 text-xs ${
+              className={`px-2 py-1 text-xs ${
                 showKorean1 
                   ? 'bg-blue-200 hover:bg-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700' 
                   : 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800'
@@ -1314,7 +1314,7 @@ export default function SajuTable({
               {showKorean1 ? '한자1' : '한글1'}
             </button>
             <button 
-              className={`px-3 py-1 text-xs ${
+              className={`px-2 py-1 text-xs ${
                 showKorean2 
                   ? 'bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700' 
                   : 'bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800'
