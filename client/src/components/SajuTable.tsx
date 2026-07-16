@@ -1084,15 +1084,15 @@ export default function SajuTable({
     for (let colIndex = 0; colIndex < daeunAges.length; colIndex++) {
       const startAge = daeunAges[colIndex];  // 컬럼 상단 (예: 57)
       
-      // 다음 컬럼의 시작 나이 (현재 컬럼의 하한, exclusive)
-      // daeunAges는 내림차순이므로 다음 인덱스가 더 작은 나이
-      const nextStart = colIndex < daeunAges.length - 1 
-        ? daeunAges[colIndex + 1]  // 다음 컬럼 시작
-        : startAge - 10; // 마지막 컬럼은 10년 range
+      // 이전 컬럼(더 큰 나이)의 시작 나이 = 이 컬럼의 상한, exclusive
+      // daeunAges는 내림차순이므로 이전 인덱스가 더 큰 나이
+      const prevStart = colIndex > 0
+        ? daeunAges[colIndex - 1]   // 이전 컬럼 시작 (예: 30)
+        : startAge + 10;            // 첫 컬럼은 10년 range
       
-      // targetAge가 이 range에 속하는지 확인
-      // Range: (nextStart, startAge] - exclusive하한, inclusive상한
-      if (targetAge > nextStart && targetAge <= startAge) {
+      // 대운 20은 20~29세를 담당한다.
+      // Range: [startAge, prevStart) - inclusive하한, exclusive상한
+      if (targetAge >= startAge && targetAge < prevStart) {
         return colIndex;
       }
     }
@@ -1104,8 +1104,11 @@ export default function SajuTable({
   const handleDaeunAgeClick = useCallback((age: number) => {
     if (!daeunPeriods || !onDaeunClick) return;
     
-    // age에 해당하는 daeunPeriod 찾기
-    const period = daeunPeriods.find(p => age >= p.startAge && age <= p.endAge);
+    // daeunAges는 각 대운의 startAge로 만들어진다.
+    // 범위(age >= startAge && age <= endAge)로 찾으면 구간 경계가 겹쳐
+    // 옆 대운이 잡히므로, startAge와 정확히 일치하는 것을 찾는다.
+    const period = daeunPeriods.find(p => p.startAge === age)
+      ?? daeunPeriods.find(p => age >= p.startAge && age < p.endAge);
     if (period) {
       onDaeunClick(period);
     }
@@ -1195,7 +1198,7 @@ export default function SajuTable({
           </div>
 
           {/* 두 번째 줄: 양력생일, 음력생일, 생시 */}
-          <div className="text-center text-xs text-muted-foreground mb-1.5">
+          <div className="text-center text-sm text-muted-foreground mb-1.5">
             <span data-testid="text-birth-info">
               {reversedDate ? (
                 // 간지 역산된 날짜 표시
@@ -1351,16 +1354,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
+            <div className="text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
               {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForRow145(daeunColumnData.heavenlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
+              <div className="text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
                 {showWuxing ? getWuxingElement(saeunColumnData.sky) : convertTextForRow145(saeunColumnData.heavenlyYukjin)}
               </div>
-              <div className="text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
+              <div className="text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 py-[1px]">
                 {showWuxing ? getWuxingElement(daeunColumnData.sky) : convertTextForRow145(daeunColumnData.heavenlyYukjin)}
               </div>
             </>
@@ -1395,7 +1398,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-sky-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
+                className="py-1 text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
                 data-testid={`text-yukjin-sky-${index}`}
               >
                 {isBirthTimeUnknown ? "" : displayText}
@@ -1432,7 +1435,7 @@ export default function SajuTable({
               {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                 <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
-                <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
               )}
             </div>
           )}
@@ -1442,14 +1445,14 @@ export default function SajuTable({
                 {getCheonganImage(saeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(saeunColumnData.sky, showKorean2) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
+                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
                 )}
               </div>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
                 {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
                 )}
               </div>
             </>
@@ -1490,7 +1493,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '42px',
+                    fontSize: '45px',
                     fontWeight: '900',
                     textShadow: '0 0 1px rgba(0,0,0,0.5)',
                     color: getWuxingTextColor(col.sky),
@@ -1530,7 +1533,7 @@ export default function SajuTable({
               {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
                 <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
-                <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
               )}
             </div>
           )}
@@ -1540,14 +1543,14 @@ export default function SajuTable({
                 {getJijiImage(saeunColumnData.earth, showKorean2) || undefined ? (
                   <img src={getJijiImage(saeunColumnData.earth, showKorean2) || undefined} alt={saeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
+                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
                 )}
               </div>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
                 {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
                   <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '42px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
                 )}
               </div>
             </>
@@ -1600,7 +1603,7 @@ export default function SajuTable({
                     />
                   ) : (
                     <span style={{ 
-                      fontSize: '42px',
+                      fontSize: '45px',
                       fontWeight: '900',
                       textShadow: '0 0 1px rgba(0,0,0,0.5)',
                       color: getWuxingTextColor(col.earth),
@@ -1637,16 +1640,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+            <div className="py-1 text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
               {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForRow145(daeunColumnData.earthlyYukjin)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-1 text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {showWuxing ? getWuxingElement(saeunColumnData.earth) : convertTextForRow145(saeunColumnData.earthlyYukjin)}
               </div>
-              <div className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-1 text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {showWuxing ? getWuxingElement(daeunColumnData.earth) : convertTextForRow145(daeunColumnData.earthlyYukjin)}
               </div>
             </>
@@ -1661,7 +1664,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-earth-${index}`} 
-                className="py-1 text-center text-sm font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-0 text-center text-base font-medium border-r border-border min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-earth-${index}`}
               >
                 {isBirthTimeUnknown ? "" : displayText}
@@ -1694,16 +1697,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+            <div className="py-[1px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
               {convertTextForRow145(daeunColumnData.jijanggan)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-[1px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {convertTextForRow145(saeunColumnData.jijanggan)}
               </div>
-              <div className="py-[1px] text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-[1px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {convertTextForRow145(daeunColumnData.jijanggan)}
               </div>
             </>
@@ -1751,7 +1754,7 @@ export default function SajuTable({
               return (
                 <div 
                   key={`jijanggan-${index}`} 
-                  className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                  className="py-0 text-center text-base border-r border-border min-h-0"
                   data-testid={`text-jijanggan-${index}`}
                 >
                   {isBirthTimeUnknown ? "" : convertTextForRow145(stems)}
@@ -1781,7 +1784,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-age-${colIndex}`}
-                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                className={`py-0 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
                   isCurrentDaeun
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600'
                     : 'bg-white dark:bg-gray-800'
@@ -1932,13 +1935,19 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-sky-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2"
                 style={{ 
                   backgroundColor: getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
+                }}
+                onClick={() => {
+                  if (!isDragging.current) {
+                    const age = saeunAges[colIndex];
+                    handleSaeunAgeClick(age, saeunGanji.skies[colIndex], saeunGanji.earths[colIndex]);
+                  }
                 }}
                 data-testid={`text-saeun-sky-${colIndex}`}
               >
@@ -1951,7 +1960,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '23px',
+                    fontSize: '24px',
                     color: getWuxingTextColor(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
@@ -1978,13 +1987,19 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-earth-${colIndex}`}
-                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center"
+                className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2"
                 style={{ 
                   backgroundColor: getWuxingColor(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
                   lineHeight: '1'
+                }}
+                onClick={() => {
+                  if (!isDragging.current) {
+                    const age = saeunAges[colIndex];
+                    handleSaeunAgeClick(age, saeunGanji.skies[colIndex], saeunGanji.earths[colIndex]);
+                  }
                 }}
                 data-testid={`text-saeun-earth-${colIndex}`}
               >
@@ -1997,7 +2012,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '23px',
+                    fontSize: '24px',
                     color: getWuxingTextColor(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
@@ -2062,8 +2077,8 @@ export default function SajuTable({
         {/* 13행: 월운(月運) 제목 */}
         <div className="grid grid-cols-1 border-b border-border">
           <div 
-            className={`py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center ${
-              isWolunActive 
+            className={`py-1 text-center text-sm font-bold min-h-[1.5rem] flex items-center justify-center ${
+              isWolunActive
                 ? 'text-blue-800 dark:text-blue-300 border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/30' 
                 : 'text-black dark:text-white bg-white dark:bg-gray-900'
             }`}
@@ -2107,7 +2122,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '23px',
+                    fontSize: '24px',
                     color: isWolunActive ? undefined : getWuxingTextColor(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
@@ -2157,7 +2172,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '23px',
+                    fontSize: '24px',
                     color: isWolunActive ? undefined : getWuxingTextColor(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
@@ -2172,7 +2187,7 @@ export default function SajuTable({
           {wolunMonths.map((month, colIndex) => (
             <div 
               key={`wolun-month-${colIndex}`}
-              className="py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
+              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
               data-testid={`text-wolun-month-${colIndex}`}
             >
               {month}
@@ -2183,13 +2198,13 @@ export default function SajuTable({
         {/* 17행: 메모 + 오늘 날짜 */}
         <div className="flex border-b border-border">
           <div 
-            className="flex-1 py-1 text-center text-xs font-bold min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-amber-200 dark:bg-gray-900 border-r border-border"
+            className="flex-1 py-1 text-center text-sm font-bold min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-amber-200 dark:bg-gray-900 border-r border-border"
             data-testid="text-memo-title"
           >
             메모
           </div>
           <button 
-            className="px-3 py-1 text-xs bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-black dark:text-white border-l border-border cursor-pointer transition-colors"
+            className="px-3 py-1 text-[13px] bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-black dark:text-white border-l border-border cursor-pointer transition-colors"
             onClick={insertTodayDate}
             data-testid="button-today-date"
           >

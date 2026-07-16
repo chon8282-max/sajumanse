@@ -393,7 +393,15 @@ export default function SajuResult() {
   // 歲運 클릭 핸들러 
   const handleSaeunClick = useCallback((age: number, sky: string, earth: string) => {
     if (!daeunData?.daeunPeriods) return;
-    
+
+    // 선택한 세운 나이가 현재 대운 범위를 벗어나면 대운도 함께 이동시킨다.
+    // (예: 40대운 상태에서 세운 50을 누르면 대운도 50으로 전환)
+    const matchedDaeun = findCurrentDaeun(age, daeunData.daeunPeriods);
+    if (matchedDaeun && matchedDaeun.startAge !== focusedDaeun?.startAge) {
+      setFocusedDaeun(matchedDaeun);
+      setSaeunOffset(0);
+    }
+
     if (displayMode === 'daeun') {
       // B → C: 세운 선택 및 세운 모드로 전환
       setFocusedSaeun({ age, sky, earth });
@@ -408,7 +416,7 @@ export default function SajuResult() {
         setFocusedSaeun({ age, sky, earth });
       }
     }
-  }, [daeunData, displayMode, focusedSaeun]);
+  }, [daeunData, displayMode, focusedSaeun, focusedDaeun]);
 
   // 歲運 드래그/스크롤 핸들러
   const handleSaeunScroll = useCallback((direction: 'left' | 'right') => {
@@ -774,7 +782,7 @@ export default function SajuResult() {
           <span className="text-sm">뒤로</span>
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="font-bold text-foreground font-tmon text-[16px]">사주명식</h1>
+          <h1 className="font-bold text-foreground font-tmon text-[20px]">사주명식</h1>
         </div>
         <div className="flex items-center gap-0.5 mr-0">
           <Button 
