@@ -379,7 +379,10 @@ export default function SajuTable({
   // 월운 활성화 상태
   const [isWolunActive, setIsWolunActive] = useState<boolean>(false);
   
-  // 오행 표시 상태 관리
+  // 초보/전문 모드 (기본값: 전문)
+  const [viewMode, setViewMode] = useState<'base' | 'beginner' | 'expert'>('base');
+  const isBeginnerMode = viewMode === 'beginner';
+  const isExpertMode = viewMode === 'expert';
   const [showWuxing, setShowWuxing] = useState(false);
   
   // 한글1/한자1 토글 상태 관리 (1행, 4행, 5행만 한글 변환)
@@ -682,34 +685,28 @@ export default function SajuTable({
       const dayEarth = saju.day.earth;
       
       const result: string[][] = [];
-      
+
+      // 반환값이 배열이 아닐 수 있어 항상 배열로 정규화한다.
+      const toArray = (v: any): string[] =>
+        Array.isArray(v) ? v : (v ? [String(v)] : []);
+
+      const pushRelation = (earth: string | undefined) => {
+        if (!earth) return;
+        const relations = calculateEarthlyBranchRelation(baseEarth, earth);
+        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
+        result.push(toArray(displayRelations));
+      };
+
       // 시주 (있는 경우만)
       if (hasHourPillar && hourEarth) {
-        const relations = calculateEarthlyBranchRelation(baseEarth, hourEarth);
-        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
-        result.push(displayRelations);
+        pushRelation(hourEarth);
       }
-      
       // 일주
-      if (dayEarth) {
-        const relations = calculateEarthlyBranchRelation(baseEarth, dayEarth);
-        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
-        result.push(displayRelations);
-      }
-      
+      pushRelation(dayEarth);
       // 월주
-      if (monthEarth) {
-        const relations = calculateEarthlyBranchRelation(baseEarth, monthEarth);
-        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
-        result.push(displayRelations);
-      }
-      
+      pushRelation(monthEarth);
       // 년주
-      if (yearEarth) {
-        const relations = calculateEarthlyBranchRelation(baseEarth, yearEarth);
-        const displayRelations = showKorean1 ? convertRelationsToKorean(relations) : relations;
-        result.push(displayRelations);
-      }
+      pushRelation(yearEarth);
       
       return result;
     }
@@ -763,7 +760,7 @@ export default function SajuTable({
     
     // 각 주별로 세 결과를 합침 (12신살 맨 위 + 12운성 + 천을귀인/문창귀인 + 나머지 신살)
     const result: string[][] = [];
-    
+
     // 시주 (생시가 없으면 빈 배열)
     if (hasHourPillar) {
       result.push([
@@ -775,7 +772,7 @@ export default function SajuTable({
     } else {
       result.push([]); // 생시모름일 때 빈 배열
     }
-    
+
     // 일주
     result.push([
       convert12Sinsal(sibiSinsalArray[1] || ''),
@@ -783,7 +780,7 @@ export default function SajuTable({
       ...formatShinSalArray(secondRowResult.dayPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.dayPillar, showKorean1)
     ].filter(s => s !== ''));
-    
+
     // 월주
     result.push([
       convert12Sinsal(sibiSinsalArray[2] || ''),
@@ -791,7 +788,7 @@ export default function SajuTable({
       ...formatShinSalArray(secondRowResult.monthPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.monthPillar, showKorean1)
     ].filter(s => s !== ''));
-    
+
     // 년주
     result.push([
       convert12Sinsal(sibiSinsalArray[3] || ''),
@@ -799,23 +796,10 @@ export default function SajuTable({
       ...formatShinSalArray(secondRowResult.yearPillar, showKorean1),
       ...formatShinSalArray(firstRowResult.yearPillar, showKorean1)
     ].filter(s => s !== ''));
-    
+
     return result;
   }, [saju?.year?.sky, saju?.month?.sky, saju?.day?.sky, saju?.hour?.sky,
       saju?.year?.earth, saju?.month?.earth, saju?.day?.earth, saju?.hour?.earth, showKorean1, showKorean2, sajuColumns, displayMode, focusedDaeun, focusedSaeun]);
-
-  // 대운수 계산 (메모이제이션)
-  const daeunAges = useMemo(() => {
-    // props로 받은 정확한 대운(정밀 계산) 사용
-    if (daeunPeriods && daeunPeriods.length > 0) {
-      // 화면은 우측→좌측(큰 나이→작은 나이) 순서이므로 역순 정렬
-      return [...daeunPeriods]
-        .map(p => p.startAge)
-        .sort((a, b) => b - a);
-    }
-    // 폴백: 대운 데이터 아직 로딩 중
-    return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
-  }, [daeunPeriods]);
 
   // 정확한 간지년 계산 함수
   const calculateActualGanjiYear = useCallback((birthYear: number, yearSky: string, yearEarth: string): number => {
@@ -1068,6 +1052,19 @@ export default function SajuTable({
 
   // 현재 나이가 속한 대운 인덱스 찾기 (렌더링되는 daeunAges 배열 기준)
   
+  // 대운수 계산 (메모이제이션)
+  const daeunAges = useMemo(() => {
+    // props로 받은 정확한 대운(정밀 계산) 사용
+    if (daeunPeriods && daeunPeriods.length > 0) {
+      // 화면은 우측→좌측(큰 나이→작은 나이) 순서이므로 역순 정렬
+      return [...daeunPeriods]
+        .map(p => p.startAge)
+        .sort((a, b) => b - a);
+    }
+    // 폴백: 대운 데이터 아직 로딩 중
+    return Array.from({ length: 10 }, (_, i) => 93 - (i * 10));
+  }, [daeunPeriods]);
+
   const currentDaeunIndex = useMemo(() => {
     if (!daeunPeriods || daeunPeriods.length === 0 || daeunAges.length === 0) {
       return -1;
@@ -1113,6 +1110,39 @@ export default function SajuTable({
       onDaeunClick(period);
     }
   }, [daeunPeriods, onDaeunClick]);
+
+  
+  // 초보 모드용: 대운 각 칸의 육친 + 12운성
+  const daeunExtra = useMemo(() => {
+    const dayStem = saju?.day?.sky;
+    if (!dayStem) return { skyYukjin: [], earthYukjin: [], unseong: [] };
+    return {
+      skyYukjin: daeunGanji.skies.map(s => calculateYukjin(dayStem, s)),
+      earthYukjin: daeunGanji.earths.map(e => calculateEarthlyBranchYukjin(dayStem, e)),
+      unseong: daeunGanji.earths.map(e => calculateTwelveUnseong(dayStem, e) || ''),
+    };
+  }, [daeunGanji, saju?.day?.sky]);
+
+  // 초보 모드용: 세운 각 칸의 육친 + 12운성
+  const saeunExtra = useMemo(() => {
+    const dayStem = saju?.day?.sky;
+    if (!dayStem) return { skyYukjin: [], earthYukjin: [], unseong: [] };
+    return {
+      skyYukjin: saeunGanji.skies.map(s => calculateYukjin(dayStem, s)),
+      earthYukjin: saeunGanji.earths.map(e => calculateEarthlyBranchYukjin(dayStem, e)),
+      unseong: saeunGanji.earths.map(e => calculateTwelveUnseong(dayStem, e) || ''),
+    };
+  }, [saeunGanji, saju?.day?.sky]);
+
+  // 초보 모드용: 월운 각 칸의 육친
+  const wolunExtra = useMemo(() => {
+    const dayStem = saju?.day?.sky;
+    if (!dayStem) return { skyYukjin: [], earthYukjin: [] };
+    return {
+      skyYukjin: wolunGanji.skies.map(s => calculateYukjin(dayStem, s)),
+      earthYukjin: wolunGanji.earths.map(e => calculateEarthlyBranchYukjin(dayStem, e)),
+    };
+  }, [wolunGanji, saju?.day?.sky]);
 
 
   // 간지별 배경색 매핑
@@ -1236,12 +1266,20 @@ export default function SajuTable({
 
           {/* 세 번째 줄: 5개 버튼 */}
           <div className="relative flex flex-wrap justify-center gap-1">
-            {gongmang && (
-              <span className="absolute -right-1 bottom-0 px-1 py-0.5 text-[11px] leading-none inline-flex items-center rounded border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 whitespace-nowrap">
-                <span className="text-foreground">{gongmang}</span>
-                <span className="text-amber-900 dark:text-amber-600 font-semibold">空</span>
-              </span>
-            )}
+           
+            <button 
+              className={`px-3 py-1 text-xs ${
+                viewMode === 'beginner'
+                  ? 'bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700 border-green-300 dark:border-green-700'
+                  : viewMode === 'expert'
+                  ? 'bg-amber-200 hover:bg-amber-300 dark:bg-amber-800 dark:hover:bg-amber-700 border-amber-400 dark:border-amber-700'
+                  : 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600'
+              } border rounded-md transition-colors`}
+              onClick={() => setViewMode(prev => prev === 'base' ? 'beginner' : prev === 'beginner' ? 'expert' : 'base')}
+              data-testid="button-view-mode"
+            >
+              {viewMode === 'base' ? '기본M' : viewMode === 'beginner' ? '초보M' : '전문M'}
+            </button>
             <button 
               className={`px-3 py-1 text-xs ${
                 showWuxing 
@@ -1307,34 +1345,34 @@ export default function SajuTable({
         <div className="grid grid-cols-6 border-b border-border bg-gray-100 dark:bg-gray-800">
           {displayMode === 'base' && (
             <>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border"></div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border"></div>
               {sajuColumns.length === 3 && (
-                <div className="py-[2px] text-center text-sm font-bold border-r border-border"></div>
+                <div className="py-[0px] text-center text-base font-bold border-r border-border"></div>
               )}
             </>
           )}
           {displayMode === 'saeun' && (
-            <div className="py-[2px] text-center text-sm font-bold border-r border-border">세운</div>
+            <div className="py-[0px] text-center text-base font-bold border-r border-border">세운</div>
           )}
           {displayMode === 'daeun' && (
-            <div className="py-[2px] text-center text-sm font-bold border-r border-border">대운</div>
+            <div className="py-[0px] text-center text-base font-bold border-r border-border">대운</div>
           )}
           {displayMode === 'saeun' && (
-            <div className="py-[2px] text-center text-sm font-bold border-r border-border">대운</div>
+            <div className="py-[0px] text-center text-base font-bold border-r border-border">대운</div>
           )}
           {sajuColumns.length === 4 ? (
             <>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">시주</div>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">일주</div>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">월주</div>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">년주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">시주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">일주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">월주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">년주</div>
             </>
           ) : (
             <>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">일주</div>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">월주</div>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border">년주</div>
-              <div className="py-[2px] text-center text-sm font-bold border-r border-border"></div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">일주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">월주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border">년주</div>
+              <div className="py-[0px] text-center text-base font-bold border-r border-border"></div>
               {displayMode === 'base' && (
                 <div className="py-[2px] text-center text-sm font-bold"></div>
               )}
@@ -1342,7 +1380,8 @@ export default function SajuTable({
           )}
         </div>
         
-        {/* 1행: 천간 육친 / 오행 */}
+        {/* 1행: 천간 육친 / 오행 (전문 모드에서는 숨김) */}
+        {!isExpertMode && (
         <div className={`grid ${displayMode === 'base' ? 'grid-cols-6' : displayMode === 'saeun' ? 'grid-cols-6' : 'grid-cols-6'} border-b border-border`}>
           {/* 첫 컬럼들: displayMode에 따라 변경 */}
           {displayMode === 'base' && (
@@ -1398,7 +1437,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-sky-${index}`} 
-                className="py-1 text-center text-base font-medium border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900 pt-[0px] pb-[0px]"
+                className="py-[0px] text-center text-base font-medium border-r border-border min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-sky-${index}`}
               >
                 {isBirthTimeUnknown ? "" : displayText}
@@ -1419,6 +1458,8 @@ export default function SajuTable({
           )}
         </div>
 
+        )}
+
         {/* 2행: 천간 */}
         <div className={`grid ${displayMode === 'base' ? 'grid-cols-6' : displayMode === 'saeun' ? 'grid-cols-6' : 'grid-cols-6'}`}>
           {/* 첫 컬럼들: displayMode에 따라 변경 */}
@@ -1435,7 +1476,7 @@ export default function SajuTable({
               {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                 <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
-                <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
               )}
             </div>
           )}
@@ -1445,14 +1486,14 @@ export default function SajuTable({
                 {getCheonganImage(saeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(saeunColumnData.sky, showKorean2) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
                 )}
               </div>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
                 {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
                 )}
               </div>
             </>
@@ -1493,7 +1534,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '45px',
+                    fontSize: '48px',
                     fontWeight: '900',
                     textShadow: '0 0 1px rgba(0,0,0,0.5)',
                     color: getWuxingTextColor(col.sky),
@@ -1533,7 +1574,7 @@ export default function SajuTable({
               {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
                 <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
-                <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
               )}
             </div>
           )}
@@ -1543,14 +1584,14 @@ export default function SajuTable({
                 {getJijiImage(saeunColumnData.earth, showKorean2) || undefined ? (
                   <img src={getJijiImage(saeunColumnData.earth, showKorean2) || undefined} alt={saeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
                 )}
               </div>
               <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
                 {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
                   <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '45px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
                 )}
               </div>
             </>
@@ -1603,7 +1644,7 @@ export default function SajuTable({
                     />
                   ) : (
                     <span style={{ 
-                      fontSize: '45px',
+                      fontSize: '48px',
                       fontWeight: '900',
                       textShadow: '0 0 1px rgba(0,0,0,0.5)',
                       color: getWuxingTextColor(col.earth),
@@ -1628,7 +1669,8 @@ export default function SajuTable({
           )}
         </div>
 
-        {/* 4행: 지지 육친 / 오행 */}
+        {/* 4행: 지지 육친 / 오행 (전문 모드에서는 숨김) */}
+        {!isExpertMode && (
         <div className={`grid ${displayMode === 'base' ? 'grid-cols-6' : displayMode === 'saeun' ? 'grid-cols-6' : 'grid-cols-6'} border-b border-border`}>
           {/* 첫 컬럼들: displayMode에 따라 변경 */}
           {displayMode === 'base' && (
@@ -1664,7 +1706,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`yukjin-earth-${index}`} 
-                className="py-0 text-center text-base font-medium border-r border-border min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                className="py-[0px] text-center text-base border-r border-border min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                 data-testid={`text-yukjin-earth-${index}`}
               >
                 {isBirthTimeUnknown ? "" : displayText}
@@ -1685,6 +1727,8 @@ export default function SajuTable({
           )}
         </div>
 
+        )}
+
         {/* 5행: 지장간 / 신살 (토글) */}
         <div className={`grid ${displayMode === 'base' ? 'grid-cols-6' : displayMode === 'saeun' ? 'grid-cols-6' : 'grid-cols-6'} border-b border-border`}>
           {/* 첫 컬럼들: displayMode에 따라 변경 */}
@@ -1697,16 +1741,16 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="py-[1px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+            <div className="py-[0px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
               {convertTextForRow145(daeunColumnData.jijanggan)}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="py-[1px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-[0px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {convertTextForRow145(saeunColumnData.jijanggan)}
               </div>
-              <div className="py-[1px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
+              <div className="py-[0px] text-center text-base border-r border-border min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900">
                 {convertTextForRow145(daeunColumnData.jijanggan)}
               </div>
             </>
@@ -1724,23 +1768,32 @@ export default function SajuTable({
                   data-testid={`text-shinsal-${index}`}
                 >
                   {isBirthTimeUnknown ? "" : (
-                    shinsalArray.map((shinsal, idx) => {
-                      // 12신살은 첫 번째 요소 (idx === 0)
-                      // 한글2일 때만 12신살을 한글로 변환
-                      const displayText = idx === 0 && showKorean2 
-                        ? (SINSAL_KOREAN_MAP[shinsal] || shinsal)
-                        : shinsal;
-                      
-                      return (
-                        <div 
-                          key={`shinsal-${index}-${idx}`}
-                          className="leading-tight"
-                          style={{ marginBottom: idx < shinsalArray.length - 1 ? '2px' : '0' }}
-                        >
-                          {displayText}
+                    <>
+                      {shinsalArray.map((shinsal, idx) => {
+                        // 12신살은 첫 번째 요소 (idx === 0)
+                        // 한글2일 때만 12신살을 한글로 변환
+                        const displayText = idx === 0 && showKorean2 
+                          ? (SINSAL_KOREAN_MAP[shinsal] || shinsal)
+                          : shinsal;
+                        
+                        return (
+                          <div 
+                            key={`shinsal-${index}-${idx}`}
+                            className="leading-tight"
+                            style={{ marginBottom: '2px' }}
+                          >
+                            {displayText}
+                          </div>
+                        );
+                      })}
+                      {/* 공망은 일주(index === 1) 칸 맨 아래에 표시 */}
+                      {index === 1 && gongmang && (
+                        <div className="leading-tight whitespace-nowrap" data-testid="text-gongmang-shinsal">
+                          <span className="text-foreground">{gongmang}</span>
+                          <span className="text-amber-900 dark:text-amber-600 font-semibold">空</span>
                         </div>
-                      );
-                    })
+                      )}
+                    </>
                   )}
                 </div>
               );
@@ -1754,8 +1807,9 @@ export default function SajuTable({
               return (
                 <div 
                   key={`jijanggan-${index}`} 
-                  className="py-0 text-center text-base border-r border-border min-h-0"
+                  className="py-0 text-center text-base border-r border-border min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
                   data-testid={`text-jijanggan-${index}`}
+
                 >
                   {isBirthTimeUnknown ? "" : convertTextForRow145(stems)}
                 </div>
@@ -1784,7 +1838,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-age-${colIndex}`}
-                className={`py-0 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                className={`py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
                   isCurrentDaeun
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600'
                     : 'bg-white dark:bg-gray-800'
@@ -1799,6 +1853,21 @@ export default function SajuTable({
             );
           })}
         </div>
+
+        {/* 초보: 대운 천간 육친 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-10 border-b border-border">
+            {daeunExtra.skyYukjin.map((yukjin, colIndex) => (
+              <div
+                key={`daeun-sky-yukjin-${colIndex}`}
+                className="py-[0px] text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-daeun-sky-yukjin-${colIndex}`}
+              >
+                {convertTextForRow145(yukjin)}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* 7행: 대운 천간 */}
         <div className="grid grid-cols-10">
@@ -1832,7 +1901,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '26px',
+                    fontSize: '29px',
                     color: getWuxingTextColor(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
@@ -1884,7 +1953,7 @@ export default function SajuTable({
                     />
                   ) : (
                     <span style={{ 
-                      fontSize: '26px',
+                      fontSize: '29px',
                       color: getWuxingTextColor(earth),
                       lineHeight: '1'
                     }}>{convertText(earth)}</span>
@@ -1893,6 +1962,46 @@ export default function SajuTable({
               </div>
             );
           })}
+        </div>
+
+        {/* 초보: 대운 지지 육친 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-10 border-b border-border">
+            {daeunExtra.earthYukjin.map((yukjin, colIndex) => (
+              <div
+                key={`daeun-earth-yukjin-${colIndex}`}
+                className="py-[0px] text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-daeun-earth-yukjin-${colIndex}`}
+              >
+                {convertTextForRow145(yukjin)}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 초보: 대운 12운성 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-10 border-b border-border">
+            {daeunExtra.unseong.map((u, colIndex) => (
+              <div
+                key={`daeun-unseong-${colIndex}`}
+                className="py-[0px] text-center text-sm border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-daeun-unseong-${colIndex}`}
+              >
+                {showKorean1 ? (UNSEONG_KOREAN_MAP[u] || u) : u}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 세운(歲運) 제목 */}
+        <div className="grid grid-cols-1 border-b border-border">
+          <div 
+            className="py-1 text-center text-sm font-bold min-h-[1.5rem] flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+            data-testid="text-saeun-title"
+          >
+            세운(歲運)
+          </div>
         </div>
 
         {/* 9행: 歲運 나이 (우측에서 좌측) */}
@@ -1908,7 +2017,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-age-${colIndex}`}
-                className={`py-1 text-center text-xs font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                className={`py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-white dark:bg-gray-800'
@@ -1927,6 +2036,21 @@ export default function SajuTable({
             );
           })}
         </div>
+
+        {/* 초보: 세운 천간 육친 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-12 border-b border-border">
+            {saeunExtra.skyYukjin.map((yukjin, colIndex) => (
+              <div
+                key={`saeun-sky-yukjin-${colIndex}`}
+                className="py-[0px] text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-saeun-sky-yukjin-${colIndex}`}
+              >
+                {convertTextForRow145(yukjin)}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* 10행: 歲運 천간 (우측에서 좌측) */}
         <div className="grid grid-cols-12">
@@ -1960,7 +2084,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '24px',
+                    fontSize: '27px',
                     color: getWuxingTextColor(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
@@ -2012,7 +2136,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '24px',
+                    fontSize: '27px',
                     color: getWuxingTextColor(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
@@ -2021,6 +2145,36 @@ export default function SajuTable({
             );
           })}
         </div>
+
+        {/* 초보: 세운 지지 육친 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-12 border-b border-border">
+            {saeunExtra.earthYukjin.map((yukjin, colIndex) => (
+              <div
+                key={`saeun-earth-yukjin-${colIndex}`}
+                className="py-[0px] text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-saeun-earth-yukjin-${colIndex}`}
+              >
+                {convertTextForRow145(yukjin)}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 초보: 세운 12운성 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-12 border-b border-border">
+            {saeunExtra.unseong.map((u, colIndex) => (
+              <div
+                key={`saeun-unseong-${colIndex}`}
+                className="py-[0px] text-center text-sm border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-saeun-unseong-${colIndex}`}
+              >
+                {showKorean1 ? (UNSEONG_KOREAN_MAP[u] || u) : u}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* 12행: 歲運 년도 (우측에서 좌측) */}
         <div 
@@ -2036,7 +2190,7 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-year-${colIndex}`}
-                className={`py-1 text-center font-medium border-r border-border last:border-r-0 min-h-[1.5rem] flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
+                className={`py-[0px] text-center font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
                   isSelectedAge 
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
                     : 'bg-pink-50 dark:bg-gray-900'
@@ -2091,6 +2245,21 @@ export default function SajuTable({
           </div>
         </div>
 
+        {/* 초보: 월운 천간 육친 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-13 border-b border-border">
+            {wolunExtra.skyYukjin.map((yukjin, colIndex) => (
+              <div
+                key={`wolun-sky-yukjin-${colIndex}`}
+                className="py-[0px] text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-wolun-sky-yukjin-${colIndex}`}
+              >
+                {convertTextForRow145(yukjin)}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* 14행: 월운 천간 (우측에서 좌측) */}
         <div className={`grid grid-cols-13 ${
           isWolunActive ? 'ring-2 ring-blue-400 ring-inset' : ''
@@ -2122,7 +2291,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '24px',
+                    fontSize: '27px',
                     color: isWolunActive ? undefined : getWuxingTextColor(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
@@ -2172,7 +2341,7 @@ export default function SajuTable({
                   />
                 ) : (
                   <span style={{ 
-                    fontSize: '24px',
+                    fontSize: '27px',
                     color: isWolunActive ? undefined : getWuxingTextColor(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
@@ -2182,12 +2351,27 @@ export default function SajuTable({
           })}
         </div>
 
+        {/* 초보: 월운 지지 육친 */}
+        {isBeginnerMode && (
+          <div className="grid grid-cols-13 border-b border-border">
+            {wolunExtra.earthYukjin.map((yukjin, colIndex) => (
+              <div
+                key={`wolun-earth-yukjin-${colIndex}`}
+                className="py-[0px] text-center text-sm font-medium border-r border-border last:border-r-0 min-h-0 flex items-center justify-center text-black dark:text-white bg-white dark:bg-gray-900"
+                data-testid={`text-wolun-earth-yukjin-${colIndex}`}
+              >
+                {convertTextForRow145(yukjin)}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* 16행: 월운 월 순서 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
           {wolunMonths.map((month, colIndex) => (
             <div 
               key={`wolun-month-${colIndex}`}
-              className="py-1 text-center text-sm font-medium border-r border-border last:border-r-0 min-h-[1.5rem] bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
+              className="py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
               data-testid={`text-wolun-month-${colIndex}`}
             >
               {month}
@@ -2213,7 +2397,7 @@ export default function SajuTable({
         </div>
 
         {/* 18행: 메모 입력 박스 */}
-        <div className="border-b border-border pb-40">
+        <div className="border-b border-border pb-4">
           <div className="p-4 bg-white dark:bg-gray-900 flex justify-center">
             <textarea
               className="w-full max-w-2xl min-h-[10rem] text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 resize-vertical bg-white dark:bg-gray-800 text-black dark:text-white"
