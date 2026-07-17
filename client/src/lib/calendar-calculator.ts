@@ -5,9 +5,10 @@ import {
   YEAR_DIZHI_BASE,
   MONTH_DIZHI,
   YEAR_MONTH_SKY_MAP,
+} from "@shared/schema";
+
 export const DAY_GANJI_BASE_DATE = new Date(1900, 0, 1);
 export const DAY_GANJI_BASE_INDEX = 10;
-} from "@shared/schema";
 
 /**
  * 년간지 계산 (연도의 간지)
