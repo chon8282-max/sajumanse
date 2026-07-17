@@ -91,9 +91,13 @@ export function calculateMonthGanji(year: number, month: number): { sky: string;
  * @returns {sky: string, earth: string} 천간과 지지
  */
 export function calculateDayGanji(date: Date): { sky: string; earth: string } {
-  const timeDiff = date.getTime() - DAY_GANJI_BASE_DATE.getTime();
-  const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-  const ganjiIndex = (DAY_GANJI_BASE_INDEX + daysDiff) % 60;
+  // 로컬 타임존(특히 1900년 당시 한국 표준시)의 영향을 받지 않도록
+  // 연/월/일만 뽑아 UTC 기준으로 일수를 센다.
+  const toUtcDays = (d: Date) =>
+    Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / (1000 * 60 * 60 * 24));
+
+  const daysDiff = toUtcDays(date) - toUtcDays(DAY_GANJI_BASE_DATE);
+  const ganjiIndex = (((DAY_GANJI_BASE_INDEX + daysDiff) % 60) + 60) % 60;
   
   const skyIndex = ganjiIndex % 10;
   const earthIndex = ganjiIndex % 12;

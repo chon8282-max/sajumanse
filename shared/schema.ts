@@ -202,7 +202,7 @@ export const YEAR_MONTH_SKY_MAP: Record<string, string[]> = {
 
 // 일간지 계산을 위한 기준일 (1900년 1월 1일 = 갑자일로 설정)
 export const DAY_GANJI_BASE_DATE = new Date(1900, 0, 1); // 1900년 1월 1일
-export const DAY_GANJI_BASE_INDEX = 10; // 甲戌일 (甲=0, 戌=10)
+export const DAY_GANJI_BASE_INDEX = 11; // 乙亥일 (乙=1, 亥=11)
 
 // 한자 → 한글 변환
 export const CHINESE_TO_KOREAN_MAP: Record<string, string> = {
