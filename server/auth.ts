@@ -247,7 +247,9 @@ router.get("/callback", async (req: Request, res) => {
     const protocol = host?.includes('localhost') ? 'http' : 'https';
     const homeUrl = `${protocol}://${host}/`;
     const authRedirectUrl = `${protocol}://${host}/?auth_token=${authToken}`;
-    const deepLink = `sajumanseapp://oauth?auth_token=${authToken}`;
+    // TWA는 커스텀 스킴(sajumanseapp://)을 등록하지 않으므로 intent:// 로 앱을 연다.
+    // scheme=https + package 지정 시 해당 패키지의 TWA가 열린다.
+    const deepLink = `intent://${host}/?auth_token=${authToken}#Intent;scheme=https;package=com.jicheonmyeong.manseryeok;S.browser_fallback_url=${encodeURIComponent(authRedirectUrl)};end`;
     
     // 브릿지 페이지 렌더링 (PWA와 일반 브라우저 모두 처리)
     res.send(`
