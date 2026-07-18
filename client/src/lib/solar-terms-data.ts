@@ -100,9 +100,10 @@ export async function getSolarTermsForCalculation(year: number): Promise<
   const currentYearTerms = await getSolarTermsForYear(year);
   const nextYearTerms = await getSolarTermsForYear(year + 1);
   
-  // 전년도 소한 + 현재년도 전체 + 다음년도 입춘 결합
+  // 전년도 대설·소한 + 현재년도 전체 + 다음년도 입춘 결합
+  // (소한 이전 1월 초 출생자는 전년도 '대설'에 시작된 子월이므로 대설을 반드시 포함)
   const allTerms = [
-    ...prevYearTerms.filter(t => t.name === '소한'),
+    ...prevYearTerms.filter(t => t.name === '대설' || t.name === '소한'),
     ...currentYearTerms,
     ...nextYearTerms.filter(t => t.name === '입춘')
   ];
