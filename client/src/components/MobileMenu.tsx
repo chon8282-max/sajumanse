@@ -436,15 +436,17 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   <Download className="w-4 h-4 mr-1" />
                   DB가져오기
                 </Button>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start px-2"
-                  onClick={() => { doMemberSync(); }}
-                  data-testid="button-member-sync"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1" />
-                  🔄 데이터 동기화 (PC↔폰)
-                </Button>
+                {can('reservation') && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start px-2"
+                    onClick={() => { doMemberSync(); }}
+                    data-testid="button-member-sync"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-1" />
+                    🔄 데이터 동기화 (PC↔폰)
+                  </Button>
+                )}
               </div>
             </Card>
 
