@@ -8,6 +8,7 @@ import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
 import { FontProvider } from "@/contexts/FontContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { MembershipProvider, useMembership } from "@/contexts/MembershipContext";
 import MobileHeader from "@/components/MobileHeader";
 import MobileMenu from "@/components/MobileMenu";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -31,6 +32,11 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import CacheClear from "@/pages/CacheClear";
 import Admin from "@/pages/Admin";
+import ProMenu from "@/pages/ProMenu";
+import ReservationPage from "@/pages/Reservation";
+import Stats from "@/pages/Stats";
+import CustomerManagement from "@/pages/CustomerManagement";
+import CustomerDetail from "@/pages/CustomerDetail";
 
 function Router() {
   return (
@@ -54,6 +60,11 @@ function Router() {
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/cache-clear" component={CacheClear} />
       <Route path="/admin" component={Admin} />
+      <Route path="/pro" component={ProMenu} />
+      <Route path="/reservation" component={ReservationPage} />
+      <Route path="/stats" component={Stats} />
+      <Route path="/customer-management" component={CustomerManagement} />
+      <Route path="/customer/:id" component={CustomerDetail} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -211,6 +222,9 @@ function AppContent() {
       case 'admin':
         setLocation('/admin');
         break;
+      case 'pro':
+        setLocation('/pro');
+        break;
       default:
         setLocation('/');
         break;
@@ -274,7 +288,9 @@ function App() {
         <ThemeProvider defaultTheme="light">
           <AuthProvider>
             <FontProvider>
-              <AppContent />
+              <MembershipProvider>
+                <AppContent />
+              </MembershipProvider>
             </FontProvider>
           </AuthProvider>
         </ThemeProvider>

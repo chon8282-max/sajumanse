@@ -33,6 +33,8 @@ interface TempToken {
   expiry: number;
 }
 const tempTokens = new Map<string, TempToken>();
+// 앱 구글 로그인: 브라우저로 받은 id_token을 코드별로 잠깐 보관 (앱이 폴링해서 가져감)
+const googleAppTokens = new Map<string, { idToken: string; expiry: number }>();
 
 setInterval(() => {
   const now = Date.now();
@@ -92,6 +94,7 @@ router.get("/login", (req: Request, res) => {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = generateCodeChallenge(codeVerifier);
     const state = crypto.randomBytes(16).toString("hex");
+    const appcode = typeof req.query.appcode === 'string' ? req.query.appcode : '';
 
     // PKCE verifier와 state를 서명된 쿠키에 저장 (다중 인스턴스 환경 지원)
     const isReplit = !!(process.env.REPLIT_DOMAINS || process.env.GOOGLE_CLIENT_ID);
@@ -106,12 +109,13 @@ router.get("/login", (req: Request, res) => {
     
     res.cookie("oauth_verifier", codeVerifier, cookieOptions);
     res.cookie("oauth_state", state, cookieOptions);
+    if (appcode) res.cookie("oauth_appcode", appcode, cookieOptions);
 
     const params = new URLSearchParams({
       client_id: process.env.GOOGLE_CLIENT_ID!,
       redirect_uri: getRedirectUri(req),
       response_type: "code",
-      scope: "openid email profile https://www.googleapis.com/auth/drive.file",
+      scope: appcode ? "openid email profile" : "openid email profile https://www.googleapis.com/auth/drive.file",
       code_challenge: codeChallenge,
       code_challenge_method: "S256",
       state,
@@ -238,6 +242,19 @@ router.get("/callback", async (req: Request, res) => {
     res.clearCookie("oauth_verifier", clearCookieOptions);
     res.clearCookie("oauth_state", clearCookieOptions);
 
+    // 앱(구글 로그인) 모드: id_token 저장 후 안내 페이지만 표시
+    const appcode = req.signedCookies.oauth_appcode;
+    if (appcode) {
+      res.clearCookie("oauth_appcode", clearCookieOptions);
+      if (tokens.id_token) {
+        const entry = { idToken: tokens.id_token, expiry: Date.now() + 5 * 60 * 1000 };
+        googleAppTokens.set(appcode, entry);
+        googleAppTokens.set("__latest__", entry);
+      }
+      console.log("[APP-GOOGLE] callback appcode:", appcode, "id_token present:", !!tokens.id_token);
+      return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>로그인 완료</title></head><body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#3d2c1a;color:#f5d78e;text-align:center"><div><div style="font-size:52px">✅</div><h2>로그인 완료</h2><p style="line-height:1.6">이 창을 닫고 <b>만세력 앱으로 돌아가세요.</b><br/>앱에서 자동으로 로그인됩니다.</p></div></body></html>`);
+    }
+
     console.log("✅ Login successful, user ID:", user.id);
     
     // PWA용 임시 토큰 생성 (자체 서명, 5분 유효)
@@ -361,6 +378,18 @@ router.get("/callback", async (req: Request, res) => {
     console.log("Redirecting to (error):", redirectUrl);
     res.redirect(redirectUrl);
   }
+});
+
+// 앱: 브라우저 구글 로그인으로 저장된 id_token 폴링 (일회성)
+router.get("/google-idtoken", (req: Request, res) => {
+  const code = String(req.query.code || "");
+  let entry = code ? googleAppTokens.get(code) : undefined;
+  if (!entry) entry = googleAppTokens.get("__latest__");
+  if (!entry) return res.json({ pending: true });
+  googleAppTokens.delete(code);
+  googleAppTokens.delete("__latest__");
+  if (Date.now() > entry.expiry) return res.json({ pending: false, expired: true });
+  return res.json({ idToken: entry.idToken });
 });
 
 // PWA 임시 토큰으로 세션 생성

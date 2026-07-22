@@ -5,6 +5,7 @@ import { Menu, Moon, Sun, Calendar, Settings, User as UserIcon } from "lucide-re
 import { format } from "date-fns";
 import logoPath from "@assets/512icon.png";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMembership } from "@/contexts/MembershipContext";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -22,6 +23,8 @@ export default function MobileHeader({
   onMenuClick
 }: MobileHeaderProps) {
   const { user, loading, isAuthenticated, logout } = useAuth();
+  const { can } = useMembership();
+  const isPaidMember = can("reservation") || can("customer") || can("stats");
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -81,7 +84,7 @@ export default function MobileHeader({
               alt="만세력 로고" 
               className="w-11 h-11 rounded-lg"
             />
-            지천명 만세력
+            지천명 만세력{isPaidMember && <span className="text-red-600 dark:text-red-500"> PRO</span>}
           </h1>
         </div>
 

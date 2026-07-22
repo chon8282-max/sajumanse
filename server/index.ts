@@ -3,6 +3,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { initializeFirebaseAdmin } from "./firebase-admin";
 import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
+import { registerMemberSyncRoutes } from "./member-sync-routes";
+import { registerSessionRoutes } from "./session-routes";
+import { registerMessageRoutes } from "./message-routes";
+import { registerReservationRoutes } from "./reservation-routes";
 import { setupVite, log } from "./vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -23,6 +27,18 @@ app.use(express.json());
 
 // 음양력 변환 API
 app.use("/api/convert", calendarConvertRouter);
+
+// API 라우트가 아직 등록되기 전(백그라운드 초기화 중, 특히 Cloud Run 콜드스타트 직후)에
+// /api/* 요청이 오면 Express 기본 404 HTML 페이지가 내려가서 클라이언트에서
+// "Unexpected token '<'" JSON 파싱 오류로 보이는 문제가 있었습니다.
+// 준비되기 전까지는 항상 JSON으로 응답합니다.
+let apiRoutesReady = false;
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api") && !apiRoutesReady) {
+    return res.status(503).json({ success: false, error: "서버가 아직 시작 중입니다. 잠시 후 다시 시도해주세요." });
+  }
+  next();
+});
 
 // CORS 설정
 app.use((req, res, next) => {
@@ -104,6 +120,11 @@ app.use((req, res, next) => {
         
         // 라우트 등록 (비동기 작업)
         await registerRoutes(app);
+        registerMemberSyncRoutes(app);
+        registerSessionRoutes(app);
+        registerMessageRoutes(app);
+        registerReservationRoutes(app);
+        apiRoutesReady = true;
         log("✅ Routes registered");
 
         // 에러 핸들러

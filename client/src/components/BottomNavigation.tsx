@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Archive, Home, Heart, MessageCircle, Settings, CalendarDays } from "lucide-react";
+import { Calendar, Archive, Home, Heart, MessageCircle, Settings, CalendarDays, Briefcase } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 interface BottomNavigationProps {
@@ -45,15 +45,6 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => {
-                if (tab.id === 'consult') {
-                  window.open('https://map.naver.com/p/entry/place/11819780?c=15.00,0,0,0,dh&placePath=%2Fhome%3Ffrom%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202606262329%26locale%3Dko%26svcName%3Dmap_pcv5', '_blank');
-                  return;
-                }
-                onTabChange(tab.id);
-              }}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
                 if (tab.id === 'consult') {
                   window.open('https://map.naver.com/p/entry/place/11819780?c=15.00,0,0,0,dh&placePath=%2Fhome%3Ffrom%3Dmap%26fromPanelNum%3D1%26additionalHeight%3D76%26timestamp%3D202606262329%26locale%3Dko%26svcName%3Dmap_pcv5', '_blank');
                   return;

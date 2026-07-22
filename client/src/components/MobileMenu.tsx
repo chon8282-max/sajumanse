@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useFont } from "@/contexts/FontContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMembership } from "@/contexts/MembershipContext";
+import { syncNow } from "@/lib/member-sync";
 import { useState, useRef, useEffect } from "react";
 import { localDB } from "@/lib/saju-local-storage";
 import { queryClient } from "@/lib/queryClient";
@@ -30,6 +32,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const [, setLocation] = useLocation();
   const { font, setFont } = useFont();
   const { isAuthenticated, logout } = useAuth();
+  const { can, user } = useMembership();
+  const doMemberSync = async () => {
+    if (!(user as any)?.email) { toast({ title: "로그인 필요", description: "먼저 PRO 로그인 후 이용하세요.", duration: 1500 }); return; }
+    toast({ title: "동기화 중...", description: "서버와 데이터를 맞추는 중입니다.", duration: 1500 });
+    const r = await syncNow((user as any).email);
+    queryClient.invalidateQueries();
+    toast({ title: r.ok ? "동기화 완료" : "동기화 실패", description: r.message, duration: 2500 });
+  };
   const menuRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollTouchStartY = useRef(0);
@@ -89,10 +99,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     // 로그인 체크
     if (!isAuthenticated) {
       toast({
-        title: "로그인 필요",
-        description: "Google Drive 백업은 로그인이 필요합니다.",
+        title: "구글 드라이브 로그인 필요",
+        description: "DB백업은 PRO 로그인과는 별개로, 구글 드라이브 전용 로그인이 필요합니다.",
         variant: "destructive",
-        duration: 1500,
+        duration: 2000,
       });
       onClose();
       setLocation("/login");
@@ -142,10 +152,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     // 로그인 체크
     if (!isAuthenticated) {
       toast({
-        title: "로그인 필요",
-        description: "Google Drive 복원은 로그인이 필요합니다.",
+        title: "구글 드라이브 로그인 필요",
+        description: "DB가져오기는 PRO 로그인과는 별개로, 구글 드라이브 전용 로그인이 필요합니다.",
         variant: "destructive",
-        duration: 800,
+        duration: 2000,
       });
       onClose();
       setLocation("/login");
@@ -316,10 +326,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
           e.stopPropagation();
           handleTouchMove(e);
         }}
-        onTouchEnd={(e) => {
-          e.stopPropagation();
-          handleTouchEnd(e);
-        }}
         data-testid="mobile-menu"
       >
         <div className="flex flex-col h-full">
@@ -330,11 +336,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
               variant="ghost" 
               size="icon"
               onClick={onClose}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClose();
-              }}
               data-testid="button-close-menu"
             >
               <X className="w-5 h-5" />
@@ -348,7 +349,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
             style={{ overscrollBehavior: 'contain' }}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
           >
             <Card className="p-2">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">도움말</h3>
@@ -357,16 +357,37 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleGuide}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleGuide();
-                  }}
                   data-testid="button-guide"
                 >
                   <Info className="w-4 h-4 mr-1" />
                   만세력 소개 사용법
                 </Button>
+              </div>
+            </Card>
+
+            <Card className="p-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">💼 지천명 PRO (PRO 회원 전용)</h3>
+              <div className="space-y-1">
+                {(can('reservation') || can('customer') || can('stats')) ? (
+                  <>
+                    <Button variant="ghost" className="w-full justify-start px-2"
+                      onClick={() => { setLocation('/reservation'); onClose(); }}
+>
+                      🗓️ 예약 관리
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start px-2"
+                      onClick={() => { setLocation('/stats'); onClose(); }}
+>
+                      📊 매출 집계
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="ghost" className="w-full justify-start px-2 text-muted-foreground"
+                    onClick={() => { setLocation('/pro'); onClose(); }}
+>
+                    🔒 유료 회원 로그인
+                  </Button>
+                )}
               </div>
             </Card>
 
@@ -378,33 +399,29 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   <button
                     className="text-sm font-medium text-red-500"
                     onClick={() => { logout(); onClose(); }}
-                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); logout(); onClose(); }}
                     data-testid="button-logout"
                   >
-                    로그아웃
+                    드라이브 로그아웃
                   </button>
                 ) : (
                   <button
                     className="text-sm font-medium text-blue-500"
                     onClick={() => { setLocation("/login"); onClose(); }}
-                    onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setLocation("/login"); onClose(); }}
                     data-testid="button-login"
                   >
-                    로그인
+                    드라이브 로그인
                   </button>
                 )}
               </div>
+              <p className="text-[11px] text-muted-foreground/70 mb-2 -mt-1">
+                ※ DB백업/가져오기는 개인 구글 드라이브 전용 로그인이며, PRO 로그인과는 별개입니다.
+              </p>
 
               <div className="space-y-1">
                 <Button
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleDriveBackup}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDriveBackup();
-                  }}
                   data-testid="button-db-backup"
                 >
                   <Upload className="w-4 h-4 mr-1" />
@@ -414,15 +431,19 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleDriveRestore}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDriveRestore();
-                  }}
                   data-testid="button-db-restore"
                 >
                   <Download className="w-4 h-4 mr-1" />
                   DB가져오기
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-2"
+                  onClick={() => { doMemberSync(); }}
+                  data-testid="button-member-sync"
+                >
+                  <RefreshCw className="w-4 h-4 mr-1" />
+                  🔄 데이터 동기화 (PC↔폰)
                 </Button>
               </div>
             </Card>
@@ -434,11 +455,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleNotifications}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleNotifications();
-                  }}
                   data-testid="button-notifications"
                 >
                   <Bell className="w-4 h-4 mr-1" />
@@ -448,11 +464,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={handleFeedback}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleFeedback();
-                  }}
                   data-testid="button-feedback"
                 >
                   <MessageSquare className="w-4 h-4 mr-1" />
@@ -471,12 +482,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                     setLocation("/privacy-policy");
                     onClose();
                   }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setLocation("/privacy-policy");
-                    onClose();
-                  }}
                   data-testid="button-privacy-policy"
                 >
                   <FileText className="w-4 h-4 mr-1" />
@@ -486,12 +491,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant="ghost"
                   className="w-full justify-start px-2"
                   onClick={() => {
-                    setLocation("/terms-of-service");
-                    onClose();
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
                     setLocation("/terms-of-service");
                     onClose();
                   }}
@@ -510,11 +509,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant={font === 'chosungs' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chosungs')}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setFont('chosungs');
-                  }}
                   data-testid="button-font-chosungs"
                 >
                   <Type className="w-4 h-4 mr-1" />
@@ -524,11 +518,6 @@ queryClient.invalidateQueries({ queryKey: ['local-compatibility-records'], refet
                   variant={font === 'chosunkm' ? 'default' : 'ghost'}
                   className="w-full justify-start h-8 px-2"
                   onClick={() => setFont('chosunkm')}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setFont('chosunkm');
-                  }}
                   data-testid="button-font-chosunkm"
                 >
                   <Type className="w-4 h-4 mr-1" />

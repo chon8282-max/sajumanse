@@ -72,6 +72,7 @@ class SajuLocalStorage {
   private dbName = 'SajuDB';
   // 🔥 테이블이 추가되었으므로 버전을 1에서 2로 올려 기존 사용자의 DB를 자동 업데이트합니다.
   private dbVersion = 2; 
+  private saveLimit: number | null = null; // 무료회원 저장 제한(사주+궁합 합산). null=무제한
 
   constructor() {
     this.dbPromise = this.initDB();
@@ -183,8 +184,44 @@ class SajuLocalStorage {
     return records;
   }
 
+  // ── 동기화용 원시 입출력 (푸시 트리거 없이 로컬만 조작) ──
+  async putRawSaju(record: any): Promise<void> {
+    const db = await this.dbPromise;
+    if (record && typeof record.createdAt === 'string') record.createdAt = new Date(record.createdAt);
+    if (record && typeof record.updatedAt === 'string') record.updatedAt = new Date(record.updatedAt);
+    await db.put('sajuRecords', record);
+  }
+  async deleteRawSaju(id: string): Promise<void> {
+    const db = await this.dbPromise;
+    try { await db.delete('sajuRecords', id); } catch {}
+  }
+  async putRawCompat(record: any): Promise<void> {
+    const db = await this.dbPromise;
+    await db.put('compatibilityRecords', record);
+  }
+  async deleteRawCompat(id: string): Promise<void> {
+    const db = await this.dbPromise;
+    try { await db.delete('compatibilityRecords', id); } catch {}
+  }
+
+  setSaveLimit(n: number | null) { this.saveLimit = n; }
+  getSaveLimit(): number | null { return this.saveLimit; }
+  async getSaveCount(): Promise<number> {
+    const db = await this.dbPromise;
+    const a = await db.count('sajuRecords');
+    let b = 0;
+    try { b = await db.count('compatibilityRecords'); } catch {}
+    return a + b;
+  }
+  private async assertCanAddNew(): Promise<void> {
+    if (this.saveLimit == null) return;
+    const cnt = await this.getSaveCount();
+    if (cnt >= this.saveLimit) throw new Error('저장 개수가 가득 찼습니다. 기존 항목을 삭제한 뒤 저장해주세요. (무료회원은 최대 ' + this.saveLimit + '개)');
+  }
+
   async createSajuRecord(data: InsertSajuRecord): Promise<SajuRecord> {
     const db = await this.dbPromise;
+    await this.assertCanAddNew();
     const now = new Date();
     
     const record: SajuRecord = {
@@ -553,6 +590,8 @@ class SajuLocalStorage {
     createdAt: string;
   }): Promise<boolean> {
     const db = await this.dbPromise;
+    const _existing = (data as any).id ? await db.get('compatibilityRecords', (data as any).id) : undefined;
+    if (!_existing) await this.assertCanAddNew();
     const record = {
       ...data,
       id: generateUUID(),

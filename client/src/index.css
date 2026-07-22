@@ -6,7 +6,10 @@
 html, body {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  /* 끝까지 당길 때 뒤로가기(가로 스와이프)·당겨서 새로고침(세로)로 엉뚱한 페이지/저장 발동 방지 */
+  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
 }
 
 * {
