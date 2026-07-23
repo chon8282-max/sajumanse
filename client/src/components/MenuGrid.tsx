@@ -5,10 +5,12 @@ import {
   Youtube, 
   BookOpen, 
   GraduationCap, 
-  Star 
+  Star,
+  Heart 
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { isIOSApp } from "@/lib/platform";
 
 export default function MenuGrid() {
   const { toast } = useToast();
@@ -21,6 +23,8 @@ export default function MenuGrid() {
       setLocation("/saju-list");
     } else if (menuName === "역학달력") {
       setLocation("/calendar");
+    } else if (menuName === "궁합") {
+      setLocation("/compatibility");
     } else if (menuName === "지천명 유튜브") {
       window.open("https://www.youtube.com/@chon8282", "_blank");
     } else if (menuName === "사주공부") {
@@ -72,13 +76,21 @@ export default function MenuGrid() {
       iconColor: "text-purple-600 dark:text-purple-400",
       onClick: () => handleMenuClick("역학달력")
     },
-    {
+    // 애플 앱스토어 심사 대응: 외부 유료 강의 사이트로 연결되는 "사주공부"는
+    // iOS 앱에서는 아예 목록에서 빼고, 그 자리에 "궁합"을 넣어 칸을 채웁니다.
+    ...(isIOSApp() ? [{
+      title: "궁합",
+      icon: <Heart style={{ width: '38.4px', height: '38.4px' }} />,
+      backgroundColor: "bg-pink-100 dark:bg-pink-900/20",
+      iconColor: "text-pink-600 dark:text-pink-400",
+      onClick: () => handleMenuClick("궁합")
+    }] : [{
       title: "사주공부",
       icon: <GraduationCap style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-yellow-100 dark:bg-yellow-900/20",
       iconColor: "text-yellow-600 dark:text-yellow-400",
       onClick: () => handleMenuClick("사주공부")
-    },
+    }]),
     {
       title: "감정중인 사주",
       icon: <Star style={{ width: '38.4px', height: '38.4px' }} />,

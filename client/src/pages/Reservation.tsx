@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { generateCalendarMonth, getCalendarInfo, CalendarDayData } from "@/lib/calendar-calculator";
+import { generateCalendarMonth, getCalendarInfo, CalendarDayData, calculateDayGanji } from "@/lib/calendar-calculator";
 
 const ALARM_OPTIONS = [
   { value: '1min', label: '1분 전 (테스트)' },
@@ -184,6 +184,10 @@ export default function ReservationPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [view, setView] = useState<'calendar' | 'form' | 'edit'>('calendar');
+  // 보기 모드: 월간(기존) / 주간(이번 주 7칸) / 일간(하루 크게)
+  const [calMode, setCalMode] = useState<'month' | 'week' | 'day'>('month');
+  const todayStr0 = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+  const [anchorDate, setAnchorDate] = useState<string>(todayStr0); // 주간·일간 보기의 기준 날짜
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Reservation[] | null>(null);
@@ -207,10 +211,28 @@ export default function ReservationPage() {
   const monthEndDay = new Date(currentYear, currentMonth, 0).getDate();
   const monthEnd = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(monthEndDay).padStart(2, '0')}`;
 
+  // 날짜 문자열(YYYY-MM-DD) ↔ Date 변환 헬퍼
+  const ymdToDate = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const dateToYmd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  // 주간 보기: anchorDate가 속한 주(일~토) 7일
+  const weekDates = useMemo(() => {
+    const base = ymdToDate(anchorDate);
+    const sunday = new Date(base); sunday.setDate(base.getDate() - base.getDay());
+    return Array.from({ length: 7 }, (_, i) => { const d = new Date(sunday); d.setDate(sunday.getDate() + i); return d; });
+  }, [anchorDate]);
+
+  // 보기 모드별 데이터 조회 범위
+  const { rangeStart, rangeEnd } = useMemo(() => {
+    if (calMode === 'day') return { rangeStart: anchorDate, rangeEnd: anchorDate };
+    if (calMode === 'week') return { rangeStart: dateToYmd(weekDates[0]), rangeEnd: dateToYmd(weekDates[6]) };
+    return { rangeStart: monthStart, rangeEnd: monthEnd };
+  }, [calMode, anchorDate, weekDates, monthStart, monthEnd]);
+
   const { data: reservationsData, refetch } = useQuery<{ success: boolean; data: Reservation[] }>({
-    queryKey: ["reservations-page", currentYear, currentMonth],
+    queryKey: ["reservations-page", rangeStart, rangeEnd],
     queryFn: async () => {
-      const res = await fetch(`/api/reservations?start=${monthStart}&end=${monthEnd}`);
+      const res = await fetch(`/api/reservations?start=${rangeStart}&end=${rangeEnd}`);
       return await res.json();
     },
     refetchOnWindowFocus: false,
@@ -241,7 +263,15 @@ export default function ReservationPage() {
 
   const handlePrevMonth = () => { if (currentMonth === 1) { setCurrentYear(p => p - 1); setCurrentMonth(12); } else setCurrentMonth(p => p - 1); };
   const handleNextMonth = () => { if (currentMonth === 12) { setCurrentYear(p => p + 1); setCurrentMonth(1); } else setCurrentMonth(p => p + 1); };
-  const handleToday = () => { setCurrentYear(new Date().getFullYear()); setCurrentMonth(new Date().getMonth() + 1); };
+  const handleToday = () => {
+    const now = new Date();
+    setCurrentYear(now.getFullYear()); setCurrentMonth(now.getMonth() + 1);
+    setAnchorDate(dateToYmd(now));
+  };
+  // 보기 모드별 이전/다음 (월간=한 달, 주간=7일, 일간=1일)
+  const shiftAnchor = (days: number) => { const d = ymdToDate(anchorDate); d.setDate(d.getDate() + days); setAnchorDate(dateToYmd(d)); };
+  const handlePrev = () => { if (calMode === 'month') handlePrevMonth(); else shiftAnchor(calMode === 'week' ? -7 : -1); };
+  const handleNext = () => { if (calMode === 'month') handleNextMonth(); else shiftAnchor(calMode === 'week' ? 7 : 1); };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) { setSearchResults(null); return; }
@@ -373,7 +403,7 @@ export default function ReservationPage() {
       if (!json.success) throw new Error(json.error || '삭제 실패');
     },
     onSuccess: (_data, id) => {
-      queryClient.setQueryData(["reservations-page", currentYear, currentMonth], (old: any) =>
+      queryClient.setQueryData(["reservations-page", rangeStart, rangeEnd], (old: any) =>
         old && old.data ? { ...old, data: old.data.filter((r: Reservation) => r.id !== id) } : old);
       setPopupDate(null); setSelectedReservation(null); toast({ title: "삭제 완료", duration: 800 });
     },
@@ -395,13 +425,11 @@ export default function ReservationPage() {
         key={`${dayData.solarDate.getTime()}`}
         onClick={() => {
           if (!dayData.isCurrentMonth) return;
-          // 이미 예약이 있는 날짜는 빈 공간을 눌러도 새 예약 폼이 열리지 않게 합니다.
-          // (일정이 여러 개 있는 날짜에서 글자가 아닌 빈 자리를 눌러도 화면이 넘어가버리는 문제가 있었습니다.
-          //  일정이 있는 날은 해당 일정을 클릭 → 팝업의 "+ 새 스케줄 등록" 버튼으로 추가해주세요.)
-          if (dayReservations.length > 0) return;
+          // 칸의 빈 공간을 누르면 그 날짜에 새 스케줄을 추가합니다.
+          // (기존 일정 글자는 아래에서 stopPropagation으로 별도 처리되어 이 핸들러가 실행되지 않습니다.)
           openNewForm(dateStr);
         }}
-        style={{ borderRight: '0.5px solid #ddd', borderTop: '0.5px solid #ddd', cursor: (dayData.isCurrentMonth && dayReservations.length === 0) ? 'pointer' : 'default', minHeight: 'clamp(80px, 12vh, 200px)' }}
+        style={{ borderRight: '0.5px solid #ddd', borderTop: '0.5px solid #ddd', cursor: dayData.isCurrentMonth ? 'pointer' : 'default', minHeight: 'clamp(80px, 12vh, 200px)' }}
         className={`relative flex flex-col pt-0.5 pl-1 pr-1 pb-0.5
           ${!dayData.isCurrentMonth ? 'bg-gray-50' : ''}
           ${dayData.isCurrentMonth && !isHoliday && isSunday ? 'bg-red-50/30' : ''}
@@ -438,6 +466,45 @@ export default function ReservationPage() {
               +{dayReservations.length - 3}개 더보기
             </div>
           )}
+        </div>
+      </div>
+    );
+  };
+
+  // 요일 한글
+  const WEEKDAY_KR = ['일', '월', '화', '수', '목', '금', '토'];
+
+  // 한 날짜 컬럼(주간 보기의 세로 칸): 그 날의 모든 일정을 전부 표시
+  const renderDayColumn = (d: Date, tall: boolean) => {
+    const dateStr = dateToYmd(d);
+    const list = reservationsByDate[dateStr] || [];
+    const ganji = calculateDayGanji(d);
+    const dow = d.getDay();
+    const isToday = dateStr === todayStr0;
+    return (
+      <div key={dateStr} className="flex flex-col" style={{ borderRight: '0.5px solid #ddd', minHeight: tall ? '70vh' : undefined }}>
+        <div onClick={() => openNewForm(dateStr)}
+          className={`px-2 py-1.5 cursor-pointer hover:bg-indigo-50 ${isToday ? 'bg-indigo-50' : 'bg-white'}`}
+          style={{ borderBottom: '0.5px solid #ddd' }} title="이 날짜에 새 스케줄 추가">
+          <div className="flex items-baseline gap-1.5">
+            <span className={`font-bold ${dow === 0 ? 'text-red-500' : dow === 6 ? 'text-blue-500' : 'text-gray-800'} ${isToday ? '!text-indigo-600' : ''}`} style={{ fontSize: 16 }}>
+              {d.getMonth() + 1}/{d.getDate()}({WEEKDAY_KR[dow]})
+            </span>
+            <span className="text-gray-500" style={{ fontSize: 13 }}>{ganji.sky}{ganji.earth}</span>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col gap-1 p-1.5 overflow-y-auto" onClick={() => openNewForm(dateStr)} style={{ cursor: 'pointer' }}>
+          {list.length === 0 ? (
+            <div className="text-gray-300 text-center mt-2" style={{ fontSize: 12 }}>+ 추가</div>
+          ) : list.map(r => (
+            <div key={r.id} onClick={e => { e.stopPropagation(); openEditForm(r); }}
+              className="rounded px-2 py-1 bg-emerald-50 hover:bg-emerald-100 cursor-pointer"
+              style={{ borderLeft: '3px solid #10b981' }}>
+              <div className="font-semibold text-gray-800" style={{ fontSize: 14 }}>{r.time}</div>
+              <div className="text-gray-700 break-words" style={{ fontSize: 14, lineHeight: 1.35 }}>{r.title}</div>
+              {r.amount ? <div className="text-gray-500" style={{ fontSize: 12 }}>{r.amount.toLocaleString()}원</div> : null}
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -495,16 +562,30 @@ export default function ReservationPage() {
           <div className="px-4 py-3 bg-white">
             <div className="flex items-center justify-between mb-3">
               <div />
-              <div className="text-lg font-bold text-gray-800">스케줄 {currentYear}년 {currentMonth}월</div>
-              <div />
+              <div className="text-lg font-bold text-gray-800">
+                {calMode === 'month' && `스케줄 ${currentYear}년 ${currentMonth}월`}
+                {calMode === 'week' && `${weekDates[0].getMonth() + 1}월 ${weekDates[0].getDate()}일 ~ ${weekDates[6].getMonth() + 1}월 ${weekDates[6].getDate()}일`}
+                {calMode === 'day' && (() => { const ad = ymdToDate(anchorDate); return `${ad.getFullYear()}년 ${ad.getMonth() + 1}월 ${ad.getDate()}일 (${WEEKDAY_KR[ad.getDay()]})`; })()}
+              </div>
+              {/* 일/주/월 보기 전환 */}
+              <div className="flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">
+                {([['day', '일'], ['week', '주'], ['month', '월']] as const).map(([mode, label]) => (
+                  <button key={mode} onClick={() => setCalMode(mode)}
+                    className={`px-3 py-1 rounded-md text-xs font-semibold ${calMode === mode ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <button onClick={() => setCurrentYear(p => p - 1)} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
-                  <ChevronsLeft className="w-3.5 h-3.5" /><span>년</span>
-                </button>
-                <button onClick={handlePrevMonth} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
-                  <ChevronLeft className="w-3.5 h-3.5" /><span>월</span>
+                {calMode === 'month' && (
+                  <button onClick={() => setCurrentYear(p => p - 1)} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                    <ChevronsLeft className="w-3.5 h-3.5" /><span>년</span>
+                  </button>
+                )}
+                <button onClick={handlePrev} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                  <ChevronLeft className="w-3.5 h-3.5" /><span>{calMode === 'month' ? '월' : calMode === 'week' ? '주' : '일'}</span>
                 </button>
                 <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -514,30 +595,46 @@ export default function ReservationPage() {
               </div>
               <button onClick={handleToday} className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600">오늘</button>
               <div className="flex items-center gap-1.5">
-                <button onClick={handleNextMonth} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
-                  <span>월</span><ChevronRight className="w-3.5 h-3.5" />
+                <button onClick={handleNext} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                  <span>{calMode === 'month' ? '월' : calMode === 'week' ? '주' : '일'}</span><ChevronRight className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={() => setCurrentYear(p => p + 1)} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
-                  <span>년</span><ChevronsRight className="w-3.5 h-3.5" />
-                </button>
+                {calMode === 'month' && (
+                  <button onClick={() => setCurrentYear(p => p + 1)} className="flex items-center gap-0.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200">
+                    <span>년</span><ChevronsRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-7" style={{ borderTop: '0.5px solid #ddd', borderLeft: '0.5px solid #ddd' }}>
-            {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
-              <div key={day} style={{ borderRight: '0.5px solid #ddd' }}
-                className={`text-center text-sm font-semibold py-1.5
-                  ${index === 0 ? 'text-red-500' : ''}
-                  ${index === 6 ? 'text-blue-500' : ''}
-                  ${index !== 0 && index !== 6 ? 'text-gray-500' : ''}
-                `}>{day}</div>
-            ))}
-          </div>
+          {calMode === 'month' && (
+            <div className="grid grid-cols-7" style={{ borderTop: '0.5px solid #ddd', borderLeft: '0.5px solid #ddd' }}>
+              {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                <div key={day} style={{ borderRight: '0.5px solid #ddd' }}
+                  className={`text-center text-sm font-semibold py-1.5
+                    ${index === 0 ? 'text-red-500' : ''}
+                    ${index === 6 ? 'text-blue-500' : ''}
+                    ${index !== 0 && index !== 6 ? 'text-gray-500' : ''}
+                  `}>{day}</div>
+              ))}
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
-          <div className="grid grid-cols-7" style={{ borderLeft: '0.5px solid #ddd', borderBottom: '0.5px solid #ddd' }}>
-            {calendarData.flat().map(dayData => renderDayCell(dayData))}
-          </div>
+          {calMode === 'month' && (
+            <div className="grid grid-cols-7" style={{ borderLeft: '0.5px solid #ddd', borderBottom: '0.5px solid #ddd' }}>
+              {calendarData.flat().map(dayData => renderDayCell(dayData))}
+            </div>
+          )}
+          {calMode === 'week' && (
+            <div className="grid grid-cols-7" style={{ borderLeft: '0.5px solid #ddd', borderBottom: '0.5px solid #ddd' }}>
+              {weekDates.map(d => renderDayColumn(d, true))}
+            </div>
+          )}
+          {calMode === 'day' && (
+            <div style={{ borderLeft: '0.5px solid #ddd', borderBottom: '0.5px solid #ddd' }}>
+              {renderDayColumn(ymdToDate(anchorDate), true)}
+            </div>
+          )}
         </CardContent>
       </Card>
 

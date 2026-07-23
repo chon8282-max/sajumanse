@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Archive, Home, Heart, MessageCircle, Settings, CalendarDays, Briefcase } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { isIOSApp } from "@/lib/platform";
 
 interface BottomNavigationProps {
   activeTab: string;
@@ -17,13 +18,14 @@ export default function BottomNavigation({ activeTab, onTabChange }: BottomNavig
 
   const isAdmin = (authData as any)?.user?.email === ADMIN_EMAIL;
 
+  // 애플 앱스토어 심사 대응: iOS 앱에서는 "상담" 탭을 숨깁니다.
   const tabs = [
     { id: "home", label: "홈", icon: Home },
     { id: "manse", label: "만세력", icon: Calendar },
     { id: "saved", label: "불러오기", icon: Archive },
     { id: "compatibility", label: "궁합", icon: Heart },
     { id: "calendar", label: "역학달력", icon: CalendarDays },
-    { id: "consult", label: "상담", icon: MessageCircle },
+    ...(isIOSApp() ? [] : [{ id: "consult", label: "상담", icon: MessageCircle }]),
     ...(isAdmin ? [{ id: "admin", label: "관리자", icon: Settings }] : []),
   ];
 
