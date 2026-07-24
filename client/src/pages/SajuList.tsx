@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { localDB } from "@/lib/saju-local-storage";
 import { useLocation } from "wouter";
+import { useMembership } from "@/contexts/MembershipContext";
 import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +26,13 @@ type GroupFormData = z.infer<typeof groupFormSchema>;
 
 export default function SajuList() {
   const [, setLocation] = useLocation();
+  const { syncNow } = useMembership();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const handleManualSync = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try { await syncNow(); } finally { setIsSyncing(false); }
+  };
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'personal' | 'compatibility'>('personal');
   const [searchQuery, setSearchQuery] = useState("");
@@ -204,7 +212,13 @@ export default function SajuList() {
         <div className="relative flex items-center mb-2 border-b pb-2">
           <Button variant="ghost" size="sm" onClick={handleBack} className="absolute left-0 px-2 text-muted-foreground"><ArrowLeft className="w-4 h-4" /></Button>
           <div className="w-full text-center"><h1 className="text-base font-bold text-gray-800 dark:text-gray-100">저장 목록</h1></div>
-          <Button size="sm" onClick={() => setLocation("/saju-input")} className="absolute right-0 bg-primary hover:bg-primary/90 h-7 text-xs px-2"><Plus className="w-3 h-3 mr-1" />추가</Button>
+          <div className="absolute right-0 flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={handleManualSync} disabled={isSyncing}
+              title="다른 기기(PC 등)와 동기화" className="h-7 w-7 p-0 text-muted-foreground">
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            </Button>
+            <Button size="sm" onClick={() => setLocation("/saju-input")} className="bg-primary hover:bg-primary/90 h-7 text-xs px-2"><Plus className="w-3 h-3 mr-1" />추가</Button>
+          </div>
         </div>
 
         {/* 탭 */}

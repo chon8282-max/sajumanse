@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { localDB } from "@/lib/saju-local-storage";
 import { startMemberSync } from "@/lib/member-sync";
+import { queryClient } from "@/lib/queryClient";
 
 const API_BASE = "https://prosaju.co.kr";
 const TOKEN_KEY = "ps_token";
@@ -38,6 +39,7 @@ interface MembershipCtx {
   loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
+  syncNow: () => Promise<void>; // 다른 기기(PC 등)와 데이터 수동 재동기화 + 화면 갱신
   consumeAi: (feature: string) => Promise<AiResult>;
   can: (key: string) => boolean;
   saveMax: number | null;
@@ -142,12 +144,40 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
     return () => clearInterval(id);
   }, [fetchEnt]);
 
+  // 동기화 후 화면(React Query 캐시)도 함께 갱신한다.
+  // (동기화는 로컬 DB만 갱신할 뿐이라, 이걸 안 하면 데이터는 받아와도 화면엔 안 보인다.)
+  const syncAndRefresh = useCallback(async (email: string) => {
+    await startMemberSync(email);
+    queryClient.invalidateQueries({ queryKey: ["local-saju-records"] });
+    queryClient.invalidateQueries({ queryKey: ["local-compatibility-records"] });
+    queryClient.invalidateQueries({ queryKey: ["local-groups"] });
+  }, []);
+
   // 로그인 완료 후 회원 데이터(사주·궁합) 동기화 시작
   useEffect(() => {
     if (phase === "ready" && user?.email) {
-      startMemberSync(user.email).catch(() => {});
+      syncAndRefresh(user.email).catch(() => {});
     }
-  }, [phase, user?.email]);
+  }, [phase, user?.email, syncAndRefresh]);
+
+  // 앱이 백그라운드에 있다가 다시 화면에 보일 때 자동 재동기화.
+  // (모바일 웹앱은 종료 없이 백그라운드→포그라운드를 오가는 경우가 많아,
+  //  로그인 시 1회 동기화만으로는 다른 기기(PC)에서 바뀐 내용이 반영되지 않는다.)
+  useEffect(() => {
+    if (phase !== "ready" || !user?.email) return;
+    const email = user.email;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        syncAndRefresh(email).catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [phase, user?.email, syncAndRefresh]);
 
   // 회원 이메일을 쿠키로 심어 서버측 요청(예약 등)이 회원을 식별하게 함
   useEffect(() => {
@@ -278,8 +308,13 @@ export function MembershipProvider({ children }: { children: React.ReactNode }) 
 
   const can = useCallback((key: string) => !!ent?.features?.[key], [ent]);
 
+  const doSyncNow = useCallback(async () => {
+    if (!user?.email) return;
+    await syncAndRefresh(user.email);
+  }, [user?.email, syncAndRefresh]);
+
   const value: MembershipCtx = {
-    phase, ent, user, error, notice, login, loginWithGoogle, logout, refresh: fetchEnt, consumeAi, can,
+    phase, ent, user, error, notice, login, loginWithGoogle, logout, refresh: fetchEnt, syncNow: doSyncNow, consumeAi, can,
     saveMax: ent?.limits?.saveMax ?? null,
     aiCash: ent?.aiCash ?? 0,
     aiCosts: ent?.aiCosts || {},
