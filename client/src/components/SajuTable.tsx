@@ -1002,20 +1002,28 @@ export default function SajuTable({
   // 오늘 날짜의 월주(月柱) 간지 — 월운 행에서 현재 달을 빨간색으로 강조하기 위함.
   // 같은 지지라도 해마다 천간이 달라서, 천간+지지가 모두 일치할 때만(=현재 연도의 월운을
   // 보고 있을 때만) 강조된다. 절기가 넘어가 실제 달이 바뀌면 강조 위치도 자동으로 이동한다.
-  const [currentMonthGanji, setCurrentMonthGanji] = useState('');
+  // 1) 동기 함수(calculateMonthGanji)로 즉시 값을 세팅한다(절대 실패 없음).
+  // 2) 이후 절기 데이터를 로드해 정밀 월주로 보정한다(절기 경계일 근처 정확도 향상).
+  const initialMonthGanji = useMemo(() => {
+    try {
+      const now = new Date();
+      const g = calculateMonthGanji(now.getFullYear(), now.getMonth() + 1);
+      return g.sky && g.earth ? g.sky + g.earth : '';
+    } catch { return ''; }
+  }, []);
+  const [currentMonthGanji, setCurrentMonthGanji] = useState(initialMonthGanji);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const now = new Date();
-        // calculateSaju는 절기 데이터가 있어야 월주를 계산한다(없으면 에러).
         const solarTerms = await getSolarTermsForCalculation(now.getFullYear());
         const s = calculateSaju(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), false, undefined, undefined, undefined, solarTerms);
         const sky = (s as any)?.month?.sky || '';
         const earth = (s as any)?.month?.earth || '';
-        if (!cancelled) setCurrentMonthGanji(sky && earth ? sky + earth : '');
+        if (!cancelled && sky && earth) setCurrentMonthGanji(sky + earth);
       } catch {
-        /* 절기 로드 실패 시 강조 생략 */
+        /* 절기 로드 실패 시 동기 초기값 유지 */
       }
     })();
     return () => { cancelled = true; };
