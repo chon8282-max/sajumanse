@@ -2322,23 +2322,27 @@ export default function SajuTable({
                   margin: '0',
                   transition: 'all 0.3s ease',
                   lineHeight: '1',
-                  ...(isCurrentMonthCol ? { outline: '3px solid #dc2626', outlineOffset: '-3px', position: 'relative' as const, zIndex: 1 } : {})
+                  ...(isCurrentMonthCol ? { position: 'relative' as const } : {})
                 }}
                 data-testid={`text-wolun-sky-${colIndex}`}
               >
                 {cheonganImage ? (
-                  <img 
-                    src={cheonganImage} 
-                    alt={sky} 
+                  <img
+                    src={cheonganImage}
+                    alt={sky}
                     className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span style={{ 
+                  <span style={{
                     fontSize: '27px',
                     color: isWolunActive ? undefined : getWuxingTextColor(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
+                )}
+                {/* 글자가 이미지인 칸에서도 테두리가 보이도록 이미지 위에 겹쳐 그린다 */}
+                {isCurrentMonthCol && (
+                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', pointerEvents: 'none', zIndex: 2 }} />
                 )}
               </div>
             );
@@ -2374,23 +2378,27 @@ export default function SajuTable({
                   padding: '2px 0',
                   margin: '0',
                   lineHeight: '1',
-                  ...(isCurrentMonthCol ? { outline: '3px solid #dc2626', outlineOffset: '-3px', position: 'relative' as const, zIndex: 1 } : {})
+                  ...(isCurrentMonthCol ? { position: 'relative' as const } : {})
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
               >
                 {jijiImg ? (
-                  <img 
-                    src={jijiImg} 
-                    alt={chineseChar} 
+                  <img
+                    src={jijiImg}
+                    alt={chineseChar}
                     className="w-full h-full object-cover"
                     style={{ margin: '0', padding: '0' }}
                   />
                 ) : (
-                  <span style={{ 
+                  <span style={{
                     fontSize: '27px',
                     color: isWolunActive ? undefined : getWuxingTextColor(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
+                )}
+                {/* 글자가 이미지인 칸에서도 테두리가 보이도록 이미지 위에 겹쳐 그린다 */}
+                {isCurrentMonthCol && (
+                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', pointerEvents: 'none', zIndex: 2 }} />
                 )}
               </div>
             );
