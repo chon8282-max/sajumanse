@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { type SajuInfo, CHEONGAN, JIJI, CHINESE_TO_KOREAN_MAP, KOREAN_TO_CHINESE_MAP } from "@shared/schema";
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateMonthGanji } from "@/lib/calendar-calculator";
+import { calculateSaju } from "@/lib/saju-calculator";
 import { calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
@@ -997,6 +998,21 @@ export default function SajuTable({
     return { skies: skies.reverse(), earths: earths.reverse() };
   }, [actualGanjiYear, selectedSaeunAge, focusedDaeun, saeunDisplayData.years, saju.year.sky, saju.year.earth]);
 
+  // 오늘 날짜의 월주(月柱) 간지 — 월운 행에서 현재 달을 빨간색으로 강조하기 위함.
+  // 같은 지지라도 해마다 천간이 달라서, 천간+지지가 모두 일치할 때만(=현재 연도의 월운을
+  // 보고 있을 때만) 강조된다. 절기가 넘어가 실제 달이 바뀌면 강조 위치도 자동으로 이동한다.
+  const currentMonthGanji = useMemo(() => {
+    try {
+      const now = new Date();
+      const s = calculateSaju(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), false);
+      const sky = (s as any)?.month?.sky || '';
+      const earth = (s as any)?.month?.earth || '';
+      return sky && earth ? sky + earth : '';
+    } catch {
+      return '';
+    }
+  }, []);
+
   // 월운 월 순서 (16행용 - 13칸)
   const wolunMonths = useMemo(() => {
     // 1, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
@@ -1762,11 +1778,21 @@ export default function SajuTable({
               const isBirthTimeUnknown = isHourColumn && !sajuColumns[0]?.sky && !sajuColumns[0]?.earth;
               
               return (
-                <div 
-                  key={`shinsal-${index}`} 
+                <div
+                  key={`shinsal-${index}`}
                   className="py-1 text-center text-sm border-r border-border min-h-[1.5rem] flex flex-col items-center justify-start text-black dark:text-white bg-white dark:bg-gray-900"
                   data-testid={`text-shinsal-${index}`}
                 >
+                  {/* 지장간을 신살 맨 위에 함께 표시 */}
+                  {!isBirthTimeUnknown && jijanggan[index] && (
+                    <div
+                      className="leading-tight text-gray-600 dark:text-gray-300"
+                      style={{ marginBottom: '3px', paddingBottom: '2px', borderBottom: '1px solid #e5e0d6', width: '100%' }}
+                      data-testid={`text-jijanggan-top-${index}`}
+                    >
+                      {convertTextForRow145(jijanggan[index])}
+                    </div>
+                  )}
                   {isBirthTimeUnknown ? "" : (
                     <>
                       {shinsalArray.map((shinsal, idx) => {
@@ -2266,19 +2292,21 @@ export default function SajuTable({
         }`}>
           {wolunGanji.skies.map((sky, colIndex) => {
             const cheonganImage = getCheonganImage(sky, showKorean2);
+            const isCurrentMonthCol = !!currentMonthGanji && (sky + (wolunGanji.earths[colIndex] || '')) === currentMonthGanji;
             return (
-              <div 
+              <div
                 key={`wolun-sky-${colIndex}`}
                 className={`text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center ${
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
-                style={{ 
+                style={{
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
                   transition: 'all 0.3s ease',
-                  lineHeight: '1'
+                  lineHeight: '1',
+                  ...(isCurrentMonthCol ? { outline: '3px solid #dc2626', outlineOffset: '-3px', position: 'relative' as const, zIndex: 1 } : {})
                 }}
                 data-testid={`text-wolun-sky-${colIndex}`}
               >
@@ -2316,19 +2344,21 @@ export default function SajuTable({
             
             // 이미지 가져오기
             const jijiImg = getJijiImage(chineseChar, showKorean2);
-            
+            const isCurrentMonthCol = !!currentMonthGanji && ((wolunGanji.skies[colIndex] || '') + earth) === currentMonthGanji;
+
             return (
-              <div 
+              <div
                 key={`wolun-earth-${colIndex}`}
                 className={`text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center ${
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
-                style={{ 
+                style={{
                   backgroundColor: isWolunActive ? undefined : getWuxingColor(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
-                  lineHeight: '1'
+                  lineHeight: '1',
+                  ...(isCurrentMonthCol ? { outline: '3px solid #dc2626', outlineOffset: '-3px', position: 'relative' as const, zIndex: 1 } : {})
                 }}
                 data-testid={`text-wolun-earth-${colIndex}`}
               >

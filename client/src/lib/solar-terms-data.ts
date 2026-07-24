@@ -66,6 +66,9 @@ export async function checkSolarTermDay(
 
       // 입력 날짜와 절입일 KST 날짜가 정확히 일치하는지 확인
       if (kstYear === year && kstMonth === month && kstDay === day) {
+        // 월주(月柱) 경계가 바뀌는 건 12절기(節)뿐이다.
+        // 대한·동지 같은 중기(中氣)는 월주를 바꾸지 않으므로 전후 선택을 묻지 않는다.
+        if (getSolarTermMonth(term.name) === -1) continue;
         return {
           isSolarTerm: true,
           termInfo: {
