@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft } from "lucide-react";
@@ -273,6 +273,41 @@ export default function ReservationPage() {
   const handlePrev = () => { if (calMode === 'month') handlePrevMonth(); else shiftAnchor(calMode === 'week' ? -7 : -1); };
   const handleNext = () => { if (calMode === 'month') handleNextMonth(); else shiftAnchor(calMode === 'week' ? 7 : 1); };
 
+  // ── 휠(PC)·스와이프(앱)로 달 넘기기 ──────────────────────────
+  // 달력 맨 아래에서 아래로 휠/스와이프 → 다음달, 맨 위에서 위로 → 이전달.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const navCooldownRef = useRef(0);
+  const touchStartYRef = useRef(0);
+  const navByGesture = (dir: 'prev' | 'next') => {
+    const now = Date.now();
+    if (now - navCooldownRef.current < 500) return; // 한 제스처에 여러 달 넘어가는 것 방지
+    navCooldownRef.current = now;
+    if (dir === 'next') handleNext(); else handlePrev();
+    // 다음 달로 넘어가면 스크롤을 위로 되돌려, 이어서 또 넘기기 쉽게 한다
+    if (scrollRef.current) scrollRef.current.scrollTop = dir === 'next' ? 0 : Math.max(0, scrollRef.current.scrollHeight);
+  };
+  const atScrollEdges = () => {
+    const el = scrollRef.current;
+    if (!el) return { atTop: true, atBottom: true };
+    return {
+      atTop: el.scrollTop <= 2,
+      atBottom: el.scrollTop + el.clientHeight >= el.scrollHeight - 2,
+    };
+  };
+  const handleWheel = (e: React.WheelEvent) => {
+    const { atTop, atBottom } = atScrollEdges();
+    if (e.deltaY > 0 && atBottom) navByGesture('next');
+    else if (e.deltaY < 0 && atTop) navByGesture('prev');
+  };
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartYRef.current = e.touches[0].clientY; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const dy = e.changedTouches[0].clientY - touchStartYRef.current; // >0 아래로 스와이프, <0 위로 스와이프
+    if (Math.abs(dy) < 50) return; // 탭·짧은 이동은 무시
+    const { atTop, atBottom } = atScrollEdges();
+    if (dy < 0 && atBottom) navByGesture('next');   // 위로 스와이프 + 맨 아래 → 다음달
+    else if (dy > 0 && atTop) navByGesture('prev');  // 아래로 스와이프 + 맨 위 → 이전달
+  };
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) { setSearchResults(null); return; }
     const res = await fetch('/api/reservations');
@@ -537,7 +572,8 @@ export default function ReservationPage() {
   }
 
   return (
-    <div className="w-full h-screen p-3 overflow-y-auto" data-testid="reservation-calendar">
+    <div className="w-full h-screen p-3 overflow-y-auto" data-testid="reservation-calendar"
+      ref={scrollRef} onWheel={handleWheel} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       {searchResults && (
         <div className="mb-3 border rounded-lg overflow-hidden">
           <div className="px-3 py-2 bg-gray-50 text-sm font-medium border-b">검색 결과 {searchResults.length}건</div>
