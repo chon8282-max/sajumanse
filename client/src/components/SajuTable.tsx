@@ -2342,7 +2342,7 @@ export default function SajuTable({
                 )}
                 {/* 글자가 이미지인 칸에서도 테두리가 보이도록 이미지 위에 겹쳐 그린다 */}
                 {isCurrentMonthCol && (
-                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', pointerEvents: 'none', zIndex: 2 }} />
+                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.95)', pointerEvents: 'none', zIndex: 2 }} />
                 )}
               </div>
             );
@@ -2398,7 +2398,7 @@ export default function SajuTable({
                 )}
                 {/* 글자가 이미지인 칸에서도 테두리가 보이도록 이미지 위에 겹쳐 그린다 */}
                 {isCurrentMonthCol && (
-                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', pointerEvents: 'none', zIndex: 2 }} />
+                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.95)', pointerEvents: 'none', zIndex: 2 }} />
                 )}
               </div>
             );
@@ -2422,15 +2422,23 @@ export default function SajuTable({
 
         {/* 16행: 월운 월 순서 (우측에서 좌측) */}
         <div className="grid grid-cols-13 border-b border-border">
-          {wolunMonths.map((month, colIndex) => (
-            <div 
-              key={`wolun-month-${colIndex}`}
-              className="py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 bg-white dark:bg-gray-900 text-black dark:text-white flex items-center justify-center"
-              data-testid={`text-wolun-month-${colIndex}`}
-            >
-              {month}
-            </div>
-          ))}
+          {wolunMonths.map((month, colIndex) => {
+            // 현재 달이면 대운수·세운처럼 흰 배경 숫자 칸에 빨간 박스 (간지 타일은 색 배경이라 테두리가 묻힘)
+            const isCurrentMonthCol = !!currentMonthGanji && ((wolunGanji.skies[colIndex] || '') + (wolunGanji.earths[colIndex] || '')) === currentMonthGanji;
+            return (
+              <div
+                key={`wolun-month-${colIndex}`}
+                className={`py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 text-black dark:text-white flex items-center justify-center ${
+                  isCurrentMonthCol
+                    ? 'bg-red-200 dark:bg-red-800/50 border-2 border-red-600'
+                    : 'bg-white dark:bg-gray-900'
+                }`}
+                data-testid={`text-wolun-month-${colIndex}`}
+              >
+                {month}
+              </div>
+            );
+          })}
         </div>
 
         {/* 17행: 메모 + 오늘 날짜 */}
