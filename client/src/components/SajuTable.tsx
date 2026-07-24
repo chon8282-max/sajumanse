@@ -3,6 +3,7 @@ import { type SajuInfo, CHEONGAN, JIJI, CHINESE_TO_KOREAN_MAP, KOREAN_TO_CHINESE
 import { calculateCompleteYukjin, calculateYukjin, calculateEarthlyBranchYukjin } from "@/lib/yukjin-calculator";
 import { calculateMonthGanji } from "@/lib/calendar-calculator";
 import { calculateSaju } from "@/lib/saju-calculator";
+import { getSolarTermsForCalculation } from "@/lib/solar-terms-data";
 import { calculateCurrentAge, type DaeunPeriod } from "@/lib/daeun-calculator";
 import { User, UserCheck } from "lucide-react";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
@@ -1001,16 +1002,23 @@ export default function SajuTable({
   // 오늘 날짜의 월주(月柱) 간지 — 월운 행에서 현재 달을 빨간색으로 강조하기 위함.
   // 같은 지지라도 해마다 천간이 달라서, 천간+지지가 모두 일치할 때만(=현재 연도의 월운을
   // 보고 있을 때만) 강조된다. 절기가 넘어가 실제 달이 바뀌면 강조 위치도 자동으로 이동한다.
-  const currentMonthGanji = useMemo(() => {
-    try {
-      const now = new Date();
-      const s = calculateSaju(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), false);
-      const sky = (s as any)?.month?.sky || '';
-      const earth = (s as any)?.month?.earth || '';
-      return sky && earth ? sky + earth : '';
-    } catch {
-      return '';
-    }
+  const [currentMonthGanji, setCurrentMonthGanji] = useState('');
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const now = new Date();
+        // calculateSaju는 절기 데이터가 있어야 월주를 계산한다(없으면 에러).
+        const solarTerms = await getSolarTermsForCalculation(now.getFullYear());
+        const s = calculateSaju(now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes(), false, undefined, undefined, undefined, solarTerms);
+        const sky = (s as any)?.month?.sky || '';
+        const earth = (s as any)?.month?.earth || '';
+        if (!cancelled) setCurrentMonthGanji(sky && earth ? sky + earth : '');
+      } catch {
+        /* 절기 로드 실패 시 강조 생략 */
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   // 월운 월 순서 (16행용 - 13칸)
