@@ -1,12 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Calendar, 
-  FileText, 
-  Youtube, 
-  BookOpen, 
-  GraduationCap, 
+import {
+  Calendar,
+  FileText,
+  Youtube,
+  BookOpen,
+  CalendarCheck,
   Star,
-  Heart 
+  Heart
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -27,8 +27,8 @@ export default function MenuGrid() {
       setLocation("/compatibility");
     } else if (menuName === "지천명 유튜브") {
       window.open("https://www.youtube.com/@chon8282", "_blank");
-    } else if (menuName === "사주공부") {
-      window.open("https://www.sajuacademy.com/m/lecture.php?action=divide&category=0105&type=lecture", "_blank");
+    } else if (menuName === "예약") {
+      setLocation("/reservation");
     } else if (menuName === "감정중인 사주") {
       const currentSajuId = sessionStorage.getItem('currentSajuId');
       if (currentSajuId) {
@@ -76,8 +76,7 @@ export default function MenuGrid() {
       iconColor: "text-purple-600 dark:text-purple-400",
       onClick: () => handleMenuClick("역학달력")
     },
-    // 애플 앱스토어 심사 대응: 외부 유료 강의 사이트로 연결되는 "사주공부"는
-    // iOS 앱에서는 아예 목록에서 빼고, 그 자리에 "궁합"을 넣어 칸을 채웁니다.
+    // 애플 앱스토어 심사 대응: iOS 앱에서는 이 자리에 "궁합"을 넣어 칸을 채웁니다.
     ...(isIOSApp() ? [{
       title: "궁합",
       icon: <Heart style={{ width: '38.4px', height: '38.4px' }} />,
@@ -85,11 +84,11 @@ export default function MenuGrid() {
       iconColor: "text-pink-600 dark:text-pink-400",
       onClick: () => handleMenuClick("궁합")
     }] : [{
-      title: "사주공부",
-      icon: <GraduationCap style={{ width: '38.4px', height: '38.4px' }} />,
+      title: "예약",
+      icon: <CalendarCheck style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-yellow-100 dark:bg-yellow-900/20",
       iconColor: "text-yellow-600 dark:text-yellow-400",
-      onClick: () => handleMenuClick("사주공부")
+      onClick: () => handleMenuClick("예약")
     }]),
     {
       title: "감정중인 사주",

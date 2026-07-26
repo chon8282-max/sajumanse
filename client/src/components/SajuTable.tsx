@@ -385,6 +385,15 @@ export default function SajuTable({
   const [viewMode, setViewMode] = useState<'base' | 'beginner' | 'expert'>('base');
   const isBeginnerMode = viewMode === 'beginner';
   const isExpertMode = viewMode === 'expert';
+  // 전문 모드: 오행 색 없이 흰 배경 + 검정 글씨로 통일 (숙련자용 심플 보기)
+  const wuxBg = (character: string | null): string =>
+    isExpertMode ? '#ffffff' : getWuxingColor(character);
+  const wuxText = (character: string | null): string =>
+    isExpertMode ? '#111111' : getWuxingTextColor(character);
+  // 전문 모드에서 대운/세운/월운 숫자 칸에 쓸 톤 (현재칸 강조는 그대로 빨강 유지)
+  const EXPERT_DAEUN_BG = '#ececec';   // 대운수 = 무채색 그레이
+  const EXPERT_SAEUN_BG = '#eeece6';   // 세운(나이·연도) = 베이지 톤
+  const EXPERT_WOLUN_BG = '#e9ebee';   // 월운 달 숫자 = 블루 톤
   const [showWuxing, setShowWuxing] = useState(false);
   
   // 한글1/한자1 토글 상태 관리 (1행, 4행, 5행만 한글 변환)
@@ -1504,28 +1513,28 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
+            <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: wuxBg(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
               {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                 <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
-                <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: wuxText(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
               )}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: wuxBg(saeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
                 {getCheonganImage(saeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(saeunColumnData.sky, showKorean2) || undefined} alt={saeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: wuxText(saeunColumnData.sky), lineHeight: '1' }}>{convertText(saeunColumnData.sky)}</span>
                 )}
               </div>
-              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: wuxBg(daeunColumnData.sky), fontFamily: "var(--ganji-font-family)", padding: '1px 0', margin: '0', lineHeight: '1' }}>
                 {getCheonganImage(daeunColumnData.sky, showKorean2) || undefined ? (
                   <img src={getCheonganImage(daeunColumnData.sky, showKorean2) || undefined} alt={daeunColumnData.sky} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: wuxText(daeunColumnData.sky), lineHeight: '1' }}>{convertText(daeunColumnData.sky)}</span>
                 )}
               </div>
             </>
@@ -1541,7 +1550,7 @@ export default function SajuTable({
                 key={`sky-${index}`} 
                 className={`text-center font-bold border-r border-border flex items-center justify-center ${isHourPillar || isMonthPillar ? 'cursor-pointer hover-elevate active-elevate-2' : ''}`}
                 style={{ 
-                  backgroundColor: isBirthTimeUnknown ? 'transparent' : getWuxingColor(col.sky),
+                  backgroundColor: isBirthTimeUnknown ? 'transparent' : wuxBg(col.sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -1569,7 +1578,7 @@ export default function SajuTable({
                     fontSize: '48px',
                     fontWeight: '900',
                     textShadow: '0 0 1px rgba(0,0,0,0.5)',
-                    color: getWuxingTextColor(col.sky),
+                    color: wuxText(col.sky),
                     lineHeight: '1'
                   }}>{convertText(col.sky)}</span>
                 )}
@@ -1602,28 +1611,28 @@ export default function SajuTable({
             </>
           )}
           {displayMode === 'daeun' && daeunColumnData && (
-            <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+            <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: wuxBg(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
               {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
                 <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
               ) : (
-                <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: wuxText(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
               )}
             </div>
           )}
           {displayMode === 'saeun' && saeunColumnData && daeunColumnData && (
             <>
-              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(saeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: wuxBg(saeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
                 {getJijiImage(saeunColumnData.earth, showKorean2) || undefined ? (
                   <img src={getJijiImage(saeunColumnData.earth, showKorean2) || undefined} alt={saeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: wuxText(saeunColumnData.earth), lineHeight: '1' }}>{convertText(saeunColumnData.earth)}</span>
                 )}
               </div>
-              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: getWuxingColor(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
+              <div className="text-center font-bold border-r border-border flex items-center justify-center" style={{ backgroundColor: wuxBg(daeunColumnData.earth), fontFamily: "var(--ganji-font-family)", padding: '2px 0', margin: '0', lineHeight: '1' }}>
                 {getJijiImage(daeunColumnData.earth, showKorean2) || undefined ? (
                   <img src={getJijiImage(daeunColumnData.earth, showKorean2) || undefined} alt={daeunColumnData.earth} className="w-full h-full object-cover" style={{ margin: '0', padding: '0' }} />
                 ) : (
-                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: getWuxingTextColor(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
+                  <span style={{ fontSize: '48px', fontWeight: '900', textShadow: '0 0 1px rgba(0,0,0,0.5)', color: wuxText(daeunColumnData.earth), lineHeight: '1' }}>{convertText(daeunColumnData.earth)}</span>
                 )}
               </div>
             </>
@@ -1641,7 +1650,7 @@ export default function SajuTable({
                   isHourEarth || isMonthEarth ? 'cursor-pointer hover-elevate active-elevate-2' : ''
                 }`}
                 style={{ 
-                  backgroundColor: isBirthTimeUnknown ? 'transparent' : getWuxingColor(col.earth),
+                  backgroundColor: isBirthTimeUnknown ? 'transparent' : wuxBg(col.earth),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -1675,15 +1684,30 @@ export default function SajuTable({
                       style={{ margin: '0', padding: '0' }}
                     />
                   ) : (
-                    <span style={{ 
+                    <span style={{
                       fontSize: '48px',
                       fontWeight: '900',
                       textShadow: '0 0 1px rgba(0,0,0,0.5)',
-                      color: getWuxingTextColor(col.earth),
+                      color: wuxText(col.earth),
                       lineHeight: '1'
                     }}>{convertText(col.earth)}</span>
                   )}
                 </div>
+                {/* 공망(空亡) 표시: 일주 기준 공망 지지에 얇은 회색 원 (글자는 건드리지 않음) */}
+                {!isBirthTimeUnknown && col.earth && isGongmang(col.earth) && (
+                  <span style={{
+                    position: 'absolute',
+                    left: '50%',
+                    top: '50%',
+                    width: '51px',
+                    height: '51px',
+                    transform: 'translate(-50%, -50%)',
+                    border: `1.5px solid ${isExpertMode ? '#8a8a8a' : '#e0e0e0'}`,
+                    borderRadius: '50%',
+                    pointerEvents: 'none',
+                    zIndex: 2,
+                  }} />
+                )}
               </div>
             );
           })}
@@ -1880,11 +1904,12 @@ export default function SajuTable({
             return (
               <div 
                 key={`daeun-age-${colIndex}`}
-                className={`py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                className={`py-[0px] text-center text-sm font-bold last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
                   isCurrentDaeun
                     ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600'
-                    : 'bg-white dark:bg-gray-800'
+                    : 'bg-white dark:bg-gray-800 border-r border-border'
                 }`}
+                style={isExpertMode && !isCurrentDaeun ? { backgroundColor: EXPERT_DAEUN_BG } : undefined}
                 onClick={() => handleDaeunAgeClick(age)}
                 data-testid={`text-daeun-age-${colIndex}`}
               >
@@ -1925,7 +1950,7 @@ export default function SajuTable({
                   isCurrentDaeun ? 'ring-2 ring-red-600 ring-inset' : ''
                 }`}
                 style={{ 
-                  backgroundColor: getWuxingColor(sky),
+                  backgroundColor: wuxBg(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -1944,7 +1969,7 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '29px',
-                    color: getWuxingTextColor(sky),
+                    color: wuxText(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
                 )}
@@ -1967,7 +1992,7 @@ export default function SajuTable({
                   isCurrentDaeun ? 'ring-2 ring-red-600 ring-inset' : ''
                 }`}
                 style={{ 
-                  backgroundColor: getWuxingColor(earth),
+                  backgroundColor: wuxBg(earth),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -1996,7 +2021,7 @@ export default function SajuTable({
                   ) : (
                     <span style={{ 
                       fontSize: '29px',
-                      color: getWuxingTextColor(earth),
+                      color: wuxText(earth),
                       lineHeight: '1'
                     }}>{convertText(earth)}</span>
                   )}
@@ -2059,11 +2084,12 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-age-${colIndex}`}
-                className={`py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
-                  isSelectedAge 
-                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
-                    : 'bg-white dark:bg-gray-800'
+                className={`py-[0px] text-center text-sm font-bold last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 ${
+                  isSelectedAge
+                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600'
+                    : 'bg-white dark:bg-gray-800 border-r border-border'
                 }`}
+                style={isExpertMode && !isSelectedAge ? { backgroundColor: EXPERT_SAEUN_BG } : undefined}
                 onClick={() => {
                   if (!isDragging.current) {
                     const sky = saeunGanji.skies[colIndex];
@@ -2103,7 +2129,7 @@ export default function SajuTable({
                 key={`saeun-sky-${colIndex}`}
                 className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2"
                 style={{ 
-                  backgroundColor: getWuxingColor(sky),
+                  backgroundColor: wuxBg(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -2127,7 +2153,7 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '27px',
-                    color: getWuxingTextColor(sky),
+                    color: wuxText(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
                 )}
@@ -2155,7 +2181,7 @@ export default function SajuTable({
                 key={`saeun-earth-${colIndex}`}
                 className="text-center font-bold border-r border-border last:border-r-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2"
                 style={{ 
-                  backgroundColor: getWuxingColor(chineseChar),
+                  backgroundColor: wuxBg(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -2179,7 +2205,7 @@ export default function SajuTable({
                 ) : (
                   <span style={{ 
                     fontSize: '27px',
-                    color: getWuxingTextColor(chineseChar),
+                    color: wuxText(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
                 )}
@@ -2232,12 +2258,12 @@ export default function SajuTable({
             return (
               <div 
                 key={`saeun-year-${colIndex}`}
-                className={`py-[0px] text-center font-bold border-r border-border last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
-                  isSelectedAge 
-                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600' 
-                    : 'bg-pink-50 dark:bg-gray-900'
+                className={`py-[0px] text-center font-bold last:border-r-0 min-h-0 flex items-center justify-center cursor-pointer hover-elevate active-elevate-2 text-black dark:text-white overflow-hidden whitespace-nowrap ${
+                  isSelectedAge
+                    ? 'bg-red-200 dark:bg-red-800/50 font-bold border-2 border-red-600'
+                    : 'bg-pink-50 dark:bg-gray-900 border-r border-border'
                 }`}
-                style={{ fontSize: '10px' }}
+                style={{ fontSize: '10px', ...(isExpertMode && !isSelectedAge ? { backgroundColor: EXPERT_SAEUN_BG } : {}) }}
                 onClick={() => {
                   if (!isDragging.current) {
                     // 1열과 2열(colIndex 0, 1)은 월운 활성화 동작
@@ -2316,7 +2342,7 @@ export default function SajuTable({
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
                 style={{
-                  backgroundColor: isWolunActive ? undefined : getWuxingColor(sky),
+                  backgroundColor: isWolunActive ? undefined : wuxBg(sky),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -2336,13 +2362,13 @@ export default function SajuTable({
                 ) : (
                   <span style={{
                     fontSize: '27px',
-                    color: isWolunActive ? undefined : getWuxingTextColor(sky),
+                    color: isWolunActive ? undefined : wuxText(sky),
                     lineHeight: '1'
                   }}>{convertText(sky)}</span>
                 )}
                 {/* 글자가 이미지인 칸에서도 테두리가 보이도록 이미지 위에 겹쳐 그린다 */}
                 {isCurrentMonthCol && (
-                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.95)', pointerEvents: 'none', zIndex: 2 }} />
+                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', pointerEvents: 'none', zIndex: 2 }} />
                 )}
               </div>
             );
@@ -2373,7 +2399,7 @@ export default function SajuTable({
                   isWolunActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''
                 }`}
                 style={{
-                  backgroundColor: isWolunActive ? undefined : getWuxingColor(chineseChar),
+                  backgroundColor: isWolunActive ? undefined : wuxBg(chineseChar),
                   fontFamily: "var(--ganji-font-family)",
                   padding: '2px 0',
                   margin: '0',
@@ -2392,13 +2418,13 @@ export default function SajuTable({
                 ) : (
                   <span style={{
                     fontSize: '27px',
-                    color: isWolunActive ? undefined : getWuxingTextColor(chineseChar),
+                    color: isWolunActive ? undefined : wuxText(chineseChar),
                     lineHeight: '1'
                   }}>{convertText(chineseChar)}</span>
                 )}
                 {/* 글자가 이미지인 칸에서도 테두리가 보이도록 이미지 위에 겹쳐 그린다 */}
                 {isCurrentMonthCol && (
-                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.95)', pointerEvents: 'none', zIndex: 2 }} />
+                  <div style={{ position: 'absolute', inset: 0, border: '3px solid #dc2626', pointerEvents: 'none', zIndex: 2 }} />
                 )}
               </div>
             );
@@ -2428,11 +2454,12 @@ export default function SajuTable({
             return (
               <div
                 key={`wolun-month-${colIndex}`}
-                className={`py-[0px] text-center text-sm font-bold border-r border-border last:border-r-0 min-h-0 text-black dark:text-white flex items-center justify-center ${
+                className={`py-[0px] text-center text-sm font-bold last:border-r-0 min-h-0 text-black dark:text-white flex items-center justify-center ${
                   isCurrentMonthCol
                     ? 'bg-red-200 dark:bg-red-800/50 border-2 border-red-600'
-                    : 'bg-white dark:bg-gray-900'
+                    : 'bg-white dark:bg-gray-900 border-r border-border'
                 }`}
+                style={isExpertMode && !isCurrentMonthCol ? { backgroundColor: EXPERT_WOLUN_BG } : undefined}
                 data-testid={`text-wolun-month-${colIndex}`}
               >
                 {month}
