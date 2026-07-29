@@ -11,10 +11,15 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { isIOSApp } from "@/lib/platform";
+import { useMembership } from "@/contexts/MembershipContext";
 
 export default function MenuGrid() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { can } = useMembership();
+  // 예약은 유료 회원 전용 기능입니다. 서버가 내려준 권한을 그대로 따릅니다.
+  // (앱이 등급을 스스로 계산하지 않는다는 원칙에 맞춥니다)
+  const showReservation = !isIOSApp() && can('reservation');
 
   const handleMenuClick = (menuName: string) => {
     if (menuName === "만세력") {
@@ -76,19 +81,22 @@ export default function MenuGrid() {
       iconColor: "text-purple-600 dark:text-purple-400",
       onClick: () => handleMenuClick("역학달력")
     },
-    // 애플 앱스토어 심사 대응: iOS 앱에서는 이 자리에 "궁합"을 넣어 칸을 채웁니다.
-    ...(isIOSApp() ? [{
-      title: "궁합",
-      icon: <Heart style={{ width: '38.4px', height: '38.4px' }} />,
-      backgroundColor: "bg-pink-100 dark:bg-pink-900/20",
-      iconColor: "text-pink-600 dark:text-pink-400",
-      onClick: () => handleMenuClick("궁합")
-    }] : [{
+    // 이 자리는 회원 등급에 따라 달라집니다.
+    //  - 유료 회원: "예약" (예약은 유료 기능이라 무료 회원에게는 보여줘도 쓸 수 없습니다)
+    //  - 무료 회원: "궁합" (전 등급이 쓸 수 있는 기능으로 칸을 채웁니다)
+    // 애플 앱스토어 심사 대응으로 iOS 앱에서는 등급과 무관하게 항상 "궁합"입니다.
+    ...(showReservation ? [{
       title: "예약",
       icon: <CalendarCheck style={{ width: '38.4px', height: '38.4px' }} />,
       backgroundColor: "bg-yellow-100 dark:bg-yellow-900/20",
       iconColor: "text-yellow-600 dark:text-yellow-400",
       onClick: () => handleMenuClick("예약")
+    }] : [{
+      title: "궁합",
+      icon: <Heart style={{ width: '38.4px', height: '38.4px' }} />,
+      backgroundColor: "bg-pink-100 dark:bg-pink-900/20",
+      iconColor: "text-pink-600 dark:text-pink-400",
+      onClick: () => handleMenuClick("궁합")
     }]),
     {
       title: "감정중인 사주",
