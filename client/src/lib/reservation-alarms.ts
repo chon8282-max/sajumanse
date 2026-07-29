@@ -163,6 +163,51 @@ export async function showAlarmNotification(title: string, body: string, tag: st
   }
 }
 
+// base64(url) 공개키 → 브라우저가 요구하는 형식으로
+function urlBase64ToUint8Array(base64: string): Uint8Array {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+/**
+ * 이 기기를 서버에 등록합니다. 등록해두면 앱을 꺼둬도 알람이 옵니다.
+ * (알림 권한을 허용한 뒤에 부릅니다)
+ */
+export async function registerPushDevice(): Promise<{ ok: boolean; reason?: string }> {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    return { ok: false, reason: "이 기기는 앱을 꺼둔 상태의 알람을 지원하지 않습니다." };
+  }
+  try {
+    const r = await fetch("/api/push/public-key");
+    const { key } = await r.json();
+    if (!key) return { ok: false, reason: "서버에 푸시 키가 아직 설정되지 않았습니다." };
+
+    const reg = await navigator.serviceWorker.ready;
+    // 이미 구독돼 있으면 그대로 쓰고, 없으면 새로 만듭니다.
+    const sub = (await reg.pushManager.getSubscription())
+      || (await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key) as BufferSource,
+      }));
+
+    const res = await fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscription: sub.toJSON() }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      return { ok: false, reason: d.error || "기기 등록에 실패했습니다." };
+    }
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, reason: e?.message || "기기 등록 중 오류가 났습니다." };
+  }
+}
+
 /** 알림 권한 요청 (반드시 버튼 누름 같은 사용자 동작 안에서 불러야 합니다) */
 export async function requestAlarmPermission(): Promise<NotificationPermission | "unsupported"> {
   if (typeof Notification === "undefined") return "unsupported";

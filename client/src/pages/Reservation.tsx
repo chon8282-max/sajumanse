@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft } fro
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { generateCalendarMonth, getCalendarInfo, CalendarDayData, calculateDayGanji } from "@/lib/calendar-calculator";
-import { requestAlarmPermission } from "@/lib/reservation-alarms";
+import { requestAlarmPermission, registerPushDevice } from "@/lib/reservation-alarms";
 
 const ALARM_OPTIONS = [
   { value: '1min', label: '1분 전 (테스트)' },
@@ -202,7 +202,15 @@ export default function ReservationPage() {
     const result = await requestAlarmPermission();
     setAlarmPerm(result);
     if (result === 'granted') {
-      toast({ title: '알람이 켜졌습니다', description: '예약 시각 전에 알림으로 알려드립니다.', duration: 3000 });
+      // 이 기기를 서버에 등록해두면 앱을 꺼둬도 알람이 옵니다.
+      const push = await registerPushDevice();
+      toast({
+        title: '알람이 켜졌습니다',
+        description: push.ok
+          ? '앱을 꺼두셔도 예약 시각 전에 알림이 옵니다.'
+          : `예약 시각 전에 알려드립니다. (앱을 꺼두면 못 받습니다 — ${push.reason})`,
+        duration: push.ok ? 3500 : 6000,
+      });
     } else if (result === 'denied') {
       toast({
         title: '알림이 차단되어 있습니다',

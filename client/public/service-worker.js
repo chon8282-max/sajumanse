@@ -1,4 +1,4 @@
-const CACHE_NAME = 'manseryeok-FIXED-v20260729-2';
+const CACHE_NAME = 'manseryeok-FIXED-v20260729-3';
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -160,4 +160,39 @@ self.addEventListener('message', function(event) {
     console.log('[SW] Skip waiting requested');
     self.skipWaiting();
   }
+});
+
+// ── 예약 알람 (웹 푸시) ──
+// 앱이 꺼져 있어도 서버가 보낸 알람을 여기서 받아 알림으로 띄웁니다.
+self.addEventListener('push', function(event) {
+  var payload = { title: '예약 알람', body: '', tag: 'reservation-alarm' };
+  try {
+    if (event.data) payload = Object.assign(payload, event.data.json());
+  } catch (e) {
+    try { payload.body = event.data ? event.data.text() : ''; } catch (e2) {}
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      tag: payload.tag,
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      vibrate: [200, 100, 200],
+      data: { url: '/reservation' }
+    })
+  );
+});
+
+// 알림을 누르면 예약 화면으로. 이미 앱이 열려 있으면 그 창을 앞으로 가져옵니다.
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  var target = (event.notification.data && event.notification.data.url) || '/reservation';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
+      for (var i = 0; i < list.length; i++) {
+        if ('focus' in list[i]) { list[i].navigate(target); return list[i].focus(); }
+      }
+      if (clients.openWindow) return clients.openWindow(target);
+    })
+  );
 });

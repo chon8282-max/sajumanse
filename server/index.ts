@@ -7,6 +7,7 @@ import { registerMemberSyncRoutes } from "./member-sync-routes";
 import { registerSessionRoutes } from "./session-routes";
 import { registerMessageRoutes } from "./message-routes";
 import { registerReservationRoutes } from "./reservation-routes";
+import { registerPushRoutes } from "./push-routes";
 import { setupVite, log } from "./vite";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -124,6 +125,7 @@ app.use((req, res, next) => {
         registerSessionRoutes(app);
         registerMessageRoutes(app);
         registerReservationRoutes(app);
+        registerPushRoutes(app); // 예약 알람 웹 푸시
         apiRoutesReady = true;
         log("✅ Routes registered");
 
