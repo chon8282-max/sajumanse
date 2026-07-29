@@ -11,7 +11,7 @@ import { queryClient } from "@/lib/queryClient";
 import { localDB } from "@/lib/saju-local-storage";
 import { useLocation } from "wouter";
 import { useMembership } from "@/contexts/MembershipContext";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -89,10 +89,17 @@ export default function SajuList() {
   const [showDeleteCompatDialog, setShowDeleteCompatDialog] = useState(false);
   const [deletingCompatId, setDeletingCompatId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  // 타이핑 중에는 화면을 다시 그리지 않고, 0.3초 쉬면 그때 한 번만 검색합니다.
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onSearchTyping = (value: string) => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setSearchQuery(value);          // 명식에 갔다 돌아올 때 되살리려고 보관
+      setDebouncedSearchQuery(value);
+    }, 300);
+  };
+  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current); }, []);
 
   // 되돌아온 경우: 보던 위치로 옮겨준다 (목록이 그려진 다음에 옮겨야 제자리로 간다)
   useEffect(() => {
@@ -123,7 +130,8 @@ export default function SajuList() {
     enabled: activeTab === 'compatibility'
   });
 
-  const sajuList = useMemo(() => {
+  // 검색·그룹으로 걸러진 전체 목록(정렬까지 끝난 것). 화면에는 이 중 앞에서부터만 그립니다.
+  const sortedAll = useMemo(() => {
     const list = [...(rawSajuList || [])];
     return list.sort((a, b) => {
       let comparison = 0;
@@ -135,6 +143,26 @@ export default function SajuList() {
       return sortOrder === 'asc' ? comparison : -comparison;
     });
   }, [rawSajuList, sortType, sortOrder]);
+
+  // 화면에는 100개까지만 그립니다.
+  // 저장된 사주가 5천 건을 넘으면서 전부 그리느라 목록이 열리지도, 손가락에 반응하지도 않았습니다.
+  // 아래로 내리면 100개씩 더 붙습니다.
+  const [visibleCount, setVisibleCount] = useState(100);
+  const shownList = useMemo(() => sortedAll.slice(0, visibleCount), [sortedAll, visibleCount]);
+  const hasMore = sortedAll.length > shownList.length;
+  // 검색·정렬·그룹이 바뀌면 다시 100개부터
+  useEffect(() => { setVisibleCount(100); }, [debouncedSearchQuery, selectedGroupId, sortType, sortOrder, activeTab]);
+  // 목록 끝에 닿으면 자동으로 더 불러오기
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el || !hasMore) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) setVisibleCount((c) => c + 100);
+    }, { rootMargin: '300px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, shownList.length]);
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -251,7 +279,8 @@ export default function SajuList() {
 
   const calculateAge = (birthYear: number) => { return new Date().getFullYear() - birthYear + 1; };
   const toggleSelectSaju = (id: string) => { setSelectedSajuIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]); };
-  const toggleSelectAll = () => { setSelectedSajuIds(selectedSajuIds.length === sajuList.length ? [] : sajuList.map(s => s.id)); };
+  // "전체 선택"은 화면에 보이는 것만이 아니라 검색된 전체를 고릅니다(예전과 같게).
+  const toggleSelectAll = () => { setSelectedSajuIds(selectedSajuIds.length === sortedAll.length ? [] : sortedAll.map(s => s.id)); };
   const handleBulkDelete = () => { if (selectedSajuIds.length > 0) setShowBulkDeleteDialog(true); };
   const confirmBulkDelete = () => { bulkDeleteMutation.mutate(selectedSajuIds); setShowBulkDeleteDialog(false); };
   const handleSort = (type: SortType) => {
@@ -293,7 +322,12 @@ export default function SajuList() {
             <div className="mb-2 flex gap-1 items-center">
               <div className="relative flex-1">
                 <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                <Input type="text" placeholder="이름 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-7 h-7 text-xs bg-gray-50 border-gray-200" />
+                {/* 검색창은 비제어(uncontrolled)로 둡니다.
+                    글자를 칠 때마다 화면을 다시 그리면 저장된 사주가 많을 때 한 글자에 0.1초 넘게 걸려
+                    한글 조합이 깨지고 먹통처럼 느껴집니다. 0.3초 쉬면 그때 한 번만 검색합니다. */}
+                <Input ref={searchInputRef} type="text" placeholder="이름 검색..." defaultValue={searchQuery}
+                  onChange={(e) => onSearchTyping(e.target.value)}
+                  className="pl-7 h-7 text-xs bg-gray-50 border-gray-200" />
               </div>
               <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
                 <SelectTrigger className="w-24 h-7 text-xs bg-gray-50 border-gray-200"><SelectValue placeholder="모든 그룹" /></SelectTrigger>
@@ -323,7 +357,7 @@ export default function SajuList() {
               <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 bg-gray-100 animate-pulse rounded-lg"></div>)}</div>
             ) : error ? (
               <div className="text-center py-8"><p className="text-muted-foreground text-sm mb-3">불러오기 실패</p><Button onClick={() => refetch()} variant="outline" size="sm">다시 시도</Button></div>
-            ) : !sajuList || sajuList.length === 0 ? (
+            ) : !sortedAll || sortedAll.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed">
                 <User className="w-10 h-10 mx-auto text-gray-300 mb-2" />
                 <p className="text-gray-500 text-sm">저장된 사주가 없습니다.</p>
@@ -332,7 +366,7 @@ export default function SajuList() {
               <>
                 <div className="flex items-center justify-between mb-1 px-1">
                   <div className="flex items-center gap-1 cursor-pointer" onClick={toggleSelectAll}>
-                    <Checkbox checked={selectedSajuIds.length === sajuList.length && sajuList.length > 0} className="w-4 h-4 rounded border-gray-300" />
+                    <Checkbox checked={selectedSajuIds.length === sortedAll.length && sortedAll.length > 0} className="w-4 h-4 rounded border-gray-300" />
                     <span className="text-xs text-gray-500">{selectedSajuIds.length > 0 ? `${selectedSajuIds.length}개 선택됨` : '전체 선택'}</span>
                   </div>
                   {selectedSajuIds.length > 0 && (
@@ -341,7 +375,7 @@ export default function SajuList() {
                 </div>
 
                 <div className="space-y-1.5">
-                  {sajuList.map((saju) => {
+                  {shownList.map((saju) => {
                     const groupName = groupsList?.find(g => g.id === saju.groupId)?.name;
                     return (
                       <Card key={saju.id} className={`cursor-pointer hover:shadow-sm transition-shadow ${selectedSajuIds.includes(saju.id) ? 'ring-1 ring-primary/30' : ''}`} onClick={() => handleViewSaju(saju.id)}>
@@ -373,6 +407,15 @@ export default function SajuList() {
                       </Card>
                     );
                   })}
+                  {/* 아래로 내리면 100개씩 더 붙습니다 */}
+                  {hasMore && (
+                    <div ref={loadMoreRef} className="py-3 flex justify-center">
+                      <button onClick={() => setVisibleCount((c) => c + 100)}
+                        className="h-8 px-4 text-xs font-bold rounded-full border border-gray-300 bg-white text-gray-600">
+                        더 보기 ({shownList.length.toLocaleString()}/{sortedAll.length.toLocaleString()})
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
