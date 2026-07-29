@@ -24,6 +24,40 @@ const groupFormSchema = z.object({
 });
 type GroupFormData = z.infer<typeof groupFormSchema>;
 
+// 목록 → 명식 → 뒤로 했을 때 검색 상태를 되살리기 위한 자리.
+// (예전에는 명식에서 뒤로 누르면 검색이 다 날아가고 신규 입력 화면으로 나가버렸다)
+const LIST_STATE_KEY = "sajuListSearchState";  // 검색어·그룹·정렬·스크롤 위치
+const RESULT_FROM_KEY = "sajuResultFrom";      // 명식을 어디서 열었는지
+const LIST_RESTORE_KEY = "sajuListRestore";    // 이번 진입이 "뒤로 돌아온 것"인지
+
+interface ListSnapshot {
+  activeTab?: 'personal' | 'compatibility';
+  searchQuery?: string;
+  debouncedSearchQuery?: string;
+  selectedGroupId?: string;
+  sortType?: 'name' | 'createdAt' | 'age';
+  sortOrder?: 'asc' | 'desc';
+  scrollY?: number;
+}
+
+/**
+ * 명식에서 되돌아온 진입이면 직전 검색 상태를 돌려준다. 새로 들어온 것이면 null.
+ * 표식은 한 번 쓰고 지운다 — 다음에 목록으로 새로 들어오면 깨끗한 목록이 나와야 한다.
+ */
+function readListRestore(): ListSnapshot | null {
+  try {
+    const cameBack =
+      sessionStorage.getItem(LIST_RESTORE_KEY) === "1" ||          // 명식의 "뒤로" 버튼
+      sessionStorage.getItem(RESULT_FROM_KEY) === "/saju-list";    // 휴대폰 뒤로가기
+    sessionStorage.removeItem(LIST_RESTORE_KEY);
+    sessionStorage.removeItem(RESULT_FROM_KEY);
+    if (!cameBack) return null;
+    return JSON.parse(sessionStorage.getItem(LIST_STATE_KEY) || "null");
+  } catch {
+    return null; // 저장소를 못 써도 목록은 열려야 한다
+  }
+}
+
 export default function SajuList() {
   const [, setLocation] = useLocation();
   const { syncNow } = useMembership();
@@ -34,14 +68,16 @@ export default function SajuList() {
     try { await syncNow(); } finally { setIsSyncing(false); }
   };
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'personal' | 'compatibility'>('personal');
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGroupId, setSelectedGroupId] = useState<string>("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  // 명식에서 뒤로 돌아온 것이면 직전 검색 상태를 처음 값으로 그대로 쓴다.
+  const [restored] = useState<ListSnapshot | null>(() => readListRestore());
+  const [activeTab, setActiveTab] = useState<'personal' | 'compatibility'>(restored?.activeTab ?? 'personal');
+  const [searchQuery, setSearchQuery] = useState<string>(restored?.searchQuery ?? "");
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(restored?.selectedGroupId ?? "");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>(restored?.debouncedSearchQuery ?? "");
   type SortType = 'name' | 'createdAt' | 'age';
   type SortOrder = 'asc' | 'desc';
-  const [sortType, setSortType] = useState<SortType>('createdAt');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sortType, setSortType] = useState<SortType>(restored?.sortType ?? 'createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>(restored?.sortOrder ?? 'desc');
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
   const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
@@ -57,6 +93,14 @@ export default function SajuList() {
     const timer = setTimeout(() => setDebouncedSearchQuery(searchQuery), 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // 되돌아온 경우: 보던 위치로 옮겨준다 (목록이 그려진 다음에 옮겨야 제자리로 간다)
+  useEffect(() => {
+    const y = restored?.scrollY;
+    if (typeof y !== "number") return;
+    const t = setTimeout(() => window.scrollTo(0, y), 150);
+    return () => clearTimeout(t);
+  }, []);
 
   const { data: groupsList } = useQuery<Group[]>({
     queryKey: ["local-groups"],
@@ -179,7 +223,18 @@ export default function SajuList() {
   const handleDeleteGroup = (groupId: string) => { setDeletingGroupId(groupId); setShowDeleteGroupDialog(true); };
   const handleEditGroup = (group: Group) => { setEditingGroup(group); setShowGroupModal(true); };
   const handleBack = () => { setLocation("/"); };
-  const handleViewSaju = (id: string) => { setLocation(`/saju-result/${id}`); };
+  // 명식을 열기 전에 지금 검색 상태를 적어둔다.
+  // 명식에서 "뒤로"를 누르면 이 자리로 그대로 돌아온다(검색어·그룹·정렬·보던 위치까지).
+  const handleViewSaju = (id: string) => {
+    try {
+      sessionStorage.setItem(LIST_STATE_KEY, JSON.stringify({
+        activeTab, searchQuery, debouncedSearchQuery, selectedGroupId,
+        sortType, sortOrder, scrollY: window.scrollY,
+      }));
+      sessionStorage.setItem(RESULT_FROM_KEY, "/saju-list");
+    } catch { /* 저장이 안 돼도 명식 보기는 되어야 한다 */ }
+    setLocation(`/saju-result/${id}`);
+  };
   const handleDeleteSaju = (id: string, name: string) => { setDeletingSaju({ id, name }); setShowDeleteSajuDialog(true); };
   const confirmDeleteSaju = () => { if (deletingSaju) { deleteMutation.mutate(deletingSaju.id); setShowDeleteSajuDialog(false); setDeletingSaju(null); } };
   const handleViewCompatibility = (leftId: string, rightId: string) => { setLocation(`/compatibility?left=${leftId}&right=${rightId}`); };

@@ -652,6 +652,17 @@ export default function SajuResult() {
 
   // 핸들러 함수들
   const handleBack = () => {
+    // 목록에서 들어온 경우에는 그 목록으로 되돌아간다.
+    // 예전에는 어디서 왔든 무조건 신규 입력 화면으로 나가버려서, 검색해서 찾아 들어온 사람이
+    // 뒤로 누르면 검색이 통째로 날아갔다.
+    try {
+      if (sessionStorage.getItem("sajuResultFrom") === "/saju-list") {
+        sessionStorage.removeItem("sajuResultFrom");
+        sessionStorage.setItem("sajuListRestore", "1"); // 목록에게 "검색 상태를 되살리라"고 알림
+        setLocation("/saju-list");
+        return;
+      }
+    } catch { /* 저장소를 못 쓰면 아래 기본 동작으로 */ }
     setLocation("/manseryeok");
   };
 
