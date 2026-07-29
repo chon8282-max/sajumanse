@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowLeft } fro
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { generateCalendarMonth, getCalendarInfo, CalendarDayData, calculateDayGanji } from "@/lib/calendar-calculator";
+import { requestAlarmPermission } from "@/lib/reservation-alarms";
 
 const ALARM_OPTIONS = [
   { value: '1min', label: '1분 전 (테스트)' },
@@ -191,6 +192,27 @@ export default function ReservationPage() {
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Reservation[] | null>(null);
+
+  // 알람(휴대폰 알림) 권한 상태. 'granted'가 아니면 알람이 울리지 않으므로 켜기 버튼을 보여줍니다.
+  const [alarmPerm, setAlarmPerm] = useState<string>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  );
+
+  const handleEnableAlarm = async () => {
+    const result = await requestAlarmPermission();
+    setAlarmPerm(result);
+    if (result === 'granted') {
+      toast({ title: '알람이 켜졌습니다', description: '예약 시각 전에 알림으로 알려드립니다.', duration: 3000 });
+    } else if (result === 'denied') {
+      toast({
+        title: '알림이 차단되어 있습니다',
+        description: '휴대폰 설정 → 앱 알림에서 허용해주세요. 그전까지는 앱 화면 안에서만 알려드립니다.',
+        variant: 'destructive', duration: 6000,
+      });
+    } else if (result === 'unsupported') {
+      toast({ title: '이 기기에서는 알림을 쓸 수 없습니다', description: '앱 화면 안에서만 알려드립니다.', duration: 4000 });
+    }
+  };
   const [popupDate, setPopupDate] = useState<string | null>(null);
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [showAllPopup, setShowAllPopup] = useState(false);
@@ -628,6 +650,13 @@ export default function ReservationPage() {
                   placeholder="검색..." className="px-2 py-1 rounded-lg border text-xs w-32" />
                 <button onClick={handleSearch} className="px-2 py-1 bg-indigo-500 text-white rounded-lg text-xs hover:bg-indigo-600">검색</button>
                 {searchResults && <button onClick={() => { setSearchResults(null); setSearchQuery(''); }} className="px-2 py-1 border rounded-lg text-xs">✕</button>}
+                {/* 알람은 휴대폰 알림 권한이 있어야 울립니다. 권한 요청은 버튼을 눌러야만 띄울 수 있습니다. */}
+                {alarmPerm !== 'granted' && (
+                  <button onClick={handleEnableAlarm}
+                    className="px-2 py-1 rounded-lg text-xs font-medium text-white bg-amber-500 hover:bg-amber-600 whitespace-nowrap">
+                    🔔 알람 켜기
+                  </button>
+                )}
               </div>
               <button onClick={handleToday} className="px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-500 hover:bg-indigo-600">오늘</button>
               <div className="flex items-center gap-1.5">

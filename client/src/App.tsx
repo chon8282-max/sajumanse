@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider, useTheme } from "@/components/ThemeProvider";
 import { useToast } from "@/hooks/use-toast";
+import { useReservationAlarms } from "@/hooks/use-reservation-alarms";
 import { FontProvider } from "@/contexts/FontContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { MembershipProvider, useMembership } from "@/contexts/MembershipContext";
@@ -80,6 +81,12 @@ function AppContent() {
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const backPressedRef = useRef(false); // 뒤로가기 두 번 감지용
+
+  // 예약 알람: 앱이 켜져 있는 동안 알람 시각을 지켜보다가 알림을 띄운다.
+  // 알림 권한이 없거나 알림이 막혀 있으면 화면 안 토스트로라도 알린다.
+  useReservationAlarms((title, body) => {
+    toast({ title, description: body, duration: 8000 });
+  });
 
   // PWA 로그인: URL에서 auth_token 감지하고 세션 생성
   useEffect(() => {

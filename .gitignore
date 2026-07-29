@@ -6,3 +6,6 @@ vite.config.ts.*
 *.tar.gz".env" 
 server/*.json.env 
 .env 
+
+# 예약 데이터(손님 이름·연락처 포함) — 저장소에 올리지 않습니다
+data/
